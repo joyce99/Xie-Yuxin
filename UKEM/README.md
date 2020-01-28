@@ -1,2 +1,2 @@
-# KeywordExtraction
-专利关键字提取实验
+# UKEM
+Unsupervised Keyword Extraction Method Based on Chinese Patent Clustering
