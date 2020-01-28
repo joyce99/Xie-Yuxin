@@ -1,0 +1,1048 @@
+robustness of adaptive filtering methods 
+in a cross-benchmark evaluation 
+yiming yang shinjae yoo jian zhang bryan kisiel 
+school of computer science carnegie mellon university 
+ forbes avenue pittsburgh pa usa 
+abstract 
+this paper reports a cross-benchmark evaluation of regularized 
+logistic regression lr and incremental rocchio for adaptive 
+filtering using four corpora from the topic detection and 
+tracking tdt forum and the text retrieval conferences 
+ trec we evaluated these methods with non-stationary topics 
+at various granularity levels and measured performance with 
+different utility settings we found that lr performs strongly 
+and robustly in optimizing t su a trec utility function 
+while rocchio is better for optimizing ctrk the tdt tracking 
+cost a high-recall oriented objective function using systematic 
+cross-corpus parameter optimization with both methods we 
+obtained the best results ever reported on tdt trec and 
+trec relevance feedback on a small portion   
+of the tdt test documents yielded significant performance 
+improvements measuring up to a reduction in ctrk and a 
+ increase in t su with β compared to the results 
+of the top-performing system in tdt without relevance 
+feedback information 
+categories and subject descriptors 
+h information search and retrieval information 
+filtering relevance feedback retrieval models selection 
+process i design methodology classifier design and 
+evaluation 
+general terms 
+algorithms measurement performance experimentation 
+ introduction 
+adaptive filtering af has been a challenging research topic in 
+information retrieval the task is for the system to make an 
+online topic membership decision yes or no for every 
+document as soon as it arrives with respect to each pre-defined 
+topic of interest starting from in the topic detection and 
+tracking tdt area and in the text retrieval 
+conferences trec benchmark evaluations have been 
+conducted by nist under the following 
+conditions 
+ a very small number to of positive training examples 
+was provided for each topic at the starting point 
+ relevance feedback was available but only for the 
+systemaccepted documents with a yes decision in the trec 
+evaluations for af 
+ relevance feedback rf was not allowed in the tdt 
+evaluations for af or topic tracking in the tdt 
+terminology until 
+ tdt was the first time that trec and tdt metrics 
+were jointly used in evaluating af methods on the same 
+benchmark the tdt corpus where non-stationary topics 
+dominate 
+the above conditions attempt to mimic realistic situations where 
+an af system would be used that is the user would be willing 
+to provide a few positive examples for each topic of interest at 
+the start and might or might not be able to provide additional 
+labeling on a small portion of incoming documents through 
+relevance feedback furthermore topics of interest might 
+change over time with new topics appearing and growing and 
+old topics shrinking and diminishing these conditions make 
+adaptive filtering a difficult task in statistical learning online 
+classification for the following reasons 
+ it is difficult to learn accurate models for prediction based 
+on extremely sparse training data 
+ it is not obvious how to correct the sampling bias i e 
+relevance feedback on system-accepted documents only 
+during the adaptation process 
+ it is not well understood how to effectively tune parameters 
+in af methods using cross-corpus validation where the 
+validation and evaluation topics do not overlap and the 
+documents may be from different sources or different 
+epochs 
+none of these problems is addressed in the literature of 
+statistical learning for batch classification where all the training 
+data are given at once the first two problems have been 
+studied in the adaptive filtering literature including topic profile 
+adaptation using incremental rocchio gaussian-exponential 
+density models logistic regression in a bayesian framework 
+etc and threshold optimization strategies using probabilistic 
+calibration or local fitting techniques 
+although these works provide valuable insights for 
+understanding the problems and possible solutions it is difficult 
+to draw conclusions regarding the effectiveness and robustness 
+of current methods because the third problem has not been 
+thoroughly investigated addressing the third issue is the main 
+focus in this paper 
+we argue that robustness is an important measure for evaluating 
+and comparing af methods by robust we mean consistent 
+and strong performance across benchmark corpora with a 
+systematic method for parameter tuning across multiple corpora 
+most af methods have pre-specified parameters that may 
+influence the performance significantly and that must be 
+determined before the test process starts available training 
+examples on the other hand are often insufficient for tuning the 
+parameters in tdt for example there is only one labeled 
+training example per topic at the start parameter optimization 
+on such training data is doomed to be ineffective 
+this leaves only one option assuming tuning on the test set is 
+not an alternative that is choosing an external corpus as the 
+validation set notice that the validation-set topics often do not 
+overlap with the test-set topics thus the parameter optimization 
+is performed under the tough condition that the validation data 
+and the test data may be quite different from each other now 
+the important question is which methods if any are robust 
+under the condition of using cross-corpus validation to tune 
+parameters current literature does not offer an answer because 
+no thorough investigation on the robustness of af methods has 
+been reported 
+in this paper we address the above question by conducting a 
+cross-benchmark evaluation with two effective approaches in 
+af incremental rocchio and regularized logistic regression 
+ lr rocchio-style classifiers have been popular in af with 
+good performance in benchmark evaluations trec and tdt 
+if appropriate parameters were used and if combined with an 
+effective threshold calibration strategy 
+logistic regression is a classical method in statistical learning 
+and one of the best in batch-mode text categorization it 
+was recently evaluated in adaptive filtering and was found to 
+have relatively strong performance section furthermore a 
+recent paper reported that the joint use of rocchio and lr 
+in a bayesian framework outperformed the results of using each 
+method alone on the trec corpus stimulated by those 
+findings we decided to include rocchio and lr in our 
+crossbenchmark evaluation for robustness testing specifically we 
+focus on how much the performance of these methods depends 
+on parameter tuning what the most influential parameters are in 
+these methods how difficult or how easy to optimize these 
+influential parameters using cross-corpus validation how strong 
+these methods perform on multiple benchmarks with the 
+systematic tuning of parameters on other corpora and how 
+efficient these methods are in running af on large benchmark 
+corpora 
+the organization of the paper is as follows section introduces 
+the four benchmark corpora trec and trec tdt and 
+tdt used in this study section analyzes the differences 
+among the trec and tdt metrics utilities and tracking cost 
+and the potential implications of those differences section 
+outlines the rocchio and lr approaches to af respectively 
+section reports the experiments and results section 
+concludes the main findings in this study 
+ benchmark corpora 
+we used four benchmark corpora in our study table shows 
+the statistics about these data sets 
+trec was the evaluation benchmark for adaptive filtering in 
+trec consisting of roughly reuters news stories 
+from august to august with topic labels subject 
+categories the first two weeks august th 
+to st 
+ of 
+documents is the training set and the remaining ½ months 
+ from september st 
+ to august th 
+ is the test set 
+trec was the evaluation benchmark for adaptive filtering in 
+trec consisting of the same set of documents as those in 
+trec but with a slightly different splitting point for the 
+training and test sets the trec topics are quite 
+different from those in trec they are queries for retrieval 
+with relevance judgments by nist assessors 
+tdt was the evaluation benchmark in the tdt dry run 
+ 
+the tracking part of the corpus consists of news stories 
+from multiple sources in english and mandarin ap nyt 
+cnn abc nbc msnbc xinhua zaobao voice of america 
+and pri the world in the period of october to december 
+machine-translated versions of the non-english stories xinhua 
+zaobao and voa mandarin are provided as well the splitting 
+point for training-test sets is different for each topic in tdt 
+tdt was the evaluation benchmark in tdt the 
+tracking part of the corpus consists of news stories in 
+the period of april to september from news agents or 
+broadcast sources in english arabic and mandarin with 
+machine-translated versions of the non-english stories we only 
+used the english versions of those documents in our 
+experiments for this paper 
+the tdt topics differ from trec topics both conceptually 
+and statistically instead of generic ever-lasting subject 
+categories as those in trec tdt topics are defined at a finer 
+level of granularity for events that happen at certain times and 
+locations and that are born and die typically associated 
+with a bursty distribution over chronologically ordered news 
+stories the average size of tdt topics events is two orders 
+of magnitude smaller than that of the trec topics figure 
+compares the document densities of a trec topic civil 
+wars and two tdt topics gunshot and apec summit 
+meeting respectively over a -month time period where the 
+area under each curve is normalized to one 
+the granularity differences among topics and the corresponding 
+non-stationary distributions make the cross-benchmark 
+evaluation interesting for example algorithms favoring large 
+and stable topics may not work well for short-lasting and 
+nonstationary topics and vice versa cross-benchmark evaluations 
+allow us to test this hypothesis and possibly identify the 
+weaknesses in current approaches to adaptive filtering in 
+tracking the drifting trends of topics 
+ 
+http www ldc upenn edu projects tdt topics html 
+table statistics of benchmark corpora for adaptive filtering evaluations 
+n tr is the number of the initial training documents n ts is the number of the test documents 
+n is the number of positive examples of a predefined topic is an average over all the topics 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+week 
+p topic week 
+gunshot tdt 
+apec summit meeting tdt 
+civil war trec 
+figure the temporal nature of topics 
+ metrics 
+to make our results comparable to the literature we decided to 
+use both trec-conventional and tdt-conventional metrics in 
+our evaluation 
+ trec metrics 
+let a b c and d be respectively the numbers of true 
+positives false alarms misses and true negatives for a specific 
+topic and dcban be the total number of test 
+documents the trec-conventional metrics are defined as 
+precision baa recall caa 
+ 
+ 
+caba 
+a 
+f 
+ 
+ 
+ 
+β 
+β 
+β 
+ 
+η 
+ηηβ 
+ηβ 
+− 
+− − 
+ 
+ 
+ max 
+ 
+caba 
+sut 
+where parameters β and η were set to and - respectively 
+in trec and trec for evaluating the 
+performance of a system the performance scores are computed 
+for individual topics first and then averaged over topics 
+ macroaveraging 
+ tdt metrics 
+the tdt-conventional metric for topic tracking is defined as 
+famisstrk ptpwptpwtc − 
+where p t is the percentage of documents on topic t missp is 
+the miss rate by the system on that topic fap is the false alarm 
+rate and w and w are the costs pre-specified constants for a 
+miss and a false alarm respectively the tdt benchmark 
+evaluations since have used the settings 
+of w w and tp for all topics for evaluating 
+the performance of a system ctrk is computed for each topic 
+first and then the resulting scores are averaged for a single 
+measure the topic-weighted ctrk 
+to make the intuition behind this measure transparent we 
+substitute the terms in the definition of ctrk as follows 
+n 
+ca 
+tp 
+ 
+ 
+n 
+db 
+tp 
+ 
+ − 
+ca 
+c 
+pmiss 
+ 
+ 
+db 
+b 
+pfa 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bwcw 
+n 
+db 
+b 
+n 
+db 
+w 
+ca 
+c 
+n 
+ca 
+wtctrk 
+ ⋅ 
+ 
+⋅ 
+ 
+⋅ 
+ 
+⋅ 
+ 
+⋅ 
+clearly trkc is the average cost per error on topic t with w 
+and w controlling the penalty ratio for misses vs false alarms 
+in addition to trkc tdt also employed βsut as a 
+utility metric to distinguish this from the βsut in 
+trec we call former tdt su in the rest of this paper 
+corpus topics n tr n ts avg 
+n tr 
+avg 
+n ts 
+max 
+n ts 
+min 
+n ts 
+ topics per 
+doc ts 
+trec 
+trec 
+tdt 
+tdt 
+ the correlations and the differences 
+from an optimization point of view tdt su and t su are 
+both utility functions while ctrk is a cost function our objective 
+is to maximize the former or to minimize the latter on test 
+documents the differences and correlations among these 
+objective functions can be analyzed through the shared counts 
+of a b c and d in their definitions for example both 
+tdt su and t su are positively correlated to the values of a 
+and d and negatively correlated to the values of b and c the 
+only difference between them is in their penalty ratios for 
+misses vs false alarms i e in tdt su and in t su 
+the ctrk function on the other hand is positively correlated to 
+the values of c and b and negatively correlated to the values of 
+a and d hence it is negatively correlated to t su and 
+tdt su 
+more importantly there is a subtle and major difference 
+between ctrk and the utility functions t su and tdt su 
+that is ctrk has a very different penalty ratio for misses vs 
+false alarms it favors recall-oriented systems to an extreme at 
+first glance one would think that the penalty ratio in ctrk is 
+ since w and w however this is not true if 
+ tp is an inaccurate estimate of the on-topic documents 
+on average for the test corpus using tdt as an example the 
+true percentage is 
+ 
+ 
+ 
+ ≈ 
+ 
+ 
+n 
+n 
+tp 
+where n is the average size of the test sets in tdt and n is 
+the average number of positive examples per topic in the test 
+sets using ˆ tp as an inaccurate estimate of 
+enlarges the intended penalty ratio of to roughly 
+speaking to wit 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bc 
+nn 
+b 
+n 
+c 
+b 
+n 
+c 
+db 
+b 
+n 
+ca 
+n 
+c 
+faptpwmissptpw 
+fapwmisspwttrkc 
+× × × ×≈ 
+− 
+×−× ×× 
+ 
+ 
+×−× ×× 
+×−⋅ ×× 
+−× ×× 
+⎟ 
+⎠ 
+⎞ 
+⎜ 
+⎝ 
+⎛ 
+⎟ 
+⎠ 
+⎞ 
+⎜ 
+⎝ 
+⎛ 
+ρρ 
+where 
+ 
+ 
+ 
+ ˆ 
+ 
+tp 
+tp 
+ρ is the factor of enlargement in the 
+estimation of p t compared to the truth comparing the above 
+result to formula we can see the actual penalty ratio for 
+misses vs false alarms was in the evaluations on tdt 
+using ctrk similarly we can compute the enlargement factor 
+for tdt using the statistics in table as follows 
+ 
+ 
+ 
+ 
+ ˆ 
+ 
+tp 
+tp 
+ρ 
+which means the actual penalty ratio for misses vs false alarms 
+in the evaluation on tdt using ctrk was approximately 
+the implications of the above analysis are rather significant 
+ ctrk defined in the same formula does not necessarily 
+mean the same objective function in evaluation instead 
+the optimization criterion depends on the test corpus 
+ systems optimized for ctrk would not optimize tdt su 
+ and t su because the former favors high-recall 
+oriented to an extreme while the latter does not 
+ parameters tuned on one corpus e g tdt might not 
+work for an evaluation on another corpus say tdt 
+unless we account for the previously-unknown subtle 
+dependency of ctrk on data 
+ results in ctrk in the past years of tdt evaluations may 
+not be directly comparable to each other because the 
+evaluation collections changed most years and hence the 
+penalty ratio in ctrk varied 
+although these problems with ctrk were not originally 
+anticipated it offered an opportunity to examine the ability of 
+systems in trading off precision for extreme recall this was a 
+challenging part of the tdt evaluation for af 
+comparing the metrics in tdt and trec from a utility or cost 
+optimization point of view is important for understanding the 
+evaluation results of adaptive filtering methods this is the first 
+time this issue is explicitly analyzed to our knowledge 
+ methods 
+ incremental rocchio for af 
+we employed a common version of rocchio-style classifiers 
+which computes a prototype vector per topic t as follows 
+ 
+ 
+ 
+ 
+ 
+td 
+d 
+td 
+d 
+tqtp 
+tddtdd 
+− 
+∈ 
+ 
+∈ ∑∑ − 
+− 
+rr 
+rr 
+rr 
+γβα 
+the first term on the rhs is the weighted vector representation 
+of topic description whose elements are terms weights the 
+second term is the weighted centroid of the set td of 
+positive training examples each of which is a vector of 
+withindocument term weights the third term is the weighted centroid 
+of the set td− of negative training examples which are the 
+nearest neighbors of the positive centroid the three terms are 
+given pre-specified weights of βα and γ controlling the 
+relative influence of these components in the prototype 
+the prototype of a topic is updated each time the system makes 
+a yes decision on a new document for that topic if relevance 
+feedback is available as is the case in trec adaptive filtering 
+the new document is added to the pool of 
+either td or td− and the prototype is recomputed 
+accordingly if relevance feedback is not available as is the case 
+in tdt event tracking the system s prediction yes is 
+treated as the truth and the new document is added to td for 
+updating the prototype both cases are part of our experiments 
+in this paper and part of the tdt evaluations for af to 
+distinguish the two we call the first case simply rocchio and 
+the second case prf rocchio where prf stands for 
+pseudorelevance feedback 
+the predictions on a new document are made by computing the 
+cosine similarity between each topic prototype and the 
+document vector and then comparing the resulting scores 
+against a threshold 
+⎩ 
+⎨ 
+⎧ 
+− 
+ 
+ − 
+ 
+ 
+ cos 
+no 
+yes 
+dtpsign new θ 
+rr 
+threshold calibration in incremental rocchio is a challenging 
+research topic multiple approaches have been developed the 
+simplest is to use a universal threshold for all topics tuned on a 
+validation set and fixed during the testing phase more elaborate 
+methods include probabilistic threshold calibration which 
+converts the non-probabilistic similarity scores to probabilities 
+ i e dtp 
+r 
+ for utility optimization and margin-based 
+local regression for risk reduction 
+it is beyond the scope of this paper to compare all the different 
+ways to adapt rocchio-style methods for af instead our focus 
+here is to investigate the robustness of rocchio-style methods in 
+terms of how much their performance depends on elaborate 
+system tuning and how difficult or how easy it is to get good 
+performance through cross-corpus parameter optimization 
+hence we decided to use a relatively simple version of rocchio 
+as the baseline i e with a universal threshold tuned on a 
+validation corpus and fixed for all topics in the testing phase 
+this simple version of rocchio has been commonly used in the 
+past tdt benchmark evaluations for topic tracking and had 
+strong performance in the tdt evaluations for adaptive 
+filtering with and without relevance feedback section 
+results of more complex variants of rocchio are also discussed 
+when relevant 
+ logistic regression for af 
+logistic regression lr estimates the posterior probability of a 
+topic given a document using a sigmoid function 
+ xw 
+ewxyp 
+rrrr ⋅− 
+ 
+where x 
+r 
+is the document vector whose elements are term 
+weights w 
+r 
+is the vector of regression coefficients and 
+ − ∈y is the output variable corresponding to yes or 
+no with respect to a particular topic given a training set of 
+labeled documents nn yxyxd 
+r 
+l 
+r 
+ the 
+standard regression problem is defined as to find the maximum 
+likelihood estimates of the regression coefficients the model 
+parameters 
+ 
+ exp logminarg 
+ logmaxarg maxarg 
+ii xwyn 
+i 
+w 
+wdp 
+w 
+wdp 
+w 
+mlw 
+rr 
+r 
+r 
+r 
+r 
+r 
+r 
+⋅− ∑ 
+ 
+this is a convex optimization problem which can be solved 
+using a standard conjugate gradient algorithm in o inf time 
+for training per topic where i is the average number of 
+iterations needed for convergence and n and f are the number 
+of training documents and number of features respectively 
+once the regression coefficients are optimized on the training 
+data the filtering prediction on each incoming document is 
+made as 
+ 
+⎩ 
+⎨ 
+⎧ 
+− 
+ 
+ − 
+ 
+ 
+ 
+no 
+yes 
+wxypsign optnew θ 
+rr 
+note that w 
+r 
+is constantly updated whenever a new relevance 
+judgment is available in the testing phase of af while the 
+optimal threshold optθ is constant depending only on the 
+predefined utility or cost function for evaluation if t su is the 
+metric for example with the penalty ratio of for misses and 
+false alarms section the optimal threshold for lr 
+is for all topics 
+we modified the standard above version of lr to allow more 
+flexible optimization criteria as follows 
+⎭ 
+⎬ 
+⎫ 
+⎩ 
+⎨ 
+⎧ 
+− ∑ 
+⋅− 
+ 
+ log minarg μλ 
+rrr rr 
+r 
+weysw 
+n 
+i 
+xwy 
+i 
+w 
+map 
+ii 
+where iys is taken to be α β and γ for query positive 
+and negative documents respectively which are similar to those 
+in rocchio giving different weights to the three kinds of 
+training examples topic descriptions queries on-topic 
+documents and off-topic documents the second term in the 
+objective function is for regularization equivalent to adding a 
+gaussian prior to the regression coefficients with mean μ 
+r 
+and 
+covariance variance matrix ι⋅λ where ι is the identity 
+matrix tuning λ ≥ is theoretically justified for reducing 
+model complexity the effective degree of freedom and 
+avoiding over-fitting on training data how to find an 
+effective μ 
+r 
+is an open issue for research depending on the 
+user s belief about the parameter space and the optimal range 
+the solution of the modified objective function is called the 
+maximum a posteriori map estimate which reduces to the 
+maximum likelihood solution for standard lr if λ 
+ evaluations 
+we report our empirical findings in four parts the tdt 
+official evaluation results the cross-corpus parameter 
+optimization results and the results corresponding to the 
+amounts of relevance feedback 
+ tdt benchmark results 
+the tdt evaluations for adaptive filtering were conducted 
+by nist in november multiple research teams 
+participated and multiple runs from each team were allowed 
+ctrk and tdt su were used as the metrics figure and figure 
+ show the results the best run from each team was selected 
+with respect to ctrk or tdt su respectively our rocchio 
+ with adaptive profiles but fixed universal threshold for all 
+topics had the best result in ctrk and our logistic regression 
+had the best result in tdt su all the parameters of our runs 
+were tuned on the tdt corpus results for other sites are also 
+listed anonymously for comparison 
+ctrk 
+ours 
+site 
+site 
+site 
+metric ctrk the lower the better 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ours site site site 
+figure tdt results in ctrk of systems using true 
+relevance feedback ours is the rocchio method we 
+also put the st 
+and rd 
+quartiles as sticks for each site 
+t su 
+ours 
+site 
+site 
+site 
+metric tdt su the higher the better 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ours site site site 
+figure tdt results in tdt su of systems using true 
+relevance feedback ours is lr 
+with μ 
+r 
+and λ 
+ctrk 
+ours 
+site 
+site 
+site 
+site 
+primary topic traking results in tdt 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ours site site site site 
+ctrk 
+figure tdt results in ctrk of systems without using 
+true relevance feedback ours is prf rocchio 
+adaptive filtering without using true relevance feedback was 
+also a part of the evaluations in this case systems had only one 
+labeled training example per topic during the entire training and 
+testing processes although unlabeled test documents could be 
+used as soon as predictions on them were made such a setting 
+has been conventional for the topic tracking task in tdt until 
+ figure shows the summarized official submissions from 
+each team our prf rocchio with a fixed threshold for all the 
+topics had the best performance 
+ 
+we use quartiles rather than standard deviations since the 
+former is more resistant to outliers 
+ cross-corpus parameter optimization 
+how much the strong performance of our systems depends on 
+parameter tuning is an important question 
+both rocchio and lr have parameters that must be 
+prespecified before the af process the shared parameters include 
+the sample weightsα β and γ the sample size of the negative 
+training documents i e td− the term-weighting scheme 
+and the maximal number of non-zero elements in each 
+document vector the method-specific parameters include the 
+decision threshold in rocchio and μ 
+r 
+ λ and mi the maximum 
+number of iterations in training in lr given that we only have 
+one labeled example per topic in the tdt training sets it is 
+impossible to effectively optimize these parameters on the 
+training data and we had to choose an external corpus for 
+validation among the choices of trec trec and tdt 
+we chose tdt c f section because it is most similar to 
+tdt in terms of the nature of the topics section we 
+optimized the parameters of our systems on tdt and fixed 
+those parameters in the runs on tdt for our submissions to 
+tdt we also tested our methods on trec and 
+trec for further analysis since exhaustive testing of all 
+possible parameter settings is computationally intractable we 
+followed a step-wise forward chaining procedure instead we 
+pre-specified an order of the parameters in a method rocchio 
+or lr and then tuned one parameter at the time while fixing 
+the settings of the remaining parameters we repeated this 
+procedure for several passes as time allowed 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+threshold 
+tdt su 
+tdt tdt trec trec 
+figure performance curves of adaptive rocchio 
+figure compares the performance curves in tdt su for 
+rocchio on tdt tdt trec and trec when the 
+decision threshold varied these curves peak at different 
+locations the tdt -optimal is closest to the tdt -optimal 
+while the trec -optimal and trec -optimal are quite far 
+away from the tdt -optimal if we were using trec or 
+trec instead of tdt as the validation corpus for tdt or 
+if the tdt corpus were not available we would have difficulty 
+in obtaining strong performance for rocchio in tdt the 
+difficulty comes from the ad-hoc non-probabilistic scores 
+generated by the rocchio method the distribution of the scores 
+depends on the corpus making cross-corpus threshold 
+optimization a tricky problem 
+logistic regression has less difficulty with respect to threshold 
+tuning because it produces probabilistic scores of pr xy 
+upon which the optimal threshold can be directly computed if 
+probability estimation is accurate given the penalty ratio for 
+misses vs false alarms as in t su in tdt su and 
+ in ctrk section the corresponding optimal 
+thresholds t are and respectively 
+although the theoretical threshold could be inaccurate it still 
+suggests the range of near-optimal settings with these threshold 
+settings in our experiments for lr we focused on the 
+crosscorpus validation of the bayesian prior parameters that is μ 
+r 
+and λ table summarizes the results 
+ we measured the 
+performance of the runs on trec and trec using t su 
+and the performance of the runs on tdt and tdt using 
+tdt su for comparison we also include the best results of 
+rocchio-based methods on these corpora which are our own 
+results of rocchio on tdt and tdt and the best results 
+reported by nist for trec and trec from this set of 
+results we see that lr significantly outperformed rocchio on 
+all the corpora even in the runs of standard lr without any 
+tuning i e λ this empirical finding is consistent with a 
+previous report for lr on trec although our results of 
+lr   in t su are stronger than the results 
+for standard lr and for lr using rocchio prototype as the 
+prior in that report more importantly our cross-benchmark 
+evaluation gives strong evidence for the robustness of lr the 
+robustness we believe comes from the probabilistic nature of 
+the system-generated scores that is compared to the ad-hoc 
+scores in rocchio the normalized posterior probabilities make 
+the threshold optimization in lr a much easier problem 
+moreover logistic regression is known to converge towards the 
+bayes classifier asymptotically while rocchio classifiers 
+parameters do not 
+another interesting observation in these results is that the 
+performance of lr did not improve when using a rocchio 
+prototype as the mean in the prior instead the performance 
+decreased in some cases this observation does not support the 
+previous report by but we are not surprised because we are 
+not convinced that rocchio prototypes are more accurate than 
+lr models for topics in the early stage of the af process and 
+we believe that using a rocchio prototype as the mean in the 
+gaussian prior would introduce undesirable bias to lr we also 
+believe that variance reduction in the testing phase should be 
+controlled by the choice of λ but not μ 
+r 
+ for which we 
+conducted the experiments as shown in figure 
+table results of lr with different bayesian priors 
+corpus tdt tdt trec trec 
+lr μ λ 
+lr μ λ 
+lr μ roc λ 
+best rocchio 
+ 
+ 
+the lr results   on tdt in this table are better 
+than our tdt official result because parameter 
+optimization has been improved afterwards 
+ 
+the trec -best result by oracle is only available in 
+t u which is not directly comparable to the scores in 
+t su just indicative 
+ μ 
+r 
+was set to the rocchio prototype 
+ 
+ 
+ 
+ 
+ 
+ 
+lambda 
+performance 
+ctrk on tdt tdt su on tdt 
+tdt su on tdt t su on trec 
+figure lr with varying lambda 
+the performance of lr is summarized with respect to λ tuning 
+on the corpora of trec trec and tdt the 
+performance on each corpus was measured using the 
+corresponding metrics that is t su for the runs on trec 
+and trec and tdt su and ctrk for the runs on tdt in 
+the case of maximizing the utilities the safe interval for λ is 
+between and meaning that the performance of 
+regularized lr is stable the same as or improved slightly over 
+the performance of standard lr in the case of minimizing ctrk 
+the safe range for λ is between and and setting λ between 
+ and yielded relatively large improvements over the 
+performance of standard lr because training a model for 
+extremely high recall is statistically more tricky and hence 
+more regularization is needed in either case tuning λ is 
+relatively safe and easy to do successfully by cross-corpus 
+tuning 
+another influential choice in our experiment settings is term 
+weighting we examined the choices of binary tf and tf-idf 
+ the ltc version schemes we found tf-idf most effective 
+for both rocchio and lr and used this setting in all our 
+experiments 
+ percentages of labeled data 
+how much relevance feedback rf would be needed during the 
+af process is a meaningful question in real-world applications 
+to answer it we evaluated rocchio and lr on tdt with the 
+following settings 
+ basic rocchio no adaptation at all 
+ prf rocchio updating topic profiles without using true 
+relevance feedback 
+ adaptive rocchio updating topic profiles using relevance 
+feedback on system-accepted documents plus 
+documents randomly sampled from the pool of 
+systemrejected documents 
+ lr with 
+rr 
+ μ λ and threshold 
+ all the parameters in rocchio tuned on tdt 
+table summarizes the results in ctrk adaptive rocchio with 
+relevance feedback on of the test documents reduced the 
+tracking cost by over the result of the prf rocchio the 
+best system in the tdt evaluation for topic tracking 
+without relevance feedback information incremental lr on the 
+other hand was weaker but still impressive recall that ctrk is 
+an extremely high-recall oriented metric causing frequent 
+updating of profiles and hence an efficiency problem in lr for 
+this reason we set a higher threshold instead of the 
+theoretically optimal threshold in lr to avoid an 
+untolerable computation cost the computation time in 
+machine-hours was for the run of adaptive rocchio and 
+for the run of lr on tdt when optimizing ctrk table 
+summarizes the results in tdt su adaptive lr was the winner 
+in this case with relevance feedback on of the test 
+documents improving the utility by over the results of 
+prf rocchio 
+table af methods on tdt performance in ctrk 
+base roc prf roc adp roc lr 
+ of rf 
+ctrk 
+± baseline - - 
+table af methods on tdt performance in tdt su 
+base roc prf roc adp roc lr λ 
+ of rf 
+tdt su 
+± - baseline 
+evidently both rocchio and lr are highly effective in adaptive 
+filtering in terms of using of a small amount of labeled data to 
+significantly improve the model accuracy in statistical learning 
+which is the main goal of af 
+ summary of adaptation process 
+after we decided the parameter settings using validation we 
+perform the adaptive filtering in the following steps for each 
+topic train the lr rocchio model using the provided 
+positive training examples and randomly sampled negative 
+examples for each document in the test corpus we first 
+make a prediction about relevance and then get relevance 
+feedback for those predicted positive documents model and 
+idf statistics will be incrementally updated if we obtain its true 
+relevance feedback 
+ concluding remarks 
+we presented a cross-benchmark evaluation of incremental 
+rocchio and incremental lr in adaptive filtering focusing on 
+their robustness in terms of performance consistency with 
+respect to cross-corpus parameter optimization our main 
+conclusions from this study are the following 
+ parameter optimization in af is an open challenge but has 
+not been thoroughly studied in the past 
+ robustness in cross-corpus parameter tuning is important 
+for evaluation and method comparison 
+ we found lr more robust than rocchio it had the best 
+results in t su ever reported on tdt trec and 
+trec without extensive tuning 
+ we found rocchio performs strongly when a good 
+validation corpus is available and a preferred choice when 
+optimizing ctrk is the objective favoring recall over 
+precision to an extreme 
+for future research we want to study explicit modeling of the 
+temporal trends in topic distributions and content drifting 
+acknowledgments 
+this material is based upon work supported in parts by the 
+national science foundation nsf under grant iis- 
+by the dod under award -n and by the 
+defense advanced research project agency darpa under 
+contract no nbchd any opinions findings and 
+conclusions or recommendations expressed in this material are 
+those of the author s and do not necessarily reflect the views of 
+the sponsors 
+ references 
+ j allan incremental relevance feedback for information 
+filtering in sigir- 
+ j callan learning while filtering documents in sigir- 
+ - 
+ j fiscus and g duddington topic detection and tracking 
+overview in topic detection and tracking event-based 
+information organization - 
+ j fiscus and b wheatley overview of the tdt 
+evaluation and results in tdt- 
+ t hastie r tibshirani and j friedman elements of 
+statistical learning springer 
+ s robertson and d hull the trec- filtering track final 
+report in trec- 
+ s robertson and i soboroff the trec- filtering track 
+final report in trec- 
+ s robertson and i soboroff the trec filtering 
+track report in trec- 
+ s robertson and s walker microsoft cambridge at 
+trec- in trec- 
+ r schapire y singer and a singhal boosting and 
+rocchio applied to text filtering in sigir- - 
+ 
+ y yang and b kisiel margin-based local regression for 
+adaptive filtering in cikm- 
+ y zhang and j callan maximum likelihood estimation 
+for filtering thresholds in sigir- 
+ y zhang using bayesian priors to combine classifiers for 
+adaptive filtering in sigir- 
+ j zhang and y yang robustness of regularized linear 
+classification methods in text categorization in sigir- 
+ - 
+ t zhang f j oles text categorization based on 
+regularized linear classification methods inf retr 
+ - 

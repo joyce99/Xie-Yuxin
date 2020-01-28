@@ -1,0 +1,1235 @@
+unified utility maximization framework for resource 
+selection 
+luo si 
+language technology inst 
+school of compute science 
+carnegie mellon university 
+pittsburgh pa 
+lsi cs cmu edu 
+jamie callan 
+language technology inst 
+school of compute science 
+carnegie mellon university 
+pittsburgh pa 
+callan cs cmu edu 
+abstract 
+this paper presents a unified utility framework for resource 
+selection of distributed text information retrieval this new 
+framework shows an efficient and effective way to infer the 
+probabilities of relevance of all the documents across the text 
+databases with the estimated relevance information resource 
+selection can be made by explicitly optimizing the goals of 
+different applications specifically when used for database 
+recommendation the selection is optimized for the goal of 
+highrecall include as many relevant documents as possible in the 
+selected databases when used for distributed document 
+retrieval the selection targets the high-precision goal high 
+precision in the final merged list of documents this new model 
+provides a more solid framework for distributed information 
+retrieval empirical studies show that it is at least as effective as 
+other state-of-the-art algorithms 
+categories and subject descriptors 
+h information search and retrieval 
+general terms 
+algorithms 
+ introduction 
+conventional search engines such as google or altavista use 
+ad-hoc information retrieval solution by assuming all the 
+searchable documents can be copied into a single centralized 
+database for the purpose of indexing distributed information 
+retrieval also known as federated search is 
+different from ad-hoc information retrieval as it addresses the 
+cases when documents cannot be acquired and stored in a single 
+database for example hidden web contents also called 
+invisible or deep web contents are information on the web 
+that cannot be accessed by the conventional search engines 
+hidden web contents have been estimated to be - times 
+larger than the contents that can be searched by conventional 
+search engines therefore it is very important to search this type 
+of valuable information 
+the architecture of distributed search solution is highly 
+influenced by different environmental characteristics in a small 
+local area network such as small company environments the 
+information providers may cooperate to provide corpus statistics 
+or use the same type of search engines early distributed 
+information retrieval research focused on this type of 
+cooperative environments on the other side in a wide 
+area network such as very large corporate environments or on 
+the web there are many types of search engines and it is difficult 
+to assume that all the information providers can cooperate as 
+they are required even if they are willing to cooperate in these 
+environments it may be hard to enforce a single solution for all 
+the information providers or to detect whether information 
+sources provide the correct information as they are required 
+many applications fall into the latter type of uncooperative 
+environments such as the mind project which integrates 
+non-cooperating digital libraries or the qprober system 
+which supports browsing and searching of uncooperative hidden 
+web databases in this paper we focus mainly on uncooperative 
+environments that contain multiple types of independent search 
+engines 
+there are three important sub-problems in distributed 
+information retrieval first information about the contents of 
+each individual database must be acquired resource 
+representation second given a query a set of 
+resources must be selected to do the search resource selection 
+ third the results retrieved from all the selected 
+resources have to be merged into a single final list before it can 
+be presented to the end user retrieval and results merging 
+ 
+many types of solutions exist for distributed information 
+retrieval invisible-web net 
+provides guided browsing of hidden 
+web databases by collecting the resource descriptions of these 
+databases and building hierarchies of classes that group them by 
+similar topics a database recommendation system goes a step 
+further than a browsing system like invisible-web net by 
+recommending most relevant information sources to users 
+queries it is composed of the resource description and the 
+resource selection components this solution is useful when the 
+users want to browse the selected databases by themselves 
+instead of asking the system to retrieve relevant documents 
+automatically distributed document retrieval is a more 
+sophisticated task it selects relevant information sources for 
+users queries as the database recommendation system does 
+furthermore users queries are forwarded to the corresponding 
+selected databases and the returned individual ranked lists are 
+merged into a single list to present to the users 
+the goal of a database recommendation system is to select a 
+small set of resources that contain as many relevant documents 
+as possible which we call a high-recall goal on the other side 
+the effectiveness of distributed document retrieval is often 
+measured by the precision of the final merged document result 
+list which we call a high-precision goal prior research 
+indicated that these two goals are related but not identical 
+however most previous solutions simply use effective resource 
+selection algorithm of database recommendation system for 
+distributed document retrieval system or solve the inconsistency 
+with heuristic methods 
+this paper presents a unified utility maximization framework to 
+integrate the resource selection problem of both database 
+recommendation and distributed document retrieval together by 
+treating them as different optimization goals 
+first a centralized sample database is built by randomly 
+sampling a small amount of documents from each database with 
+query-based sampling database size statistics are also 
+estimated a logistic transformation model is learned off 
+line with a small amount of training queries to map the 
+centralized document scores in the centralized sample database 
+to the corresponding probabilities of relevance 
+second after a new query is submitted the query can be used to 
+search the centralized sample database which produces a score 
+for each sampled document the probability of relevance for 
+each document in the centralized sample database can be 
+estimated by applying the logistic model to each document s 
+score then the probabilities of relevance of all the mostly 
+unseen documents among the available databases can be 
+estimated using the probabilities of relevance of the documents 
+in the centralized sample database and the database size 
+estimates 
+for the task of resource selection for a database 
+recommendation system the databases can be ranked by the 
+expected number of relevant documents to meet the high-recall 
+goal for resource selection for a distributed document retrieval 
+system databases containing a small number of documents with 
+large probabilities of relevance are favored over databases 
+containing many documents with small probabilities of 
+relevance this selection criterion meets the high-precision goal 
+of distributed document retrieval application furthermore the 
+semi-supervised learning ssl algorithm is applied to 
+merge the returned documents into a final ranked list 
+the unified utility framework makes very few assumptions and 
+works in uncooperative environments two key features make it 
+a more solid model for distributed information retrieval i it 
+formalizes the resource selection problems of different 
+applications as various utility functions and optimizes the utility 
+functions to achieve the optimal results accordingly and ii it 
+shows an effective and efficient way to estimate the probabilities 
+of relevance of all documents across databases specifically the 
+framework builds logistic models on the centralized sample 
+database to transform centralized retrieval scores to the 
+corresponding probabilities of relevance and uses the centralized 
+sample database as the bridge between individual databases and 
+the logistic model the human effort relevance judgment 
+required to train the single centralized logistic model does not 
+scale with the number of databases this is a large advantage 
+over previous research which required the amount of human 
+effort to be linear with the number of databases 
+the unified utility framework is not only more theoretically 
+solid but also very effective empirical studies show the new 
+model to be at least as accurate as the state-of-the-art algorithms 
+in a variety of configurations 
+the next section discusses related work section describes the 
+new unified utility maximization model section explains our 
+experimental methodology sections and present our 
+experimental results for resource selection and document 
+retrieval section concludes 
+ prior research 
+there has been considerable research on all the sub-problems of 
+distributed information retrieval we survey the most related 
+work in this section 
+the first problem of distributed information retrieval is resource 
+representation the starts protocol is one solution for 
+acquiring resource descriptions in cooperative environments 
+however in uncooperative environments even the databases are 
+willing to share their information it is not easy to judge whether 
+the information they provide is accurate or not furthermore it 
+is not easy to coordinate the databases to provide resource 
+representations that are compatible with each other thus in 
+uncooperative environments one common choice is query-based 
+sampling which randomly generates and sends queries to 
+individual search engines and retrieves some documents to build 
+the descriptions as the sampled documents are selected by 
+random queries query-based sampling is not easily fooled by 
+any adversarial spammer that is interested to attract more traffic 
+experiments have shown that rather accurate resource 
+descriptions can be built by sending about queries and 
+downloading about documents 
+many resource selection algorithms such as ggloss vgloss 
+ and cori have been proposed in the last decade the 
+cori algorithm represents each database by its terms the 
+document frequencies and a small number of corpus statistics 
+ details in as prior research on different datasets has shown 
+the cori algorithm to be the most stable and effective of the 
+three algorithms we use it as a baseline algorithm in 
+this work the relevant document distribution estimation 
+ redde resource selection algorithm is a recent algorithm 
+that tries to estimate the distribution of relevant documents 
+across the available databases and ranks the databases 
+accordingly although the redde algorithm has been shown to 
+be effective it relies on heuristic constants that are set 
+empirically 
+the last step of the document retrieval sub-problem is results 
+merging which is the process of transforming database-specific 
+ 
+document scores into comparable database-independent 
+document scores the semi supervised learning ssl 
+result merging algorithm uses the documents acquired by 
+querybased sampling as training data and linear regression to learn the 
+database-specific query-specific merging models these linear 
+models are used to convert the database-specific document 
+scores into the approximated centralized document scores the 
+ssl algorithm has been shown to be effective it serves as 
+an important component of our unified utility maximization 
+framework section 
+in order to achieve accurate document retrieval results many 
+previous methods simply use resource selection algorithms that 
+are effective of database recommendation system but as 
+pointed out above a good resource selection algorithm 
+optimized for high-recall may not work well for document 
+retrieval which targets the high-precision goal this type of 
+inconsistency has been observed in previous research 
+the research in tried to solve the problem with a heuristic 
+method 
+the research most similar to what we propose here is the 
+decision-theoretic framework dtf this framework 
+computes a selection that minimizes the overall costs e g 
+retrieval quality time of document retrieval system and several 
+methods have been proposed to estimate the retrieval 
+quality however two points distinguish our research from the 
+dtf model first the dtf is a framework designed specifically 
+for document retrieval but our new model integrates two 
+distinct applications with different requirements database 
+recommendation and distributed document retrieval into the 
+same unified framework second the dtf builds a model for 
+each database to calculate the probabilities of relevance this 
+requires human relevance judgments for the results retrieved 
+from each database in contrast our approach only builds one 
+logistic model for the centralized sample database the 
+centralized sample database can serve as a bridge to connect the 
+individual databases with the centralized logistic model thus the 
+probabilities of relevance of documents in different databases 
+can be estimated this strategy can save large amount of human 
+judgment effort and is a big advantage of the unified utility 
+maximization framework over the dtf especially when there 
+are a large number of databases 
+ unified utility maximization 
+framework 
+the unified utility maximization uum framework is based 
+on estimating the probabilities of relevance of the mostly 
+unseen documents available in the distributed search 
+environment in this section we describe how the probabilities of 
+relevance are estimated and how they are used by the unified 
+utility maximization model we also describe how the model 
+can be optimized for the high-recall goal of a database 
+recommendation system and the high-precision goal of a 
+distributed document retrieval system 
+ estimating probabilities of relevance 
+as pointed out above the purpose of resource selection is 
+highrecall and the purpose of document retrieval is high-precision in 
+order to meet these diverse goals the key issue is to estimate the 
+probabilities of relevance of the documents in various databases 
+this is a difficult problem because we can only observe a 
+sample of the contents of each database using query-based 
+sampling our strategy is to make full use of all the available 
+information to calculate the probability estimates 
+ learning probabilities of relevance 
+in the resource description step the centralized sample database 
+is built by query-based sampling and the database sizes are 
+estimated using the sample-resample method at the same 
+time an effective retrieval algorithm inquery is applied on 
+the centralized sample database with a small number e g 
+of training queries for each training query the cori resource 
+selection algorithm is applied to select some number 
+ e g of databases and retrieve document ids from each 
+database the ssl results merging algorithm is used to 
+merge the results then we can download the top documents 
+in the final merged list and calculate their corresponding 
+centralized scores using inquery and the corpus statistics of the 
+centralized sample database the centralized scores are further 
+normalized divided by the maximum centralized score for each 
+query as this method has been suggested to improve estimation 
+accuracy in previous research human judgment is acquired 
+for those documents and a logistic model is built to transform 
+the normalized centralized document scores to probabilities of 
+relevance as follows 
+ 
+ exp 
+ exp 
+ 
+ 
+dsba 
+dsba 
+drelpdr 
+ccc 
+ccc 
+ 
+ 
+ 
+where 
+ 
+dsc 
+is the normalized centralized document score and 
+ac and bc are the two parameters of the logistic model these two 
+parameters are estimated by maximizing the probabilities of 
+relevance of the training queries the logistic model provides us 
+the tool to calculate the probabilities of relevance from 
+centralized document scores 
+ estimating centralized document scores 
+when the user submits a new query the centralized document 
+scores of the documents in the centralized sample database are 
+calculated however in order to calculate the probabilities of 
+relevance we need to estimate centralized document scores for 
+all documents across the databases instead of only the sampled 
+documents this goal is accomplished using the centralized 
+scores of the documents in the centralized sample database and 
+the database size statistics 
+we define the database scale factor for the ith 
+database as the 
+ratio of the estimated database size and the number of 
+documents sampled from this database as follows 
+ 
+ 
+i 
+i 
+i 
+db 
+db 
+db samp 
+n 
+sf 
+n 
+ 
+where 
+ 
+idbn is the estimated database size and idb sampn is the 
+number of documents from the ith 
+database in the centralized 
+sample database the intuition behind the database scale factor 
+is that for a database whose scale factor is if one document 
+from this database in the centralized sample database has a 
+centralized document score of we may guess that there are 
+about documents in that database which have scores of about 
+ actually we can apply a finer non-parametric linear 
+interpolation method to estimate the centralized document score 
+curve for each database formally we rank all the sampled 
+documents from the ith 
+database by their centralized document 
+ 
+scores to get the sampled centralized document score list 
+ sc dsi sc dsi sc dsi   for the ith 
+database we assume 
+that if we could calculate the centralized document scores for all 
+the documents in this database and get the complete centralized 
+document score list the top document in the sampled list would 
+have rank sfdbi the second document in the sampled list 
+would rank sfdbi and so on therefore the data points of 
+sampled documents in the complete list are sfdbi sc dsi 
+ sfdbi sc dsi sfdbi sc dsi   piecewise linear 
+interpolation is applied to estimate the centralized document 
+score curve as illustrated in figure the complete centralized 
+document score list can be estimated by calculating the values of 
+different ranks on the centralized document curve as 
+ s 
+ 
+c idbij njd ∈ 
+it can be seen from figure that more sample data points 
+produce more accurate estimates of the centralized document 
+score curves however for databases with large database scale 
+ratios this kind of linear interpolation may be rather inaccurate 
+especially for the top ranked e g sfdbi documents 
+therefore an alternative solution is proposed to estimate the 
+centralized document scores of the top ranked documents for 
+databases with large scale ratios e g larger than 
+specifically a logistic model is built for each of these databases 
+the logistic model is used to estimate the centralized document 
+score of the top document in the corresponding database by 
+using the two sampled documents from that database with 
+highest centralized scores 
+ exp 
+ exp 
+ 
+ 
+ 
+ 
+ 
+iciicii 
+iciicii 
+ic 
+dssdss 
+dssdss 
+ds 
+ααα 
+ααα 
+ 
+ 
+ 
+ iα iα and iα are the parameters of the logistic model for 
+each training query the top retrieved document of each database 
+is downloaded and the corresponding centralized document 
+score is calculated together with the scores of the top two 
+sampled documents these parameters can be estimated 
+after the centralized score of the top document is estimated an 
+exponential function is fitted for the top part sfdbi of the 
+centralized document score curve as 
+ exp 
+ 
+idbiiijc sfjjds ∈ ββ 
+ 
+ log i c i is dβ β − 
+ 
+ log log 
+ 
+ 
+ 
+− 
+− 
+ 
+idb 
+icic 
+i 
+sf 
+dsdss 
+β 
+the two parameters iβ and iβ are fitted to make sure the 
+exponential function passes through the two points 
+ 
+ ic ds 
+and sfdbi sc dsi the exponential function is only used to 
+adjust the top part of the centralized document score curve and 
+the lower part of the curve is still fitted with the linear 
+interpolation method described above the adjustment by fitting 
+exponential function of the top ranked documents has been 
+shown empirically to produce more accurate results 
+from the centralized document score curves we can estimate 
+the complete centralized document score lists accordingly for all 
+the available databases after the estimated centralized 
+document scores are normalized the complete lists of 
+probabilities of relevance can be constructed out of the complete 
+centralized document score lists by equation formally for the 
+ith 
+database the complete list of probabilities of relevance is 
+ r 
+ 
+idbij njd ∈ 
+ the unified utility maximization model 
+in this section we formally define the new unified utility 
+maximization model which optimizes the resource selection 
+problems for two goals of high-recall database 
+recommendation and high-precision distributed document 
+retrieval in the same framework 
+in the task of database recommendation the system needs to 
+decide how to rank databases in the task of document retrieval 
+the system not only needs to select the databases but also needs 
+to decide how many documents to retrieve from each selected 
+database we generalize the database recommendation selection 
+process which implicitly recommends all documents in every 
+selected database as a special case of the selection decision for 
+the document retrieval task formally we denote di as the 
+number of documents we would like to retrieve from the ith 
+database and ddd as a selection action for all the 
+databases 
+the database selection decision is made based on the complete 
+lists of probabilities of relevance for all the databases the 
+complete lists of probabilities of relevance are inferred from all 
+the available information specifically sr which stands for the 
+resource descriptions acquired by query-based sampling and the 
+database size estimates acquired by sample-resample cs stands 
+for the centralized document scores of the documents in the 
+centralized sample database 
+if the method of estimating centralized document scores and 
+probabilities of relevance in section is acceptable then the 
+most probable complete lists of probabilities of relevance can be 
+derived and we denote them as 
+ 
+ 
+ r dbjd j nθ ∈ 
+ 
+ 
+ r dbjd j n∈ random vector 
+ 
+denotes an 
+arbitrary set of complete lists of probabilities of relevance and 
+ cs srp θ as the probability of generating this set of lists 
+finally to each selection action d and a set of complete lists of 
+figure linear interpolation construction of the complete 
+centralized document score list database scale factor is 
+ 
+probabilities of relevance θ we associate a utility function 
+ du θ which indicates the benefit from making the d 
+selection when the true complete lists of probabilities of 
+relevance are θ 
+therefore the selection decision defined by the bayesian 
+framework is 
+θθθ 
+θ 
+dsrpdud cs 
+d 
+ maxarg 
+ 
+ 
+one common approach to simplify the computation in the 
+bayesian framework is to only calculate the utility function at 
+the most probable parameter values instead of calculating the 
+whole expectation in other words we only need to calculate 
+ 
+du θ and equation is simplified as follows 
+ maxarg 
+ 
+θdud 
+d 
+ 
+this equation serves as the basic model for both the database 
+recommendation system and the document retrieval system 
+ resource selection for high-recall 
+high-recall is the goal of the resource selection algorithm in 
+federated search tasks such as database recommendation the 
+goal is to select a small set of resources e g less than nsdb 
+databases that contain as many relevant documents as possible 
+which can be formally defined as 
+ 
+ 
+i 
+n 
+j 
+iji 
+idb 
+ddidu 
+ 
+ 
+ 
+ 
+ r θ 
+i di is the indicator function which is when the ith 
+database is 
+selected and otherwise plug this equation into the basic model 
+in equation and associate the selected database number 
+constraint to obtain the following 
+sdb 
+i 
+i 
+i 
+n 
+j 
+iji 
+d 
+nditosubject 
+ddid 
+idb 
+ 
+ 
+ 
+ 
+ r maxarg 
+ 
+ 
+ 
+ 
+the solution of this optimization problem is very simple we 
+can calculate the expected number of relevant documents for 
+each database as follows 
+ 
+ 
+idb 
+i 
+n 
+j 
+ijrd dn 
+ 
+ 
+ 
+ r 
+the nsdb databases with the largest expected number of relevant 
+documents can be selected to meet the high-recall goal we call 
+this the uum hr algorithm unified utility maximization for 
+high-recall 
+ resource selection for high-precision 
+high-precision is the goal of resource selection algorithm in 
+federated search tasks such as distributed document retrieval it 
+is measured by the precision at the top part of the final merged 
+document list this high-precision criterion is realized by the 
+following utility function which measures the precision of 
+retrieved documents from the selected databases 
+ 
+ 
+i 
+d 
+j 
+iji 
+i 
+ddidu 
+ 
+ 
+ 
+ r θ 
+note that the key difference between equation and equation 
+ is that equation sums up the probabilities of relevance of all 
+the documents in a database while equation only considers a 
+much smaller part of the ranking specifically we can calculate 
+the optimal selection decision by 
+ 
+ 
+i 
+d 
+j 
+iji 
+d 
+i 
+ddid 
+ 
+ 
+ r maxarg 
+different kinds of constraints caused by different characteristics 
+of the document retrieval tasks can be associated with the above 
+optimization problem the most common one is to select a fixed 
+number nsdb of databases and retrieve a fixed number nrdoc of 
+documents from each selected database formally defined as 
+ 
+ 
+ r maxarg 
+ 
+ 
+≠ 
+ 
+ 
+ 
+irdoci 
+sdb 
+i 
+i 
+i 
+d 
+j 
+iji 
+d 
+difnd 
+nditosubject 
+ddid 
+i 
+ 
+this optimization problem can be solved easily by calculating 
+the number of expected relevant documents in the top part of the 
+each database s complete list of probabilities of relevance 
+ 
+ 
+rdoc 
+i 
+n 
+j 
+ijrdtop dn 
+ 
+ 
+ r 
+then the databases can be ranked by these values and selected 
+we call this the uum hp-fl algorithm unified utility 
+maximization for high-precision with fixed length document 
+rankings from each selected database 
+a more complex situation is to vary the number of retrieved 
+documents from each selected database more specifically we 
+allow different selected databases to return different numbers of 
+documents for simplification the result list lengths are required 
+to be multiples of a baseline number this value can also be 
+varied but for simplification it is set to in this paper this 
+restriction is set to simulate the behavior of commercial search 
+engines on the web search engines such as google and 
+altavista return only or document ids for every result 
+page this procedure saves the computation time of calculating 
+optimal database selection by allowing the step of dynamic 
+programming to be instead of more detail is discussed 
+latterly for further simplification we restrict to select at most 
+ documents from each database di then the 
+selection optimization problem is formalized as follows 
+ 
+ 
+ r maxarg 
+ 
+ 
+ 
+∈ 
+ 
+ 
+ 
+ 
+kkd 
+nd 
+nditosubject 
+ddid 
+i 
+rdoctotal 
+i 
+i 
+sdb 
+i 
+i 
+i 
+d 
+j 
+iji 
+d 
+i 
+ 
+ntotal rdoc is the total number of documents to be retrieved 
+unfortunately there is no simple solution for this optimization 
+problem as there are for equations and however a 
+ 
+dynamic programming algorithm can be applied to calculate the 
+optimal solution the basic steps of this dynamic programming 
+method are described in figure as this algorithm allows 
+retrieving result lists of varying lengths from each selected 
+database it is called uum hp-vl algorithm 
+after the selection decisions are made the selected databases are 
+searched and the corresponding document ids are retrieved from 
+each database the final step of document retrieval is to merge 
+the returned results into a single ranked list with the 
+semisupervised learning algorithm it was pointed out before that the 
+ssl algorithm maps the database-specific scores into the 
+centralized document scores and builds the final ranked list 
+accordingly which is consistent with all our selection 
+procedures where documents with higher probabilities of 
+relevance thus higher centralized document scores are selected 
+ experimental methodology 
+ testbeds 
+it is desirable to evaluate distributed information retrieval 
+algorithms with testbeds that closely simulate the real world 
+applications 
+the trec web collections wt g or wt g provide a 
+way to partition documents by different web servers in this 
+way a large number o of databases with rather diverse 
+contents could be created which may make this testbed a good 
+candidate to simulate the operational environments such as open 
+domain hidden web however two weakness of this testbed are 
+i each database contains only a small amount of document 
+documents by average for wt g and ii the contents of 
+wt g or wt g are arbitrarily crawled from the web it is not 
+likely for a hidden web database to provide personal homepages 
+or web pages indicating that the pages are under construction 
+and there is no useful information at all these types of web 
+pages are contained in the wt g wt g datasets therefore 
+the noisy web data is not similar with that of high-quality 
+hidden web database contents which are usually organized by 
+domain experts 
+another choice is the trec news government data 
+ trec news government data is concentrated on 
+relatively narrow topics compared with trec web data i the 
+news government documents are much more similar to the 
+contents provided by a topic-oriented database than an arbitrary 
+web page ii a database in this testbed is larger than that of 
+trec web data by average a database contains thousands of 
+documents which is more realistic than a database of trec 
+web data with about documents as the contents and sizes 
+of the databases in the trec news government testbed are more 
+similar with that of a topic-oriented database it is a good 
+candidate to simulate the distributed information retrieval 
+environments of large organizations companies or 
+domainspecific hidden web sites such as west that provides access to 
+legal financial and news text databases as most current 
+distributed information retrieval systems are developed for the 
+environments of large organizations companies or 
+domainspecific hidden web other than open domain hidden web 
+trec news government testbed was chosen in this work 
+trec - col-bysource testbed is one of the most used trec 
+news government testbed it was chosen in this 
+work three testbeds in with skewed database size 
+distributions and different types of relevant document 
+distributions were also used to give more thorough simulation 
+for real environments 
+trec - col-bysource databases were created from 
+trec cds and they were organized by source and 
+publication date the sizes of the databases are not skewed 
+details are in table 
+three testbeds built in were based on the 
+trec - colbysource testbed each testbed contains many small databases 
+and two large databases created by merging about - small 
+databases together 
+input complete lists of probabilities of relevance for all 
+the db databases 
+output optimal selection solution for equation 
+i create the three-dimensional array 
+sel db ntotal rdoc nsdb 
+each sel x y z is associated with a selection 
+decision xyzd which represents the best selection 
+decision in the condition only databases from number 
+to number x are considered for selection totally y 
+documents will be retrieved only z databases are 
+selected out of the x database candidates and 
+sel x y z is the corresponding utility value by 
+choosing the best selection 
+ii initialize sel ntotal rdoc nsdb with only the 
+estimated relevance information of the st 
+database 
+iii iterate the current database candidate i from to db 
+for each entry sel i y z 
+find k such that 
+ min 
+ maxarg 
+ 
+ 
+ 
+yktosubject 
+drzkyiselk 
+kj 
+ij 
+k 
+≤≤ 
+ −−− 
+≤ 
+ 
+ 
+ 
+ 
+ 
+zyiseldrzkyiselif 
+kj 
+ij − −−− 
+≤ 
+this means that we should retrieve 
+ k documents 
+from the ith 
+database otherwise we should not select this 
+database and the previous best solution sel i- y z 
+should be kept 
+then set the value of iyzd and sel i y z accordingly 
+iv the best selection solution is given by toral rdoc sdbdb n nd 
+and the corresponding utility value is sel db 
+ntotal rdoc nsdb 
+figure the dynamic programming optimization 
+procedure for equation 
+table testbed statistics 
+number of documents size mb 
+testbed 
+size 
+ gb min avg max min avg max 
+trec 
+table query set statistics 
+name 
+trec 
+topic set 
+trec 
+topic field 
+average length 
+ words 
+trec - title 
+ 
+trec - ldb- col representative the databases in the 
+trec - col-bysource were sorted with alphabetical order 
+two large databases were created by merging small 
+databases with the round-robin method thus the two large 
+databases have more relevant documents due to their large sizes 
+even though the densities of relevant documents are roughly the 
+same as the small databases 
+trec -ap-wsj- col relevant the associated press 
+collections and the wall street journal collections in the 
+trec - col-bysource testbed were collapsed into two large 
+databases apall and wsjall the other collections were left 
+unchanged the apall and wsjall databases have higher 
+densities of documents relevant to trec queries than the small 
+databases thus the two large databases have many more 
+relevant documents than the small databases 
+trec -fr-doe- col nonrelevant the federal 
+register collections and the department of energy collections 
+in the trec - col-bysource testbed were collapsed into two 
+large databases frall and doeall the other collections were 
+left unchanged the frall and doeall databases have lower 
+densities of documents relevant to trec queries than the small 
+databases even though they are much larger 
+ queries were created from the title fields of trec topics 
+ - the queries - were used as training queries and 
+the queries - were used as test queries details in table 
+ search engines 
+in the uncooperative distributed information retrieval 
+environments of large organizations companies or 
+domainspecific hidden web different databases may use different types 
+of search engine to simulate the multiple type-engine 
+environment three different types of search engines were used 
+in the experiments inquery a unigram statistical 
+language model with linear smoothing and a tfidf 
+retrieval algorithm with ltc weight all these 
+algorithms were implemented with the lemur toolkit 
+these three kinds of search engines were assigned to the 
+databases among the four testbeds in a round-robin manner 
+ results resource selection of 
+database recommendation 
+all four testbeds described in section were used in the 
+experiments to evaluate the resource selection effectiveness of 
+the database recommendation system 
+the resource descriptions were created using query-based 
+sampling about queries were sent to each database to 
+download unique documents the database size statistics 
+were estimated by the sample-resample method fifty 
+queries - were used as training queries to build the 
+relevant logistic model and to fit the exponential functions of the 
+centralized document score curves for large ratio databases 
+ details in section another queries - were used 
+as test data 
+resource selection algorithms of database recommendation 
+systems are typically compared using the recall metric nr 
+ let b denote a baseline ranking which is often the 
+rbr relevance based ranking and e as a ranking provided by 
+a resource selection algorithm and let bi and ei denote the 
+number of relevant documents in the ith 
+ranked database of b or 
+e then rn is defined as follows 
+ 
+ 
+ k 
+i i 
+k 
+i i 
+k 
+b 
+e 
+r 
+ 
+ 
+ 
+usually the goal is to search only a few databases so our figures 
+only show results for selecting up to databases 
+the experiments summarized in figure compared the 
+effectiveness of the three resource selection algorithms namely 
+the cori redde and uum hr the uum hr algorithm is 
+described in section it can be seen from figure that the 
+redde and uum hr algorithms are more effective on the 
+representative relevant and nonrelevant testbeds or as good as 
+ on the trec - col testbed the cori resource selection 
+algorithm the uum hr algorithm is more effective than the 
+redde algorithm on the representative and relevant testbeds 
+and is about the same as the redde algorithm on the 
+trec col and the nonrelevant testbeds this suggests that the 
+uum hr algorithm is more robust than the redde algorithm 
+it can be noted that when selecting only a few databases on the 
+trec - col or the nonrelevant testbeds the redee 
+algorithm has a small advantage over the uum hr algorithm 
+we attribute this to two causes i the redde algorithm was 
+tuned on the trec - col testbed and ii although the 
+difference is small this may suggest that our logistic model of 
+estimating probabilities of relevance is not accurate enough 
+more training data or a more sophisticated model may help to 
+solve this minor puzzle 
+collections selected collections selected 
+trec - col testbed representative testbed 
+collection selected collection selected 
+relevant testbed nonrelevant testbed 
+figure resource selection experiments on the four testbeds 
+ 
+ results document retrieval 
+effectiveness 
+for document retrieval the selected databases are searched and 
+the returned results are merged into a single final list in all of 
+the experiments discussed in this section the results retrieved 
+from individual databases were combined by the 
+semisupervised learning results merging algorithm this version of 
+the ssl algorithm is allowed to download a small number 
+of returned document texts on the fly to create additional 
+training data in the process of learning the linear models which 
+map database-specific document scores into estimated 
+centralized document scores it has been shown to be very 
+effective in environments where only short result-lists are 
+retrieved from each selected database this is a common 
+scenario in operational environments and was the case for our 
+experiments 
+document retrieval effectiveness was measured by precision at 
+the top part of the final document list the experiments in this 
+section were conducted to study the document retrieval 
+effectiveness of five selection algorithms namely the cori 
+redde uum hr uum hp-fl and uum hp-vl algorithms 
+the last three algorithms were proposed in section all the 
+first four algorithms selected or databases and documents 
+were retrieved from each selected database the uum hp-fl 
+algorithm also selected or databases but it was allowed to 
+adjust the number of documents to retrieve from each selected 
+database the number retrieved was constrained to be from to 
+ and a multiple of 
+the trec - col and representative testbeds were selected 
+for document retrieval as they represent two extreme cases of 
+resource selection effectiveness in one case the cori algorithm 
+is as good as the other algorithms and in the other case it is quite 
+table precision on the representative testbed when databases were selected the first baseline is cori the second baseline for 
+uum hp methods is uum hr 
+precision at 
+doc rank 
+cori redde uum hr uum hp-fl uum hp-vl 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+table precision on the representative testbed when databases were selected the first baseline is cori the second baseline for 
+uum hp methods is uum hr 
+precision at 
+doc rank 
+cori redde uum hr uum hp-fl uum hp-vl 
+ docs - - 
+ docs 
+ docs 
+ docs 
+ docs - 
+table precision on the trec - col-bysource testbed when databases were selected the first baseline is cori the second 
+baseline for uum hp methods is uum hr 
+precision at 
+doc rank 
+cori redde uum hr uum hp-fl uum hp-vl 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+table precision on the trec - col-bysource testbed when databases were selected the first baseline is cori the second 
+baseline for uum hp methods is uum hr 
+precision at 
+doc rank 
+cori redde uum hr uum hp-fl uum hp-vl 
+ docs - 
+ docs - 
+ docs 
+ docs - 
+ docs - 
+ 
+a lot worse than the other algorithms tables and show the 
+results on the trec - col testbed and tables and show 
+the results on the representative testbed 
+on the trec - col testbed the document retrieval 
+effectiveness of the cori selection algorithm is roughly the 
+same or a little bit better than the redde algorithm but both of 
+them are worse than the other three algorithms tables and 
+the uum hr algorithm has a small advantage over the cori 
+and redde algorithms one main difference between the 
+uum hr algorithm and the redde algorithm was pointed out 
+before the uum hr uses training data and linear interpolation 
+to estimate the centralized document score curves while the 
+redde algorithm uses a heuristic method assumes the 
+centralized document score curves are step functions and makes 
+no distinction among the top part of the curves this difference 
+makes uum hr better than the redde algorithm at 
+distinguishing documents with high probabilities of relevance 
+from low probabilities of relevance therefore the uum hr 
+reflects the high-precision retrieval goal better than the redde 
+algorithm and thus is more effective for document retrieval 
+the uum hr algorithm does not explicitly optimize the 
+selection decision with respect to the high-precision goal as the 
+uum hp-fl and uum hp-vl algorithms are designed to do 
+it can be seen that on this testbed the uum hp-fl and 
+uum hp-vl algorithms are much more effective than all the 
+other algorithms this indicates that their power comes from 
+explicitly optimizing the high-precision goal of document 
+retrieval in equations and 
+on the representative testbed cori is much less effective than 
+other algorithms for distributed document retrieval tables and 
+ the document retrieval results of the redde algorithm are 
+better than that of the cori algorithm but still worse than the 
+results of the uum hr algorithm on this testbed the three 
+uum algorithms are about equally effective detailed analysis 
+shows that the overlap of the selected databases between the 
+uum hr uum hp-fl and uum hp-vl algorithms is much 
+larger than the experiments on the trec - col testbed 
+since all of them tend to select the two large databases this 
+explains why they are about equally effective for document 
+retrieval 
+in real operational environments databases may return no 
+document scores and report only ranked lists of results as the 
+unified utility maximization model only utilizes retrieval scores 
+of sampled documents with a centralized retrieval algorithm to 
+calculate the probabilities of relevance it makes database 
+selection decisions without referring to the document scores 
+from individual databases and can be easily generalized to this 
+case of rank lists without document scores the only adjustment 
+is that the ssl algorithm merges ranked lists without document 
+scores by assigning the documents with pseudo-document scores 
+normalized for their ranks in a ranked list of documents the 
+first one has a score of the second has a score of etc 
+ which has been studied in the experiment results on 
+trec - col-bysource testbed with selected databases are 
+shown in table the experiment setting was the same as 
+before except that the document scores were eliminated 
+intentionally and the selected databases only return ranked lists 
+of document ids it can be seen from the results that the 
+uum hp-fl and uum hp-vl work well with databases 
+returning no document scores and are still more effective than 
+other alternatives other experiments with databases that return 
+no document scores are not reported but they show similar 
+results to prove the effectiveness of uum hp-fl and 
+uum hpvl algorithms 
+the above experiments suggest that it is very important to 
+optimize the high-precision goal explicitly in document 
+retrieval the new algorithms based on this principle achieve 
+better or at least as good results as the prior state-of-the-art 
+algorithms in several environments 
+ conclusion 
+distributed information retrieval solves the problem of finding 
+information that is scattered among many text databases on local 
+area networks and internets most previous research use 
+effective resource selection algorithm of database 
+recommendation system for distributed document retrieval 
+application we argue that the high-recall resource selection 
+goal of database recommendation and high-precision goal of 
+document retrieval are related but not identical this kind of 
+inconsistency has also been observed in previous work but the 
+prior solutions either used heuristic methods or assumed 
+cooperation by individual databases e g all the databases used 
+the same kind of search engines which is frequently not true in 
+the uncooperative environment 
+in this work we propose a unified utility maximization model to 
+integrate the resource selection of database recommendation and 
+document retrieval tasks into a single unified framework in this 
+framework the selection decisions are obtained by optimizing 
+different objective functions as far as we know this is the first 
+work that tries to view and theoretically model the distributed 
+information retrieval task in an integrated manner 
+the new framework continues a recent research trend studying 
+the use of query-based sampling and a centralized sample 
+database a single logistic model was trained on the centralized 
+table precision on the trec - col-bysource testbed when databases were selected the first baseline is cori the second 
+baseline for uum hp methods is uum hr search engines do not return document scores 
+precision at 
+doc rank 
+cori redde uum hr uum hp-fl uum hp-vl 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+ docs - 
+ 
+sample database to estimate the probabilities of relevance of 
+documents by their centralized retrieval scores while the 
+centralized sample database serves as a bridge to connect the 
+individual databases with the centralized logistic model 
+therefore the probabilities of relevance for all the documents 
+across the databases can be estimated with very small amount of 
+human relevance judgment which is much more efficient than 
+previous methods that build a separate model for each database 
+this framework is not only more theoretically solid but also 
+very effective one algorithm for resource selection uum hr 
+and two algorithms for document retrieval uum hp-fl and 
+uum hp-vl are derived from this framework empirical 
+studies have been conducted on testbeds to simulate the 
+distributed search solutions of large organizations companies 
+or domain-specific hidden web furthermore the uum hp-fl 
+and uum hp-vl resource selection algorithms are extended 
+with a variant of ssl results merging algorithm to address the 
+distributed document retrieval task when selected databases do 
+not return document scores experiments have shown that these 
+algorithms achieve results that are at least as good as the prior 
+state-of-the-art and sometimes considerably better detailed 
+analysis indicates that the advantage of these algorithms comes 
+from explicitly optimizing the goals of the specific tasks 
+the unified utility maximization framework is open for different 
+extensions when cost is associated with searching the online 
+databases the utility framework can be adjusted to automatically 
+estimate the best number of databases to search so that a large 
+amount of relevant documents can be retrieved with relatively 
+small costs another extension of the framework is to consider 
+the retrieval effectiveness of the online databases which is an 
+important issue in the operational environments all of these are 
+the directions of future research 
+acknowledgement 
+this research was supported by nsf grants eia- and 
+iis- any opinions findings conclusions or 
+recommendations expressed in this paper are the authors and 
+do not necessarily reflect those of the sponsor 
+references 
+ j callan distributed information retrieval in w b 
+croft editor advances in information retrieval kluwer 
+academic publishers pp - 
+ j callan w b croft and j broglio trec and 
+tipster experiments with inquery information 
+processing and management pp - 
+ j g conrad x s guo p jackson and m meziou 
+ database selection using actual physical and 
+acquired logical collection resources in a massive 
+domainspecific operational environment distributed search over 
+the hidden web hierarchical database sampling and 
+selection in proceedings of the th 
+international 
+conference on very large databases vldb 
+ n craswell methods for distributed information 
+retrieval ph d thesis the australian nation university 
+ n craswell d hawking and p thistlewaite 
+merging results from isolated search engines in 
+proceedings of th australasian database conference 
+ d d souza j thom and j zobel a comparison 
+of techniques for selecting text collections in proceedings 
+of the th australasian database conference 
+ n fuhr a decision-theoretic approach to 
+database selection in networked ir acm transactions on 
+information systems pp - 
+ l gravano c chang h garcia-molina and a paepcke 
+ starts stanford proposal for internet 
+metasearching in proceedings of the th acm-sigmod 
+international conference on management of data 
+ l gravano p ipeirotis and m sahami qprober 
+a system for automatic classification of hidden-web 
+databases acm transactions on information systems 
+ 
+ p ipeirotis and l gravano distributed search over 
+the hidden web hierarchical database sampling and 
+selection in proceedings of the th international 
+conference on very large databases vldb 
+ invisibleweb com http www invisibleweb com 
+ the lemur toolkit http www cs cmu edu  lemur 
+ j lu and j callan content-based information 
+retrieval in peer-to-peer networks in proceedings of the 
+ th international conference on information and 
+knowledge management 
+ w meng c t yu and k l liu building efficient 
+and effective metasearch engines acm comput surv 
+ 
+ h nottelmann and n fuhr evaluating different 
+method of estimating retrieval quality for resource 
+selection in proceedings of the th annual international 
+acm sigir conference on research and development in 
+information retrieval 
+ h nottelmann and n fuhr the mind 
+architecture for heterogeneous multimedia federated digital 
+libraries acm sigir workshop on distributed 
+information retrieval 
+ a l powell j c french j callan m connell and c l 
+viles the impact of database selection on 
+distributed searching in proceedings of the rd annual 
+international acm sigir conference on research and 
+development in information retrieval 
+ a l powell and j c french comparing the 
+performance of database selection algorithms acm 
+transactions on information systems pp - 
+ c sherman search for the invisible web guardian 
+unlimited 
+ l si and j callan using sampled data and 
+regression to merge search engine results in proceedings 
+of the th annual international acm sigir conference 
+on research and development in information retrieval 
+ l si and j callan relevant document distribution 
+estimation method for resource selection in proceedings of 
+the th annual international acm sigir conference on 
+research and development in information retrieval 
+ l si and j callan a semi-supervised learning 
+method to merge search engine results acm transactions 
+on information systems pp - 
+ 

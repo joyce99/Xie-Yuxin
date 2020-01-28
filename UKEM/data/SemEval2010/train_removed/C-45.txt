@@ -1,0 +1,1752 @@
+stardust a flexible architecture for passive localization in 
+wireless sensor networks 
+ 
+radu stoleru pascal vicaire tian he† john a stankovic 
+department of computer science university of virginia 
+†department of computer science and engineering university of minnesota 
+ stoleru pv f  cs virginia edu tianhe cs umn edu stankovic cs virginia edu 
+abstract 
+the problem of localization in wireless sensor networks 
+where nodes do not use ranging hardware remains a 
+challenging problem when considering the required location 
+accuracy energy expenditure and the duration of the 
+localization phase in this paper we propose a framework called 
+stardust for wireless sensor network localization based on 
+passive optical components in the stardust framework 
+sensor nodes are equipped with optical retro-reflectors an 
+aerial device projects light towards the deployed sensor 
+network and records an image of the reflected light an image 
+processing algorithm is developed for obtaining the locations 
+of sensor nodes for matching a node id to a location we 
+propose a constraint-based label relaxation algorithm we 
+propose and develop localization techniques based on four 
+types of constraints node color neighbor information 
+deployment time for a node and deployment location for a 
+node we evaluate the performance of a localization system 
+based on our framework by localizing a network of 
+sensor nodes deployed in a × ft area the localization 
+accuracy ranges from ft to ft while the localization time 
+ranges from milliseconds to minutes 
+categories and subject descriptors c computer 
+communications networks distributed systems c 
+ special purpose and application based systems real-time and 
+embedded systems 
+general terms algorithms measurement performance 
+design experimentation 
+ introduction 
+wireless sensor networks wsn have been envisioned 
+to revolutionize the way humans perceive and interact with 
+the surrounding environment one vision is to embed tiny 
+sensor devices in outdoor environments by aerial 
+deployments from unmanned air vehicles the sensor nodes form 
+a network and collaborate to compensate for the extremely 
+scarce resources available to each of them computational 
+power memory size communication capabilities to 
+accomplish the mission through collaboration redundancy and 
+fault tolerance the wsn is then able to achieve 
+unprecedented sensing capabilities 
+a major step forward has been accomplished by 
+developing systems for several domains military surveillance 
+ habitat monitoring and structural monitoring 
+even after these successes several research problems remain 
+open among these open problems is sensor node 
+localization i e how to find the physical position of each sensor 
+node despite the attention the localization problem in wsn 
+has received no universally acceptable solution has been 
+developed there are several reasons for this on one hand 
+localization schemes that use ranging are typically high end 
+solutions gps ranging hardware consumes energy it is 
+relatively expensive if high accuracy is required and poses 
+form factor challenges that move us away from the vision 
+of dust size sensor nodes ultrasound has a short range and 
+is highly directional solutions that use the radio transceiver 
+for ranging either have not produced encouraging results if 
+the received signal strength indicator is used or are sensitive 
+to environment e g multipath on the other hand 
+localization schemes that only use the connectivity information 
+for inferring location information are characterized by low 
+accuracies ≈ ft in controlled environments − ft in 
+realistic ones 
+to address these challenges we propose a framework for 
+wsn localization called stardust in which the 
+complexity associated with the node localization is completely 
+removed from the sensor node the basic principle of the 
+framework is localization through passivity each sensor 
+node is equipped with a corner-cube retro-reflector and 
+possibly an optical filter a coloring device an aerial 
+vehicle projects light onto the deployment area and records 
+images containing retro-reflected light beams they appear as 
+luminous spots through image processing techniques the 
+locations of the retro-reflectors i e sensor nodes is 
+deter 
+mined for inferring the identity of the sensor node present 
+at a particular location the stardust framework develops a 
+constraint-based node id relaxation algorithm 
+the main contributions of our work are the following we 
+propose a novel framework for node localization in wsns 
+that is very promising and allows for many future extensions 
+and more accurate results we propose a constraint-based 
+label relaxation algorithm for mapping node ids to the 
+locations and four constraints node connectivity time and 
+space which are building blocks for very accurate and very 
+fast localization systems we develop a sensor node 
+hardware prototype called a sensorball we evaluate the 
+performance of a localization system for which we obtain location 
+accuracies of − ft with a localization duration ranging 
+from milliseconds to minutes we investigate the range 
+of a system built on our framework by considering realities 
+of physical phenomena that occurs during light propagation 
+through the atmosphere 
+the rest of the paper is structured as follows section 
+is an overview of the state of art the design of the 
+stardust framework is presented in section one 
+implementation and its performance evaluation are in sections and 
+ followed by a suite of system optimization techniques in 
+section in section we present our conclusions 
+ related work 
+we present the prior work in localization in two major 
+categories the range-based and the range-free schemes 
+the range-based localization techniques have been 
+designed to use either more expensive hardware and hence 
+higher accuracy or just the radio transceiver ranging 
+techniques dependent on hardware are the time-of-flight tof 
+and the time-difference-of-arrival tdoa solutions that use 
+the radio are based on the received signal strength indicator 
+ rssi and more recently on radio interferometry 
+the tof localization technique that is most widely used is 
+the gps gps is a costly solution for a high accuracy 
+localization of a large scale sensor network ahlos employs 
+a tdoa ranging technique that requires extensive hardware 
+and solves relatively large nonlinear systems of equations 
+the cricket location-support system tdoa can achieve 
+a location granularity of tens of inches with highly 
+directional and short range ultrasound transceivers in the 
+location of a sniper is determined in an urban terrain by 
+using the tdoa between an acoustic wave and a radio beacon 
+the pushpin project uses the tdoa between ultrasound 
+pulses and light flashes for node localization the radar 
+system uses the rssi to build a map of signal strengths 
+as emitted by a set of beacon nodes a mobile node is 
+located by the best match in the signal strength space with a 
+previously acquired signature in mal a mobile node 
+assists in measuring the distances acting as constraints 
+between nodes until a rigid graph is generated the localization 
+problem is formulated as an on-line state estimation in a 
+nonlinear dynamic system a cooperative ranging that 
+attempts to achieve a global positioning from distributed local 
+optimizations is proposed in a very recent remarkable 
+localization technique is based on radio interferometry rips 
+ which utilizes two transmitters to create an interfering 
+signal the frequencies of the emitters are very close to each 
+other thus the interfering signal will have a low frequency 
+envelope that can be easily measured the ranging technique 
+performs very well the long time required for localization 
+and multi-path environments pose significant challenges 
+real environments create additional challenges for the 
+range based localization schemes these have been 
+emphasized by several studies to address these 
+challenges and others hardware cost the energy expenditure 
+the form factor the small range localization time several 
+range-free localization schemes have been proposed sensor 
+nodes use primarily connectivity information for inferring 
+proximity to a set of anchors in the centroid localization 
+scheme a sensor node localizes to the centroid of its 
+proximate beacon nodes in apit each node decides its 
+position based on the possibility of being inside or outside of 
+a triangle formed by any three beacons within node s 
+communication range the gradient algorithm leverages 
+the knowledge about the network density to infer the average 
+one hop length this in turn can be transformed into 
+distances to nodes with known locations dv-hop uses the 
+hop by hop propagation capability of the network to forward 
+distances to landmarks more recently several localization 
+schemes that exploit the sensing capabilities of sensor nodes 
+have been proposed spotlight creates well controlled 
+ in time and space events in the network while the sensor 
+nodes detect and timestamp this events from the 
+spatiotemporal knowledge for the created events and the temporal 
+information provided by sensor nodes nodes spatial 
+information can be obtained in a similar manner the lighthouse 
+system uses a parallel light beam that is emitted by an 
+anchor which rotates with a certain period a sensor node 
+detects the light beam for a period of time which is 
+dependent on the distance between it and the light emitting device 
+many of the above localization solutions target specific 
+sets of requirements and are useful for specific applications 
+stardust differs in that it addresses a particular demanding 
+set of requirements that are not yet solved well stardust is 
+meant for localizing air dropped nodes where node 
+passiveness high accuracy low cost small form factor and rapid 
+localization are all required many military applications have 
+such requirements 
+ stardust system design 
+the design of the stardust system and its name was 
+inspired by the similarity between a deployed sensor network 
+in which sensor nodes indicate their presence by emitting 
+light and the universe consisting of luminous and 
+illuminated objects stars galaxies planets etc 
+the main difficulty when applying the above ideas to the 
+real world is the complexity of the hardware that needs to 
+be put on a sensor node so that the emitted light can be 
+detected from thousands of feet the energy expenditure for 
+producing an intense enough light beam is also prohibitive 
+instead what we propose to use for sensor node 
+localization is a passive optical element called a retro-reflector 
+the most common retro-reflective optical component is a 
+corner-cube retroreflector ccr shown in figure a it 
+consists of three mutually perpendicular mirrors the 
+inter 
+ a b 
+figure corner-cube retroreflector a and an array of 
+ccrs molded in plastic b 
+esting property of this optical component is that an incoming 
+beam of light is reflected back towards the source of the 
+light irrespective of the angle of incidence this is in 
+contrast with a mirror which needs to be precisely positioned to 
+be perpendicular to the incident light a very common and 
+inexpensive implementation of an array of ccrs is the 
+retroreflective plastic material used on cars and bicycles for night 
+time detection shown in figure b 
+in the stardust system each node is equipped with a 
+small e g in array of ccrs and the enclosure has 
+self-righting capabilities that orient the array of ccrs 
+predominantly upwards it is critical to understand that the 
+upward orientation does not need to be exact even when large 
+angular variations from a perfectly upward orientation are 
+present a ccr will return the light in the exact same 
+direction from which it came 
+in the remaining part of the section we present the 
+architecture of the stardust system and the design of its main 
+components 
+ system architecture 
+the envisioned sensor network localization scenario is as 
+follows 
+ the sensor nodes are released possibly in a controlled 
+manner from an aerial vehicle during the night 
+ the aerial vehicle hovers over the deployment area and 
+uses a strobe light to illuminate it the sensor nodes 
+equipped with ccrs and optical filters acting as 
+coloring devices have self-righting capabilities and 
+retroreflect the incoming strobe light the retro-reflected 
+light is either white as the originating source light 
+or colored due to optical filters 
+ the aerial vehicle records a sequence of two images 
+very close in time msec level one image is taken 
+when the strobe light is on the other when the strobe 
+light is off the acquired images are used for obtaining 
+the locations of sensor nodes which appear as luminous 
+spots in the image 
+ the aerial vehicle executes the mapping of node ids to 
+the identified locations in one of the following ways a 
+by using the color of a retro-reflected light if a sensor 
+node has a unique color b by requiring sensor nodes 
+to establish neighborhood information and report it to 
+a base station c by controlling the time sequence of 
+sensor nodes deployment and recording additional 
+imlight emitter 
+sensor node i 
+transfer function 
+φi λ 
+ψ λ 
+φ ψ λ 
+image 
+processing 
+node id matching 
+radio model 
+r 
+g λ e 
+central device 
+v 
+v 
+figure the stardust system architecture 
+ages d by controlling the location where a sensor node 
+is deployed 
+ the computed locations are disseminated to the sensor 
+network 
+the architecture of the stardust system is shown in 
+figure the architecture consists of two main components 
+the first is centralized and it is located on a more powerful 
+device the second is distributed and it resides on all 
+sensor nodes the central device consists of the following the 
+light emitter the image processing module the node id 
+mapping module and the radio model the distributed 
+component of the architecture is the transfer function which 
+acts as a filter for the incoming light the aforementioned 
+modules are briefly described below 
+ light emitter - it is a strobe light capable of producing 
+very intense collimated light pulses the emitted light 
+is non-monochromatic unlike a laser and it is 
+characterized by a spectral density ψ λ a function of the 
+wavelength the emitted light is incident on the ccrs 
+present on sensor nodes 
+ transfer function φ ψ λ - this is a bandpass filter 
+for the incident light on the ccr the filter allows a 
+portion of the original spectrum to be retro-reflected 
+from here on we will refer to the transfer function as 
+the color of a sensor node 
+ image processing - the image processing module 
+acquires high resolution images from these images the 
+locations and the colors of sensor nodes are obtained 
+if only one set of pictures can be taken i e one 
+location of the light emitter image analysis device then the 
+map of the field is assumed to be known as well as the 
+distance between the imaging device and the field the 
+aforementioned assumptions field map and distance to 
+it are not necessary if the images can be simultaneously 
+taken from different locations it is important to remark 
+here that the identity of a node can not be directly 
+obtained through image processing alone unless a 
+specific characteristic of a sensor node can be identified in 
+the image 
+ node id matching - this module uses the detected 
+locations and through additional techniques e g sensor 
+node coloring and connectivity information g λ e 
+from the deployed network to uniquely identify the 
+sensor nodes observed in the image the connectivity 
+information is represented by neighbor tables sent from 
+ 
+algorithm image processing 
+ background filtering 
+ retro-reflected light recognition through intensity 
+filtering 
+ edge detection to obtain the location of sensor nodes 
+ color identification for each detected sensor node 
+each sensor node to the central device 
+ radio model - this component provides an estimate of 
+the radio range to the node id matching module it 
+is only used by node id matching techniques that are 
+based on the radio connectivity in the network the 
+estimate of the radio range r is based on the sensor node 
+density obtained through the image processing 
+module and the connectivity information i e g λ e 
+the two main components of the stardust architecture 
+are the image processing and the node id mapping their 
+design and analysis is presented in the sections that follow 
+ image processing 
+the goal of the image processing algorithm ipa is to 
+identify the location of the nodes and their color note that 
+ipa does not identify which node fell where but only what 
+is the set of locations where the nodes fell 
+ipa is executed after an aerial vehicle records two 
+pictures one in which the field of deployment is illuminated and 
+one when no illuminations is present let pdark be the 
+picture of the deployment area taken when no light was emitted 
+and plight be the picture of the same deployment area when a 
+strong light beam was directed towards the sensor nodes 
+the proposed ipa has several steps as shown in 
+algorithm the first step is to obtain a third picture pfilter where 
+only the differences between pdark and plight remain let us 
+assume that pdark has a resolution of n × m where n is the 
+number of pixels in a row of the picture while m is the 
+number of pixels in a column of the picture then pdark is 
+composed of n × m pixels noted pdark i j i ∈ ≤ i ≤ n ≤ 
+j ≤ m similarly plight is composed of n × m pixels noted 
+plight i j ≤ i ≤ n ≤ j ≤ m 
+each pixel p is described by an rgb value where the r 
+value is denoted by pr the g value is denoted by pg and 
+the b value is denoted by pb ipa then generates the third 
+picture pfilter through the following transformations 
+pr 
+filter i j pr 
+light i j −pr 
+dark i j 
+pg 
+filter i j pg 
+light i j −pg 
+dark i j 
+pb 
+filter i j pb 
+light i j −pb 
+dark i j 
+ 
+after this transformation all the features that appeared in 
+both pdark and plight are removed from pfilter this simplifies 
+the recognition of light retro-reflected by sensor nodes 
+the second step consists of identifying the elements 
+contained in pfilter that retro-reflect light for this an intensity 
+filter is applied to pfilter first ipa converts pfilter into a 
+grayscale picture then the brightest pixels are identified and 
+used to create preflect this step is eased by the fact that the 
+reflecting nodes should appear much brighter than any other 
+illuminated object in the picture 
+support q λk 
+ni 
+p 
+ 
+p 
+ 
+pn 
+λ 
+ 
+λk 
+ 
+λn 
+figure probabilistic label relaxation 
+the third step runs an edge detection algorithm on preflect 
+to identify the boundary of the nodes present a tool such as 
+matlab provides a number of edge detection techniques we 
+used the bwboundaries function for the obtained edges the 
+location x y in the image of each node is determined by 
+computing the centroid of the points constituting its edges 
+standard computer graphics techniques are then used 
+to transform the d locations of sensor nodes detected in 
+multiple images into d sensor node locations the color of 
+the node is obtained as the color of the pixel located at x y 
+in plight 
+ node id matching 
+the goal of the node id matching module is to 
+obtain the identity node id of a luminous spot in the 
+image detected to be a sensor node for this we define v 
+ x y x y xm ym to be the set of locations of 
+the sensor nodes as detected by the image processing 
+module and λ λ λ λm to be the set of unique node ids 
+assigned to the m sensor nodes before deployment from 
+here on we refer to node ids as labels 
+we model the problem of finding the label λj of a node ni 
+as a probabilistic label relaxation problem frequently used 
+in image processing understanding in the image processing 
+domain scene labeling i e identifying objects in an 
+image plays a major role the goal of scene labeling is to 
+assign a label to each object detected in an image such that 
+an appropriate image interpretation is achieved it is 
+prohibitively expensive to consider the interactions among all 
+the objects in an image instead constraints placed among 
+nearby objects generate local consistencies and through 
+iteration global consistencies can be obtained 
+the main idea of the sensor node localization through 
+probabilistic label relaxation is to iteratively compute the 
+probability of each label being the correct label for a 
+sensor node by taking into account at each iteration the 
+support for a label the support for a label can be understood 
+as a hint or proof that a particular label is more likely to be 
+the correct one when compared with the other potential 
+labels for a sensor node we pictorially depict this main idea 
+in figure as shown node ni has a set of candidate 
+labels λ λk each of the labels has a different value 
+for the support function q λk we defer the explanation 
+of how the support function is implemented until the 
+subsections that follow where we provide four concrete 
+techniques formally the algorithm is outlined in algorithm 
+where the equations necessary for computing the new 
+probability pni λk for a label λk of a node ni are expressed by the 
+ 
+algorithm label relaxation 
+ for each sensor node ni do 
+ assign equal prob to all possible labels 
+ end for 
+ repeat 
+ converged ← true 
+ for each sensor node ni do 
+ for each each label λj of ni do 
+ compute the support label λj equation 
+ end for 
+ compute k for the node ni equation 
+ for each each label λj do 
+ update probability of label λj equation 
+ if new prob −old prob ≥ ε then 
+ converged ← false 
+ end if 
+ end for 
+ end for 
+ until converged true 
+following equations 
+ps 
+ni 
+ λk 
+ 
+kni 
+ps 
+ni 
+ λk qs 
+ni 
+ λk 
+where kni is a normalizing constant given by 
+kni 
+n 
+∑ 
+k 
+ps 
+ni 
+ λk qs 
+ni 
+ λk 
+and qs 
+ni 
+ λk is 
+qs 
+ni 
+ λk support for label λk of node ni 
+the label relaxation algorithm is iterative and it is 
+polynomial in the size of the network number of nodes the 
+pseudo-code is shown in algorithm it initializes the 
+probabilities associated with each possible label for a node ni 
+through a uniform distribution at each iteration s the 
+algorithm updates the probability associated with each label by 
+considering the support qs 
+ni 
+ λk for each candidate label of 
+a sensor node 
+in the sections that follow we describe four different 
+techniques for implementing the support function based on 
+node coloring radio connectivity the time of deployment 
+ time and the location of deployment space while some 
+of these techniques are simplistic they are primitives which 
+when combined can create powerful localization systems 
+these design techniques have different trade-offs which we 
+will present in section 
+ relaxation with color constraints 
+the unique mapping between a sensor node s position 
+ identified by the image processing and a label can be 
+obtained by assigning a unique color to each sensor node for 
+this we define c c c cn to be the set of unique 
+colors available and m λ → c to be a one-to-one mapping of 
+labels to colors this mapping is known prior to the sensor 
+node deployment from node manufacturing 
+in the case of color constrained label relaxation the 
+support for label λk is expressed as follows 
+qs 
+ni 
+ λk 
+as a result the label relaxation algorithm algorithm 
+consists of the following steps one label is assigned to each 
+sensor node lines - of the algorithm implicitly having 
+a probability pni λk the algorithm executes a single 
+iteration when the support function simply reiterates the 
+confidence in the unique labeling 
+however it is often the case that unique colors for each 
+node will not be available it is interesting to discuss here the 
+influence that the size of the coloring space i e c has on 
+the accuracy of the localization algorithm several cases are 
+discussed below 
+ if c no colors are used and the sensor nodes are 
+equipped with simple ccrs that reflect back all the 
+incoming light i e no filtering and no coloring of the 
+incoming light from the image processing system the 
+position of sensor nodes can still be obtained since 
+all nodes appear white no single sensor node can be 
+uniquely identified 
+ if c m − then there are enough unique colors for 
+all nodes one node remains white i e no coloring the 
+problem is trivially solved each node can be identified 
+based on its unique color this is the scenario for the 
+relaxation with color constraints 
+ if c ≥ there are several options for how to 
+partition the coloring space if c c one possibility is 
+to assign the color c to a single node and leave the 
+remaining m− sensor nodes white or to assign the color 
+c to more than one sensor node one can observe that 
+once a color is assigned uniquely to a sensor node in 
+effect that sensor node is given the status of anchor 
+or node with known location 
+it is interesting to observe that there is an entire spectrum 
+of possibilities for how to partition the set of sensor nodes 
+in equivalence classes where an equivalence class is 
+represented by one color in order to maximize the success of the 
+localization algorithm one of the goals of this paper is to 
+understand how the size of the coloring space and its 
+partitioning affect localization accuracy 
+despite the simplicity of this method of constraining the 
+set of labels that can be assigned to a node we will show that 
+this technique is very powerful when combined with other 
+relaxation techniques 
+ relaxation with connectivity constraints 
+connectivity information obtained from the sensor 
+network through beaconing can provide additional information 
+for locating sensor nodes in order to gather connectivity 
+information the following need to occur after deployment 
+through beaconing of hello messages sensor nodes build 
+their neighborhood tables each node sends its neighbor 
+table information to the central device via a base station 
+first let us define g λ e to be the weighted 
+connectivity graph built by the central device from the received 
+neighbor table information in g the edge λi λj has a 
+ 
+λ 
+λ 
+ 
+λn 
+ni nj 
+gi j 
+λ 
+λ 
+ 
+λn 
+pj λ 
+pj λ 
+ 
+pj λn 
+pi λ 
+pi λ 
+ 
+pi λn gi jm 
+figure label relaxation with connectivity constraints 
+weight gij represented by the number of beacons sent by λj 
+and received by λi in addition let r be the radio range of 
+the sensor nodes 
+the main idea of the connectivity constrained label 
+relaxation is depicted in figure in which two nodes ni and 
+nj have been assigned all possible labels the confidence in 
+each of the candidate labels for a sensor node is represented 
+by a probability shown in a dotted rectangle 
+it is important to remark that through beaconing and the 
+reporting of neighbor tables to the central device a global 
+view of all constraints in the network can be obtained it 
+is critical to observe that these constraints are among labels 
+as shown in figure two constraints exist between nodes ni 
+and nj the constraints are depicted by gi j and gi jm the 
+number of beacons sent the labels λj and λjm and received 
+by the label λi 
+the support for the label λk of sensor node ni resulting 
+from the interaction i e within radio range with sensor 
+node nj is given by 
+qs 
+ni 
+ λk 
+m 
+∑ 
+m 
+gλkλm 
+ps 
+nj 
+ λm 
+as a result the localization algorithm algorithm 
+consists of the following steps all labels are assigned to each 
+sensor node lines - of the algorithm and implicitly each 
+label has a probability initialized to pni λk λ in each 
+iteration the probabilities for the labels of a sensor node are 
+updated when considering the interaction with the labels of 
+sensor nodes within r it is important to remark that the 
+identity of the nodes within r is not known only the candidate 
+labels and their probabilities the relaxation algorithm 
+converges when during an iteration the probability of no label 
+is updated by more than ε 
+the label relaxation algorithm based on connectivity 
+constraints enforces such constraints between pairs of sensor 
+nodes for a large scale sensor network deployment it is not 
+feasible to consider all pairs of sensor nodes in the network 
+hence the algorithm should only consider pairs of sensor 
+nodes that are within a reasonable communication range r 
+we assume a circular radio range and a symmetric 
+connectivity in the remaining part of the section we propose a 
+simple analytical model that estimates the radio range r for 
+medium-connected networks less than neighbors per r 
+we consider the following to be known the size of the 
+deployment field l the number of sensor nodes deployed n 
+algorithm localization 
+ estimate the radio range r 
+ execute the label relaxation algorithm with support 
+function given by equation for neighbors less than r 
+apart 
+ for each sensor node ni do 
+ node identity is λk with max prob 
+ end for 
+and the total number of unidirectional i e not symmetric 
+one-hop radio connections in the network k for our 
+analysis we uniformly distribute the sensor nodes in a square area 
+of length l by using a grid of unit length l 
+√ 
+n we use the 
+substitution u l 
+√ 
+n to simplify the notation in order to 
+distinguish the following cases if u ≤ r ≤ 
+√ 
+ u each node 
+has four neighbors the expected k n if 
+√ 
+ u ≤ r ≤ u 
+each node has eight neighbors the expected k n if 
+ u ≤ r ≤ 
+√ 
+ u each node has twelve neighbors the expected 
+k n if 
+√ 
+ u ≤ r ≤ u each node has twenty neighbors 
+ the expected k n 
+for a given t k n we take r to be the middle of the 
+interval as an example if t then r 
+√ 
+ u a 
+quadratic fitting for r over the possible values of t produces 
+the following closed-form solution for the communication 
+range r as a function of network connectivity k assuming l 
+and n constant 
+r k 
+l 
+√ 
+n 
+− 
+k 
+ n 
+ 
+ 
+k 
+ n 
+ 
+we investigate the accuracy of our model in section 
+ relaxation with time constraints 
+time constraints can be treated similarly with color 
+constraints the unique identification of a sensor node can be 
+obtained by deploying sensor nodes individually one by one 
+and recording a sequence of images the sensor node that is 
+identified as new in the last picture it was not identified in 
+the picture before last must be the last sensor node dropped 
+in a similar manner with color constrained label 
+relaxation the time constrained approach is very simple but may 
+take too long especially for large scale systems while it 
+can be used in practice it is unlikely that only a time 
+constrained label relaxation is used as we will see by 
+combining constrained-based primitives realistic localization 
+systems can be implemented 
+the support function for the label relaxation with time 
+constraints is defined identically with the color constrained 
+relaxation 
+qs 
+ni 
+ λk 
+the localization algorithm algorithm consists of the 
+following steps one label is assigned to each sensor node 
+ lines - of the algorithm and implicitly having a 
+probability pni λk the algorithm executes a single iteration 
+ 
+d 
+d 
+d 
+d 
+ node 
+label- 
+label- 
+label- 
+label- 
+ 
+ 
+ 
+ 
+figure relaxation with space 
+constraints 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pdf 
+distance d 
+σ 
+σ 
+σ 
+figure probability distribution of 
+distances 
+- 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+x 
+- 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+y 
+ 
+ 
+ 
+ 
+ 
+ 
+node density 
+figure distribution of nodes 
+when the support function simply reiterates the confidence 
+in the unique labeling 
+ relaxation with space constraints 
+spatial information related to sensor deployment can also 
+be employed as another input to the label relaxation 
+algorithm to do that we use two types of locations the node 
+location pn and the label location pl the former pn is defined 
+as the position of nodes xn yn zn after deployment which 
+can be obtained through image processing as mentioned in 
+section the latter pl is defined as the location xl yl zl 
+where a node is dropped we use dni 
+λm 
+to denote the 
+horizontal distance between the location of the label λm and the 
+location of the node ni clearly dni 
+λm 
+ xn −xl yn −yl 
+at the time of a sensor node release the one-to-one 
+mapping between the node and its label is known in other words 
+the label location is the same as the node location at the 
+release time after release the label location information is 
+partially lost due to the random factors such as wind and 
+surface impact however statistically the node locations are 
+correlated with label locations such correlation depends on 
+the airdrop methods employed and environments for the 
+sake of simplicity let s assume nodes are dropped from the 
+air through a helicopter hovering in the air wind can be 
+decomposed into three components x y and z only x and 
+y affect the horizontal distance a node can travel 
+according to we can assume that x and y follow an 
+independent normal distribution therefore the absolute value of 
+the wind speed follows a rayleigh distribution obviously 
+the higher the wind speed is the further a node would land 
+away horizontally from the label location if we assume that 
+the distance d is a function of the wind speed v 
+we can obtain the probability distribution of d under a given 
+wind speed distribution without loss of generality we 
+assume that d is proportional to the wind speed therefore 
+d follows the rayleigh distribution as well as shown in 
+figure the spatial-based relaxation is a recursive process 
+to assign the probability that a nodes has a certain label by 
+using the distances between the location of a node with 
+multiple label locations 
+we note that the distribution of distance d affects the 
+probability with which a label is assigned it is not 
+necessarily true that the nearest label is always chosen for example 
+if d follows the rayleigh σ distribution we can obtain the 
+probability density function pdf of distances as shown 
+in figure this figure indicates that the possibility of a 
+node to fall vertically is very small under windy conditions 
+ σ and that the distance d is affected by the σ the 
+spatial distribution of nodes for σ is shown in figure 
+strong wind with a high σ value leads to a larger node 
+dispersion more formally given a probability density function 
+pdf d the support for label λk of sensor node ni can be 
+formulated as 
+qs 
+ni 
+ λk pdf dni 
+λk 
+ 
+it is interesting to point out two special cases first if all 
+nodes are released at once i e only one label location for 
+all released nodes the distance d from a node to all labels 
+is the same in this case ps 
+ni 
+ λk ps 
+ni 
+ λk which indicates 
+that we can not use the spatial-based relaxation to recursively 
+narrow down the potential labels for a node second if nodes 
+are released at different locations that are far away from each 
+other we have i if node ni has label λk ps 
+ni 
+ λk → when 
+s → ∞ ii if node ni does not have label λk ps 
+ni 
+ λk → 
+when s → ∞ in this second scenario there are multiple 
+labels one label per release hence it is possible to correlate 
+release times labels with positions on the ground these 
+results indicate that spatial-based relaxation can label the node 
+with a very high probability if the physical separation among 
+nodes is large 
+ relaxation with color and connectivity 
+constraints 
+one of the most interesting features of the stardust 
+architecture is that it allows for hybrid localization solutions to be 
+built depending on the system requirements one example 
+is a localization system that uses the color and connectivity 
+constraints in this scheme the color constraints are used for 
+reducing the number of candidate labels for sensor nodes 
+to a more manageable value as a reminder in the 
+connectivity constrained relaxation all labels are candidate labels 
+for each sensor node the color constraints are used in the 
+initialization phase of algorithm lines - after the 
+initialization the standard connectivity constrained relaxation 
+algorithm is used 
+for a better understanding of how the label relaxation 
+algorithm works we give a concrete example exemplified in 
+figure in part a of the figure we depict the data structures 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ni nj 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ni nj 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ b 
+figure a step through the algorithm after 
+initialization a and after the st iteration for node ni b 
+associated with nodes ni and nj after the initialization steps 
+of the algorithm lines - as well as the number of beacons 
+between different labels as reported by the network through 
+g λ e as seen the potential labels shown inside the 
+vertical rectangles are assigned to each node node ni can be 
+any of the following also depicted in the figure 
+are the probabilities associated with each of the labels after 
+initialization all probabilities are equal 
+part b of figure shows the result of the first iteration 
+of the localization algorithm for node ni assuming that node 
+nj is the first wi chosen in line of algorithm by using 
+equation the algorithm computes the support q λi for 
+each of the possible labels for node ni once the q λi s 
+are computed the normalizing constant given by equation 
+ can be obtained the last step of the iteration is to update 
+the probabilities associated with all potential labels of node 
+ni as given by equation 
+one interesting problem which we explore in the 
+performance evaluation section is to assess the impact the 
+partitioning of the color set c has on the accuracy of 
+localization when the size of the coloring set is smaller than the 
+number of sensor nodes as it is the case for our hybrid 
+connectivity color constrained relaxation the system designer 
+has the option of allowing one node to uniquely have a color 
+ acting as an anchor or multiple nodes intuitively by 
+assigning one color to more than one node more constraints 
+ distributed can be enforced 
+ relaxation techniques analysis 
+the proposed label relaxation techniques have different 
+trade-offs for our analysis of the trade-offs we consider 
+the following metrics of interest the localization time 
+ duration the energy consumed overhead the network size 
+ scale that can be handled by the technique and the 
+localization accuracy the parameters of interest are the following 
+the number of sensor nodes n the energy spent for one 
+aerial drop εd the energy spent in the network for 
+collecting and reporting neighbor information εb and the time td 
+taken by a sensor node to reach the ground after being 
+aerially deployed the cost comparison of the different label 
+relaxation techniques is shown in table 
+as shown the relaxation techniques based on color and 
+space constraints have the lowest localization duration zero 
+for all practical purposes the scalability of the color based 
+relaxation technique is however limited to the number of 
+ a b 
+figure sensorball with self-righting capabilities a 
+and colored ccrs b 
+unique color filters that can be built the narrower the 
+transfer function ψ λ the larger the number of unique colors 
+that can be created the manufacturing costs however are 
+increasing as well the scalability issue is addressed by all 
+other label relaxation techniques most notably the time 
+constrained relaxation which is very similar to the 
+colorconstrained relaxation addresses the scale issue at a higher 
+deployment cost 
+criteria color connectivity time space 
+duration ntb ntd 
+overhead εd εd nεb nεd εd 
+scale c n n n 
+accuracy high low high medium 
+table comparison of label relaxation techniques 
+ system implementation 
+the stardust localization framework depicted in figure 
+ is flexible in that it enables the development of new 
+localization systems based on the four proposed label 
+relaxation schemes or the inclusion of other yet to be invented 
+schemes for our performance evaluation we implemented a 
+version of the stardust framework namely the one proposed 
+in section where the constraints are based on color and 
+connectivity 
+the central device of the stardust system consists of the 
+following the light emitter - we used a 
+common-off-theshelf flash light qbeam million candlepower the 
+image acquisition was done with a megapixel digital camera 
+ sony dsc-s which provided the input to the image 
+processing algorithm implemented in matlab 
+for sensor nodes we built a custom sensor node called 
+sensorball with self-righting capabilities shown in figure 
+ a the self-righting capabilities are necessary in order to 
+orient the ccr predominantly upwards the ccrs that we 
+used were inexpensive plastic molded night time warning 
+signs commonly available on bicycles as shown in figure 
+ b we remark here the low quality of the ccrs we used 
+the reflectivity of each ccr there are tens molded in the 
+plastic container is extremely low and each ccr is not built 
+with mirrors a reflective effect is achieved by employing 
+finely polished plastic surfaces we had colors available 
+in addition to the standard ccr which reflects all the 
+incoming light white ccr for a slightly higher price ours 
+were cents piece better quality ccrs can be employed 
+ 
+figure the field in the dark figure the illuminated field figure the difference figure 
+ figure 
+higher quality better mirrors would translate in more 
+accurate image processing better sensor node detection and 
+smaller form factor for the optical component an array of 
+ccrs with a smaller area can be used 
+the sensor node platform we used was the micaz mote 
+the code that runs on each node is a simple application 
+which broadcasts beacons and maintains a neighbor 
+table containing the percentage of successfully received 
+beacons for each neighbor on demand the neighbor table is 
+reported to a base station where the node id mapping is 
+performed 
+ system evaluation 
+in this section we present the performance evaluation of 
+a system implementation of the stardust localization 
+framework the three major research questions that our evaluation 
+tries to answer are the feasibility of the proposed framework 
+ can sensor nodes be optically detected at large distances 
+the localization accuracy of one actual implementation of the 
+stardust framework and whether or not atmospheric 
+conditions can affect the recognition of sensor nodes in an 
+image the first two questions are investigated by evaluating 
+the two main components of the stardust framework the 
+image processing and the node id matching these 
+components have been evaluated separately mainly because of 
+lack of adequate facilities we wanted to evaluate the 
+performance of the image processing algorithm in a long range 
+realistic experimental set-up while the node id matching 
+required a relatively large area available for long periods of 
+time for connectivity data gathering the third research 
+question is investigated through a computer modeling of 
+atmospheric phenomena 
+for the evaluation of the image processing module we 
+performed experiments in a football stadium where we 
+deploy sensor nodes in a × grid the distance between the 
+central device and the sensor nodes is approximately ft 
+the metrics of interest are the number of false positives and 
+false negatives in the image processing algorithm 
+for the evaluation of the node id mapping component 
+we deploy sensor nodes in an × ft flat area of 
+a stadium in order to investigate the influence the radio 
+connectivity has on localization accuracy we vary the height 
+above ground of the deployed sensor nodes two set-ups are 
+used one in which the sensor nodes are on the ground and 
+the second one in which the sensor nodes are raised inches 
+above ground from here on we will refer to these two 
+experimental set-ups as the low connectivity and the high 
+connectivity networks respectively because when nodes are 
+on the ground the communication range is low resulting in 
+less neighbors than when the nodes are elevated and have a 
+greater communication range the metrics of interest are 
+the localization error defined as the distance between the 
+computed location and the true location - known from the 
+manual placement the percentage of nodes correctly 
+localized the convergence of the label relaxation algorithm the 
+time to localize and the robustness of the node id mapping 
+to errors in the image processing module 
+the parameters that we vary experimentally are the 
+angle under which images are taken the focus of the camera 
+and the degree of connectivity the parameters that we vary 
+in simulations subsequent to image acquisition and 
+connectivity collection the number of colors the number of 
+anchors the number of false positives or negatives as input 
+to the node id matching component the distance between 
+the imaging device and sensor network i e range 
+atmospheric conditions light attenuation coefficient and ccr 
+reflectance indicative of its quality 
+ image processing 
+for the ipa evaluation we deploy sensor nodes in a 
+ × grid we take sets of pictures using different 
+orientations of the camera and different zooming factors all 
+pictures were taken from the same location each set is 
+composed of a picture taken in the dark and of a picture taken 
+with a light beam pointed at the nodes we process the 
+pictures offline using a matlab implementation of ipa since we 
+are interested in the feasibility of identifying colored sensor 
+nodes at large distance the end result of our ipa is the d 
+location of sensor nodes position in the image the 
+transformation to d coordinates can be done through standard 
+computer graphics techniques 
+one set of pictures obtained as part of our experiment is 
+shown in figures and the execution of our ipa 
+algorithm results in figure which filters out the background 
+and figure which shows the output of the edge detection 
+step of ipa the experimental results are depicted in 
+figure for each set of pictures the graph shows the number 
+of false positives the ipa determines that there is a node 
+ 
+figure retroreflectors detected in figure 
+ 
+ 
+ 
+ 
+ 
+experiment number 
+count 
+false positives 
+false negatives 
+figure false positives and negatives for the nodes 
+while there is none and the number of false negatives the 
+ipa determines that there is no node while there is one in 
+about of the cases we obtained perfect results i e no 
+false positives and no false negatives in the remaining cases 
+we obtained a number of false positives of at most one and 
+a number of false negatives of at most two 
+we exclude two pairs of pictures from figure in the 
+first excluded pair we obtain false positives and in the 
+second pair false positives and false negatives by 
+carefully examining the pictures we realized that the first pair 
+was taken out of focus and that a car temporarily appeared 
+in one of the pictures of the second pair the anomaly in 
+the second set was due to the fact that we waited too long to 
+take the second picture if the pictures had been taken a few 
+milliseconds apart the car would have been represented on 
+either both or none of the pictures and the ipa would have 
+filtered it out 
+ node id matching 
+we evaluate the node id matching component of our 
+system by collecting empirical data connectivity information 
+from the outdoor deployment of nodes in the × ft 
+area we collect sets of data for the high connectivity 
+and low connectivity network deployments off-line we 
+investigate the influence of coloring on the metrics of interest 
+by randomly assigning colors to the sensor nodes for one 
+experimental data set we generate random assignments 
+of colors to sensor nodes it is important to observe that for 
+the evaluation of the node id matching algorithm color and 
+connectivity constrained we simulate the color assignment 
+to sensor nodes as mentioned in section the size of the 
+coloring space available to us was colors through 
+simulations of color assignment not connectivity we are able 
+to investigate the influence that the size of the coloring space 
+has on the accuracy of localization the value of the 
+param 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+distance feet 
+count 
+connected 
+not connected 
+figure the number of existing and missing radio 
+connections in the sparse connectivity experiment 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+distance feet 
+count 
+connected 
+not connected 
+figure the number of existing and missing radio 
+connections in the high connectivity experiment 
+eter ε used in algorithm was the results presented 
+here represent averages over the randomly generated 
+colorings and over all experimental data sets 
+we first investigate the accuracy of our proposed radio 
+model and subsequently use the derived values for the radio 
+range in the evaluation of the node id matching component 
+ radio model 
+from experiments we obtain the average number of 
+observed beacons k defined in section for the low 
+connectivity network of beacons and for the high 
+connectivity network of beacons from our radio model 
+ equation we obtain a radio range r ft for the low 
+connectivity network and r ft for the high connectivity 
+network 
+to estimate the accuracy of our simple model we plot 
+the number of radio links that exist in the networks and the 
+number of links that are missing as functions of the distance 
+between nodes the results are shown in figures and 
+we define the average radio range r to be the distance over 
+which less than of potential radio links are missing 
+as shown in figure the radio range is between ft and 
+ ft for the higher connectivity network the radio range 
+was between ft and ft 
+we choose two conservative estimates of the radio range 
+ ft for the low connectivity case and ft for the high 
+connectivity case which are in good agreement with the values 
+predicted by our radio model 
+ localization error vs coloring space size 
+in this experiment we investigate the effect of the number 
+of colors on the localization accuracy for this we randomly 
+assign colors from a pool of a given size to the sensor nodes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+localizationerror feet 
+r feet 
+r feet 
+r feet 
+figure localization error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+ correctlocalized x 
+r feet 
+r feet 
+r feet 
+figure percentage of nodes correctly localized 
+we then execute the localization algorithm which uses the 
+empirical data the algorithm is run for three different radio 
+ranges and ft to investigate its influence on the 
+localization error 
+the results are depicted in figure localization error 
+and figure percentage of nodes correctly localized as 
+shown for an estimate of ft for the radio range as 
+predicted by our radio model we obtain the smallest 
+localization errors as small as ft when enough colors are used 
+both figures and confirm our intuition that a larger 
+number of colors available significantly decrease the error in 
+localization 
+the well known fact that relaxation algorithms do not 
+always converge was observed during our experiments the 
+percentage of successful runs when the algorithm 
+converged is depicted in figure as shown in several 
+situations the algorithm failed to converge the algorithm 
+execution was stopped after iterations per node if the 
+algorithm does not converge in a predetermined number of steps 
+it will terminate and the label with the highest probability 
+will provide the identity of the node it is very probable that 
+the chosen label is incorrect since the probabilities of some 
+of labels are constantly changing with each iteration the 
+convergence of relaxation based algorithms is a well known 
+issue 
+ localization error vs color uniqueness 
+as mentioned in the section a unique color gives a 
+sensor node the statute of an anchor a sensor node that is 
+an anchor can unequivocally be identified through the image 
+processing module in this section we investigate the effect 
+unique colors have on the localization accuracy specifically 
+we want to experimentally verify our intuition that assigning 
+more nodes to a color can benefit the localization accuracy 
+by enforcing more constraints as opposed to uniquely 
+assigning a color to a single node 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+convergencerate x 
+r feet 
+r feet 
+r feet 
+figure convergence error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+localizationerror feet 
+ anchors 
+ anchors 
+ anchors 
+ anchors 
+ anchors 
+figure localization error vs number of colors 
+for this we fix the number of available colors to either 
+ or and vary the number of nodes that are given unique 
+colors from up to the maximum number of colors or 
+ naturally if we have a maximum number of colors of 
+we can assign at most anchors the experimental results 
+are depicted in figure localization error and figure 
+ percentage of sensor node correctly localized as expected 
+the localization accuracy increases with the increase in the 
+number of colors available larger coloring space also for 
+a given size of the coloring space e g colors available if 
+more colors are uniquely assigned to sensor nodes then the 
+localization accuracy decreases it is interesting to observe 
+that by assigning colors uniquely to nodes the benefit of 
+having additional colors is diminished specifically if colors 
+are available and all are assigned uniquely the system would 
+be less accurately localized error ≈ ft when compared 
+to the case of colors and no unique assignments of colors 
+ ≈ ft localization error 
+the same trend of a less accurate localization can be 
+observed in figure which shows the percentage of nodes 
+correctly localized i e ft localization error as shown if 
+we increase the number of colors that are uniquely assigned 
+the percentage of nodes correctly localized decreases 
+ localization error vs connectivity 
+we collected empirical data for two network deployments 
+with different degrees of connectivity high and low in 
+order to assess the influence of connectivity on location 
+accuracy the results obtained from running our localization 
+algorithm are depicted in figure and figure we 
+varied the number of colors available and assigned no anchors 
+ i e no unique assignments of colors 
+in both scenarios as expected localization error decrease 
+with an increase in the number of colors it is interesting 
+to observe however that the low connectivity scenario 
+im 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+ correctlocalized x 
+ anchors 
+ anchors 
+ anchors 
+ anchors 
+ anchors 
+figure percentage of nodes correctly localized vs 
+number of colors 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+localizationerror feet 
+low connectivity 
+high connectivity 
+figure localization error vs number of colors 
+proves the localization accuracy quicker from the additional 
+number of colors available when the number of colors 
+becomes relatively large twelve for our sensor node 
+network both scenarios low and high connectivity have 
+comparable localization errors of less that ft the same trend 
+of more accurate location information is evidenced by 
+figure which shows that the percentage of nodes that are 
+localized correctly grows quicker for the low connectivity 
+deployment 
+ localization error vs image processing 
+errors 
+so far we investigated the sources for error in 
+localization that are intrinsic to the node id matching component 
+as previously presented luminous objects can be 
+mistakenly detected to be sensor nodes during the location 
+detection phase of the image processing module these false 
+positives can be eliminated by the color recognition procedure 
+of the image processing module more problematic are false 
+negatives when a sensor node does not reflect back enough 
+light to be detected they need to be handled by the 
+localization algorithm in this case the localization algorithm 
+is presented with two sets of nodes of different sizes that 
+need to be matched one coming from the image processing 
+ which misses some nodes and one coming from the 
+network with the connectivity information here we assume a 
+fully connected network so that all sensor nodes report their 
+connectivity information in this experiment we investigate 
+how image processing errors false negatives influence the 
+localization accuracy 
+for this evaluation we ran our localization algorithm with 
+empirical data but dropped a percentage of nodes from the 
+list of nodes detected by the image processing algorithm we 
+artificially introduced false negatives in the image 
+process 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of colors 
+ correctlocalized x 
+low connectivity 
+high connectivity 
+figure percentage of nodes correctly localized 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ false negatives x 
+localizationerror feet 
+ colors 
+ colors 
+ colors 
+figure impact of false negatives on the localization 
+error 
+ing the effect of false negatives on localization accuracy is 
+depicted in figure as seen in the figure if the number of 
+false negatives is the error in position estimation 
+doubles when colors are available it is interesting to observe 
+that the scenario when more colors are available e g 
+colors is being affected more drastically than the scenario with 
+less colors e g colors the benefit of having more colors 
+available is still being maintained at least for the range of 
+colors we investigated through colors 
+ localization time 
+in this section we look more closely at the duration for 
+each of the four proposed relaxation techniques and two 
+combinations of them color-connectivity and color-time 
+we assume that unique color filters can be manufactured 
+that the sensor network is deployed from ft 
+ necessary for the time-constrained relaxation and that the time 
+required for reporting connectivity grows linearly with an 
+initial reporting period of sec as used in a real world 
+tracking application the localization duration results as 
+presented in table are depicted in figure 
+as shown for all practical purposes the time required 
+by the space constrained relaxation techniques is sec the 
+same applies to the color constrained relaxation for which 
+the localization time is sec if the number of colors is 
+sufficient considering our assumptions only for a network of 
+size the color constrained relaxation works the 
+localization duration for all other network sizes and 
+is infinite i e unique color assignments to sensor nodes 
+can not be made since only colors are unique when 
+only color constrained relaxation is used both the 
+connectivity constrained and time constrained techniques increase 
+linearly with the network size for the time constrained the 
+central device deploys sensor nodes one by one recording 
+an image after the time a sensor node is expected to reach the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+color connectivity time space 
+colorconenctivity 
+color-time 
+localization technique 
+localizationtime sec 
+ nodes 
+ nodes 
+ nodes 
+ nodes 
+figure localization time for different 
+label relaxation schemes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+r feet 
+c 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure apparent contrast in a 
+clear atmosphere 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+r feet 
+c 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure apparent contrast in a 
+hazing atmosphere 
+ground 
+it is interesting to notice in figure the improvement in 
+the localization time obtained by simply combining the color 
+and the connectivity constrained techniques the 
+localization duration in this case is identical with the connectivity 
+constrained technique 
+the combination of color and time constrained 
+relaxations is even more interesting for a reasonable 
+localization duration of seconds a perfect i e ft localization 
+error localization system can be built in this scenario the 
+set of sensor nodes is split in batches with each batch 
+having a set of unique colors it would be very interesting to 
+consider other scenarios where the strength of the space 
+constrained relaxation sec for any sensor network size is 
+used for improving the other proposed relaxation techniques 
+we leave the investigation and rigorous classification of such 
+technique combination for future work 
+ system range 
+in this section we evaluate the feasibility of the 
+stardust localization framework when considering the realities 
+of light propagation through the atmosphere 
+the main factor that determines the range of our system is 
+light scattering which redirects the luminance of the source 
+into the medium in essence equally affecting the luminosity 
+of the target and of the background scattering limits the 
+visibility range by reducing the apparent contrast between 
+the target and its background approaches zero as the 
+distance increases the apparent contrast cr is quantitatively 
+expressed by the formula 
+cr nt 
+r −nb 
+r nb 
+r 
+where nt 
+r and nb 
+r are the apparent target radiance and 
+apparent background radiance at distance r from the light source 
+respectively the apparent radiance nt 
+r of a target at a 
+distance r from the light source is given by 
+nt 
+r na 
+iρte− σr 
+πr 
+ 
+where i is the intensity of the light source ρt is the 
+target reflectance σ is the spectral attenuation coefficient ≈ 
+ km− and ≈ km− for a clear and a hazy 
+atmosphere respectively and na is the radiance of the 
+atmospheric backscatter and it can be expressed as follows 
+na 
+gσ i 
+ π 
+ σrz 
+ σr 
+e−x 
+x 
+dx 
+where g is a backscatter gain the apparent 
+background radiance nb 
+r is given by formulas similar with 
+equations and where only the target reflectance ρt is 
+substituted with the background reflectance ρb it is important 
+to remark that when cr reaches its lower limit no increase 
+in the source luminance or receiver sensitivity will increase 
+the range of the system from equations and it can be 
+observed that the parameter which can be controlled and can 
+influence the range of the system is ρt the target reflectance 
+figures and depict the apparent contrast cr as a 
+function of the distance r for a clear and for a hazy 
+atmosphere respectively the apparent contrast is investigated for 
+reflectance coefficients ρt ranging from to perfect 
+reflector for a contrast c of at least as it can be seen in 
+figure a range of approximately ft can be achieved 
+if the atmosphere is clear the performance dramatically 
+deteriorates when the atmospheric conditions are problematic 
+as shown in figure a range of up to ft is 
+achievable when using highly reflective ccr components 
+while our light source million candlepower was 
+sufficient for a range of a few hundred feet we remark that there 
+exist commercially available light sources million 
+candlepower or military million candlepower 
+powerful enough for ranges of a few thousand feet 
+ stardust system optimizations 
+in this section we describe extensions of the proposed 
+architecture that can constitute future research directions 
+ chained constraint primitives 
+in this paper we proposed four primitives for 
+constraintbased relaxation algorithms color connectivity time and 
+space to demonstrate the power that can be obtained by 
+combining them we proposed and evaluated one 
+combination of such primitives color and connectivity an 
+interesting research direction to pursue could be to chain more than 
+two of these primitives an example of such chain is color 
+temporal spatial and connectivity other research directions 
+could be to use voting scheme for deciding which primitive 
+to use or assign different weights to different relaxation 
+algorithms 
+ 
+ location learning 
+if after several iterations of the algorithm none of the 
+label probabilities for a node ni converges to a higher value the 
+confidence in our labeling of that node is relatively low it 
+would be interesting to associate with a node more than one 
+label implicitly more than one location and defer the label 
+assignment decision until events are detected in the network 
+ if the network was deployed for target tracking 
+ localization in rugged environments 
+the initial driving force for the stardust localization 
+framework was to address the sensor node localization in 
+extremely rugged environments canopies dense vegetation 
+extremely obstructing environments pose significant 
+challenges for sensor nodes localization the hope and our 
+original idea was to consider the time period between the aerial 
+deployment and the time when the sensor node disappears 
+under the canopy by recording the last visible position of a 
+sensor node as seen from the aircraft a reasonable estimate 
+of the sensor node location can be obtained this would 
+require that sensor nodes posses self-righting capabilities 
+while in mid-air nevertheless we remark on the suitability 
+of our localization framework for rugged non-line-of-sight 
+environments 
+ conclusions 
+stardust solves the localization problem for aerial 
+deployments where passiveness low cost small form factor 
+and rapid localization are required results show that 
+accuracy can be within ft and localization time within 
+milliseconds stardust also shows robustness with respect to errors 
+we predict the influence the atmospheric conditions can have 
+on the range of a system based on the stardust framework 
+and show that hazy environments or daylight can pose 
+significant challenges 
+most importantly the properties of stardust support 
+the potential for even more accurate localization solutions 
+as well as solutions for rugged non-line-of-sight 
+environments 
+ references 
+ t he s krishnamurthy j a stankovic t abdelzaher l luo 
+r stoleru t yan l gu j hui and b krogh an energy-efficient 
+surveillance system using wireless sensor networks in mobisys 
+ g simon m maroti a ledeczi g balogh b kusy a nadas 
+g pap j sallai and k frampton sensor network-based 
+countersniper system in sensys 
+ a arora p dutta and b bapat a line in the sand a wireless sensor 
+network for trage detection classification and tracking in computer 
+networks 
+ r szewczyk a mainwaring j polastre j anderson and d culler 
+an analysis of a large scale habitat monitoring application in acm 
+sensys 
+ n xu s rangwala k k chintalapudi d ganesan a broad 
+r govindan and d estrin a wireless sensor network for structural 
+monitoring in acm sensys 
+ a savvides c han and m srivastava dynamic fine-grained 
+localization in ad-hoc networks of sensors in mobicom 
+ n priyantha a chakraborty and h balakrishnan the cricket 
+location-support system in mobicom 
+ m broxton j lifton and j paradiso localizing a sensor network 
+via collaborative processing of global stimuli in ewsn 
+ p bahl and v n padmanabhan radar an in-building rf-based user 
+location and tracking system in ieee infocom 
+ n priyantha h balakrishnan e demaine and s teller 
+mobileassisted topology generation for auto-localization in sensor networks 
+in ieee infocom 
+ p n pathirana a savkin s jha and n bulusu node localization 
+using mobile robots in delay-tolerant sensor networks ieee 
+transactions on mobile computing 
+ c savarese j m rabaey and j beutel locationing in distribued 
+ad-hoc wireless sensor networks in icaassp 
+ m maroti b kusy g balogh p volgyesi a nadas k molnar 
+s dora and a ledeczi radio interferometric geolocation in acm 
+sensys 
+ k whitehouse a woo c karlof f jiang and d culler the 
+effects of ranging noise on multi-hop localization an empirical study 
+in ipsn 
+ y kwon k mechitov s sundresh w kim and g agha resilient 
+localization for sensor networks in outdoor environment uiuc tech 
+rep 
+ r stoleru and j a stankovic probability grid a location 
+estimation scheme for wireless sensor networks in secon 
+ n bulusu j heidemann and d estrin gps-less low cost outdoor 
+localization for very small devices ieee personal communications 
+magazine 
+ t he c huang b blum j a stankovic and t abdelzaher 
+range-free localization schemes in large scale sensor networks in 
+acm mobicom 
+ r nagpal h shrobe and j bachrach organizing a global 
+coordinate system from local information on an ad-hoc sensor network in 
+ipsn 
+ d niculescu and b nath ad-hoc positioning system in ieee 
+globecom 
+ r stoleru t he j a stankovic and d luebke a high-accuracy 
+low-cost localization system for wireless sensor networks in acm 
+sensys 
+ k r¨omer the lighthouse location system for smart dust in 
+acm usenix mobisys 
+ r y tsai a versatile camera calibration technique for 
+highaccuracy d machine vision metrology using off-the-shelf tv cameras 
+and lenses ieee jra 
+ c l archer and m z jacobson spatial and temporal distributions 
+of u s winds and wind power at m derived from measurements 
+geophysical research jrnl 
+ team for advanced flow simulation and modeling online 
+available http www mems rice edu tafsm res 
+ k stein r benney t tezduyar v kalro and j leonard -d 
+computation of parachute fluid-structure interactions - performance and 
+control in aerodynamic decelerator systems conference 
+ headquarters department of the army technical manual for 
+searchlight infrared an gss- v 
+ 

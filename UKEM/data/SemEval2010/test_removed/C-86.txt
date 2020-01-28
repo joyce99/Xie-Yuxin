@@ -1,0 +1,635 @@
+addressing strategic behavior in a deployed 
+microeconomic resource allocator 
+chaki ng† 
+ philip buonadonna 
+ brent n chun 
+ alex c snoeren‡ 
+ amin vahdat‡ 
+† 
+harvard 
+intel research berkeley ‡ 
+uc san diego 
+markets eecs harvard edu 
+abstract 
+while market-based systems have long been proposed as 
+solutions for distributed resource allocation few have been 
+deployed for production use in real computer systems 
+towards this end we present our initial experience using 
+mirage a microeconomic resource allocation system based on 
+a repeated combinatorial auction mirage allocates time on 
+a heavily-used -node wireless sensor network testbed in 
+particular we focus on observed strategic user behavior over 
+a four-month period in which node hours were 
+allocated across research projects based on these results we 
+present a set of key challenges for market-based resource 
+allocation systems based on repeated combinatorial auctions 
+finally we propose refinements to the system s current 
+auction scheme to mitigate the strategies observed to date and 
+also comment on some initial steps toward building an 
+approximately strategyproof repeated combinatorial auction 
+categories and subject descriptors 
+c distributed systems distributed applications 
+general terms 
+measurement design economics experimentation 
+ introduction 
+market-based systems have long been proposed as 
+solutions for resource allocation in distributed systems including 
+computational grids wide-area network testbeds 
+and peer-to-peer systems yet while the theoretical 
+underpinnings of market-based schemes have made significant 
+strides in recent years practical integration of market-based 
+mechanisms into real computer systems and empirical 
+observations of such systems under real workloads has remained 
+an elusive goal towards this end we have designed 
+implemented and deployed a microeconomic resource allocation 
+system called mirage for scheduling testbed time on a 
+ -node wireless sensor network sensornet testbed at 
+intel research the system which employs a repeated 
+combinatorial auction to schedule allocations has been in 
+production use for over four months and has scheduled over 
+ node hours across research projects to date 
+in designing and deploying mirage we had three primary 
+goals first we wanted to validate whether a market-based 
+resource allocation scheme was necessary at all an 
+economic problem only exists when resources are scarce 
+therefore a key goal was to first measure both resource 
+contention and the range of underlying valuations users place 
+on the resources during periods of resource scarcity 
+second we wanted to observe how users would actually behave 
+in a market-based environment much of economic theory is 
+predicated on rational user behavior which forms the basis 
+for motivating research efforts such as strategyproof 
+mechanism design with mirage we wanted to 
+observe to what extent rationality held and in what ways 
+users would attempt to strategize and game the system 
+finally we wanted to identify what other practical problems 
+would emerge in a deployment of a market based system in 
+this paper we report briefly on our first goal while focusing 
+primarily on the second the third is left for future work 
+empirical results based on four months of usage have 
+validated the key motivating factors in using an auction-based 
+scheme i e significant resource contention and widely 
+varying valuations but have also pointed to real-world 
+observations of strategic user behavior in deploying mirage we 
+made the early decision to base the system on a repeated 
+combinatorial auction known not to be strategyproof that 
+is self-interested users could attempt to increase their 
+personal gain at the expense of others by not revealing their 
+true value to the system we made this decision mainly 
+because designing a strategyproof mechanism remains an open 
+challenging problem and we wanted to deploy a working 
+system and gain experience with real users to address our three 
+goals in a timely manner deploying a non-strategyproof 
+mechanism also had the benefit of testing rationality and 
+seeing how and to what extent users would try to game the 
+system the key contribution of this paper is an analysis of 
+such strategic behavior as observed over a four-month time 
+period and proposed refinements for mitigating such 
+behavior en route to building an approximately strategyproof 
+repeated combinatorial auction 
+the rest of this paper is organized as follows in section 
+ 
+we present an overview of mirage including high-level 
+observations on usage over a four-month period in section we 
+examine strategic user behavior focusing on the four 
+primary types of strategies employed by users in the system 
+based on these results section presents a set of key 
+challenges for market-based resource allocation systems based 
+on repeated combinatorial auctions as a first step in 
+addressing some of these challenges we describe refinements 
+to mirage s current auction scheme that mitigate the 
+strategies observed to date and also comment on some initial steps 
+towards building an approximately strategyproof repeated 
+combinatorial auction for mirage finally in section we 
+conclude the paper 
+ the mirage system 
+sensornet testbeds are a critical tool for developing and 
+evaluating sensornet technology in a controlled and 
+instrumented environment as with many large-scale systems 
+however resource management is a key problem given that 
+it is not economical for users to each build and operate their 
+own testbed in mirage testbed resources are 
+spaceshared and allocated using a repeated combinatorial auction 
+in a closed virtual currency environment users compete for 
+testbed resources by submitting bids which specify resource 
+combinations of interest in space time e g any mica 
+motes for hours anytime in the next two days along with 
+a maximum value amount the user is willing to pay a 
+combinatorial auction is then periodically run to determine the 
+winning bids based on supply and demand while maximizing 
+aggregate utility delivered to users 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+totalmica utilization 
+days since dec 
+figure testbed utilization for mica motes 
+in mirage resources are allocated using a first-price 
+combinatorial auction which clears every hour in each round 
+of the auction a rolling window of future testbed resources 
+is available for allocation with subsets of that window 
+being removed from the pool as resources get allocated in 
+our initial deployment we used a -hour window and 
+deployed the system on a testbed consisting of nodes 
+mica and mica dot sensor nodes or motes 
+in each round of the auction users bid for subsets of 
+resources available in the current window when the system 
+is first brought online a full -node × -hour window 
+is available where each row of the window represents the 
+availability of a particular node across time and each 
+column represents the availability of the testbed for a given 
+hour the leftmost column of the window represents node 
+availability for the hour immediately following the auction 
+these node hours will never again be available for auction 
+all other node hours not allocated at this or previous 
+auctions continue to be offered for sale at subsequent auctions 
+in each subsequent round i e every hour portions of the 
+current window are allocated as bids are matched to 
+available resources and a new rightmost -node × -hour 
+column of resources rolls in and replaces the leftmost column of 
+resources which expires there is no time sharing of nodes 
+given limited local computation and communication power 
+once a sensor is allocated to a user for a particular time 
+period it is unavailable to all other users 
+in mirage users place combinatorial bids specifying 
+resource combinations of interest in space time along with a 
+maximum value amount the user is willing to pay more 
+specifically a bid bi vi si ti di fmin fmax ni oki 
+indicates the user wants any combination of ni motes from 
+the set oki simultaneously for a duration of di hours di ∈ 
+ a start time anywhere between si and ti and 
+a radio frequency in the range fmin fmax 
+the user also 
+is willing to pay up to vi units of virtual currency for these 
+resources in essence each bid specifies in a succinct 
+manner what subsets of the resource window would serve as 
+acceptable resources that meet the user s constraints and how 
+important the desired resource allocation is to the user 
+we deployed mirage on december and the system 
+has been in continuous production use for over four months 
+in the process its lifetime has overlapped with several 
+periods of significant resource contention including the 
+sigcomm and sensys conference deadlines overall 
+the system has research projects registered to use the 
+system spanning a variety of academic and commercial 
+institutions of these have actively bid and received time 
+on the system as of april the system has received 
+ bids and allocated node hours over the testbed s 
+ nodes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+cumulativefractionofbids 
+bid value per node hour 
+u 
+u 
+u 
+u 
+u 
+u 
+u 
+figure bid value distributions by user 
+as a measure of contention figure shows the 
+utilization of the mica motes over the past four months 
+it depicts periods of significant contention extending over 
+multiple consecutive days in particular near major 
+deadlines 
+to quantify user valuations for resources figure 
+ 
+the frequency constraints are used to schedule testbed 
+allocations such that allocations co-scheduled in time do not 
+collide by using the same radio frequency in practice 
+distinct frequencies have not been a scarce resource 
+ 
+results for the mica dot motes are similar and 
+omitted for space 
+ 
+plots distributions of bid values per node hour for the seven 
+most active users in the system this graph shows that 
+user valuations for testbed resources varied substantially 
+spanning over four orders of magnitude valuations are also 
+distributed relatively evenly across each order of magnitude 
+suggesting that these ranges are not due to a few anomalous 
+bids but rather to a wide range of underlying user valuations 
+for testbed resources these dual observations-significant 
+resource contention and a wide range of valuations-support 
+the use of an auction which is designed precisely to harness 
+such widely varying valuations to compute an efficient and 
+user utility-maximizing node allocation 
+lastly as another measure of resource contention and the 
+utility of driving resource allocation via user-specified 
+valuations figure plots the median per-node clearing price for 
+both mica and mica dot motes over time to compute 
+these prices we price an allocated node-hour for a winning 
+bid with value v for n nodes for k hours as v nk unallocated 
+node-hours are assigned a price of for a given hour we 
+examine all mica motes and plot the median node-hour 
+price for that hour and do the same for mica dot motes 
+of particular interest in this graph are the sequence of prices 
+from days - and days - i e periods leading up 
+to conference deadlines these sequences show that the 
+value of testbed resources as measured by market prices for 
+motes increases exponentially logarithmic y-axis during 
+times of peak contention this suggests that allowing users 
+to express valuations for resources to drive the resource 
+allocation process is important for making effective use of the 
+testbed e g to distinguish important use from low 
+priority activities however it also suggests that users become 
+exponentially desperate to acquire resources as deadlines 
+approach as it turns out it is precisely during these times 
+that users will try their hardest to game the system and 
+therefore when the efficacy of a market-based mechanism 
+can be best evaluated 
+ e- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+valuepernodehour 
+days since dec 
+mica 
+mica dot 
+figure median node-hour market prices 
+ observed strategic behavior 
+during the past four months of operation mirage has 
+employed two distinct auction mechanisms and observed four 
+primary types of strategic behavior from users the first 
+auction mechanism a was deployed from december 
+ to march during this time period we 
+observed three different types of strategic behavior s -s 
+the most recent of which s resulted in significant gaming 
+of the system in response to the impact of s we deployed 
+a second mechanism a on march day in 
+figures and while a mitigated or eliminated the 
+known shortcomings of a -in particular the vulnerability 
+strategy s exploited that prompted the change in the first 
+place-it was soon discovered that a remained vulnerable 
+to another strategy s which was predictably discovered 
+and exploited by a motivated user community we are 
+currently in the process of designing a mechanism to address the 
+weakness in a that is abused by s of course ideally we 
+would develop a provably strategyproof mechanism 
+however this remains an open research problem for repeated 
+combinatorial auctions 
+in this section we describe the two auction mechanisms 
+a and a mirage s virtual currency policy the four types 
+of observed strategic behavior s -s and their impact on 
+aggregate utility delivered 
+ auctions and virtual currency 
+our first auction mechanism a was a first-price 
+openbid i e users can see all outstanding bids from competing 
+users combinatorial auction that cleared every hour based 
+on a greedy algorithm in each round of auction the current 
+set of bids was sorted by value per node hour and bids were 
+greedily fit into the remaining portion of the current window 
+of available resources like a our second auction a was 
+also based on a greedy clearing algorithm its key differences 
+were that i it was a sealed-bid auction and ii it allocated 
+resources over a -node × -hour window with bid start 
+times constrained to be within the next hours the reason 
+for this will become apparent when we discuss strategy s 
+in both auctions winning bids from previous auctions 
+were publicly visible for price feedback and the same 
+virtual currency policy was used our virtual currency policy 
+assigns two numbers to each user s bank account a baseline 
+value and a number of shares when created each bank 
+account is initialized to its baseline value once funded a user 
+can then begin to bid and acquire testbed resources through 
+mirage in each round of the auction accounts for winning 
+bids are debited and the proceeds are redistributed through 
+a proportional profit-sharing policy based on bank account 
+share values the primary purpose of this policy is to 
+reward users who refrain from using the system during times 
+of peak demand and penalize those who use resources 
+aggressively during periods of scarcity these rewards result 
+in transient bursts of credit and are balanced by another 
+mechanism a savings tax to prevent idle users from sitting 
+on large amounts of excess credit forever a use it or lose 
+it policy in our deployment an administrator set the 
+virtual currency policy bank accounts for external users were 
+assigned baseline and shares value set to while bank 
+accounts for internal users u and u were assigned larger 
+allocations with baseline and share values set to 
+ strategic behavior 
+the following are descriptions of the four primary bidding 
+strategies observed over the past four-months 
+s underbidding based on current demand in a all 
+outstanding bids were publicly visible consequently when 
+users would observe a lack of demand some users would bid 
+correspondingly low amounts rather than their true values 
+for example one user would frequently bid or when no 
+other bids were present while underbidding in the absence 
+of competition is not a problem per se it does raise two 
+ 
+issues first if a seller was collecting revenue for profit 
+such bidding leads to suboptimal outcomes for the seller 
+second should other users enter competing bids before the 
+auction clears users will need to refine their bids to allow the 
+system to compute an allocation that maximizes aggregate 
+utility this second problem then leads to strategy s 
+s iterative bidding because users are allowed to modify 
+their bids and a was an open auction iteratively refining 
+one s bid value in response to other users bid values should 
+in theory have no effect on who wins the auction users 
+with higher valuations-who may also be 
+underbiddingshould eventually outbid those with lower valuations after 
+sufficient iteration the problem is that users do not 
+behave this rational way usability overhead matters users 
+in mirage bid once and perhaps modify their bid a second 
+time the end result is that inefficiencies may arise since 
+the auction may clear with bid values that are understated 
+while bidding proxies that automatically adjust user bids in 
+response to other bids are effective in single-good auctions 
+it is unclear how such proxies could be generally effective in 
+a combinatorial auction without actually implementing the 
+same clearing algorithm used by mirage which could be 
+computationally expensive in summary s and s both 
+point toward the need for a strategyproof auction mechanism 
+in mirage in such an auction a user s optimal strategy is 
+always to bid truthfully the first time thus rational users 
+will never underbid and iterative bidding is unnecessary 
+s rolling window manipulation unlike auctions for 
+tangible goods resource allocation in computer systems 
+fundamentally involves time since sharing of resources implies 
+that a resource cannot be assigned to a given user process 
+forever in mirage we addressed the issue of time by 
+selling resources over a rolling window hours into the future 
+with users able to bid for blocks or hours in 
+length what we did not anticipate however was what 
+would happen when the entire window of resources becomes 
+fully allocated in this scenario which was the norm near 
+the recent sensys deadline the entire -node × 
+ hour window is allocated a user bidding for say hours 
+thus needs to minimally wait hours for new -node 
+× -hour columns of resources to become available 
+the problem here is that a user can game the system 
+by observing other bids and simply requesting fewer hours 
+since columns will roll into the resource window before 
+ columns a user bidding for hours outbids a -hour 
+bid independent of each bid s value because resources for the 
+ -hour bid are not available when the auction clears of 
+course if other users also begin bidding for hours this 
+opportunity disappears but then moves to durations shorter 
+than hours in the limit all users bid for -hour blocks 
+thereby eliminating the possibility of obtaining longer 
+resource allocations which may be critical to the underlying 
+sensornet experiment in practice we observed this type of 
+gaming push winning bid durations down to hours 
+with rampant gaming of the system occurring through 
+s we responded by implementing and deploying auction 
+a as mentioned a key difference of a compared to a is 
+that it allocates resources over a -hour window with bid 
+start times constrained to be within the next hours in 
+expanding the window and expanding while still 
+constraining the range of start times a eliminates strategy s 
+when the entire -node × -hour window is allocated 
+a pending -hour bid and a pending -hour bid will both 
+time project value nodes hours 
+ - - u 
+ - - u 
+ - - u 
+ - - u 
+table strategy s on mica motes 
+have their first opportunity for an allocation when new 
+columns become available at that point both the -hour 
+bid and the -hour bid will have an opportunity to obtain 
+an allocation such allocations are then determined by the 
+usual greedy clearing algorithm 
+s auction sandwich attack while a eliminated s and 
+significantly reduced s and s it still retained a weakness 
+of a that had yet to be discovered and exploited in the 
+auction sandwich attack a user exploits two pieces of 
+information i historical information on previous winning bids 
+to estimate the current workload and ii the greedy nature 
+of the auction clearing algorithm in this particular case 
+a user employs a strategy of splitting a bid for mica 
+motes across several bids only one of which has a high value 
+per node hour since the high value bid is likely to win due 
+to the greedy nature of the auction clearing algorithm and 
+since all other users at the time were all requesting motes 
+ based on the historical information and the fact that the 
+sensys deadline was imminent requiring experiments at 
+scale no other bids could backfill the remaining slots the 
+user s remaining bids would then fit those slots at a low 
+price an actual occurrence is shown in table here user 
+u uses three bids the main one being a bid with value 
+ value per node hour · which is 
+used to outbid a bid with value value per node hour 
+ · once the high valued -node bid 
+has occupied its portion of the resource window no other 
+ -node bids can be matched consequently the user 
+backfills on the remaining nodes using two bids a -node 
+bid and a -node bid both at low valuations 
+ challenges and refinements 
+designing an appropriate auction mechanism is key to 
+addressing the above strategies specifically our goals for such 
+a mechanism include i strategyproofness ii 
+computational tractability and iii optimal allocation the 
+generalized vickrey auction gva is the only known 
+combinatorial mechanism that provides both strategyproofness 
+and optimal allocation however it also is 
+computationally intractable as it is np-hard to calculate the allocations 
+as well as individual payments other vcg-based 
+mechanisms exist that replace the allocation algorithms in gva 
+with approximate ones to provide tractability in this case 
+however strategyproofness is no longer available these 
+goals are in conflict for vcg and in general we thus 
+must make certain trade-offs 
+with this in mind we now present a two-phase roadmap 
+for improving mirage i short-term improvements to the 
+current mechanism that mitigate the effects of existing 
+strategies and ii designing a new mechanism that approximately 
+achieves our three goals simultaneously 
+ ongoing improvements 
+our first improvement is a mixed-integer programming 
+ 
+ mip formulation as an alternative to the greedy algorithm 
+this is aimed directly at eliminating strategy s while 
+the mip does not provide strategyproofness it is able to 
+compute approximately-optimal allocations like the gva 
+however the mip is computationally demanding and thus 
+careful formulation of the mip and optimizations based on 
+the observed workloads from mirage will be required to 
+ensure timely clearing of the auction our first step is to test 
+and optimize our mip-based algorithm on auction data from 
+the past four months we can then run both the mip 
+alongside the greedy algorithm in parallel and select the higher 
+quality result each time the auction clears 
+second we can also augment the auction with additional 
+rules and fees to further mitigate strategic behavior to 
+eliminate s two possibilities are to restrict each user to 
+having either one outstanding bid at a time or to mandate 
+that users are not allowed to have multiple overlapping 
+allocations in time to mitigate s and s we could add 
+transaction fees with such fees in place a user who 
+understates a bid and intends to iteratively refine it will have a 
+disincentive to do so given that each iteration incurs a fee 
+finally another approach to eliminating s is to modify 
+the greedy algorithm such that if users do have bids whose 
+allocations could overlap in time then those potential 
+allocations are considered from lowest to highest value per node 
+hour in effect this allows bids for overlapping allocations 
+but creates a disincentive for users to place such bids 
+ towards a strategyproof mechanism 
+clearly we need to evaluate our goals and identify where 
+we can make trade-offs in designing a new mechanism 
+computational tractability is a fundamental requirement for 
+operational reasons strategyproofness or minimally making 
+the system hard to manipulate is also key given the behavior 
+we have observed finally our mechanism should compute 
+near-optimal allocations given our compute time budget 
+among the potential mechanisms we can extend the los 
+scheme seems to be a good starting point it is a fast 
+algorithm as the allocation rule is a greedy mechanism 
+ranking bids with some norm such as value per node hour 
+the advantage of los is its special payment scheme that is 
+tightly linked to the greedy allocation essentially a winner 
+i pays the norm of the first bidder denied access times the 
+amount of units i e node hours that i won this feature 
+makes it strategyproof the main downside however is that 
+it assumes users are single-minded meaning that each 
+bidder only cares about a specific set of goods e g a specific 
+list of nodes for specific durations and they do not value 
+anything else unfortunately this is highly restrictive and 
+contradicts what mirage currently offers its users namely 
+the ability to select any subset of nodes for any slots and 
+submit multiple bids thus los is vulnerable to s and to 
+avoid it we must find a way to extend los and its 
+strategyproof property to satisfy complex-bidders 
+realistically even with a strategyproof los scheme for 
+complex bidders there will likely be further strategies we 
+have yet to encounter and that we should consider in our 
+design for instance our discussion so far focuses on 
+strategyproofness within a single auction across auctions 
+however there may be temporal strategies that are possible for 
+example in a particular auction suppose the highest bidder 
+wants all nodes and pays using gva payment scheme for 
+simplicity the next bidder s value this same bidder may 
+be better off by waiting until the next auction if the user 
+can still win and face bidders that have even lower values 
+in this case the user will gain additional utility due to a 
+lower payment this however may create various problems 
+as total revenue total value as well as allocative efficiency 
+across the auctions may be adversely affected 
+there are two techniques we can use to address 
+temporal strategies the first is a wrapper scheme such as the 
+one employed by virtual worlds vw that makes 
+sequences of individually strategyproof auctions e g los 
+strategyproof what vw does is after bidder i wins it 
+tracks what would have happened if i had submitted in a 
+subsequent auction instead specifically it tracks what i 
+would have paid in all following auctions during i s patience 
+ i e the maximum time i is willing to wait for an 
+allocation and keeps track of the lowest possible payment i will 
+instead be charged the lowest payment and will thus have 
+no incentive to temporally game the system alternatively 
+the new class of online mechanisms assumes dynamic 
+arrival and departure of bidders and does not hold auctions 
+at fixed intervals instead the mechanism is a continuous 
+scheme that accepts bids as they arrive and makes allocation 
+decisions immediately thus removing any need to clear 
+auctions the challenge is that the current literature is still 
+restricted to non-combinatorial settings 
+ conclusion 
+despite initially using a repeated combinatorial auction 
+known not to be strategyproof mirage has shown significant 
+promise as a vehicle for sensornet testbed allocation the 
+dual observations of significant resource contention and a 
+wide range of valuations suggest that auction-based schemes 
+can deliver large improvements in aggregate utility when 
+compared to traditional approaches such as proportional 
+share allocation or batch scheduling fully realizing these 
+gains however requires addressing key problems in 
+strategyproof mechanism design and combinatorial optimization 
+the temporal nature of computational resources and the 
+combinatorial resource demands of distributed applications 
+adds an additional layer of complexity nevertheless we 
+remain optimistic and believe that a pragmatic mix of theory 
+and practice combined with iterative improvements on real 
+deployments provides one promising avenue toward bringing 
+market-based resource allocation into the mainstream 
+ references 
+ crossbow corporation http www xbow com 
+ buyya r abramson d and giddy j 
+nimrodg an architecture of a resource management 
+and scheduling system in a global computational 
+grid in proceedings of the th international 
+conference on high performance computing in 
+asia-pacific region may 
+ chun b n buonadonna p auyoung a ng 
+c parkes d c shneidman j snoeren 
+a c and vahdat a mirage a microeconomic 
+resource allocation system for sensornet testbeds 
+in proceedings of the nd ieee workshop on 
+embedded networked sensors may 
+ clarke e h multipart pricing of public goods 
+public choice - 
+ 
+ de vries s and vohra r v combinatorial 
+auctions a survey informs journal on 
+computing - 
+ groves t incentives in teams econometrica 
+ - 
+ hajiaghayi m t kleinberg r and parkes 
+d c adaptive limited-supply online auctions in 
+proceedings of the th acm conference on electronic 
+commerce 
+ jackson m o mechanism theory in the 
+encyclopedia of life support systems eolss 
+publishers 
+ lai k huberman b a and fine l tycoon a 
+distributed market-based resource allocation 
+system tech rep hewlett packard 
+ lavi r mu alem a and nisan n towards a 
+characterization of truthful combinatorial auctions 
+in proceedings of the th annual symposium on 
+foundations of computer science 
+ lavi r and nisan n competitive analysis of 
+incentive compatible on-line auctions in proceedings 
+of the nd acm conference on electronic commerce 
+ pp - 
+ lehmann d o callaghan l i and shoham 
+y truth revelation in approximately efficient 
+combinatorial auctions journal of the acm 
+ september - 
+ ng c parkes d c and seltzer m virtual 
+worlds fast and strategyproof auctions for dynamic 
+resou rce allocation in proceedings of the th acm 
+conference on electronic commerce 
+ nisan n bidding and allocation in combinatorial 
+auctions in proceedings of the nd acm conference 
+on electronic commerce 
+ nisan n and ronen a algorithmic mechanism 
+design in proceedings of the st annual acm 
+symposium on theory of computing may 
+ nisan n and ronen a computationally feasible 
+vcg mechanisms in proceedings of the nd acm 
+conference on electronic commerce october 
+ regev o and nisan n the popcorn market 
+- an online market for computational resources in 
+proceedings of the st international conference on 
+information and computation economies october 
+ 
+ varian h and mackie-mason j k generalized 
+vickrey auctions tech rep university of michigan 
+ 
+ vickrey w counterspeculation auctions and 
+competitive sealed tenders journal of finance 
+ - 
+ wolski r plank j s brevik j and bryan 
+t analyzing market-based resource allocation 
+strategies for the computational grid international 
+journal of high performance computing applications 
+ - 
+ 

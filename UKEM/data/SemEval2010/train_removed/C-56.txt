@@ -1,0 +1,590 @@
+a hierarchical process execution support for grid 
+computing 
+fábio r l cicerre 
+institute of computing 
+state university of campinas 
+campinas brazil 
+fcicerre ic unicamp br 
+edmundo r m madeira 
+institute of computing 
+state university of campinas 
+campinas brazil 
+edmundo ic unicamp br 
+luiz e buzato 
+institute of computing 
+state university of campinas 
+campinas brazil 
+buzato ic unicamp br 
+abstract 
+grid is an emerging infrastructure used to share resources 
+among virtual organizations in a seamless manner and to 
+provide breakthrough computing power at low cost 
+nowadays there are dozens of academic and commercial products 
+that allow execution of isolated tasks on grids but few 
+products support the enactment of long-running processes in a 
+distributed fashion in order to address such subject this 
+paper presents a programming model and an infrastructure 
+that hierarchically schedules process activities using 
+available nodes in a wide grid environment their advantages 
+are automatic and structured distribution of activities and 
+easy process monitoring and steering 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems-distributed applications 
+general terms 
+design performance management algorithms 
+ introduction 
+grid computing is a model for wide-area distributed and 
+parallel computing across heterogeneous networks in 
+multiple administrative domains this research field aims to 
+promote sharing of resources and provides breakthrough 
+computing power over this wide network of virtual 
+organizations in a seamless manner traditionally as in globus 
+ condor-g and legion there is a minimal 
+infrastructure that provides data resource sharing computational 
+resource utilization management and distributed execution 
+specifically considering distributed execution most of the 
+existing grid infrastructures supports execution of isolated 
+tasks but they do not consider their task interdependencies 
+as in processes workflows this deficiency restricts 
+better scheduling algorithms distributed execution 
+coordination and automatic execution recovery 
+there are few proposed middleware infrastructures that 
+support process execution over the grid in general they 
+model processes by interconnecting their activities through 
+control and data dependencies among them webflow 
+ emphasizes an architecture to construct distributed 
+processes opera-g provides execution recovering and 
+steering gridflow focuses on improved scheduling algorithms 
+that take advantage of activity dependencies and swindew 
+ supports totally distributed execution on peer-to-peer 
+networks however such infrastructures contain 
+scheduling algorithms that are centralized by process or 
+completely distributed but difficult to monitor and control 
+ 
+in order to address such constraints this paper proposes a 
+structured programming model for process description and a 
+hierarchical process execution infrastructure the 
+programming model employs structured control flow to promote 
+controlled and contextualized activity execution 
+complementary the support infrastructure which executes a process 
+specification takes advantage of the hierarchical structure 
+of a specified process in order to distribute and schedule 
+strong dependent activities as a unit allowing a better 
+execution performance and fault-tolerance and providing 
+localized communication 
+the programming model and the support infrastructure 
+named x avantes are under implementation in order to show 
+the feasibility of the proposed model and to demonstrate its 
+two major advantages to promote widely distributed 
+process execution and scheduling but in a controlled 
+structured and localized way 
+next section describes the programming model and 
+section the support infrastructure for the proposed grid 
+computing model section demonstrates how the support 
+infrastructure executes processes and distributes activities 
+related works are presented and compared to the proposed 
+model in section the last section concludes this paper 
+encompassing the advantages of the proposed hierarchical 
+process execution support for the grid computing area and 
+lists some future works 
+ middleware companion 
+processelement 
+process activity controller 
+ 
+ 
+ 
+ 
+figure high-level framework of the programming 
+model 
+ programming model 
+the programming model designed for the grid computing 
+architecture is very similar to the specified to the business 
+process execution language bpel both describe 
+processes in xml documents but the former specifies 
+processes strictly synchronous and structured and has more 
+constructs for structured parallel control the rationale 
+behind of its design is the possibility of hierarchically distribute 
+the process control and coordination based on structured 
+constructs differently from bpel which does not allow 
+hierarchical composition of processes 
+in the proposed programming model a process is a set of 
+interdependent activities arranged to solve a certain 
+problem in detail a process is composed of activities 
+subprocesses and controllers see figure activities represent 
+simple tasks that are executed on behalf of a process 
+subprocesses are processes executed in the context of a 
+parent process and controllers are control elements used to 
+specify the execution order of these activities and 
+subprocesses like structured languages controllers can be nested 
+and then determine the execution order of other controllers 
+data are exchanged among process elements through 
+parameters they are passed by value in case of simple 
+objects or by reference if they are remote objects shared 
+among elements of the same controller or process external 
+data can be accessed through data sources such as relational 
+databases or distributed objects 
+ controllers 
+controllers are structured control constructs used to 
+define the control flow of processes there are sequential and 
+parallel controllers 
+the sequential controller types are block switch for 
+and while the block controller is a simple sequential 
+construct and the others mimic equivalent structured 
+programming language constructs similarly the parallel types are 
+par parswitch parfor and parwhile they extend the 
+respective sequential counterparts to allow parallel execution 
+of process elements 
+all parallel controller types fork the execution of one or 
+more process elements and then wait for each execution to 
+finish indeed they contain a fork and a join of execution 
+aiming to implement a conditional join all parallel 
+controller types contain an exit condition evaluated all time 
+that an element execution finishes in order to determine 
+when the controller must end 
+the parfor and parwhile are the iterative versions of 
+the parallel controller types both fork executions while 
+the iteration condition is true this provides flexibility to 
+determine at run-time the number of process elements to 
+execute simultaneously 
+when compared to workflow languages the parallel 
+controller types represent structured versions of the workflow 
+control constructors because they can nest other controllers 
+and also can express fixed and conditional forks and joins 
+present in such languages 
+ process example 
+this section presents an example of a prime number search 
+application that receives a certain range of integers and 
+returns a set of primes contained in this range the whole 
+computation is made by a process which uses a parallel 
+controller to start and dispatch several concurrent activities 
+of the same type in order to find prime numbers the 
+portion of the xml document that describes the process and 
+activity types is shown below 
+ process type name findprimes 
+ in parameter type int name min 
+ in parameter type int name max 
+ in parameter type int name numprimes 
+ in parameter type int name numacts 
+ body 
+ pre code 
+setprimes new remotehashset 
+parfor setmin getmin 
+parfor setmax getmax 
+parfor setnumprimes getnumprimes 
+parfor setnumacts getnumacts 
+parfor setprimes getprimes 
+parfor setcounterbegin 
+parfor setcounterend getnumacts - 
+ pre code 
+ parfor name parfor 
+ in parameter type int name min 
+ in parameter type int name max 
+ in parameter type int name numprimes 
+ in parameter type int name numacts 
+ in parameter 
+type remotecollection name primes 
+ iterate 
+ pre code 
+int range 
+ getmax -getmin getnumacts 
+int minnum range getcounter getmin 
+int maxnum minnum range- 
+if getcounter getnumacts - 
+maxnum getmax 
+findprimes setmin minnum 
+findprimes setmax maxnum 
+findprimes setnumprimes getnumprimes 
+findprimes setprimes getprimes 
+ pre code 
+ activity 
+type findprimes name findprimes 
+ iterate 
+ parfor 
+ body 
+ out parameter 
+type remotecollection name primes 
+ process type 
+middleware for grid computing 
+ activity type name findprimes 
+ in parameter type int name min 
+ in parameter type int name max 
+ in parameter type int name numprimes 
+ in parameter 
+type remotecollection name primes 
+ code 
+for int num getmin num getmax num 
+ stop required number of primes was found 
+if primes size getnumprimes 
+break 
+boolean prime true 
+for int i i num i 
+if num i 
+prime false 
+break 
+ 
+ 
+if prime 
+primes add new integer num 
+ 
+ 
+ code 
+ activity type 
+firstly a process type that finds prime numbers named 
+findprimes is defined it receives through its input 
+parameters a range of integers in which prime numbers have 
+to be found the number of primes to be returned and the 
+number of activities to be executed in order to perform this 
+work at the end the found prime numbers are returned as 
+a collection through its output parameter 
+this process contains a parfor controller aiming to 
+execute a determined number of parallel activities it iterates 
+from to getnumacts - which determines the number 
+of activities starting a parallel activity in each iteration in 
+such case the controller divides the whole range of numbers 
+in subranges of the same size and in each iteration starts a 
+parallel activity that finds prime numbers in a specific 
+subrange these activities receive a shared object by reference 
+in order to store the prime numbers just found and control 
+if the required number of primes has been reached 
+finally it is defined the activity type findprimes used 
+to find prime numbers in each subrange it receives through 
+its input parameters the range of numbers in which it has 
+to find prime numbers the total number of prime numbers 
+to be found by the whole process and passed by reference 
+a collection object to store the found prime numbers 
+between its code markers there is a simple code to find prime 
+numbers which iterates over the specified range and 
+verifies if the current integer is a prime additionally in each 
+iteration the code verifies if the required number of primes 
+inserted in the primes collection by all concurrent activities 
+has been reached and exits if true 
+the advantage of using controllers is the possibility of the 
+support infrastructure determines the point of execution the 
+process is in allowing automatic recovery and monitoring 
+and also the capability of instantiating and dispatching 
+process elements only when there are enough computing 
+resources available reducing unnecessary overhead besides 
+due to its structured nature they can be easily composed 
+and the support infrastructure can take advantage of this 
+in order to distribute hierarchically the nested controllers to 
+group server 
+group 
+java virtual machine 
+rmi jdbc 
+group manager 
+process server 
+java virtual machine 
+rmi jdbc 
+process coordinator 
+worker 
+java virtual machine 
+rmi 
+activity manager 
+repository 
+figure infrastructure architecture 
+different machines over the grid allowing enhanced 
+scalability and fault-tolerance 
+ support infrastructure 
+the support infrastructure comprises tools for 
+specification and services for execution and monitoring of 
+structured processes in highly distributed heterogeneous and 
+autonomous grid environments it has services to monitor 
+availability of resources in the grid to interpret processes 
+and schedule activities and controllers and to execute 
+activities 
+ infrastructure architecture 
+the support infrastructure architecture is composed of 
+groups of machines and data repositories which preserves 
+its administrative autonomy generally localized machines 
+and repositories such as in local networks or clusters form 
+a group each machine in a group must have a java virtual 
+machine jvm and a java runtime library besides 
+a combination of the following grid support services group 
+manager gm process coordinator pc and activity 
+manager am this combination determines what kind of group 
+node it represents a group server a process server or 
+simply a worker see figure 
+in a group there are one or more group managers but 
+only one acts as primary and the others as replicas they 
+are responsible to maintain availability information of group 
+machines moreover group managers maintain references to 
+data resources of the group they use group repositories to 
+persist and recover the location of nodes and their 
+availability 
+to control process execution there are one or more 
+process coordinators per group they are responsible to 
+instantiate and execute processes and controllers select resources 
+and schedule and dispatch activities to workers in order 
+to persist and recover process execution and data and also 
+load process specification they use group repositories 
+finally in several group nodes there is an activity 
+manager it is responsible to execute activities in the hosted 
+machine on behalf of the group process coordinators and to 
+inform the current availability of the associated machine to 
+group managers they also have pendent activity queues 
+containing activities to be executed 
+ inter-group relationships 
+in order to model real grid architecture the infrastructure 
+must comprise several potentially all local networks like 
+internet does aiming to satisfy this intent local groups are 
+ middleware companion 
+gm 
+gm 
+gm 
+gm 
+figure inter-group relationships 
+connected to others directly or indirectly through its group 
+managers see figure 
+each group manager deals with requests of its group 
+ represented by dashed ellipses in order to register local 
+machines and maintain correspondent availability 
+additionally group managers communicate to group managers of 
+other groups each group manager exports coarse 
+availability information to group managers of adjacent groups and 
+also receives requests from other external services to 
+furnish detailed availability information in this way if there 
+are resources available in external groups it is possible to 
+send processes controllers and activities to these groups in 
+order to execute them in external process coordinators and 
+activity managers respectively 
+ process execution 
+in the proposed grid architecture a process is specified 
+in xml using controllers to determine control flow 
+referencing other processes and activities and passing objects to 
+their parameters in order to define data flow after specified 
+the process is compiled in a set of classes which represent 
+specific process activity and controller types at this time 
+it can be instantiated and executed by a process coordinator 
+ dynamic model 
+to execute a specified process it must be instantiated by 
+referencing its type on a process coordinator service of a 
+specific group also the initial parameters must be passed 
+to it and then it can be started 
+the process coordinator carries out the process by 
+executing the process elements included in its body sequentially 
+if the element is a process or a controller the process 
+coordinator can choose to execute it in the same machine or to 
+pass it to another process coordinator in a remote machine 
+if available else if the element is an activity it passes to 
+an activity manager of an available machine 
+process coordinators request the local group manager to 
+find available machines that contain the required service 
+process coordinator or activity manager in order to 
+execute a process element then it can return a local 
+machine a machine in another group or none depending on 
+the availability of such resource in the grid it returns an 
+external worker activity manager machine if there are no 
+available workers in the local group and it returns an 
+external process server process coordinator machine if there 
+are no available process servers or workers in the local group 
+obeying this rule group managers try to find process servers 
+in the same group of the available workers 
+such procedure is followed recursively by all process 
+cogm 
+findprimes 
+activity 
+am 
+findprimes 
+activity 
+am 
+findprimes 
+activity 
+am 
+findprimes 
+process 
+pc 
+figure findprimes process execution 
+ordinators that execute subprocesses or controllers of a 
+process therefore because processes are structured by 
+nesting process elements the process execution is automatically 
+distributed hierarchically through one or more grid groups 
+according to the availability and locality of computing 
+resources 
+the advantage of this distribution model is wide area 
+execution which takes advantage of potentially all grid 
+resources and localized communication of process elements 
+because strong dependent elements which are under the 
+same controller are placed in the same or near groups 
+besides it supports easy monitoring and steering due to its 
+structured controllers which maintain state and control over 
+its inner elements 
+ process execution example 
+revisiting the example shown in section a process 
+type is specified to find prime numbers in a certain range of 
+numbers in order to solve this problem it creates a number 
+of activities using the parfor controller each activity then 
+finds primes in a determined part of the range of numbers 
+figure shows an instance of this process type executing 
+over the proposed infrastructure a findprimes process 
+instance is created in an available process coordinator pc 
+which begins executing the parfor controller in each 
+iteration of this controller the process coordinator requests 
+to the group manager gm an available activity manager 
+ am in order to execute a new instance of the findprimes 
+activity if there is any am available in this group or in an 
+external one the process coordinator sends the activity class 
+and initial parameters to this activity manager and requests 
+its execution else if no activity manager is available then 
+the controller enters in a wait state until an activity manager 
+is made available or is created 
+in parallel whenever an activity finishes its result is sent 
+back to the process coordinator which records it in the 
+parfor controller then the controller waits until all 
+activities that have been started are finished and it ends at 
+this point the process coordinator verifies that there is no 
+other process element to execute and finishes the process 
+ related work 
+there are several academic and commercial products that 
+promise to support grid computing aiming to provide 
+interfaces protocols and services to leverage the use of widely 
+middleware for grid computing 
+distributed resources in heterogeneous and autonomous 
+networks among them globus condor-g and legion 
+ are widely known aiming to standardize interfaces 
+and services to grid the open grid services architecture 
+ ogsa has been defined 
+the grid architectures generally have services that 
+manage computing resources and distribute the execution of 
+independent tasks on available ones however emerging 
+architectures maintain task dependencies and automatically 
+execute tasks in a correct order they take advantage of 
+these dependencies to provide automatic recovery and 
+better distribution and scheduling algorithms 
+following such model webflow is a process 
+specification tool and execution environment constructed over 
+corba that allows graphical composition of activities and 
+their distributed execution in a grid environment opera-g 
+ like webflow uses a process specification language 
+similar to the data flow diagram and workflow languages but 
+furnishes automatic execution recovery and limited steering 
+of process execution 
+the previously referred architectures and others that 
+enact processes over the grid have a centralized coordination 
+in order to surpass this limitation systems like swindew 
+proposed a widely distributed process execution in which 
+each node knows where to execute the next activity or join 
+activities in a peer-to-peer environment 
+in the specific area of activity distribution and scheduling 
+emphasized in this work gridflow is remarkable it uses 
+a two-level scheduling global and local in the local level 
+it has services that predict computing resource utilization 
+and activity duration based on this information gridflow 
+employs a pert-like technique that tries to forecast the 
+activity execution start time and duration in order to better 
+schedule them to the available resources 
+the architecture proposed in this paper which 
+encompasses a programming model and an execution support 
+infrastructure is widely decentralized differently from webflow 
+and opera-g being more scalable and fault-tolerant but 
+like the latter it is designed to support execution recovery 
+comparing to swindew the proposed architecture 
+contains widely distributed process coordinators which 
+coordinate processes or parts of them differently from swindew 
+where each node has a limited view of the process only the 
+activity that starts next this makes easier to monitor and 
+control processes 
+finally the support infrastructure breaks the process and 
+its subprocesses for grid execution allowing a group to 
+require another group for the coordination and execution of 
+process elements on behalf of the first one this is 
+different from gridflow which can execute a process in at most 
+two levels having the global level as the only responsible to 
+schedule subprocesses in other groups this can limit the 
+overall performance of processes and make the system less 
+scalable 
+ conclusion and future work 
+grid computing is an emerging research field that intends 
+to promote distributed and parallel computing over the wide 
+area network of heterogeneous and autonomous 
+administrative domains in a seamless way similar to what internet 
+does to the data sharing there are several products that 
+support execution of independent tasks over grid but only a 
+few supports the execution of processes with interdependent 
+tasks 
+in order to address such subject this paper proposes a 
+programming model and a support infrastructure that 
+allow the execution of structured processes in a widely 
+distributed and hierarchical manner this support 
+infrastructure provides automatic structured and recursive 
+distribution of process elements over groups of available machines 
+better resource use due to its on demand creation of 
+process elements easy process monitoring and steering due to 
+its structured nature and localized communication among 
+strong dependent process elements which are placed under 
+the same controller these features contribute to better 
+scalability fault-tolerance and control for processes execution 
+over the grid moreover it opens doors for better scheduling 
+algorithms recovery mechanisms and also dynamic 
+modification schemes 
+the next work will be the implementation of a recovery 
+mechanism that uses the execution and data state of 
+processes and controllers to recover process execution after 
+that it is desirable to advance the scheduling algorithm to 
+forecast machine use in the same or other groups and to 
+foresee start time of process elements in order to use this 
+information to pre-allocate resources and then obtain a 
+better process execution performance finally it is 
+interesting to investigate schemes of dynamic modification of 
+processes over the grid in order to evolve and adapt long-term 
+processes to the continuously changing grid environment 
+ acknowledgments 
+we would like to thank paulo c oliveira from the state 
+treasury department of sao paulo for its deeply revision 
+and insightful comments 
+ references 
+ e akarsu g c fox w furmanski and t haupt 
+webflow high-level programming environment and 
+visual authoring toolkit for high performance 
+distributed computing in proceedings of 
+supercom puting sc 
+ t andrews and f curbera specification business 
+process execution language for w eb services v ersion 
+ ibm developerworks available at 
+ 
+http www- ibm com developerworks library wsbpel 
+ w bausch o pera -g a m icrokernelfor 
+com putationalg rids phd thesis swiss federal 
+institute of technology zurich 
+ t bray and j paoli extensible m arkup language 
+ x m l xml core wg w c available at 
+http www w org tr rec-xml- 
+ j cao s a jarvis s saini and g r nudd 
+gridflow workflow management for grid 
+computing in proceedings ofthe international 
+sym posium on cluster com puting and the g rid 
+ ccg rid 
+ i foster and c kesselman globus a 
+metacomputing infrastructure toolkit intl j 
+supercom puter a pplications - 
+ i foster c kesselman j m nick and s tuecke 
+the physiology ofthe g rid a n o pen g rid services 
+a rchitecture for d istributed system s integration 
+ middleware companion 
+open grid service infrastructure wg global grid 
+forum 
+ i foster c kesselman and s tuecke the anatomy 
+of the grid enabling scalable virtual organization 
+the intl journalofh igh perform ance com puting 
+a pplications - 
+ j frey t tannenbaum m livny i foster and 
+s tuecke condor-g a computational management 
+agent for multi-institutional grids in proceedings of 
+the tenth intl sym posium on h igh perform ance 
+d istributed com puting h pd c- ieee 
+ a s grimshaw and w a wulf legion - a view 
+from feet in proceedings ofthe fifth intl 
+sym posium on h igh perform ance d istributed 
+com puting ieee 
+ t lindholm and f yellin the java v irtualm achine 
+specification sun microsystems second edition 
+edition 
+ b r schulze and e r m madeira grid computing 
+with active services concurrency and com putation 
+practice and experience journal - 
+ j yan y yang and g k raikundalia enacting 
+business processes in a decentralised environment 
+with p p-based workflow support in proceedings of 
+the fourth intl conference on w eb-age inform ation 
+m anagem ent w a im 
+middleware for grid computing 

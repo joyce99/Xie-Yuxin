@@ -1,0 +1,1186 @@
+encryption-enforced access control in dynamic 
+multi-domain publish subscribe networks 
+lauri i w pesonen 
+university of cambridge 
+computer laboratory 
+jj thomson avenue 
+cambridge cb fd uk 
+ first last  cl cam ac uk 
+david m eyers 
+university of cambridge 
+computer laboratory 
+jj thomson avenue 
+cambridge cb fd uk 
+ first last  cl cam ac uk 
+jean bacon 
+university of cambridge 
+computer laboratory 
+jj thomson avenue 
+cambridge cb fd uk 
+ first last  cl cam ac uk 
+abstract 
+publish subscribe systems provide an efficient event-based 
+wide-area distributed communications infrastructure large 
+scale publish subscribe systems are likely to employ 
+components of the event transport network owned by cooperating 
+but independent organisations as the number of 
+participants in the network increases security becomes an 
+increasing concern this paper extends previous work to present 
+and evaluate a secure multi-domain publish subscribe 
+infrastructure that supports and enforces fine-grained access 
+control over the individual attributes of event types key 
+refresh allows us to ensure forward and backward security 
+when event brokers join and leave the network we 
+demonstrate that the time and space overheads can be minimised 
+by careful consideration of encryption techniques and by 
+the use of caching to decrease unnecessary decryptions we 
+show that our approach has a smaller overall 
+communication overhead than existing approaches for achieving the 
+same degree of control over security in publish subscribe 
+networks 
+categories and subject descriptors 
+c computer-communication networks 
+distributed systems-distributed applications 
+general terms 
+security performance 
+ introduction 
+publish subscribe is well suited as a communication 
+mechanism for building internet-scale distributed event-driven 
+applications much of its capacity for scale in the number 
+of participants comes from its decoupling of publishers and 
+subscribers by placing an asynchronous event delivery 
+service between them in truly internet-scale publish subscribe 
+systems the event delivery service will include a large set 
+of interconnected broker nodes spanning a wide geographic 
+ and thus network area 
+however publish subscribe systems that do span a wide 
+geographic area are likely to also span multiple administrative 
+domains be they independent administrative domains inside 
+a single organisation multiple independent organisations or 
+a combination of the two 
+while the communication capabilities of publish subscribe 
+systems are well proved spanning multiple administrative 
+domains is likely to require addressing security 
+considerations as security and access control are almost the 
+antithesis of decoupling relatively little publish subscribe research 
+has focused on security so far 
+our overall research aim is to develop internet-scale 
+publish subscribe networks that provide secure efficient 
+delivery of events fault-tolerance and self-healing in the delivery 
+infrastructure and a convenient event interface 
+in pesonen et al propose a multi-domain 
+capabilitybased access control architecture for publish subscribe 
+systems the architecture provides a mechanism for 
+authorising event clients to publish and subscribe to event types 
+the privileges of the client are checked by the local broker 
+that the client connects to in order to access the publish 
+subscribe system the approach implements access control 
+at the edge of the broker network and assumes that all 
+brokers can be trusted to enforce the access control policies 
+correctly any malicious compromised or unauthorised broker 
+is free to read and write any events that pass through it 
+on their way from the publishers to the subscribers this 
+might be acceptable in a relatively small system deployed 
+inside a single organisation but it is not appropriate in a 
+multi-domain environment in which organisations share a 
+common infrastructure 
+we propose enforcing access control within the broker 
+network by encrypting event content and that policy dictate 
+controls over the necessary encryption keys with encrypted 
+event content only those brokers that are authorised to 
+ac 
+cess the encryption keys are able to access the event content 
+ i e publish subscribe to or filter we effectively move 
+the enforcement of access control from the brokers to the 
+encryption key managers 
+we expect that access control would need to be enforced 
+in a multi-domain publish subscribe system when 
+multiple organisations form a shared publish subscribe system 
+yet run multiple independent applications access control 
+might also be needed when a single organisation consists 
+of multiple sub-domains that deliver confidential data over 
+the organisation-wide publish subscribe system both cases 
+require access control because event delivery in a dynamic 
+publish subscribe infrastructure based on a shared broker 
+network may well lead to events being routed through 
+unauthorised domains along their paths from publishers to 
+subscribers 
+there are two particular benefits to sharing the publish 
+subscribe infrastructure both of which relate to the 
+broker network first sharing brokers will create a physically 
+larger network that will provide greater geographic reach 
+second increasing the inter-connectivity of brokers will 
+allow the publish subscribe system to provide higher 
+faulttolerance 
+figure shows the multi-domain publish subscribe network 
+we use as an example throughout this paper it is based 
+on the united kingdom police forces and we show three 
+particular sub-domains 
+metropolitan police domain this domain contains a 
+set of cctv cameras that publish information about 
+the movements of vehicles around the london area 
+we have included detective smith as a subscriber in 
+this domain 
+congestion charge service domain the charges that 
+are levied on the vehicles that have passed through the 
+london congestion charge zone each day are issued 
+by systems within this domain the source 
+numberplate recognition data comes from the cameras in the 
+metropolitan police domain the fact that the ccs 
+are only authorised to read a subset of the vehicle event 
+data will exercise some of the key features of the 
+enforceable publish subscribe system access control 
+presented in this paper 
+pito domain the police information technology 
+organisation pito is the centre from which police data 
+standards are managed it is the event type owner in 
+this particular scenario 
+encryption protects the confidentiality of events should they 
+be transported through unauthorised domains however 
+encrypting whole events means unauthorised brokers cannot 
+make efficient routing decisions 
+our approach is to apply encryption to the individual 
+attributes of events this way our multi-domain access 
+control policy works at a finer granularity - publishers and 
+subscribers may be authorised access to a subset of the available 
+attributes in cases where non-encrypted events are used 
+for routing we can reduce the total number of events sent 
+through the system without revealing the values of sensitive 
+attributes 
+in our example scenario the congestion charge service 
+would only be authorised to read the numberplate field of 
+vehicle sightings - the location attribute would not be 
+decrypted we thus preserve the privacy of motorists while 
+still allowing the ccs to do its job using the shared 
+publish subscribe infrastructure 
+let us assume that a metropolitan police service detective 
+is investigating a crime and she is interested in sightings 
+of a specific vehicle the detective gets a court order that 
+authorises her to subscribe to numberplate events of the 
+specific numberplate related to her case 
+current publish subscribe access control systems enforce 
+security at the edge of the broker network where clients 
+connect to it however this approach will often not be 
+acceptable in internet-scale systems we propose enforcing 
+security within the broker network as well as at the edges that 
+event clients connect to by encrypting event content 
+publications will be encrypted with their event type specific 
+encryption keys by controlling access to the encryption keys 
+we can control access to the event types the proposed 
+approach allows event brokers to route events even when they 
+have access only to a subset of the potential encryption keys 
+we introduce decentralised publish subscribe systems and 
+relevant cryptography in section in section we present 
+our model for encrypting event content on both the event 
+and the attribute level section discusses managing 
+encryption keys in multi-domain publish subscribe systems 
+we analytically evaluate the performance of our proposal 
+in section finally section discusses related work in 
+securing publish subscribe systems and section provides 
+concluding remarks 
+ background 
+in this section we provide a brief introduction to 
+decentralised publish subscribe systems we indicate our 
+assumptions about multi-domain publish subscribe systems and 
+describe how these assumptions influence the developments 
+we have made from our previously published work 
+ decentralised publish subscribe systems 
+a publish subscribe system includes publishers subscribers 
+and an event service publishers publish events subscribers 
+subscribe to events of interest to them and the event 
+service is responsible for delivering published events to all 
+subscribers whose interests match the given event 
+the event service in a decentralised publish subscribe 
+system is distributed over a number of broker nodes together 
+these brokers form a network that is responsible for 
+maintaining the necessary routing paths from publishers to 
+subscribers clients publishers and subscribers connect to a 
+local broker which is fully trusted by the client in our 
+discussion we refer to the client hosting brokers as publisher 
+hosting brokers phb or subscriber hosting brokers shb 
+depending on whether the connected client is a publisher or 
+ 
+ib 
+shb 
+sub 
+pub 
+pub 
+sub 
+sub 
+ib 
+phb 
+ib 
+ib 
+phb 
+ib 
+ib 
+ib 
+ib shb 
+shb 
+ibib 
+ib 
+ib 
+ib 
+ib 
+ib 
+ibib 
+ib 
+to 
+ib 
+ib 
+ib 
+metropolitan police 
+domain 
+congestion charge 
+service domain 
+pito domain 
+detective 
+smith 
+camera 
+camera 
+billing 
+office statistics 
+office 
+sub subscriber shb subscriber 
+hosting broker 
+pub publisher phb publisher 
+hosting broker 
+to type owner ib intermediate 
+broker 
+key 
+figure an overall view of our multi-domain publish subscribe deployment 
+a subscriber respectively a local broker is usually either 
+part of the same domain as the client or it is owned by a 
+service provider trusted by the client 
+a broker network can have a static topology e g siena 
+and gryphon or a dynamic topology e g scribe 
+and hermes our proposed approach will work in both 
+cases a static topology enables the system administrator 
+to build trusted domains and in that way improve the 
+efficiency of routing by avoiding unnecessary encryptions see 
+sect which is very difficult with a dynamic topology 
+on the other hand a dynamic topology allows the broker 
+network to dynamically re-balance itself when brokers join 
+or leave the network either in a controlled fashion or as a 
+result of a network or node failure 
+our work is based on the hermes system hermes is a 
+content-based publish subscribe middleware that includes 
+strong event type support in other words each publication 
+is an instance of a particular predefined event type 
+publications are type checked at the local broker of each publisher 
+our attribute level encryption scheme assumes that events 
+are typed hermes uses a structured overlay network as a 
+transport and therefore has a dynamic topology 
+a hermes publication consists of an event type identifier 
+and a set of attribute value pairs the type identifier is the 
+sha- hash of the name of the event type it is used to 
+route the publication through the event broker network it 
+conveniently hides the type of the publication i e brokers 
+are prevented from seeing which events are flowing through 
+them unless they are aware of the specific event type name 
+and identifier 
+ secure event types 
+pesonen et al introduced secure event types in which 
+can have their integrity and authenticity confirmed by 
+checking their digital signatures a useful side effect of secure 
+event types are their globally unique event type and 
+attribute names these names can be referred to by access 
+control policies in this paper we use the secure name of the 
+event type or attribute to refer to the encryption key used 
+to encrypt the event or attribute 
+ capability-based access control 
+pesonen et al proposed a capability-based access control 
+architecture for multi-domain publish subscribe systems in 
+ the model treats event types as resources that 
+publishers subscribers and event brokers want to access the 
+event type owner is responsible for managing access control 
+for an event type by issuing simple public key 
+infrastructure spki authorisation certificates that grant the holder 
+access to the specified event type for example authorised 
+publishers will have been issued an authorisation certificate 
+that specifies that the publisher identified by public key is 
+authorised to publish instances of the event type specified 
+in the certificate 
+we leverage the above mentioned access control mechanism 
+in this paper by controlling access to encryption keys using 
+the same authorisation certificates that is a publisher who 
+is authorised to publish a given event type is also authorised 
+ 
+to access the encryption keys used to protect events of that 
+type we discuss this in more detail in sect 
+ threat model 
+the goal of the proposed mechanism is to enforce access 
+control for authorised participants in the system in our 
+case the first level of access control is applied when the 
+participant tries to join the publish subscribe network 
+unauthorised event brokers are not allowed to join the broker 
+network similarly unauthorised event clients are not 
+allowed to connect to an event broker all the connections in 
+the broker network between event brokers and event clients 
+utilise transport layer security tls in order to 
+prevent unauthorised access on the transport layer 
+the architecture of the publish subscribe system means that 
+event clients must connect to event brokers in order to be 
+able to access the publish subscribe system thus we 
+assume that these clients are not a threat the event client 
+relies completely on the local event broker for access to the 
+broker network therefore the event client is unable to 
+access any events without the assistance of the local broker 
+the brokers on the other hand are able to analyse all events 
+in the system that pass through them a broker can 
+analyse both the event traffic as well as the number and names 
+of attributes that are populated in an event in the case of 
+attribute level encryption there are viable approaches to 
+preventing traffic analysis by inserting random events into 
+the event stream in order to produce a uniform traffic 
+pattern similarly attribute content can be padded to a 
+standard length in order to avoid leaking information to the 
+adversary 
+while traffic analysis is an important concern we have not 
+addressed it further in this paper 
+ encrypting event content 
+we propose enforcing access control in a decentralised broker 
+network by encrypting the contents of published events and 
+controlling access to the encryption keys effectively we 
+move the responsibility for access control from the broker 
+network to the key managers 
+it is assumed that all clients have access to a broker that 
+they can trust and that is authorised to access the event 
+content required by the client this allows us to implement the 
+event content encryption within the broker network without 
+involving the clients by delegating the encryption tasks 
+to the brokers we lower the number of nodes required to 
+have access to a given encryption key 
+ the benefits are 
+three-fold i fewer nodes handle the confidential encryption 
+key so there is a smaller chance of the key being disclosed 
+ii key refreshes involve fewer nodes which means that the 
+key management algorithm will incur smaller 
+communication and processing overheads to the publish subscribe 
+system and iii the local broker will decrypt an event once 
+and deliver it to all subscribers instead of each subscriber 
+ 
+the encryption keys are changed over time in response to 
+brokers joining or leaving the network and periodically to 
+reduce the amount of time any single key is used this is 
+discussed in sect 
+having to decrypt the same event delegating encryption 
+tasks to the local broker is appropriate because encryption 
+is a middleware feature used to enforce access control within 
+the middleware system if applications need to handle 
+encrypted data in the application layer they are free to publish 
+encrypted data over the publish subscribe system 
+we can implement encryption either at the event level or 
+the attribute level event encryption is simpler requires 
+fewer keys fewer independent cryptographic operations and 
+thus is usually faster attribute encryption enables access 
+control at the attribute level which means that we have 
+a more expressive and powerful access control mechanism 
+while usually incurring a larger performance penalty 
+in this section we discuss encrypting event content both at 
+the event level and the attribute level avoiding leaking 
+information to unauthorised brokers by encrypting 
+subscription filters avoiding unnecessary encryptions between 
+authorised brokers and finally how event content encryption 
+was implemented in our prototype note that since no 
+publish subscribe client is ever given access to encryption keys 
+any encryption performed by the brokers is necessarily 
+completely transparent to all clients 
+ event encryption 
+in event encryption all the event attributes are encrypted as 
+a single block of plaintext the event type identifier is left 
+intact i e in plaintext in order to facilitate event routing 
+in the broker network 
+the globally unique event type identifier specifies the 
+encryption key used to encrypt the event content each event 
+type in the system will have its own individual encryption 
+key keys are refreshed as discussed in sect 
+while in transit the event will consist of a tuple 
+containing the type identifier a publication timestamp ciphertext 
+and a message authentication tag type id timestamp 
+cipher text authentication tag 
+event brokers that are authorised to access the event and 
+thus have access to the encryption key can decrypt the event 
+and implement content-based routing event brokers that 
+do not have access to the encryption key will be forced to 
+route the event based only on its type that is they will not 
+be able to make intelligent decisions about whether events 
+need not be transmitted down their outgoing links 
+event encryption results in one encryption at the publisher 
+hosting broker and one decryption at each filtering 
+intermediate broker and subscriber hosting broker that the event 
+passes through regardless of the number of attributes this 
+results in a significant performance advantage compared to 
+attribute encryption 
+ attribute encryption 
+in attribute encryption each attribute value in an event is 
+encrypted separately with its own encryption key the 
+encryption key is identified by the attribute s globally unique 
+identifier the globally unique event identifier defines a 
+namespace inside which the attribute identifier is a fully qualified 
+name 
+ 
+the event type identifier is left intact to facilitate event 
+routing for unauthorised brokers the attribute identifiers are 
+also left intact to allow authorised brokers to decrypt the 
+attribute values with the correct keys brokers that are 
+authorised to access some of the attributes in an event can 
+implement content-based routing over the attributes that 
+are accessible to them 
+an attribute encrypted event in transit consists of the event 
+type identifier a publication timestamp and a set of 
+attribute tuples type id timestamp attributes 
+attribute tuples consist of an attribute identifier ciphertext 
+and a message authentication tag attr id ciphertext 
+authentication tag the attribute identifier is the sha- 
+hash of the attribute name used in the event type definition 
+using the attribute identifier in the published event instead 
+of the attribute name prevents unauthorised parties from 
+learning which attributes are included in the publication 
+compared with event encryption attribute encryption 
+usually results in larger processing overheads because each 
+attribute is encrypted separately in the encryption process 
+the initialisation of the encryption algorithm takes a 
+significant portion of the total running time of the algorithm 
+once the algorithm is initialised increasing the amount of 
+data to be encrypted does not affect the running time very 
+much this disparity is emphasised in attribute 
+encryption where an encryption algorithm must be initialised for 
+each attribute separately and the amount of data encrypted 
+is relatively small as a result attribute encryption incurs 
+larger processing overheads when compared with event 
+encryption which can be clearly seen from the performance 
+results in sect 
+the advantage of attribute encryption is that the type owner 
+is able to control access to the event type at the attribute 
+level the event type owner can therefore allow clients to 
+have different levels of access to the same event type also 
+attribute level encryption enables content-based routing in 
+cases where an intermediate broker has access only to some 
+of the attributes of the event thus reducing the overall 
+impact of event delivery on the broker network therefore the 
+choice between event and attribute encryption is a trade-off 
+between expressiveness and performance and depends on 
+the requirements of the distributed application 
+the expressiveness provided by attribute encryption can be 
+emulated by introducing a new event type for each group 
+of subscribers with the same authorisation the publisher 
+would then publish an instance of each of these types 
+instead of publishing just a combined event for example in 
+our london police network the congestion control cameras 
+would have to publish one event for the ccs and another for 
+the detective this approach could become difficult to 
+manage if the attributes have a variety of security properties 
+since a large number of event types would be required and 
+policies and subscriptions may change dynamically this 
+approach creates a large number of extra events that must 
+be routed through the network as is shown in sect 
+ encrypting subscriptions 
+in order to fully protect the confidentiality of event content 
+we must also encrypt subscriptions encrypted 
+subscriptions guarantee i that only authorised brokers are able 
+to submit subscriptions to the broker network and ii that 
+unauthorised brokers do not gain information about event 
+content by monitoring which subscriptions a given event 
+matches for example in the first case an unauthorised 
+broker can create subscriptions with appropriately chosen 
+filters route them towards the root of the event 
+dissemination tree and monitor which events were delivered to it as 
+matching the subscription the fact that the event matched 
+the subscription would leak information to the broker about 
+the event content even if the event was still encrypted in 
+the second case even if an unauthorised broker was unable 
+to create subscriptions itself it could still look at 
+subscriptions that were routed through it take note of the filters on 
+those subscriptions and monitor which events are delivered 
+to it by upstream brokers as matching the subscription 
+filters this would again reveal information about the event 
+content to the unauthorised broker 
+in the case of encrypting complete events we also encrypt 
+the complete subscription filter the event type identifier in 
+the subscription must be left intact to allow brokers to route 
+events based on their topic when they are not authorised to 
+access the filter in such cases the unauthorised broker is 
+required to assume that events of such a type match all 
+filter expressions 
+each attribute filter is encrypted individually much as when 
+encrypting a publication in addition to the event type 
+identifier the attribute identifiers are also left intact to allow 
+authorised brokers to decrypt those filters that they have 
+access to and route the event based on its matching the 
+decrypted filters 
+ avoiding unnecessary cryptographic 
+operations 
+encrypting the event content is not necessary if the current 
+broker and the next broker down the event dissemination 
+tree have the same credentials with respect to the event 
+type at hand for example one can assume that all 
+brokers inside an organisation would share the same credentials 
+and therefore as long as the next broker is a member of 
+the same domain the event can be routed to it in plaintext 
+with attribute encryption it is possible that the 
+neighbouring broker is authorised to access a subset of the decrypted 
+attributes in which case those attributes that the broker is 
+not authorised to access would be passed to it encrypted 
+in order to know when it is safe to pass the event in plaintext 
+form the brokers exchange credentials as part of a 
+handshake when they connect to each other in cases when the 
+brokers are able to verify each others credentials they will 
+add them to the routing table for future reference if a 
+broker acquires new credentials after the initial handshake it 
+will present these new credentials to its neighbours while in 
+session 
+regardless of its neighbouring brokers the phb will always 
+encrypt the event content because it is cheaper to encrypt 
+the event once at the root of the event dissemination tree 
+in hermes the rendezvous node for each event type is 
+selected uniformly randomly the event type name is hashed 
+with the sha- hash algorithm to produce the event type 
+ 
+phb 
+ibib 
+ib shb 
+rn ib 
+shb 
+figure node addressing is evenly distributed 
+across the network thus rendezvous nodes may lie 
+outside the domain that owns an event type 
+ib ib shbphbp s 
+encrypts filters from 
+cache 
+decrypts 
+delivers 
+decrypts 
+filters 
+plaintext 
+cached plaintext most data 
+cached plaintext some data 
+different domains 
+cyphertext 
+key 
+figure caching decrypted data to increase 
+efficiency when delivering to peers with equivalent 
+security privileges 
+identifier then the identifier is used to select the rendezvous 
+node in the structured overlay network therefore it is 
+probable that the rendezvous node will reside outside the 
+current domain this situation is illustrated in the event 
+dissemination tree in fig so even with domain internal 
+applications where the event can be routed from the 
+publisher to all subscribers in plaintext form the event content 
+will in most cases have to be encrypted for it to be routed 
+to the rendezvous node 
+to avoid unnecessary decryptions we attach a plaintext 
+content cache to encrypted events a broker fills the cache with 
+content that it has decrypted for example in order to filter 
+on the content the cache is accessed by the broker when 
+it delivers an event to a local subscriber after first seeing if 
+the event matches the subscription filter but the broker also 
+sends the cache to the next broker with the encrypted event 
+the next broker can look the attribute up from the cache 
+instead of having to decrypt it if the event is being sent to 
+an unauthorised broker the cache will be discarded before 
+the event is sent obviously sending the cache with the 
+encrypted event will add to the communication cost but this is 
+outweighed by the saving in encryption decryption 
+processing in fig we see two separate cached plaintext streams 
+accompanying an event depending on the inter-broker 
+relationships in two different domains 
+we show in sect that the overhead of sending encrypted 
+messages with a full plaintext cache incurs almost no 
+overhead compared to sending plaintext messages 
+ implementation 
+in our implementation we have used the eax mode of 
+operation when encrypting events attributes and subscription 
+filters eax is a mode of operation for block ciphers also 
+called an authenticated encryption with associated data 
+ aead algorithm that provides simultaneously both data 
+confidentiality and integrity protection the algorithm 
+implements a two-pass scheme where during the first pass the 
+plain text is encrypted and on the second pass a message 
+authentication code mac is generated for the encrypted 
+data 
+the eax mode is compatible with any block cipher we 
+decided to use the advanced encryption standard aes 
+algorithm in our implementation because of its standard 
+status and the fact that the algorithm has gone through 
+thorough cryptanalysis during its existence and no serious 
+vulnerabilities have been found thus far 
+in addition to providing both confidentiality and integrity 
+protection the eax mode uses the underlying block cipher 
+in counter mode ctr mode a block cipher in counter 
+mode is used to produce a stream of key bits that are then 
+xored with the plaintext effectively ctr mode 
+transforms a block cipher into a stream cipher the advantage of 
+stream ciphers is that the ciphertext is the same length as 
+the plaintext whereas with block ciphers the plaintext must 
+be padded to a multiple of the block cipher s block length 
+ e g the aes block size is bits avoiding padding is 
+very important in attribute encryption because the padding 
+might increase the size of the attribute disproportionally 
+for example a single integer might be bits in length 
+which would be padded to bits if we used a block 
+cipher with event encryption the message expansion is not 
+that relevant since the length of padding required to reach 
+the next byte multiple will probably be a small 
+proportion of the overall plaintext length 
+in encryption mode the eax algorithm takes as input a 
+nonce a number used once an encryption key and the 
+plaintext and it returns the ciphertext and an 
+authentication tag in decryption mode the algorithm takes as input 
+the encryption key the ciphertext and the authentication 
+tag and it returns either the plaintext or an error if the 
+authentication check failed 
+the nonce is expanded to the block length of the 
+underlying block cipher by passing it through an omac construct 
+ see it is important that particular nonce values are 
+not reused otherwise the block cipher in ctr mode would 
+produce an identical key stream in our implementation we 
+used the phb defined event timestamp -bit value 
+counting the milliseconds since january utc appended 
+by the phb s identity i e public key as the nonce the 
+broker is responsible for ensuring that the timestamps 
+increase monotonically 
+the authentication tag is appended to the produced cipher 
+text to create a two-tuple with event encryption a 
+single tag is created for the encrypted event with attribute 
+ 
+encryption each attribute is encrypted and authenticated 
+separately and they all have their individual tags the tag 
+length is configurable in eax without restrictions which 
+allows the user to make a trade-off between the 
+authenticity guarantees provided by eax and the added 
+communication overhead we used a tag length of bytes 
+in our implementation but one could make the tag length 
+a publisher subscriber defined parameter for each 
+publication subscription or include it in the event type definition 
+to make it a type specific parameter 
+eax also supports including unencrypted associated data in 
+the tag calculation the integrity of this data is protected 
+but it is still readable by everyone this feature could be 
+used with event encryption in cases where some of the event 
+content is public and thus would be useful for content-based 
+routing the integrity of the data would still be protected 
+against changes but unauthorised brokers would be able to 
+apply filters we have included the event type identifier as 
+associated data in order to protect its integrity 
+other aead algorithms include the offset codebook mode 
+ ocb and the counter with cbc-mac mode ccm 
+ contrarily to the eax mode the ocb mode requires 
+only one pass over the plaintext which makes it roughly 
+twice as fast as eax unfortunately the ocb mode has a 
+patent application in place in the usa which restricts its 
+use the ccm mode is the predecessor of the eax mode 
+it was developed in order to provide a free alternative to 
+ocb the eax was developed later to address some issues 
+with ccm similarly to eax ccm is also a two-pass 
+mode 
+ key management 
+in both encryption approaches the encrypted event content 
+has a globally unique identifier i e the event type or the 
+attribute identifier that identifier is used to determine 
+the encryption key to use when encrypting or decrypting 
+the content each event type in event encryption and 
+attribute in attribute encryption has its own individual 
+encryption key by controlling access to the encryption key we 
+effectively control access to the encrypted event content 
+in order to control access to the encryption keys we form a 
+key group of brokers for each individual encryption key the 
+key group is used to refresh the key when necessary and to 
+deliver the new key to all current members of the key group 
+the key group manager is responsible for verifying that a 
+new member requesting to join the key group is authorised 
+to do so therefore the key group manager must be trusted 
+by the type owner to enforce the access control policy we 
+assume that the key group manager is either a trusted third 
+party or alternatively a member of the type owner s domain 
+in pesonen et al proposed a capability-based access 
+control architecture for multi-domain publish subscribe 
+systems the approach uses capabilities to decentralise the 
+access control policy amongst the publish subscribe nodes 
+ i e clients and brokers each node holds a set of 
+capabilities that define the authority granted to that node 
+authority to access a given event type is granted by the owner 
+of that type issuing a capability to a node the capability 
+defines the event type the action and the attributes that 
+type owner 
+acs 
+broker 
+key manager 
+ grant authorisation 
+for number platekey 
+ broker requests to 
+join number plate 
+key group 
+ if the broker satisfies 
+all checks they will begin 
+receiving appropriate keys 
+ key manager may check 
+broker s credentials at the 
+access control service 
+ key manager may 
+check that the type 
+owner permits access 
+figure the steps involved for a broker to be 
+successful in joining a key group 
+the node is authorised to access for example a tuple np 
+subscribe would authorise the owner to subscribe to 
+numberplate events with access to all attributes in the 
+published events the sequence of events required for a broker 
+to successfully join a key group is shown in fig 
+both the client hosting broker and the client must be 
+authorised to make the client s request that is if the client 
+makes a subscription request for numberplate events both 
+the client and the local broker must be authorised to 
+subscribe to numberplate events this is because from the 
+perspective of the broker network the local broker acts as a 
+proxy for the client 
+we use the same capabilities to authorise membership in a 
+key group that are used to authorise publish subscribe 
+requests not doing so could lead to the inconsistent situation 
+where a shb is authorised to make a subscription on behalf 
+of its clients but is not able to decrypt incoming event 
+content for them in the numberplate example above the local 
+broker holding the above capability is authorised to join the 
+numberplate key group as well as the key groups for all the 
+attributes in the numberplate event type 
+ secure group communication 
+event content encryption in a decentralised multi-domain 
+publish subscribe system can be seen as a sub-category of 
+secure group communication in both cases the key 
+management system must scale well with the number of clients 
+clients might be spread over large geographic areas there 
+might be high rates of churn in group membership and all 
+members must be synchronised with each other in time in 
+order to use the same encryption key at the same time 
+there are a number of scalable key management protocols 
+for secure group communication we have implemented 
+the one-way function tree oft protocol as a proof 
+of concept we chose to implement oft because of its 
+relatively simplicity and good performance our 
+implementation uses the same structured overlay network used by the 
+broker network as a transport the oft protocol is based 
+on a binary tree where the participants are at the leaves of 
+the tree it scales in log n in processing and 
+communication costs as well as in the size of the state stored at each 
+participant which we have verified in our simulations 
+ key refreshing 
+traditionally in group key management schemes the 
+encryption key is refreshed when a new member joins the group an 
+ 
+existing member leaves the group or a timer expires 
+refreshing the key when a new member joins provides 
+backward secrecy i e the new member is prevented from 
+accessing old messages similarly refreshing the key when an 
+existing member leaves provides forward secrecy i e the old 
+member is prevented from accessing future messages timer 
+triggered refreshes are issued periodically in order to limit 
+the damage caused by the current key being compromised 
+even though the state-of-the-art key management protocols 
+are efficient refreshing the key unnecessarily introduces 
+extra traffic and processing amongst the key group members 
+in our case key group membership is based on the broker 
+holding a capability that authorises it to join the key group 
+the capability has a set of validity conditions that in their 
+simplest form define a time period when the certificate is 
+valid and in more complex cases involve on-line checks back 
+towards the issuer in order to avoid unnecessary key 
+refreshes the key manager looks at the certificate validity 
+conditions of the joining or leaving member in case of a joining 
+member if the manager can ascertain that the certificate 
+was valid at the time of the previous key refresh a new 
+key refresh can be avoided similarly instead of refreshing 
+the key immediately when a member leaves the key group 
+the key manager can cache their credentials and refresh the 
+key only when the credentials expire these situations are 
+both illustrated in fig it can be assumed that the 
+credentials granted to brokers are relatively static i e once a 
+domain is authorised to access an event type the authority 
+will be delegated to all brokers of that domain and they 
+will have the authority for the foreseeable future more fine 
+grained and dynamic access control would be implemented 
+at the edge of the broker network between the clients and 
+the client hosting brokers 
+when an encryption key is refreshed the new key is tagged 
+with a timestamp the encryption key to use for a given 
+event is selected based on the event s publication timestamp 
+the old keys will be kept for a reasonable amount of time 
+in order to allow for some clock drift setting this value is 
+part of the key management protocol although exactly how 
+long this time should be will depend on the nature of the 
+application and possibly the size of the network it can be 
+configured independently per key group if necessary 
+ evaluation 
+in order to evaluate the performance of event content 
+encryption we have implemented both encryption approaches 
+running over our implementation of the hermes publish 
+subscribe middleware the implementation supports three 
+modes plaintext content event encryption and attribute 
+encryption in a single publish subscribe system 
+we ran three performance tests in a discrete event simulator 
+the simulator was run on an intel p ghz workstation 
+with gb of main memory we decided to run the tests on 
+an event simulator instead of an actual deployed system in 
+order to be able to measure to aggregate time it takes to 
+handle all messages in the system 
+the following sections describe the specific test setups and 
+the results in more detail 
+ end-to-end overhead 
+the end-to-end overhead test shows how much the overall 
+message throughput of the simulator was affected by event 
+content encryption we formed a broker network with two 
+brokers attached a publisher to one of them and a 
+subscriber to the other one the subscriber subscribed to the 
+advertised event type without any filters i e each 
+publication matched the subscriber s publication and thus was 
+delivered to the subscriber the test measures the 
+combined time it takes to publish and deliver events if 
+the content is encrypted this includes both encrypting the 
+content at the phb and decrypting it at the shb 
+in the test the number of attributes in the event type is 
+increased from to the x-axis each attribute is set 
+to a character string for each number of attributes in 
+the event type the publisher publishes events and 
+the elapsed time is measured to derive the message 
+throughput the test was repeated five times for each number of 
+attributes and we use the average of all iterations in the 
+graph but the results were highly consistent so the 
+standard deviation is not shown the same tests were run with 
+no content encryption event encryption and attribute 
+encryption 
+as can be seen in fig event content encryption introduces 
+a large overhead compared to not using encryption the 
+throughput when using attribute encryption with an event 
+type with one attribute is of the throughput achieved 
+when events are sent in plaintext when the number of 
+attributes increases the performance gap increases as well 
+with ten attributes the performance with attribute 
+encryption has decreased to of plaintext performance 
+event encryption fares better because of fewer encryption 
+operations the increase in the amount of encrypted data 
+does not affect the performance as much as the number of 
+individual encryption operations does the difference in 
+performance with event encryption and attribute 
+encryption with only one attribute is caused by the java object 
+serialisation mechanism in the event encryption case the 
+whole attribute structure is serialised which results in more 
+objects than serialising a single attribute value a more 
+efficient implementation would provide its own marshalling 
+mechanism 
+note that the eax implementation we use runs the nonce 
+ i e initialisation vector through an omac construct to 
+increase its randomness since the nonce is not required to 
+be kept secret just unique there is a potential time space 
+trade-off we have not yet investigated in attaching extra 
+nonce attributes that have already had this omac 
+construct applied to them 
+ domain internal events 
+we explained in sect that event content decryption and 
+encryption can be avoided if both brokers are authorised to 
+access the event content this test was designed to show 
+that the use of the encrypted event content mechanism 
+between two authorised brokers incurs only a small 
+performance overhead 
+in this test we again form a broker network with two brokers 
+ 
+key refresh schedule 
+broker joining and 
+leaving the key group 
+broker joining and 
+leaving the key group 
+actual key refresh times 
+time 
+one day 
+broker s key group 
+credentials are valid 
+actual join time actual leave time 
+one day one day 
+figure how the key refresh schedule is affected by brokers joining and leaving key groups 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+messagespersecond 
+number of attributes 
+no encryption 
+attribute encryption 
+whole-content encryption 
+figure throughput of events in a simulator 
+both brokers are configured with the same credentials the 
+publisher is attached to one of the brokers and the subscriber 
+to the other and again the subscriber does not specify any 
+filters in its subscription 
+the publisher publishes events and the test 
+measures the elapsed time in order to derive the system s 
+message throughput the event content is encrypted outside the 
+timing measurement i e the encryption cost is not included 
+in the measurements the goal is to model an environment 
+where a broker has received a message from another 
+authorised broker and it routes the event to a third authorised 
+broker in this scenario the middle broker does not need to 
+decrypt nor encrypt the event content 
+as shown in fig the elapsed time was measured as the 
+number of attributes in the published event was increased 
+from to the attribute values in each case are 
+character strings each test is repeated five times and we use 
+the average of all iterations in the graph the same test was 
+then repeated with no encryption event encryption and 
+attribute encryption turned on 
+the encrypted modes follow each other very closely 
+predictably the plaintext mode performs a little better for all 
+attribute counts the difference can be explained partially 
+by the encrypted events being larger in size because they 
+include both the plaintext and the encrypted content in this 
+test the difference in performance is with one 
+attribute and with attributes 
+we believe that the roughness of the graphs can be explained 
+by the java garbage collector interfering with the simulation 
+the fact that all three graphs show the same irregularities 
+supports this theory 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+messagespersecond 
+number of attributes 
+no encryption 
+attribute encryption 
+whole-content encryption 
+figure throughput of domain internal events 
+ communication overhead 
+through the definition of multiple event types it is possible 
+to emulate the expressiveness of attribute encryption using 
+only event content encryption the last test we ran was to 
+show the communication overhead caused by this emulation 
+technique compared to using real attribute encryption 
+in the test we form a broker network of brokers we 
+attach one publisher to one of the brokers and an 
+increasing number of subscribers to the remaining brokers each 
+subscriber simulates a group of subscribers that all have the 
+same access rights to the published event each subscriber 
+group has its own event type in the test 
+the outcome of this test is shown in fig the number 
+of subscriber groups is increased from to the x-axis 
+for each n subscriber groups the publisher publishes one 
+event to represent the use of attribute encryption and n 
+events representing the events for each subscriber group we 
+count the number of hops each publication makes through 
+the broker network y-axis 
+note that fig shows workloads beyond what we would 
+expect in common usage in which many event types are 
+likely to contain fewer than ten attributes the subscriber 
+groups used in this test represent disjoint permission sets 
+over such event attributes the number of these sets can be 
+determined from the particular access control policy in use 
+but will be a value less than or equal to the factorial of the 
+number of attributes in a given event type 
+the graphs indicate that attribute encryption performs 
+better than event encryption even for small numbers of 
+subscriber groups indeed with only two subscriber groups 
+ e g the case with numberplate events the hop count 
+increases from hops for attribute encryption to hops 
+for event encryption with subscriber groups the 
+corresponding numbers are and i e an order of 
+magnitude difference 
+ related work 
+wang et al have categorised the various security issues that 
+need to be addressed in publish subscribe systems in the 
+future in the paper is a comprehensive overview of 
+security issues in publish subscribe systems and as such tries 
+to draw attention to the issues rather than providing 
+solutions 
+bacon et al in examine the use of role-based access 
+control in multi-domain distributed publish subscribe systems 
+their work is complementary to this paper distributed 
+rbac is one potential policy formalism that might use the 
+enforcement mechanisms we have presented 
+opyrchal and prakash address the problem of event 
+confidentiality at the last link between the subscriber and the 
+shb in they correctly state that a secure group 
+communication approach is infeasible in an environment like 
+publish subscribe that has highly dynamic group 
+memberships as a solution they propose a scheme utilising key 
+caching and subscriber grouping in order to minimise the 
+number of required encryptions when delivering a 
+publication from a shb to a set of matching subscribers we 
+assume in our work that the shb is powerful enough to 
+man 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofhopsintotal 
+number of subscription groups 
+attribute encryption 
+whole-content encryption 
+figure hop counts when emulating attribute encryption 
+age a tls secured connection for each local subscriber 
+both srivatsa et al and raiciu et al present 
+mechanisms for protecting the confidentiality of messages in 
+decentralised publish subscribe infrastructures compared to 
+our work both papers aim to provide the means for 
+protecting the integrity and confidentiality of messages whereas the 
+goal for our work is to enforce access control inside the 
+broker network raiciu et al assume in their work that none 
+of the brokers in the network are trusted and therefore all 
+events are encrypted from publisher to subscriber and that 
+all matching is based on encrypted events in contrast we 
+assume that some of the brokers on the path of a 
+publication are trusted to access that publication and are therefore 
+able to implement event matching we also assume that the 
+publisher and subscriber hosting brokers are always trusted 
+to access the publication the contributions of srivatsa et 
+al and raiciu et al are complementary to the contributions 
+in this paper 
+finally fiege et al address the related topic of event 
+visibility in while the work concentrated on using scopes as 
+mechanism for structuring large-scale event-based systems 
+the notion of event visibility does resonate with access 
+control to some extent 
+ conclusions 
+event content encryption can be used to enforce an access 
+control policy while events are in transit in the broker 
+network of a multi-domain publish subscribe system 
+encryption causes an overhead but i there may be no 
+alternative when access control is required and ii the performance 
+penalty can be lessened with implementation optimisations 
+such as passing cached plaintext content alongside encrypted 
+content between brokers with identical security credentials 
+this is particularly appropriate if broker-to-broker 
+connections are secured by default so that wire-sniffing is not an 
+issue 
+attribute level encryption can be implemented in order to 
+enforce fine-grained access control policies in addition to 
+providing attribute-level access control attribute encryption 
+enables partially authorised brokers to implement 
+contentbased routing based on the attributes that are accessible to 
+them 
+our experiments show that i by caching plaintext and 
+ciphertext content when possible we are able to deliver 
+comparable performance to plaintext events and ii that 
+attribute encryption within an event incurs far less overhead 
+than defining separate event types for the attributes that 
+need different levels of protection 
+in environments comprising multiple domains where 
+eventbrokers have different security credentials we have 
+quantified how a trade-off can be made between performance and 
+expressiveness 
+acknowledgements 
+we would like to thank the anonymous reviewers for their 
+very helpful comments lauri pesonen is supported by 
+epsrc gr t and the nokia foundation david eyers 
+is supported by epsrc gr s 
+ 
+ references 
+ j bacon d m eyers k moody and l i w 
+pesonen securing publish subscribe for multi-domain 
+systems in g alonso editor middleware volume 
+ of lecture notes in computer science pages 
+ - springer 
+ m bellare p rogaway and d wagner eax a 
+conventional authenticated-encryption mode 
+cryptology eprint archive report 
+http eprint iacr org 
+ a carzaniga d s rosenblum and a l wolf 
+design and evaluation of a wide-area event 
+notification service acm transactions on computer 
+systems - aug 
+ m castro p druschel a kermarrec and 
+a rowstron scribe a large-scale and 
+decentralized application-level multicast 
+infrastructure ieee journal on selected areas in 
+communications jsac - oct 
+ t dierks and c allen the tls protocol version 
+ rfc internet engineering task force jan 
+ 
+ l fiege m mezini g m uhl and a p buchmann 
+engineering event-based systems with scopes in 
+ecoop proceedings of the th european 
+conference on object-oriented programming pages 
+ - london uk springer-verlag 
+ t iwata and i a iurosawa omac one-key cbc 
+mac jan 
+ d a mcgrew and a t sherman key establishment 
+in large dynamic groups using one-way function trees 
+technical report tis labs at network 
+associates inc glenwood md may 
+ national institute of standards and technology 
+ nist advanced encryption standard aes 
+federal information processing standards publication 
+ fips pub nov 
+ l opyrchal and a prakash secure distribution of 
+events in content-based publish subscribe systems in 
+proc of the th usenix security symposium 
+usenix aug 
+ l i w pesonen and j bacon secure event types in 
+content-based multi-domain publish subscribe 
+systems in sem proceedings of the th 
+international workshop on software engineering and 
+middleware pages - new york ny usa sept 
+ acm press 
+ l i w pesonen d m eyers and j bacon a 
+capabilities-based access control architecture for 
+multi-domain publish subscribe systems in 
+proceedings of the symposium on applications and the 
+internet saint pages - phoenix az 
+jan ieee 
+ p r pietzuch and j m bacon hermes a 
+distributed event-based middleware architecture in 
+proc of the st international workshop on distributed 
+event-based systems debs pages - 
+vienna austria july ieee 
+ p r pietzuch and s bhola congestion control in a 
+reliable scalable message-oriented middleware in 
+m endler and d schmidt editors proc of the th 
+int conf on middleware middleware pages 
+ - rio de janeiro brazil june springer 
+ s rafaeli and d hutchison a survey of key 
+management for secure group communication acm 
+computing surveys - 
+ c raiciu and d s rosenblum enabling 
+confidentiality in content-based publish subscribe 
+infrastructures in securecomm proceedings of the 
+second ieee creatnet international conference on 
+security and privacy in communication networks 
+ 
+ p rogaway m bellare j black and t krovetz 
+ocb a block-cipher mode of operation for efficient 
+authenticated encryption in acm conference on 
+computer and communications security pages 
+ - 
+ p rogaway and d wagner a critique of ccm feb 
+ 
+ m srivatsa and l liu securing publish-subscribe 
+overlay services with eventguard in ccs 
+proceedings of the th acm conference on computer 
+and communications security pages - new 
+york ny usa acm press 
+ c wang a carzaniga d evans and a l wolf 
+security issues and requirements in internet-scale 
+publish-subscribe systems in proc of the th annual 
+hawaii international conference on system sciences 
+ hicss big island hi usa ieee 
+ d whitfield and m hellman privacy and 
+authentication an introduction to cryptography in 
+proceedings of the ieee volume pages - 
+ 
+ d whiting r housley and n ferguson counter 
+with cbc-mac ccm rfc internet 
+engineering task force sept 
+ 

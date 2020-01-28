@@ -1,0 +1,1114 @@
+a support vector method for optimizing average precision 
+yisong yue 
+cornell university 
+ithaca ny usa 
+yyue cs cornell edu 
+thomas finley 
+cornell university 
+ithaca ny usa 
+tomf cs cornell edu 
+filip radlinski 
+cornell university 
+ithaca ny usa 
+filip cs cornell edu 
+thorsten joachims 
+cornell university 
+ithaca ny usa 
+tj cs cornell edu 
+abstract 
+machine learning is commonly used to improve ranked 
+retrieval systems due to computational difficulties few 
+learning techniques have been developed to directly optimize for 
+mean average precision map despite its widespread use 
+in evaluating such systems existing approaches 
+optimizing map either do not find a globally optimal solution 
+or are computationally expensive in contrast we present 
+a general svm learning algorithm that efficiently finds a 
+globally optimal solution to a straightforward relaxation of 
+map we evaluate our approach using the trec and 
+trec web track corpora wt g comparing against 
+svms optimized for accuracy and rocarea in most cases 
+we show our method to produce statistically significant 
+improvements in map scores 
+categories and subject descriptors 
+h information search and retrieval retrieval 
+models 
+general terms 
+algorithm theory experimentation 
+ introduction 
+state of the art information retrieval systems commonly 
+use machine learning techniques to learn ranking functions 
+however most current approaches do not optimize for the 
+evaluation measure most often used namely mean average 
+precision map 
+instead current algorithms tend to take one of two 
+general approaches the first approach is to learn a model that 
+estimates the probability of a document being relevant given 
+a query e g if solved effectively the ranking with 
+best map performance can easily be derived from the 
+probabilities of relevance however achieving high map only 
+requires finding a good ordering of the documents as a 
+result finding good probabilities requires solving a more 
+difficult problem than necessary likely requiring more training 
+data to achieve the same map performance 
+the second common approach is to learn a function that 
+maximizes a surrogate measure performance measures 
+optimized include accuracy rocarea 
+ or modifications of rocarea and ndcg 
+learning a model to optimize for such measures might result 
+in suboptimal map performance in fact although some 
+previous systems have obtained good map performance it 
+is known that neither achieving optimal accuracy nor 
+rocarea can guarantee optimal map performance 
+in this paper we present a general approach for learning 
+ranking functions that maximize map performance 
+specifically we present an svm algorithm that globally optimizes 
+a hinge-loss relaxation of map this approach simplifies 
+the process of obtaining ranking functions with high map 
+performance by avoiding additional intermediate steps and 
+heuristics the new algorithm also makes it conceptually 
+just as easy to optimize svms for map as was previously 
+possible only for accuracy and rocarea 
+in contrast to recent work directly optimizing for map 
+performance by metzler croft and caruana et al 
+ our technique is computationally efficient while finding 
+a globally optimal solution like our method learns 
+a linear model but is much more efficient in practice and 
+unlike can handle many thousands of features 
+we now describe the algorithm in detail and provide proof 
+of correctness following this we provide an analysis of 
+running time we finish with empirical results from experiments 
+on the trec and trec web track corpus we have 
+also developed a software package implementing our 
+algorithm that is available for public use 
+ 
+ the learning problem 
+following the standard machine learning setup our goal 
+is to learn a function h x → y between an input space 
+x all possible queries and output space y rankings over 
+a corpus in order to quantify the quality of a prediction 
+ˆy h x we will consider a loss function ∆ y × y → 
+∆ y ˆy quantifies the penalty for making prediction ˆy if the 
+correct output is y the loss function allows us to 
+incorporate specific performance measures which we will exploit 
+ 
+http svmrank yisongyue com 
+for optimizing map we restrict ourselves to the supervised 
+learning scenario where input output pairs x y are 
+available for training and are assumed to come from some fixed 
+distribution p x y the goal is to find a function h such 
+that the risk i e expected loss 
+r∆ 
+p h 
+z 
+x×y 
+∆ y h x dp x y 
+is minimized of course p x y is unknown but given 
+a finite set of training pairs s xi yi ∈ x × y i 
+ n the performance of h on s can be measured by 
+the empirical risk 
+r∆ 
+s h 
+ 
+n 
+nx 
+i 
+∆ yi h xi 
+in the case of learning a ranked retrieval function x 
+denotes a space of queries and y the space of possibly weak 
+rankings over some corpus of documents c d d c 
+we can define average precision loss as 
+∆map y ˆy − map rank y rank ˆy 
+where rank y is a vector of the rank values of each 
+document in c for example for a corpus of two documents 
+ d d with d having higher rank than d rank y 
+ we assume true rankings have two rank values where 
+relevant documents have rank value and non-relevant 
+documents rank value we further assume that all predicted 
+rankings are complete rankings no ties 
+let p rank y and ˆp rank ˆy the average precision 
+score is defined as 
+map p ˆp 
+ 
+rel 
+x 
+j pj 
+prec j 
+where rel i pi is the number of relevant 
+documents and prec j is the percentage of relevant documents 
+in the top j documents in predicted ranking ˆy map is the 
+mean of the average precision scores of a group of queries 
+ map vs rocarea 
+most learning algorithms optimize for accuracy or 
+rocarea while optimizing for these measures might achieve 
+good map performance we use two simple examples to 
+show it can also be suboptimal in terms of map 
+rocarea assigns equal penalty to each misordering of a 
+relevant non-relevant pair in contrast map assigns greater 
+penalties to misorderings higher up in the predicted ranking 
+using our notation rocarea can be defined as 
+roc p ˆp 
+ 
+rel · c − rel 
+x 
+i pi 
+x 
+j pj 
+ ˆpi ˆpj 
+where p is the true weak ranking ˆp is the predicted 
+ranking and b is the indicator function conditioned on b 
+doc id 
+p 
+rank h x 
+rank h x 
+table toy example and models 
+suppose we have a hypothesis space with only two 
+hypothesis functions h and h as shown in table these 
+two hypotheses predict a ranking for query x over a corpus 
+of eight documents 
+hypothesis map rocarea 
+h x 
+h x 
+table performance of toy models 
+table shows the map and rocarea scores of h and 
+h here a learning method which optimizes for 
+rocarea would choose h since that results in a higher 
+rocarea score but this yields a suboptimal map score 
+ map vs accuracy 
+using a very similar example we now demonstrate how 
+optimizing for accuracy might result in suboptimal map 
+models which optimize for accuracy are not directly 
+concerned with the ranking instead they learn a threshold 
+such that documents scoring higher than the threshold can 
+be classified as relevant and documents scoring lower as 
+nonrelevant 
+doc id 
+p 
+rank h x 
+rank h x 
+table toy example and models 
+we consider again a hypothesis space with two 
+hypotheses table shows the predictions of the two hypotheses on 
+a single query x 
+hypothesis map best acc 
+h q 
+h q 
+table performance of toy models 
+table shows the map and best accuracy scores of h q 
+and h q the best accuracy refers to the highest 
+achievable accuracy on that ranking when considering all 
+possible thresholds for instance with h q a threshold 
+between documents and gives errors documents - 
+incorrectly classified as non-relevant yielding an accuracy of 
+ similarly with h q a threshold between documents 
+ and gives errors documents - incorrectly 
+classified as relevant and document as non-relevant yielding 
+an accuracy of a learning method which optimizes 
+for accuracy would choose h since that results in a higher 
+accuracy score but this yields a suboptimal map score 
+ optimizing average precision 
+we build upon the approach used by for 
+optimizing rocarea unlike rocarea however map does not 
+decompose linearly in the examples and requires a 
+substantially extended algorithm which we describe in this section 
+recall that the true ranking is a weak ranking with two 
+rank values relevant and non-relevant let cx 
+and c¯x 
+ 
+denote the set of relevant and non-relevant documents of c for 
+query x respectively 
+we focus on functions which are parametrized by a weight 
+vector w and thus wish to find w to minimize the empirical 
+risk r∆ 
+s w ≡ r∆ 
+s h · w our approach is to learn a 
+discriminant function f x × y → over input-output 
+pairs given query x we can derive a prediction by finding 
+the ranking y that maximizes the discriminant function 
+h x w argmax 
+y∈y 
+f x y w 
+we assume f to be linear in some combined feature 
+representation of inputs and outputs ψ x y ∈ rn 
+ i e 
+f x y w wt 
+ψ x y 
+the combined feature function we use is 
+ψ x y 
+ 
+ cx · c¯x 
+x 
+i di∈cx 
+x 
+j dj ∈c¯x 
+ yij φ x di − φ x dj 
+where φ x × c → n 
+is a feature mapping function from 
+a query document pair to a point in n dimensional space 
+ 
+we represent rankings as a matrix of pairwise orderings 
+y ⊂ − c × c 
+ for any y ∈ y yij if di is 
+ranked ahead of dj and yij − if dj is ranked ahead of di 
+and yij if di and dj have equal rank we consider only 
+matrices which correspond to valid rankings i e obeying 
+antisymmetry and transitivity intuitively ψ is a 
+summation over the vector differences of all relevant non-relevant 
+document pairings since we assume predicted rankings to 
+be complete rankings yij is either or − never 
+given a learned weight vector w predicting a ranking i e 
+solving equation given query x reduces to picking each 
+yij to maximize wt 
+ψ x y as is also discussed in 
+this is attained by sorting the documents by wt 
+φ x d in 
+descending order we will discuss later the choices of φ we 
+used for our experiments 
+ structural svms 
+the above formulation is very similar to learning a 
+straightforward linear model while training on the pairwise 
+difference of relevant non-relevant document pairings many 
+svm-based approaches optimize over these pairwise 
+differences e g although these methods do not 
+optimize for map during training previously it was not 
+clear how to incorporate non-linear multivariate loss 
+functions such as map loss directly into global optimization 
+problems such as svm training we now present a method 
+based on structural svms to address this problem 
+we use the structural svm formulation presented in 
+optimization problem to learn a w ∈ rn 
+ 
+optimization problem structural svm 
+min 
+w ξ≥ 
+ 
+ 
+w 
+ 
+c 
+n 
+nx 
+i 
+ξi 
+s t ∀i ∀y ∈ y \ yi 
+wt 
+ψ xi yi ≥ wt 
+ψ xi y ∆ yi y − ξi 
+the objective function to be minimized is a tradeoff 
+between model complexity w 
+ and a hinge loss relaxation 
+of map loss 
+p 
+ξi as is usual in svm training c is a 
+ 
+for example one dimension might be the number of times 
+the query words appear in the document 
+algorithm cutting plane algorithm for solving op 
+within tolerance 
+ input x y xn yn c 
+ wi ← ∅ for all i n 
+ repeat 
+ for i n do 
+ h y w ≡ ∆ yi y wt 
+ψ xi y − wt 
+ψ xi yi 
+ compute ˆy argmaxy∈y h y w 
+ compute ξi max maxy∈wi h y w 
+ if h ˆy w ξi then 
+ wi ← wi ∪ ˆy 
+ w ← optimize over w 
+s 
+i wi 
+ end if 
+ end for 
+ until no wi has changed during iteration 
+parameter that controls this tradeoff and can be tuned to 
+achieve good performance in different training tasks 
+for each xi yi in the training set a set of constraints 
+of the form in equation is added to the optimization 
+problem note that wt 
+ψ x y is exactly our discriminant 
+function f x y w see equation during prediction 
+our model chooses the ranking which maximizes the 
+discriminant if the discriminant value for an incorrect ranking 
+y is greater than for the true ranking yi e g f xi y w 
+f xi yi w then corresponding slack variable ξi must be 
+at least ∆ yi y for that constraint to be satisfied 
+therefore the sum of slacks 
+p 
+ξi upper bounds the map loss 
+this is stated formally in proposition 
+proposition let ξ 
+ w be the optimal solution of the 
+slack variables for op for a given weight vector w then 
+ 
+n 
+pn 
+i ξi is an upper bound on the empirical risk r∆ 
+s w 
+ see for proof 
+proposition shows that op learns a ranking function 
+that optimizes an upper bound on map error on the 
+training set unfortunately there is a problem a constraint is 
+required for every possible wrong output y and the 
+number of possible wrong outputs is exponential in the size of 
+c fortunately we may employ algorithm to solve op 
+algorithm is a cutting plane algorithm iteratively 
+introducing constraints until we have solved the original problem 
+within a desired tolerance the algorithm starts with 
+no constraints and iteratively finds for each example xi yi 
+the output ˆy associated with the most violated constraint 
+if the corresponding constraint is violated by more than we 
+introduce ˆy into the working set wi of active constraints for 
+example i and re-solve using the updated w it can be 
+shown that algorithm s outer loop is guaranteed to halt 
+within a polynomial number of iterations for any desired 
+precision 
+theorem let ¯r maxi maxy ψ xi yi − ψ xi y 
+¯∆ maxi maxy ∆ yi y and for any algorithm 
+terminates after adding at most 
+max 
+ 
+ n ¯∆ 
+ 
+ c ¯∆ ¯r 
+ 
+ff 
+constraints to the working set w see for proof 
+however within the inner loop of this algorithm we have 
+to compute argmaxy∈y h y w where 
+h y w ∆ yi y wt 
+ψ xi y − wt 
+ψ xi yi 
+or equivalently 
+argmax 
+y∈y 
+∆ yi y wt 
+ψ xi y 
+since wt 
+ψ xi yi is constant with respect to y though 
+closely related to the classification procedure this has the 
+substantial complication that we must contend with the 
+additional ∆ yi y term without the ability to efficiently find 
+the most violated constraint i e solve argmaxy∈y h y w 
+the constraint generation procedure is not tractable 
+ finding the most violated constraint 
+using op and optimizing to rocarea loss ∆roc the 
+problem of finding the most violated constraint or solving 
+argmaxy∈y h y w henceforth argmax h is addressed in 
+ solving argmax h for ∆map is more difficult this is 
+primarily because rocarea decomposes nicely into a sum 
+of scores computed independently on each relative 
+ordering of a relevant non-relevant document pair map on the 
+other hand does not decompose in the same way as 
+rocarea the main algorithmic contribution of this paper is an 
+efficient method for solving argmax h for ∆map 
+one useful property of ∆map is that it is invariant to 
+swapping two documents with equal relevance for example if 
+documents da and db are both relevant then swapping the 
+positions of da and db in any ranking does not affect ∆map 
+by extension ∆map is invariant to any arbitrary 
+permutation of the relevant documents amongst themselves and of 
+the non-relevant documents amongst themselves however 
+this reshuﬄing will affect the discriminant score wt 
+ψ x y 
+this leads us to observation 
+observation consider rankings which are constrained 
+by fixing the relevance at each position in the ranking e g 
+the rd document in the ranking must be relevant every 
+ranking which satisfies the same set of constraints will have 
+the same ∆map if the relevant documents are sorted by 
+wt 
+φ x d in descending order and the non-relevant 
+documents are likewise sorted by wt 
+φ x d then the 
+interleaving of the two sorted lists which satisfies the constraints will 
+maximize h for that constrained set of rankings 
+observation implies that in the ranking which 
+maximizes h the relevant documents will be sorted by wt 
+φ x d 
+and the non-relevant documents will also be sorted likewise 
+by first sorting the relevant and non-relevant documents 
+the problem is simplified to finding the optimal interleaving 
+of two sorted lists for the rest of our discussion we assume 
+that the relevant documents and non-relevant documents 
+are both sorted by descending wt 
+φ x d for convenience 
+we also refer to relevant documents as dx 
+ dx 
+ cx cx 
+ 
+and non-relevant documents as d¯x 
+ d¯x 
+ c¯x c¯x 
+ 
+we define δj i i with i i as the change in h from 
+when the highest ranked relevant document ranked after d¯x 
+j 
+is dx 
+i 
+to when it is dx 
+i 
+ for i i we have 
+δj i i 
+ 
+ cx 
+„ 
+j 
+j i 
+− 
+j − 
+j i − 
+ 
+− · sx 
+i − s¯x 
+j 
+where si wt 
+φ x di the first term in is the change 
+in ∆map when the ith relevant document has j non-relevant 
+documents ranked before it as opposed to j − the second 
+term is the change in the discriminant score wt 
+ψ x y 
+when yij changes from to − 
+ dx 
+i d¯x 
+j dx 
+i 
+ d¯x 
+j dx 
+i dx 
+i 
+figure example for δj i i 
+figure gives a conceptual example for δj i i the 
+bottom ranking differs from the top only where d¯x 
+j slides up 
+one rank the difference in the value of h for these two 
+rankings is exactly δj i i 
+for any i i we can then define δj i i as 
+δj i i 
+i − 
+x 
+k i 
+δj k k 
+or equivalently 
+δj i i 
+i − 
+x 
+k i 
+ 
+ 
+ cx 
+„ 
+j 
+j k 
+− 
+j − 
+j k − 
+ 
+− · sx 
+k − s¯x 
+j 
+ 
+ 
+let o o c¯x encode the positions of the non-relevant 
+documents where dx 
+oj 
+is the highest ranked relevant 
+document ranked after the jth non-relevant document due to 
+observation this encoding uniquely identifies a complete 
+ranking we can recover the ranking as 
+yij 
+ 
+ 
+ 
+ if i j 
+sign si − sj if di dj equal relevance 
+sign oj − i − if di dx 
+i dj d¯x 
+j 
+sign j − oi if di d¯x 
+i dj dx 
+j 
+ 
+we can now reformulate h into a new objective function 
+h o o c¯x w h ¯y w 
+ c¯x 
+ 
+x 
+k 
+δk ok cx 
+ 
+where ¯y is the true weak ranking conceptually h starts 
+with a perfect ranking ¯y and adds the change in h when 
+each successive non-relevant document slides up the ranking 
+we can then reformulate the argmax h problem as 
+argmax h argmax 
+o o c¯x 
+ c¯x 
+ 
+x 
+k 
+δk ok cx 
+ 
+s t 
+o ≤ ≤ o c¯x 
+algorithm describes the algorithm used to solve 
+equation conceptually algorithm starts with a perfect 
+ranking then for each successive non-relevant document 
+the algorithm modifies the solution by sliding that 
+document up the ranking to locally maximize h while keeping 
+the positions of the other non-relevant documents constant 
+ proof of correctness 
+algorithm is greedy in the sense that it finds the best 
+position of each non-relevant document independently from 
+the other non-relevant documents in other words the 
+algorithm maximizes h for each non-relevant document d¯x 
+j 
+algorithm finding the most violated constraint 
+ argmax h for algorithm with ∆map 
+ input w cx 
+ c¯x 
+ sort cx 
+and c¯x 
+in descending order of wt 
+φ x d 
+ sx 
+i ← wt 
+φ x dx 
+i i cx 
+ 
+ s¯x 
+i ← wt 
+φ x d¯x 
+i i c¯x 
+ 
+ for j c¯x 
+ do 
+ optj ← argmaxk δj k cx 
+ 
+ end for 
+ encode ˆy according to 
+ return ˆy 
+without considering the positions of the other non-relevant 
+documents and thus ignores the constraints of 
+in order for the solution to be feasible the jth non-relevant 
+document must be ranked after the first j − non-relevant 
+documents thus satisfying 
+opt ≤ opt ≤ ≤ opt c¯x 
+if the solution is feasible the it clearly solves therefore 
+it suffices to prove that algorithm satisfies we first 
+prove that δj · · is monotonically decreasing in j 
+lemma for any ≤ i i ≤ cx 
+ and ≤ j 
+ c¯x 
+ it must be the case that 
+δj i i ≤ δj i i 
+proof recall from that both δj i i and δj i i 
+are summations of i − i terms we will show that each 
+term in the summation of δj i i is no greater than the 
+corresponding term in δj i i or 
+δj k k ≤ δj k k 
+for k i i − 
+each term in δj k k and δj k k can be further 
+decomposed into two parts see we will show that each 
+part of δj k k is no greater than the corresponding 
+part in δj k k in other words we will show that both 
+j 
+j k 
+− 
+j 
+j k 
+≤ 
+j 
+j k 
+− 
+j − 
+j k − 
+ 
+and 
+− · sx 
+k − s¯x 
+j ≤ − · sx 
+k − s¯x 
+j 
+are true for the aforementioned values of j and k 
+it is easy to see that is true by observing that for any 
+two positive integers ≤ a b 
+a 
+b 
+− 
+a 
+b 
+≤ 
+a 
+b 
+− 
+a − 
+b − 
+ 
+and choosing a j and b j k 
+the second inequality holds because algorithm first 
+sorts d¯x 
+in descending order of s¯x 
+ implying s¯x 
+j ≤ s¯x 
+j 
+thus we see that each term in δj is no greater than the 
+corresponding term in δj which completes the proof 
+the result of lemma leads directly to our main 
+correctness result 
+theorem in algorithm the computed values of optj 
+satisfy implying that the solution returned by algorithm 
+ is feasible and thus optimal 
+proof we will prove that 
+optj ≤ optj 
+holds for any ≤ j c¯x 
+ thus implying 
+since algorithm computes optj as 
+optj argmax 
+k 
+δj k cx 
+ 
+then by definition of δj for any ≤ i optj 
+δj i optj δj i cx 
+ − δj optj cx 
+ 
+using lemma we know that 
+δj i optj ≤ δj i optj 
+which implies that for any ≤ i optj 
+δj i cx 
+ − δj optj cx 
+ 
+suppose for contradiction that optj optj then 
+δj optj cx 
+ δj optj cx 
+ 
+which contradicts therefore it must be the case that 
+optj ≤ optj which completes the proof 
+ running time 
+the running time of algorithm can be split into two 
+parts the first part is the sort by wt 
+φ x d which 
+requires o n log n time where n cx 
+ c¯x 
+ the second 
+part computes each optj which requires o cx 
+ · c¯x 
+ time 
+though in the worst case this is o n 
+ the number of 
+relevant documents cx 
+ is often very small e g constant 
+with respect to n in which case the running time for the 
+second part is simply o n for most real-world datasets 
+algorithm is dominated by the sort and has complexity 
+o n log n 
+algorithm is guaranteed to halt in a polynomial 
+number of iterations and each iteration runs algorithm 
+virtually all well-performing models were trained in a 
+reasonable amount of time usually less than one hour once 
+training is complete making predictions on query x 
+using the resulting hypothesis h x w requires only sorting 
+by wt 
+φ x d 
+we developed our software using a python interface 
+to 
+svmstruct 
+ since the python language greatly simplified the 
+coding process to improve performance it is advisable to 
+use the standard c implementation 
+of svmstruct 
+ 
+ experiment setup 
+the main goal of our experiments is to evaluate whether 
+directly optimizing map leads to improved map 
+performance compared to conventional svm methods that 
+optimize a substitute loss such as accuracy or rocarea we 
+empirically evaluate our method using two sets of trec 
+web track queries one each from trec and trec 
+ topics - and - both of which used the wt g 
+corpus for each query trec provides the relevance 
+judgments of the documents we generated our features using 
+the scores of existing retrieval functions on these queries 
+while our method is agnostic to the meaning of the 
+features we chose to use existing retrieval functions as a simple 
+yet effective way of acquiring useful features as such our 
+ 
+http www cs cornell edu  tomf svmpython 
+ 
+http svmlight joachims org svm struct html 
+dataset base funcs features 
+trec indri 
+trec indri 
+trec submissions 
+trec submissions 
+table dataset statistics 
+experiments essentially test our method s ability to re-rank 
+the highly ranked documents e g re-combine the scores of 
+the retrieval functions to improve map 
+we compare our method against the best retrieval 
+functions trained on henceforth base functions as well as against 
+previously proposed svm methods comparing with the 
+best base functions tests our method s ability to learn a 
+useful combination comparing with previous svm methods 
+allows us to test whether optimizing directly for map as 
+opposed to accuracy or rocarea achieves a higher map 
+score in practice the rest of this section describes the base 
+functions and the feature generation method in detail 
+ choosing retrieval functions 
+we chose two sets of base functions for our experiments 
+for the first set we generated three indices over the wt g 
+corpus using indri 
+ the first index was generated using 
+default settings the second used porter-stemming and the 
+last used porter-stemming and indri s default stopwords 
+for both trec and trec we used the 
+description portion of each query and scored the documents using 
+five of indri s built-in retrieval methods which are cosine 
+similarity tfidf okapi language model with dirichlet 
+prior and language model with jelinek-mercer prior all 
+parameters were kept as their defaults 
+we computed the scores of these five retrieval methods 
+over the three indices giving base functions in total for 
+each query we considered the scores of documents found in 
+the union of the top documents of each base function 
+for our second set of base functions we used scores from 
+the trec and trec web track submissions 
+we used only the non-manual non-short submissions from 
+both years for trec and trec there were and 
+ such submissions respectively a typical submission 
+contained scores of its top documents 
+b ca 
+wt 
+φ x d 
+f d x 
+figure example feature binning 
+ generating features 
+in order to generate input examples for our method a 
+concrete instantiation of φ must be provided for each 
+doc 
+http www lemurproject org 
+trec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ best func 
+ nd best 
+ rd best 
+table comparison with indri functions 
+ument d scored by a set of retrieval functions f on query x 
+we generate the features as a vector 
+φ x d f d x k ∀f ∈ f ∀k ∈ kf 
+where f d x denotes the score that retrieval function f 
+assigns to document d for query x and each kf is a set of 
+real values from a high level we are expressing the score 
+of each retrieval function using kf bins 
+since we are using linear kernels one can think of the 
+learning problem as finding a good piecewise-constant 
+combination of the scores of the retrieval functions figure 
+shows an example of our feature mapping method in this 
+example we have a single feature f f here kf 
+ a b c and the weight vector is w wa wb wc for any 
+document d and query x we have 
+wt 
+φ x d 
+ 
+ 
+ 
+ if f d x a 
+wa if a ≤ f d x b 
+wa wb if b ≤ f d x c 
+wa wb wc if c ≤ f d x 
+ 
+this is expressed qualitatively in figure where wa and wb 
+are positive and wc is negative 
+we ran our main experiments using four choices of f the 
+set of aforementioned indri retrieval functions for trec 
+and trec and the web track submissions for trec 
+ and trec for each f and each function f ∈ f 
+we chose values for kf which are reasonably spaced and 
+capture the sensitive region of f 
+using the four choices of f we generated four datasets 
+for our main experiments table contains statistics of 
+the generated datasets there are many ways to generate 
+features and we are not advocating our method over others 
+this was simply an efficient means to normalize the outputs 
+of different functions and allow for a more expressive model 
+ experiments 
+for each dataset in table we performed trials for 
+each trial we train on randomly selected queries and 
+select another queries at random for a validation set 
+models were trained using a wide range of c values the model 
+which performed best on the validation set was selected and 
+tested on the remaining queries 
+all queries were selected to be in the training validation 
+and test sets the same number of times using this setup 
+we performed the same experiments while using our method 
+ svm∆ 
+map an svm optimizing for rocarea svm∆ 
+roc 
+and a conventional classification svm svmacc all 
+svm methods used a linear kernel we reported the average 
+performance of all models over the trials 
+ comparison with base functions 
+in analyzing our results the first question to answer is 
+can svm∆ 
+map learn a model which outperforms the best base 
+trec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ best func 
+ nd best 
+ rd best 
+table comparison with trec submissions 
+trec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ best func 
+ nd best 
+ rd best 
+table comparison with trec subm w o best 
+functions table presents the comparison of svm∆ 
+map with 
+the best indri base functions each column group contains 
+the macro-averaged map performance of svm∆ 
+map or a base 
+function the w l columns show the number of queries 
+where svm∆ 
+map achieved a higher map score significance 
+tests were performed using the two-tailed wilcoxon signed 
+rank test two stars indicate a significance level of 
+all tables displaying our experimental results are structured 
+identically here we find that svm∆ 
+map significantly 
+outperforms the best base functions 
+table shows the comparison when trained on trec 
+submissions while achieving a higher map score than the best 
+base functions the performance difference between svm∆ 
+map 
+the base functions is not significant given that many of 
+these submissions use scoring functions which are carefully 
+crafted to achieve high map it is possible that the best 
+performing submissions use techniques which subsume the 
+techniques of the other submissions as a result svm∆ 
+map 
+would not be able to learn a hypothesis which can 
+significantly out-perform the best submission 
+hence we ran the same experiments using a modified 
+dataset where the features computed using the best 
+submission were removed table shows the results note that we 
+are still comparing against the best submission though we 
+are not using it for training notice that while the 
+performance of svm∆ 
+map degraded slightly the performance was 
+still comparable with that of the best submission 
+ comparison w previous svm methods 
+the next question to answer is does svm∆ 
+map produce 
+higher map scores than previous svm methods tables 
+and present the results of svm∆ 
+map svm∆ 
+roc and svmacc 
+when trained on the indri retrieval functions and trec 
+submissions respectively table contains the corresponding 
+results when trained on the trec submissions without the 
+best submission 
+to start with our results indicate that svmacc was not 
+competitive with svm∆ 
+map and svm∆ 
+roc and at times 
+underperformed dramatically as such we tried several 
+approaches to improve the performance of svmacc 
+ alternate svmacc methods 
+one issue which may cause svmacc to underperform is 
+the severe imbalance between relevant and non-relevant 
+doctrec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ svm∆ 
+roc 
+svmacc 
+svmacc 
+svmacc 
+svmacc 
+table trained on indri functions 
+trec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ svm∆ 
+roc 
+svmacc 
+svmacc 
+svmacc 
+svmacc 
+table trained on trec submissions 
+uments the vast majority of the documents are not 
+relevant svmacc addresses this problem by assigning more 
+penalty to false negative errors for each dataset the ratio 
+of the false negative to false positive penalties is equal to the 
+ratio of the number non-relevant and relevant documents in 
+that dataset tables and indicate that svmacc still 
+performs significantly worse than svm∆ 
+map 
+another possible issue is that svmacc attempts to find 
+just one discriminating threshold b that is query-invariant 
+it may be that different queries require different values of 
+b having the learning method trying to find a good b value 
+ when one does not exist may be detrimental 
+we took two approaches to address this issue the first 
+method svmacc converts the retrieval function scores into 
+percentiles for example for document d query q and 
+retrieval function f if the score f d q is in the top of 
+the scores f · q for query q then the converted score is 
+f d q each kf contains evenly spaced values 
+between and tables and show that the 
+performance of svmacc was also not competitive with svm∆ 
+map 
+the second method svmacc normalizes the scores given 
+by f for each query for example assume for query q that 
+f outputs scores in the range to then for document 
+d if f d q the converted score would be f d q 
+ − − each kf contains evenly 
+spaced values between and again tables and 
+show that svmacc was not competitive with svm∆ 
+map 
+ map vs rocarea 
+svm∆ 
+roc performed much better than svmacc in our 
+experiments when trained on indri retrieval functions see 
+table the performance of svm∆ 
+roc was slight though 
+not significantly worse than the performances of svm∆ 
+map 
+however table shows that svm∆ 
+map did significantly 
+outperform svm∆ 
+roc when trained on the trec submissions 
+table shows the performance of the models when trained 
+on the trec submissions with the best submission removed 
+the performance of most models degraded by a small amount 
+with svm∆ 
+map still having the best performance 
+trec trec 
+model map w l map w l 
+svm∆ 
+map - 
+ svm∆ 
+roc 
+svmacc 
+svmacc 
+svmacc 
+svmacc 
+table trained on trec subm w o best 
+ conclusions and future work 
+we have presented an svm method that directly 
+optimizes map it provides a principled approach and avoids 
+difficult to control heuristics we formulated the 
+optimization problem and presented an algorithm which provably 
+finds the solution in polynomial time we have shown 
+empirically that our method is generally superior to or 
+competitive with conventional svms methods 
+our new method makes it conceptually just as easy to 
+optimize svms for map as was previously possible only 
+for accuracy and rocarea the computational cost for 
+training is very reasonable in practice since other methods 
+typically require tuning multiple heuristics we also expect 
+to train fewer models before finding one which achieves good 
+performance 
+the learning framework used by our method is fairly 
+general a natural extension of this framework would be to 
+develop methods to optimize for other important ir 
+measures such as normalized discounted cumulative gain 
+ and mean reciprocal rank 
+ acknowledgments 
+this work was funded under nsf award iis- 
+nsf career award and a gift from yahoo 
+research the third author was also partly supported by a 
+microsoft research fellowship 
+ references 
+ b t bartell g w cottrell and r k belew 
+automatic combination of multiple ranked retrieval 
+systems in proceedings of the acm conference on 
+research and development in information retrieval 
+ sigir 
+ c burges t shaked e renshaw a lazier 
+m deeds n hamilton and g hullender learning 
+to rank using gradient descent in proceedings of the 
+international conference on machine learning 
+ icml 
+ c j c burges r ragno and q le learning to 
+rank with non-smooth cost functions in proceedings 
+of the international conference on advances in neural 
+information processing systems nips 
+ y cao j xu t -y liu h li y huang and h -w 
+hon adapting ranking svm to document retrieval in 
+proceedings of the acm conference on research and 
+development in information retrieval sigir 
+ b carterette and d petkova learning a ranking 
+from pairwise preferences in proceedings of the acm 
+conference on research and development in 
+information retrieval sigir 
+ r caruana a niculescu-mizil g crew and 
+a ksikes ensemble selection from libraries of models 
+in proceedings of the international conference on 
+machine learning icml 
+ j davis and m goadrich the relationship between 
+precision-recall and roc curves in proceedings of the 
+international conference on machine learning 
+ icml 
+ d hawking overview of the trec- web track in 
+proceedings of trec- 
+ d hawking and n craswell overview of the 
+trec- web track in proceedings of trec- 
+nov 
+ r herbrich t graepel and k obermayer large 
+margin rank boundaries for ordinal regression 
+advances in large margin classifiers 
+ a herschtal and b raskutti optimising area under 
+the roc curve using gradient descent in proceedings 
+of the international conference on machine learning 
+ icml 
+ k jarvelin and j kekalainen ir evaluation methods 
+for retrieving highly relevant documents in 
+proceedings of the acm conference on research and 
+development in information retrieval sigir 
+ t joachims a support vector method for 
+multivariate performance measures in proceedings of 
+the international conference on machine learning 
+ icml pages - new york ny usa 
+acm press 
+ j lafferty and c zhai document language models 
+query models and risk minimization for information 
+retrieval in proceedings of the acm conference on 
+research and development in information retrieval 
+ sigir pages - 
+ y lin y lee and g wahba support vector 
+machines for classification in nonstandard situations 
+machine learning - 
+ d metzler and w b croft a markov random field 
+model for term dependencies in proceedings of the 
+ th annual international acm sigir conference on 
+research and development in information retrieval 
+pages - 
+ k morik p brockhausen and t joachims 
+combining statistical learning with a knowledge-based 
+approach in proceedings of the international 
+conference on machine learning 
+ s robertson the probability ranking principle in ir 
+journal of documentation journal of documentation 
+ - 
+ i tsochantaridis t hofmann t joachims and 
+y altun large margin methods for structured and 
+interdependent output variables journal of machine 
+learning research jmlr sep - 
+ v vapnik statistical learning theory wiley and 
+sons inc 
+ l yan r dodier m mozer and r wolniewicz 
+optimizing classifier performance via approximation 
+to the wilcoxon-mann-witney statistic in 
+proceedings of the international conference on 
+machine learning icml 

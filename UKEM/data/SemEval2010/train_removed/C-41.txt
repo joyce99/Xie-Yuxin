@@ -1,0 +1,682 @@
+evaluating adaptive resource management for 
+distributed real-time embedded systems 
+nishanth shankaran 
+ 
+xenofon koutsoukos douglas c schmidt and aniruddha gokhale 
+dept of eecs vanderbilt university nashville 
+abstract 
+a challenging problem faced by researchers and developers 
+of distributed real-time and embedded dre systems is 
+devising and implementing effective adaptive resource 
+management strategies that can meet end-to-end quality of service 
+ qos requirements in varying operational conditions this 
+paper presents two contributions to research in adaptive 
+resource management for dre systems first we describe the 
+structure and functionality of the hybrid adaptive 
+resourcemanagement middleware hyarm which provides 
+adaptive resource management using hybrid control techniques 
+for adapting to workload fluctuations and resource 
+availability second we evaluate the adaptive behavior of hyarm 
+via experiments on a dre multimedia system that distributes 
+video in real-time our results indicate that hyarm yields 
+predictable stable and high system performance even in the 
+face of fluctuating workload and resource availability 
+categories and subject descriptors 
+c distributed systems distributed applications 
+d organization and design real-time systems and 
+embedded systems 
+ introduction 
+achieving end-to-end real-time quality of service qos 
+is particularly important for open distributed real-time and 
+embedded dre systems that face resource constraints such 
+as limited computing power and network bandwidth 
+overutilization of these system resources can yield unpredictable 
+and unstable behavior whereas under-utilization can yield 
+excessive system cost a promising approach to meeting 
+these end-to-end qos requirements effectively therefore is 
+to develop and apply adaptive middleware which is 
+software whose functional and qos-related properties can be 
+modified either statically or dynamically static 
+modifications are carried out to reduce footprint leverage 
+capabilities that exist in specific platforms enable functional 
+subsetting and or minimize hardware software infrastructure 
+dependencies objectives of dynamic modifications include 
+optimizing system responses to changing environments or 
+requirements such as changing component interconnections 
+power-levels cpu and network bandwidth availability 
+latency jitter and workload 
+in open dre systems adaptive middleware must make 
+such modifications dependably i e while meeting 
+stringent end-to-end qos requirements which requires the 
+specification and enforcement of upper and lower bounds on 
+system resource utilization to ensure effective use of 
+system resources to meet these requirements we have 
+developed the hybrid adaptive resource-management 
+middleware hyarm which is an open-source 
+distributed 
+resource management middleware 
+hyarm is based on hybrid control theoretic techniques 
+which provide a theoretical framework for designing 
+control of complex system with both continuous and discrete 
+dynamics in our case study which involves a distributed 
+real-time video distribution system the task of adaptive 
+resource management is to control the utilization of the 
+different resources whose utilizations are described by 
+continuous variables we achieve this by adapting the resolution 
+of the transmitted video which is modeled as a continuous 
+variable and by changing the frame-rate and the 
+compression which are modeled by discrete actions we have 
+implemented hyarm atop the ace orb tao which 
+is an implementation of the real-time corba 
+specification our results show that hyarm ensures 
+effective system resource utilization and end-to-end qos 
+requirements of higher priority applications are met even in 
+the face of fluctuations in workload 
+the remainder of the paper is organized as follows 
+section describes the architecture functionality and resource 
+utilization model of our dre multimedia system case study 
+section explains the structure and functionality of hyarm 
+section evaluates the adaptive behavior of hyarm via 
+experiments on our multimedia system case study section 
+compares our research on hyarm with related work and 
+section presents concluding remarks 
+ 
+the code and examples for hyarm are available at www 
+dre vanderbilt edu ∼nshankar hyarm 
+article 
+ case study dre multimedia 
+system 
+this section describes the architecture and qos 
+requirements of our dre multimedia system 
+ multimedia system architecture 
+wireless link 
+wireless link 
+wireless 
+link 
+ 
+ 
+ 
+physical link 
+physical link 
+physical link 
+base station 
+end receiver 
+end receiver 
+end receiver 
+physical link 
+end receiver 
+uav 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+uav 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+uav 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+camera 
+video 
+encoder 
+figure dre multimedia system architecture 
+the architecture for our dre multimedia system is shown 
+in figure and consists of the following entities data 
+source video capture by uav where video is captured 
+ related to subject of interest by camera s on each uav 
+followed by encoding of raw video using a specific encoding 
+scheme and transmitting the video to the next stage in the 
+pipeline data distributor base station where the 
+video is processed to remove noise followed by 
+retransmission of the processed video to the next stage in the pipeline 
+ sinks command and control center where the 
+received video is again processed to remove noise then 
+decoded and finally rendered to end user via graphical displays 
+significant improvements in video encoding decoding and 
+ de compression techniques have been made as a result of 
+recent advances in video encoding and compression 
+techniques common video compression schemes are 
+mpeg mpeg- real video and mpeg- each compression 
+scheme is characterized by its resource requirement e g the 
+computational power to de compress the video signal and 
+the network bandwidth required to transmit the compressed 
+video signal properties of the compressed video such as 
+resolution and frame-rate determine both the quality and the 
+resource requirements of the video 
+our multimedia system case study has the following 
+endto-end real-time qos requirements latency 
+interframe delay also know as jitter frame rate and 
+picture resolution these qos requirements can be 
+classified as being either hard or soft hard qos requirements 
+should be met by the underlying system at all times whereas 
+soft qos requirements can be missed occasionally 
+for our 
+case study we treat qos requirements such as latency and 
+jitter as harder qos requirements and strive to meet these 
+requirements at all times in contrast we treat qos 
+requirements such as video frame rate and picture resolution as 
+softer qos requirements and modify these video properties 
+adaptively to handle dynamic changes in resource 
+availabil 
+although hard and soft are often portrayed as two discrete 
+requirement sets in practice they are usually two ends of 
+a continuum ranging from softer to harder rather than 
+two disjoint points 
+ity effectively 
+ dre multimedia system rresources 
+there are two primary types of resources in our dre 
+multimedia system processors that provide 
+computational power available at the uavs base stations and end 
+receivers and network links that provide communication 
+bandwidth between uavs base stations and end receivers 
+the computing power required by the video capture and 
+encoding tasks depends on dynamic factors such as speed 
+of the uav speed of the subject if the subject is mobile 
+and distance between uav and the subject the wireless 
+network bandwidth available to transmit video captured by 
+uavs to base stations also depends on the wireless 
+connectivity between the uavs and the base station which in-turn 
+depend on dynamic factors such as the speed of the uavs 
+and the relative distance between uavs and base stations 
+the bandwidth of the link between the base station and 
+the end receiver is limited but more stable than the 
+bandwidth of the wireless network resource requirements and 
+availability of resources are subjected to dynamic changes 
+two classes of applications - qos-enabled and best-effort 
+- use the multimedia system infrastructure described above 
+to transmit video to their respective receivers qos-enabled 
+class of applications have higher priority over best-effort 
+class of application in our study emergency response 
+applications belong to qos-enabled and surveillance applications 
+belong to best-effort class for example since a stream from 
+an emergency response application is of higher importance 
+than a video stream from a surveillance application it 
+receives more resources end-to-end 
+since resource availability significantly affects qos we use 
+current resource utilization as the primary indicator of 
+system performance we refer to the current level of system 
+resource utilization as the system condition based on this 
+definition we can classify system conditions as being either 
+under over or effectively utilized 
+under-utilization of system resources occurs when the 
+current resource utilization is lower than the desired lower bound 
+on resource utilization in this system condition residual 
+system resources i e network bandwidth and 
+computational power are available in large amounts after meeting 
+end-to-end qos requirements of applications these 
+residual resources can be used to increase the qos of the 
+applications for example residual cpu and network bandwidth 
+can be used to deliver better quality video e g with greater 
+resolution and higher frame rate to end receivers 
+over-utilization of system resources occurs when the 
+current resource utilization is higher than the desired upper 
+bound on resource utilization this condition can arise 
+from loss of resources - network bandwidth and or 
+computing power at base station end receiver or at uav - or 
+may be due to an increase in resource demands by 
+applications over-utilization is generally undesirable since the 
+quality of the received video such as resolution and frame 
+rate and timeliness properties such as latency and jitter 
+are degraded and may result in an unstable and thus 
+ineffective system 
+effective resource utilization is the desired system 
+condition since it ensures that end-to-end qos requirements of 
+the uav-based multimedia system are met and utilization of 
+both system resources i e network bandwidth and 
+computational power are within their desired utilization bounds 
+article 
+section describes techniques we applied to achieve effective 
+utilization even in the face of fluctuating resource 
+availability and or demand 
+ overview of hyarm 
+this section describes the architecture of the hybrid 
+adaptive resource-management middleware hyarm hyarm 
+ensures efficient and predictable system performance by 
+providing adaptive resource management including monitoring 
+of system resources and enforcing bounds on application 
+resource utilization 
+ hyarm structure and functionality 
+resource utilization 
+legend 
+resource allocation 
+application parameters 
+figure hyarm architecture 
+hyarm is composed of three types of entities shown in 
+figure and described below 
+resource monitors observe the overall resource 
+utilization for each type of resource and resource utilization per 
+application in our multimedia system there are resource 
+monitors for cpu utilization and network bandwidth cpu 
+monitors observe the cpu resource utilization of uavs base 
+station and end receivers network bandwidth monitors 
+observe the network resource utilization of wireless network 
+link between uavs and the base station and wired 
+network link between the base station and end receivers 
+the central controller maintains the system resource 
+utilization below a desired bound by processing periodic 
+updates it receives from resource monitors and 
+modifying the execution of applications accordingly e g by 
+using different execution algorithms or operating the 
+application with increased decreased qos this adaptation 
+process ensures that system resources are utilized efficiently and 
+end-to-end application qos requirements are met in our 
+multimedia system the hyarm controller determines the 
+value of application parameters such as video 
+compression schemes such as real video and mpeg- and or 
+frame rate and picture resolution from the perspective 
+of hybrid control theoretic techniques the different video 
+compression schemes and frame rate form the discrete 
+variables of application execution and picture resolution forms 
+the continuous variables 
+application adapters modify application execution 
+according to parameters recommended by the controller and 
+ensures that the operation of the application is in accordance 
+with the recommended parameters in the current 
+mplementation of hyarm the application adapter modifies the 
+input parameters to the application that affect application 
+qos and resource utilization - compression scheme frame 
+rate and picture resolution in our future implementations 
+we plan to use resource reservation mechanisms such as 
+differentiated service and class-based kernel resource 
+management to provision reserve network and cpu 
+resources in our multimedia system the application adapter 
+ensures that the video is encoded at the recommended frame 
+rate and resolution using the specified compression scheme 
+ applying hyarm to the multimedia 
+system case study 
+hyarm is built atop tao a widely used open-source 
+implementation of real-time corba hyarm can be 
+applied to ensure efficient predictable and adaptive resource 
+management of any dre system where resource availability 
+and requirements are subject to dynamic change 
+figure shows the interaction of various parts of the 
+dre multimedia system developed with hyarm tao 
+and tao s a v streaming service tao s a v streaming 
+service is an implementation of the corba a v 
+streaming service specification tao s a v streaming service is 
+a qos-enabled video distribution service that can transfer 
+video in real-time to one or more receivers we use the a v 
+streaming service to transmit the video from the uavs to 
+the end receivers via the base station three entities of 
+receiver 
+uav 
+tao 
+resource 
+utilization 
+hyarm 
+central 
+controller 
+a v streaming 
+service sender 
+mpeg 
+mpeg 
+real 
+video 
+hyarm 
+resource 
+monitor 
+a v streaming 
+service receiver 
+compressed 
+video compressed 
+video 
+application 
+hyarm 
+application 
+adapter 
+remote object call 
+control 
+inputs resource 
+utilization 
+resource 
+utilization 
+control inputs 
+control 
+inputs 
+legend 
+figure developing the dre multimedia system 
+with hyarm 
+hyarm namely the resource monitors central controller 
+and application adapters are built as corba servants so 
+they can be distributed throughout a dre system 
+resource monitors are remote corba objects that update 
+the central controller periodically with the current resource 
+utilization application adapters are collocated with 
+applications since the two interact closely 
+as shown in figure uavs compress the data using 
+various compression schemes such as mpeg mpeg and 
+real video and uses tao s a v streaming service to 
+transmit the video to end receivers hyarm s resource monitors 
+continuously observe the system resource utilization and 
+notify the central controller with the current utilization 
+the interaction between the controller and the resource 
+monitors uses the observer pattern when the controller 
+receives resource utilization updates from monitors it 
+computes the necessary modifications to application s 
+parameters and notifies application adapter s via a remote 
+operation call application adapter s that are collocated with 
+the application modify the input parameters to the 
+application - in our case video encoder - to modify the application 
+resource utilization and qos 
+ 
+the base station is not included in the figure since it only 
+retransmits the video received from uavs to end receivers 
+article 
+ performance results and 
+analysis 
+this section first describes the testbed that provides the 
+infrastructure for our dre multimedia system which was 
+used to evaluate the performance of hyarm we then 
+describe our experiments and analyze the results obtained to 
+empirically evaluate how hyarm behaves during 
+underand over-utilization of system resources 
+ overview of the hardware and software 
+testbed 
+our experiments were performed on the emulab testbed 
+at university of utah the hardware configuration consists 
+of two nodes acting as uavs one acting as base station 
+and one as end receiver video from the two uavs were 
+transmitted to a base station via a lan configured with 
+the following properties average packet loss ratio of and 
+bandwidth mbps the network bandwidth was chosen to 
+be mbps since each uav in the dre multimedia system 
+is allocated kbps these parameters were chosen to 
+emulate an unreliable wireless network with limited bandwidth 
+between the uavs and the base station from the base 
+station the video was retransmitted to the end receiver via a 
+reliable wireline link of mbps bandwidth with no packet 
+loss 
+the hardware configuration of all the nodes was chosen as 
+follows mhz intel pentium iii processor mb 
+physical memory intel etherexpress pro mbps ethernet 
+ports and gb hard drive a real-time version of linux 
+- timesys linux net based on redhat linux 
+ was used as the operating system for all nodes the 
+following software packages were also used for our experiments 
+ffmpeg -pre which is an open-source library http 
+ www ffmpeg sourceforge net download php that 
+compresses video into mpeg- mpeg- real video and many 
+other video formats iftop which is an 
+opensource library http www ex-parrot com ∼pdw iftop 
+we used for monitoring network activity and bandwidth 
+utilization ace tao which is an 
+opensource http www dre vanderbilt edu tao 
+implementation of the real-time corba specification upon which 
+hyarm is built tao provides the corba audio video 
+ a v streaming service that we use to transmit the video 
+from the uavs to end receivers via the base station 
+ experiment configuration 
+our experiment consisted of two emulated uavs that 
+simultaneously send video to the base station using the 
+experimentation setup described in section at the base 
+station video was retransmitted to the end receivers without 
+any modifications where it was stored to a file each uav 
+hosted two applications one qos-enabled application 
+ emergency response and one best-effort application 
+ surveillance within each uav computational power is shared 
+between the applications while the network bandwidth is 
+shared among all applications 
+to evaluate the qos provided by hyarm we monitored 
+cpu utilization at the two uavs and network bandwidth 
+utilization between the uav and the base station cpu 
+resource utilization was not monitored at the base station and 
+the end receiver since they performed no 
+computationallyintensive operations the resource utilization of the mpbs 
+physical link between the base station and the end receiver 
+does not affect qos of applications and is not monitored by 
+hyarm since it is nearly times the mb bandwidth 
+of the lan between the uavs and the base station the 
+experiment also monitors properties of the video that affect 
+the qos of the applications such as latency jitter frame 
+rate and resolution 
+the set point on resource utilization for each resource was 
+specified at which is the upper bound typically 
+recommended by scheduling techniques such as rate monotonic 
+algorithm since studies have shown that human eyes 
+can perceive delays more than ms we use this as the 
+upper bound on jitter of the received video qos 
+requirements for each class of application is specified during system 
+initialization and is shown in table 
+ empirical results and analysis 
+this section presents the results obtained from running 
+the experiment described in section on our dre 
+multimedia system testbed we used system resource utilization 
+as a metric to evaluate the adaptive resource management 
+capabilities of hyarm under varying input work loads we 
+also used application qos as a metric to evaluate hyarm s 
+capabilities to support end-to-end qos requirements of the 
+various classes of applications in the dre multimedia 
+system we analyze these results to explain the significant 
+differences in system performance and application qos 
+comparison of system performance is decomposed into 
+comparison of resource utilization and application qos for 
+system resource utilization we compare network 
+bandwidth utilization of the local area network and cpu 
+utilization at the two uav nodes for application qos we 
+compare mean values of video parameters including 
+picture resolution frame rate latency and jitter 
+comparison of resource utilization over-utilization 
+of system resources in dre systems can yield an unstable 
+system in contrast under-utilization of system resources 
+increases system cost figure and figure compare the 
+system resource utilization with and without hyarm 
+figure shows that hyarm maintains system utilization close 
+to the desired utilization set point during fluctuation in 
+input work load by transmitting video of higher or lower qos 
+for qos-enabled or best-effort class of applications during 
+over or under utilization of system resources 
+figure shows that without hyarm network 
+utilization was as high as during increase in workload 
+conditions which is greater than the utilization set point of 
+by as a result of over-utilization of resources qos of 
+the received video such as average latency and jitter was 
+affected significantly without hyarm system resources 
+were either under-utilized or over-utilized both of which 
+are undesirable in contrast with hyarm system resource 
+utilization is always close to the desired set point even 
+during fluctuations in application workload during 
+sudden fluctuation in application workload system conditions 
+may be temporarily undesirable but are restored to the 
+desired condition within several sampling periods temporary 
+over-utilization of resources is permissible in our multimedia 
+system since the quality of the video may be degraded for 
+a short period of time though application qos will be 
+degraded significantly if poor quality video is transmitted for 
+a longer period of time 
+comparison of application qos figures figure 
+and table compare latency jitter resolution and 
+framearticle 
+class resolution frame rate latency msec jitter msec 
+qos enabled x 
+best-effort x 
+table application qos requirements 
+figure resource utilization with hyarm figure resource utilization without hyarm 
+rate of the received video respectively table shows that 
+hyarm increases the resolution and frame video of 
+qosenabled applications but decreases the resolution and frame 
+rate of best effort applications during over utilization of 
+system resources resolution and frame rate of lower priority 
+applications are reduced to adapt to fluctuations in 
+application workload and to maintain the utilization of resources 
+at the specified set point 
+it can be seen from figure and figure that hyarm 
+reduces the latency and jitter of the received video 
+significantly these figures show that the qos of qos-enabled 
+applications is greatly improved by hyarm although 
+application parameters such as frame rate and resolutions 
+which affect the soft qos requirements of best-effort 
+applications may be compromised the hard qos requirements 
+such as latency and jitter of all applications are met 
+hyarm responds to fluctuation in resource availability 
+and or demand by constant monitoring of resource 
+utilization as shown in figure when resources utilization 
+increases above the desired set point hyarm lowers the 
+utilization by reducing the qos of best-effort applications this 
+adaptation ensures that enough resources are available for 
+qos-enabled applications to meet their qos needs 
+figures and show that the values of latency and jitter of 
+the received video of the system with hyarm are nearly half 
+of the corresponding value of the system without hyarm 
+with hyarm values of these parameters are well below 
+the specified bounds whereas without hyarm these value 
+are significantly above the specified bounds due to 
+overutilization of the network bandwidth which leads to network 
+congestion and results in packet loss hyarm avoids this 
+by reducing video parameters such as resolution frame-rate 
+and or modifying the compression scheme used to compress 
+the video 
+our conclusions from analyzing the results described above 
+are that applying adaptive middleware via hybrid control to 
+dre system helps to improve application qos 
+increase system resource utilization and provide better 
+predictability lower latency and inter-frame delay to 
+qosenabled applications these improvements are achieved largely 
+due to monitoring of system resource utilization efficient 
+system workload management and adaptive resource 
+provisioning by means of hyarm s network cpu resource 
+monitors application adapter and central controller 
+respectively 
+ related work 
+a number of control theoretic approaches have been 
+applied to dre systems recently these techniques aid in 
+overcoming limitations with traditional scheduling approaches 
+that handle dynamic changes in resource availability poorly 
+and result in a rigidly scheduled system that adapts poorly 
+to change a survey of these techniques is presented in 
+one such approach is feedback control scheduling fcs 
+ fcs algorithms dynamically adjust resource allocation 
+by means of software feedback control loops fcs 
+algorithms are modeled and designed using rigorous 
+controltheoretic methodologies these algorithms provide robust 
+and analytical performance assurances despite uncertainties 
+in resource availability and or demand although existing 
+fcs algorithms have shown promise these algorithms often 
+assume that the system has continuous control variable s 
+that can continuously be adjusted while this assumption 
+holds for certain classes of systems there are many classes 
+of dre systems such as avionics and total-ship computing 
+environments that only support a finite a priori set of 
+discrete configurations the control variables in such systems 
+are therefore intrinsically discrete 
+hyarm handles both continuous control variables such 
+as picture resolution and discrete control variable such as 
+discrete set of frame rates hyarm can therefore be applied 
+to system that support continuous and or discrete set of 
+control variables the dre multimedia system as described 
+in section is an example dre system that offers both 
+continuous picture resolution and discrete set frame-rate of 
+control variables these variables are modified by hyarm 
+to achieve efficient resource utilization and improved 
+application qos 
+ concluding remarks 
+article 
+figure comparison of video latency figure comparison of video jitter 
+source picture size frame rate 
+with hyarm without hyarm 
+uav qos enabled application x x 
+uav best-effort application x x 
+uav qos enabled application x x 
+uav best-effort application x x 
+table comparison of video quality 
+many distributed real-time and embedded dre systems 
+demand end-to-end quality of service qos enforcement 
+from their underlying platforms to operate correctly these 
+systems increasingly run in open environments where 
+resource availability is subject to dynamic change to meet 
+end-to-end qos in dynamic environments dre systems can 
+benefit from an adaptive middleware that monitors system 
+resources performs efficient application workload 
+management and enables efficient resource provisioning for 
+executing applications 
+this paper described hyarm an adaptive middleware 
+that provides effective resource management to dre 
+systems hyarm employs hybrid control techniques to 
+provide the adaptive middleware capabilities such as resource 
+monitoring and application adaptation that are key to 
+providing the dynamic resource management capabilities for 
+open dre systems we employed hyarm to a 
+representative dre multimedia system that is implemented using 
+real-time corba and corba a v streaming service 
+we evaluated the performance of hyarm in a system 
+composed of three distributed resources and two classes of 
+applications with two applications each our empirical 
+results indicate that hyarm ensures efficient resource 
+utilization by maintaining the resource utilization of system 
+resources within the specified utilization bounds qos 
+requirements of qos-enabled applications are met at all times 
+overall hyarm ensures efficient predictable and adaptive 
+resource management for dre systems 
+ references 
+ t f abdelzaher j stankovic c lu r zhang and y lu 
+feddback performance control in software services ieee 
+control systems june 
+ l abeni l palopoli g lipari and j walpole analysis of a 
+reservation-based feedback scheduler in ieee real-time 
+systems symposium dec 
+ s blake d black m carlson e davies z wang and 
+w weiss an architecture for differentiated services network 
+information center rfc dec 
+ h franke s nagar c seetharaman and v kashyap 
+enabling autonomic workload management in linux in 
+proceedings of the international conference on autonomic 
+computing icac new york new york may ieee 
+ e gamma r helm r johnson and j vlissides design 
+patterns elements of reusable object-oriented software 
+addison-wesley reading ma 
+ g ghinea and j p thomas qos impact on user perception 
+and understanding of multimedia video clips in 
+multimedia proceedings of the sixth acm 
+international conference on multimedia pages - bristol 
+united kingdom acm press 
+ internet engineering task force differentiated services 
+working group diffserv charter 
+www ietf org html charters diffserv-charter html 
+ x koutsoukos r tekumalla b natarajan and c lu hybrid 
+supervisory control of real-time systems in th ieee 
+real-time and embedded technology and applications 
+symposium san francisco california mar 
+ j lehoczky l sha and y ding the rate monotonic 
+scheduling algorithm exact characterization and average 
+case behavior in proceedings of the th ieee real-time 
+systems symposium rtss pages - ieee 
+computer society press 
+ j loyall j gossett c gill r schantz j zinky p pal 
+r shapiro c rodrigues m atighetchi and d karr 
+comparing and contrasting adaptive middleware support in 
+wide-area and embedded distributed object applications in 
+proceedings of the st international conference on 
+distributed computing systems icdcs- pages - 
+ieee apr 
+ c lu j a stankovic g tao and s h son feedback 
+control real-time scheduling framework modeling and 
+algorithms real-time systems journal - july 
+ 
+ object management group real-time corba specification 
+omg document formal - - edition aug 
+ d c schmidt d l levine and s mungee the design and 
+performance of real-time object request brokers computer 
+communications - apr 
+ thomas sikora trends and perspectives in image and video 
+coding in proceedings of the ieee jan 
+ x wang h -m huang v subramonian c lu and c gill 
+camrit control-based adaptive middleware for real-time 
+image transmission in proc of the th ieee real-time and 
+embedded tech and applications symp rtas toronto 
+canada may 
+article 

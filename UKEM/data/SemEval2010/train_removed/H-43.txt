@@ -1,0 +1,1131 @@
+combining content and link for classification 
+using matrix factorization 
+shenghuo zhu kai yu yun chi yihong gong 
+ zsh kyu ychi ygong  sv nec-labs com 
+nec laboratories america inc 
+ north wolfe road sw - 
+cupertino ca usa 
+abstract 
+the world wide web contains rich textual contents that are 
+interconnected via complex hyperlinks this huge database violates the 
+assumption held by most of conventional statistical methods that each 
+web page is considered as an independent and identical sample it 
+is thus difficult to apply traditional mining or learning methods for 
+solving web mining problems e g web page classification by 
+exploiting both the content and the link structure the research in this 
+direction has recently received considerable attention but are still in 
+an early stage though a few methods exploit both the link 
+structure or the content information some of them combine the only 
+authority information with the content information and the others 
+first decompose the link structure into hub and authority features 
+then apply them as additional document features being practically 
+attractive for its great simplicity this paper aims to design an 
+algorithm that exploits both the content and linkage information by 
+carrying out a joint factorization on both the linkage adjacency matrix 
+and the document-term matrix and derives a new representation 
+for web pages in a low-dimensional factor space without explicitly 
+separating them as content hub or authority factors further 
+analysis can be performed based on the compact representation of web 
+pages in the experiments the proposed method is compared with 
+state-of-the-art methods and demonstrates an excellent accuracy in 
+hypertext classification on the webkb and cora benchmarks 
+categories and subject descriptors h information 
+systems information search and retrieval 
+general terms algorithms experimentation 
+ introduction 
+with the advance of the world wide web more and more 
+hypertext documents become available on the web some examples of 
+such data include organizational and personal web pages e g the 
+webkb benchmark data set which contains university web pages 
+research papers e g data in citeseer online news articles and 
+customer-generated media e g blogs comparing to data in 
+traditional information management in addition to content these data 
+on the web also contain links e g hyperlinks from a student s 
+homepage pointing to the homepage of her advisor paper citations 
+sources of a news article comments of one blogger on posts from 
+another blogger and so on performing information management 
+tasks on such structured data raises many new research challenges 
+in the following discussion we use the task of web page 
+classification as an illustrating example while the techniques we develop 
+in later sections are applicable equally well to many other tasks in 
+information retrieval and data mining 
+for the classification problem of web pages a simple approach 
+is to treat web pages as independent documents the advantage 
+of this approach is that many off-the-shelf classification tools can 
+be directly applied to the problem however this approach 
+relies only on the content of web pages and ignores the structure of 
+links among them link structures provide invaluable information 
+about properties of the documents as well as relationships among 
+them for example in the webkb dataset the link structure 
+provides additional insights about the relationship among documents 
+ e g links often pointing from a student to her advisor or from 
+a faculty member to his projects since some links among these 
+documents imply the inter-dependence among the documents the 
+usual i i d independent and identical distributed assumption of 
+documents does not hold any more from this point of view the 
+traditional classification methods that ignore the link structure may 
+not be suitable 
+on the other hand a few studies for example rely solely on 
+link structures it is however a very rare case that content 
+information can be ignorable for example in the cora dataset the content 
+of a research article abstract largely determines the category of the 
+article 
+to improve the performance of web page classification 
+therefore both link structure and content information should be taken 
+into consideration to achieve this goal a simple approach is to 
+convert one type of information to the other for example in spam 
+blog classification kolari et al concatenate outlink features 
+with the content features of the blog in document classification 
+kurland and lee convert content similarity among documents 
+into weights of links however link and content information have 
+different properties for example a link is an actual piece of 
+evidence that represents an asymmetric relationship whereas the 
+content similarity is usually defined conceptually for every pair of 
+documents in a symmetric way therefore directly converting one type 
+of information to the other usually degrades the quality of 
+information on the other hand there exist some studies as we will discuss 
+in detail in related work that consider link information and content 
+information separately and then combine them we argue that such 
+an approach ignores the inherent consistency between link and 
+content information and therefore fails to combine the two seamlessly 
+some work such as incorporates link information using 
+cocitation similarity but this may not fully capture the global link 
+structure in figure for example web pages v and v co-cite 
+web page v implying that v and v are similar to each other 
+in turns v and v should be similar to each other since v and 
+v cite similar web pages v and v respectively but using 
+cocitation similarity the similarity between v and v is zero without 
+considering other information 
+v 
+v 
+v 
+v 
+v 
+v 
+v 
+v 
+figure an example of link structure 
+in this paper we propose a simple technique for analyzing 
+inter-connected documents such as web pages using factor 
+analysis in the proposed technique both content information and 
+link structures are seamlessly combined through a single set of 
+latent factors our model contains two components the first 
+component captures the content information this component has a form 
+similar to that of the latent topics in the latent semantic indexing 
+ lsi in traditional information retrieval that is documents 
+are decomposed into latent topics factors which in turn are 
+represented as term vectors the second component captures the 
+information contained in the underlying link structure such as links 
+from homepages of students to those of faculty members a 
+factor can be loosely considered as a type of documents e g those 
+homepages belonging to students it is worth noting that we do 
+not explicitly define the semantic of a factor a priori instead 
+similar to lsi the factors are learned from the data traditional factor 
+analysis models the variables associated with entities through the 
+factors however in analysis of link structures we need to model 
+the relationship of two ends of links i e edges between vertex 
+pairs therefore the model should involve factors of both vertices 
+of the edge this is a key difference between traditional factor 
+analysis and our model in our model we connect two 
+components through a set of shared factors that is the latent factors in the 
+second component for contents are tied to the factors in the first 
+component for links by doing this we search for a unified set 
+of latent factors that best explains both content and link structures 
+simultaneously and seamlessly 
+in the formulation we perform factor analysis based on matrix 
+factorization solution to the first component is based on 
+factorizing the term-document matrix derived from content features 
+solution to the second component is based on factorizing the adjacency 
+matrix derived from links because the two factorizations share 
+a common base the discovered bases latent factors explain both 
+content information and link structures and are then used in further 
+information management tasks such as classification 
+this paper is organized as follows section reviews related 
+work section presents the proposed approach to analyze the web 
+page based on the combined information of links and content 
+section extends the basic framework and a few variants for fine tune 
+section shows the experiment results section discusses the 
+details of this approach and section concludes 
+ related work 
+in the content analysis part our approach is closely related to 
+latent semantic indexing lsi lsi maps documents into a 
+lower dimensional latent space the latent space implicitly 
+captures a large portion of information of documents therefore it is 
+called the latent semantic space the similarity between documents 
+could be defined by the dot products of the corresponding vectors 
+of documents in the latent space analysis tasks such as 
+classification could be performed on the latent space the commonly 
+used singular value decomposition svd method ensures that the 
+data points in the latent space can optimally reconstruct the original 
+documents though our approach also uses latent space to 
+represent web pages documents we consider the link structure as well 
+as the content of web pages 
+in the link analysis approach the framework of hubs and 
+authorities hits puts web page into two categories hubs and 
+authorities using recursive notion a hub is a web page with many 
+outgoing links to authorities while an authority is a web page with 
+many incoming links from hubs instead of using two categories 
+pagerank uses a single category for the recursive notion an 
+authority is a web page with many incoming links from authorities 
+he et al propose a clustering algorithm for web document 
+clustering the algorithm incorporates link structure and the co-citation 
+patterns in the algorithm all links are treated as undirected edge of 
+the link graph the content information is only used for weighing 
+the links by the textual similarity of both ends of the links zhang 
+et al uses the undirected graph regularization framework for 
+document classification achlioptas et al decompose the web 
+into hub and authority attributes then combine them with content 
+zhou et al and propose a directed graph regularization 
+framework for semi-supervised learning the framework combines 
+the hub and authority information of web pages but it is difficult 
+to combine the content information into that framework our 
+approach consider the content and the directed linkage between topics 
+of source and destination web pages in one step which implies the 
+topic combines the information of web page as authorities and as 
+hubs in a single set of factors 
+cohn and hofmann construct the latent space from both 
+content and link information using content analysis based on 
+probabilistic lsi plsi and link analysis based on phits the 
+major difference between the approach of plsi phits and 
+our approach is in the part of link analysis in plsi phits the 
+link is constructed with the linkage from the topic of the source 
+web page to the destination web page in the model the outgoing 
+links of the destination web page have no effect on the source web 
+page in other words the overall link structure is not utilized in 
+phits in our approach the link is constructed with the linkage 
+between the factor of the source web page and the factor of the 
+destination web page instead of the destination web page itself the 
+factor of the destination web page contains information of its 
+outgoing links in turn such information is passed to the factor of the 
+source web page as the result of matrix factorization the factor 
+forms a factor graph a miniature of the original graph preserving 
+the major structure of the original graph 
+taskar et al propose relational markov networks rmns 
+for entity classification by describing a conditional distribution of 
+entity classes given entity attributes and relationships the model 
+was applied to web page classification where web pages are 
+entities and hyperlinks are treated as relationships rmns apply 
+conditional random fields to define a set of potential functions on cliques 
+of random variables where the link structure provides hints to form 
+the cliques however the model does not give an off-the-shelf 
+solution because the success highly depends on the arts of designing 
+the potential functions on the other hand the inference for rmns 
+is intractable and requires belief propagation 
+the following are some work on combining documents and 
+links but the methods are loosely related to our approach the 
+experiments of show that using terms from the linked 
+document improves the classification accuracy chakrabarti et al use 
+co-citation information in their classification model joachims et 
+al combine text kernels and co-citation kernels for 
+classification oh et al use the naive bayesian frame to combine link 
+information with content 
+ our approach 
+in this section we will first introduce a novel matrix 
+factorization method which is more suitable than conventional matrix 
+factorization methods for link analysis then we will introduce our 
+approach that jointly factorizes the document-term matrix and link 
+matrix and obtains compact and highly indicative factors for 
+representing documents or web pages 
+ link matrix factorization 
+suppose we have a directed graph g v e where the vertex 
+set v vi n 
+i represents the web pages and the edge set e 
+represents the hyperlinks between web pages let a asd denotes 
+the n×n adjacency matrix of g which is also called the link matrix 
+in this paper for a pair of vertices vs and vd let asd when 
+there is an edge from vs to vd and asd otherwise note that 
+a is an asymmetric matrix because hyperlinks are directed 
+most machine learning algorithms assume a feature-vector 
+representation of instances for web page classification however the 
+link graph does not readily give such a vector representation for 
+web pages if one directly uses each row or column of a for the job 
+she will suffer a very high computational cost because the 
+dimensionality equals to the number of web pages on the other hand it 
+will produces a poor classification accuracy see our experiments 
+in section because a is extremely sparse 
+ 
+the idea of link matrix factorization is to derive a high-quality 
+feature representation z of web pages based on analyzing the link 
+matrix a where z is an n × l matrix with each row being the 
+ldimensional feature vector of a web page the new representation 
+of web pages captures the principal factors of the link structure and 
+makes further processing more efficient 
+one may use a method similar to lsi to apply the well-known 
+principal component analysis pca for deriving z from a the 
+corresponding optimization problem 
+is 
+min 
+z u 
+a − zu 
+f γ u 
+f 
+where γ is a small positive number u is an l ×n matrix and · f 
+is the frobenius norm the optimization aims to approximate a by 
+zu a product of two low-rank matrices with a regularization on 
+u in the end the i-th row vector of z can be thought as the hub 
+feature vector of vertex vi and the row vector of u can be thought 
+as the authority features a link generation model proposed in is 
+similar to the pca approach since a is a nonnegative matrix here 
+one can also consider to put nonnegative constraints on u and z 
+which produces an algorithm similar to plsa and nmf 
+ 
+due to the sparsity of a links from two similar pages may not 
+share any common target pages which makes them to appear 
+dissimilar however the two pages may be indirectly linked to many 
+common pages via their neighbors 
+ 
+another equivalent form is minz u a − zu 
+f s t u u 
+i the solution z is identical subject to a scaling factor 
+however despite its popularity in matrix analysis pca or other 
+similar methods like plsa is restrictive for link matrix 
+factorization the major problem is that pca ignores the fact that the rows 
+and columns of a are indexed by exactly the same set of objects 
+ i e web pages the approximating matrix ˜a zu shows no 
+evidence that links are within the same set of objects to see the 
+drawback let s consider a link transitivity situation vi → vs → vj 
+where page i is linked to page s which itself is linked to page j 
+since ˜a zu treats a as links from web pages vi to a 
+different set of objects let it be denoted by oi ˜a zu actually 
+splits an linked object os from vs and breaks down the link path 
+into two parts vi → os and vs → oj this is obviously a miss 
+interpretation to the original link path 
+to overcome the problem of pca in this paper we suggest to 
+use a different factorization 
+min 
+z u 
+a − zuz 
+f γ u 
+f 
+where u is an l × l full matrix note that u is not symmetric thus 
+zuz produces an asymmetric matrix which is the case of a 
+again each row vector of z corresponds to a feature vector of a 
+web pages the new approximating form ˜a zuz puts a clear 
+meaning that the links are between the same set of objects 
+represented by features z the factor model actually maps each vertex 
+vi into a vector zi zi k ≤ k ≤ l in the rl 
+space we call 
+the rl 
+space the factor space then zi encodes the information 
+of incoming and outgoing connectivity of vertices vi the 
+factor loadings u explain how these observed connections happened 
+based on zi once we have the vector zi we can use many 
+traditional classification methods such as svms or clustering tools 
+ such as k-means to perform the analysis 
+illustration based on a synthetic problem 
+to further illustrate the advantages of the proposed link matrix 
+factorization eq let us consider the graph in figure given 
+v 
+v 
+v 
+v 
+v 
+v 
+v 
+v 
+figure summarize figure with a factor graph 
+these observations we can summarize the graph by grouping as 
+factor graph depicted in figure in the next we preform the two 
+factorization methods eq and eq on this link matrix a 
+good low-rank representation should reveal the structure of the 
+factor graph 
+first we try pca-like decomposition solving eq and 
+obtaining 
+z u 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ − − 
+ − 
+ − 
+ − − 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ − 
+ − 
+ − − 
+ − 
+ − 
+ − − 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+we can see that the row vectors of v and v are the same in z 
+indicating that v and v have the same hub attributes the row 
+vectors of v and v are the same in u indicating that v and 
+v have the same authority attributes it is not clear to see the 
+similarity between v and v because their inlinks and outlinks 
+are different 
+then we factorize a by zuz via solving eq and obtain 
+the results 
+z u 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+− − − − 
+− − − 
+− − − 
+ − − 
+ − − 
+− − 
+− − 
+− − − − 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+− − − 
+ − − − 
+ − 
+ − − − 
+− − − − 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+the resultant z is very consistent with the clustering structure 
+of vertices the row vectors of v and v are the same those 
+of v and v are the same those of v and v are the same 
+even interestingly if we add constraints to ensure z and u be 
+nonnegative we have 
+z u 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+which clearly tells the assignment of vertices to clusters from z 
+and the links of factor graph from u when the interpretability is 
+not critical in some tasks for example classification we found that 
+it achieves better accuracies without the nonnegative constraints 
+given our above analysis it is clear that the factorization zuz 
+is more expressive than zu in representing the link matrix a 
+ content matrix factorization 
+now let us consider the content information on the vertices to 
+combine the link information and content information we want to 
+use the same latent space to approximate the content as the latent 
+space for the links using the bag-of-words approach we denote 
+the content of web pages by an n×m matrix c each of whose rows 
+represents a document each column represents a keyword where 
+m is the number of keywords like the latent semantic indexing 
+ lsi the l-dimensional latent space for words is denoted by an 
+m × l matrix v therefore we use zv to approximate matrix 
+c 
+min 
+v z 
+c − zv 
+f β v 
+f 
+where β is a small positive number β v 
+f serves as a 
+regularization term to improve the robustness 
+ joint link-content matrix factorization 
+there are many ways to employ both the content and link 
+information for web page classification our idea in this paper is not to 
+simply combine them but rather to fuse them into a single 
+consistent and compact feature representation to achieve this goal we 
+solve the following problem 
+min 
+u v z 
+n 
+j u v z 
+def 
+ a − zuz 
+f 
+α c − zv 
+f γ u 
+f β v 
+f 
+o 
+ 
+ 
+eq is the joined matrix factorization of a and c with 
+regularization the new representation z is ensured to capture both the 
+structures of the link matrix a and the content matrix c once 
+we find the optimal z we can apply the traditional classification 
+or clustering methods on vectorial data z the relationship among 
+these matrices can be depicted as figure 
+a y c 
+u z v 
+figure relationship among the matrices node y is the 
+target of classification 
+eq can be solved using gradient methods such as the 
+conjugate gradient method and quasi-newton methods then main 
+computation of gradient methods is evaluating the object function j 
+and its gradients against variables 
+∂j 
+∂u 
+ 
+ 
+z zuz z − z az 
+ 
+ γu 
+∂j 
+∂v 
+ α 
+ 
+v z z − c z 
+ 
+ βv 
+∂j 
+∂z 
+ 
+ 
+zu z zu zuz zu − a zu − azu 
+ 
+ α 
+ 
+zv v − cv 
+ 
+ 
+because of the sparsity of a the computational complexity of 
+multiplication of a and z is o µal where µa is the number of 
+nonzero entries in a similarly the computational complexity of 
+c z and cv is o µc l where µc is the number of nonzero 
+entries in c the computational complexity of the rest 
+multiplications in the gradient computation is o nl 
+ therefore the total 
+computational complexity in one iteration is o µal µc l nl 
+ 
+the number of links and the number of words in a web page are 
+relatively small comparing to the number of web pages and are 
+almost constant as the number of web pages documents increases i e 
+µa o n and µc o n therefore theoretically the 
+computation time is almost linear to the number of web pages documents 
+n 
+ supervised matrix 
+factorization 
+consider a web page classification problem we can solve 
+eq to obtain z as section then use a traditional classifier 
+to perform classification however this approach does not take 
+data labels into account in the first step believing that using data 
+labels improves the accuracy by obtaining a better z for the 
+classification we consider to use the data labels to guide the matrix 
+factorization called supervised matrix factorization because 
+some data used in the matrix factorization have no label 
+information the supervised matrix factorization falls into the category of 
+semi-supervised learning 
+let c be the set of classes for simplicity we first consider 
+binary class problem i e c − assume we know the 
+labels yi for vertices in t ⊂ v we want to find a hypothesis 
+h v → r such that we assign vi to when h vi ≥ − 
+otherwise we assume a transform from the latent space to r is linear 
+i e 
+h vi w φ vi b w zi b 
+school course dept faculty other project staff student total 
+cornell 
+texas 
+washington 
+wisconsin 
+table dataset of webkb 
+where w and b are parameters to estimate here w is the norm 
+of the decision boundary similar to support vector machines 
+ svms we can use the hinge loss to measure the loss 
+x 
+i vi∈t 
+ − yih vi 
+where x is x if x ≥ if x however the hinge loss 
+is not smooth at the hinge point which makes it difficult to apply 
+gradient methods on the problem to overcome the difficulty we 
+use a smoothed version of hinge loss for each data point 
+g yih vi 
+where 
+g x 
+ 
+ 
+ 
+ when x ≥ 
+ − x when x ≤ 
+ 
+ 
+ x − 
+when x 
+we reduce a multiclass problem into multiple binary ones one 
+simple scheme of reduction is the one-against-rest coding scheme 
+in the one-against-rest scheme we assign a label vector for each 
+class label the element of a label vector is if the data point 
+belongs the corresponding class − if the data point does not belong 
+the corresponding class if the data point is not labeled let y be 
+the label matrix each column of which is a label vector therefore 
+y is a matrix of n × c where c is the number of classes c then 
+the values of eq form a matrix 
+h zw b 
+where is a vector of size n whose elements are all one w is a 
+c × l parameter matrix and b is a parameter vector of size c the 
+total loss is proportional to the sum of eq over all labeled data 
+points and the classes 
+ly w b z λ 
+x 
+i vi∈t j∈c 
+g yijhij 
+where λ is the parameter to scale the term 
+to derive a robust solution we also use tikhonov regularization 
+for w 
+ωw w 
+ν 
+ 
+w 
+f 
+where ν is the parameter to scale the term 
+then the supervised matrix factorization problem becomes 
+min 
+u v z w b 
+js u v z w b 
+where 
+js u v z w b j u v z ly w b z ωw w 
+we can also use gradient methods to solve the problem of eq 
+the gradients are 
+∂js 
+∂u 
+ 
+∂j 
+∂u 
+ 
+∂js 
+∂v 
+ 
+∂j 
+∂v 
+ 
+∂js 
+∂z 
+ 
+∂j 
+∂z 
+ λgw 
+∂js 
+∂w 
+ λg z νw 
+∂js 
+∂b 
+ λg 
+where g is an n×c matrix whose ik-th element is yikg yikhik 
+and 
+g x 
+ 
+ 
+ 
+ when x ≥ 
+− when x ≤ 
+ 
+ 
+ x − when x 
+once we obtain w b and z we can apply h on the vertices with 
+unknown class labels or apply traditional classification algorithms 
+on z to get the classification results 
+ experiments 
+ data description 
+in this section we perform classification on two datasets to 
+demonstrate the our approach the two datasets are the webkb 
+data set and the cora data set the webkb data set 
+consists of about web pages from computer science departments 
+of four schools cornell texas washington and wisconsin the 
+web pages are classified into seven categories the numbers of 
+pages in each category are shown in table the cora data set 
+consists of the abstracts and references of about computer 
+science research papers we use part of them to categorize into 
+one of subfields of data structure ds hardware and architecture 
+ ha machine learning ml and programing language pl we 
+remove those articles without reference to other articles in the set 
+the number of papers and the number of subfields in each area are 
+shown in table 
+area of papers of subfields 
+data structure ds 
+hardware and architecture ha 
+machine learning ml 
+programing language pl 
+table dataset of cora 
+ methods 
+the task of the experiments is to classify the data based on their 
+content information and or link structure we use the following 
+methods 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+wisconsinwashingtontexascornell 
+accuracy 
+dataset 
+svm on content 
+svm on link 
+svm on link-content 
+directed graph reg 
+plsi phits 
+link-content mf 
+link-content sup mf 
+method cornell texas washington wisconsin 
+svm on content ± ± ± ± 
+svm on links ± ± ± ± 
+svm on link-content ± ± ± ± 
+directed graph regularization ± ± ± ± 
+plsi phits ± ± ± ± 
+link-content mf ± ± ± ± 
+link-content sup mf ± ± ± ± 
+table classification accuracy mean ± std-err on webkb data set 
+ svm on content we apply support vector machines svm 
+on the content of documents the features are the 
+bag-ofwords and all word are stemmed this method ignores link 
+structure in the data linear svm is used the 
+regularization parameter of svm is selected using the cross-validation 
+method the implementation of svm used in the 
+experiments is libsvm 
+ svm on links we treat links as the features of each 
+document i e the i-th feature is link-to-pagei we apply svm on 
+link features this method uses link information but not the 
+link structure 
+ svm on link-content we combine the features of the above 
+two methods we use different weights for these two set 
+of features the weights are also selected using 
+crossvalidation 
+ directed graph regularization this method is described in 
+ and this method is solely based on link structure 
+ plsi phits this method is described in this method 
+combines text content information and link structure for 
+analysis the phits algorithm is in spirit similar to eq 
+with an additional nonnegative constraint it models the 
+outgoing and in-coming structures separately 
+ link-content mf this is our approach of matrix 
+factorization described in section we use latent factors for z 
+after we compute z we train a linear svm using z as the 
+feature vectors then apply svm on testing portion of z to 
+obtain the final result because of the multiclass output 
+ link-content sup mf this method is our approach of the 
+supervised matrix factorization in section we use latent 
+factors for z after we compute z we train a linear svm 
+on the training portion of z then apply svm on testing 
+portion of z to obtain the final result because of the multiclass 
+output 
+we randomly split data into five folds and repeat the experiment 
+for five times for each time we use one fold for test four other 
+folds for training during the training process we use the 
+crossvalidation to select all model parameters we measure the results 
+by the classification accuracy i e the percentage of the number 
+of correct classified documents in the entire data set the results 
+are shown as the average classification accuracies and it standard 
+deviation over the five repeats 
+ results 
+the average classification accuracies for the webkb data set are 
+shown in table for this task the accuracies of svm on links 
+are worse than that of svm on content but the directed graph 
+regularization which is also based on link alone achieves a much 
+higher accuracy this implies that the link structure plays an 
+important role in the classification of this dataset but individual links 
+in a web page give little information the combination of link and 
+content using svm achieves similar accuracy as that of svm on 
+content alone which confirms individual links in a web page give 
+little information since our approach consider the link structure 
+as well as the content information our two methods give results 
+a highest accuracies among these approaches the difference 
+between the results of our two methods is not significant however in 
+the experiments below we show the difference between them 
+the classification accuracies for the cora data set are shown in 
+table in this experiment the accuracies of svm on the 
+combination of links and content are higher than either svm on content 
+or svm on links this indicates both content and links are 
+infor 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+plmlhads 
+accuracy 
+dataset 
+svm on content 
+svm on link 
+svm on link-content 
+directed graph reg 
+plsi phits 
+link-content mf 
+link-content sup mf 
+method ds ha ml pl 
+svm on content ± ± ± ± 
+svm on links ± ± ± ± 
+svm on link-content ± ± ± ± 
+directed graph regularization ± ± ± ± 
+plsi phits ± ± ± ± 
+link-content mf ± ± ± ± 
+link-content sup mf ± ± ± ± 
+table classification accuracy mean ± std-err on cora data set 
+mative for classifying the articles into subfields the method of 
+directed graph regularization does not perform as good as svm on 
+link-content which confirms the importance of the article content 
+in this task though our method of link-content matrix 
+factorization perform slightly better than other methods our method of 
+linkcontent supervised matrix factorization outperform significantly 
+ the number of factors 
+as we discussed in section the computational complexity of 
+each iteration for solving the optimization problem is quadratic to 
+the number of factors we perform experiments to study how the 
+number of factors affects the accuracy of predication we use 
+different numbers of factors for the cornell data of webkb data set 
+and the machine learning ml data of cora data set the result 
+shown in figure a and b the figures show that the accuracy 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+accuracy 
+number of factors 
+link-content sup mf 
+link-content mf 
+ a cornell data 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+accuracy 
+number of factors 
+link-content sup mf 
+link-content mf 
+ b ml data 
+figure accuracy vs number of factors 
+increases as the number of factors increases it is a different 
+concept from choosing the optimal number of clusters in clustering 
+application it is how much information to represent in the latent 
+variables we have considered the regularization over the factors 
+which avoids the overfit problem for a large number of factors to 
+choose of the number of factors we need to consider the trade-off 
+between the accuracy and the computation time which is quadratic 
+to the number of factors 
+the difference between the method of matrix factorization and 
+that of supervised one decreases as the number of factors increases 
+this indicates that the usefulness of supervised matrix factorization 
+at lower number of factors 
+ discussions 
+the loss functions la in eq and lc in eq use squared 
+loss due to computationally convenience actually squared loss 
+does not precisely describe the underlying noise model because 
+the weights of adjacency matrix can only take nonnegative 
+values in our case zero or one only and the components of 
+content matrix c can only take nonnegative integers therefore we 
+can apply other types of loss such as hinge loss or smoothed 
+hinge loss e g la u z µh a zuz where h a b p 
+i j − aijbij 
+in our paper we mainly discuss the application of classification 
+a entry of matrix z means the relationship of a web page and a 
+factor the values of the entries are the weights of linear model 
+instead of the probabilities of web pages belonging to latent 
+topics therefore we allow the components take any possible real 
+values when we come to the clustering application we can use this 
+model to find z then apply k-means to partition the web pages 
+into clusters actually we can use the idea of nonnegative matrix 
+factorization for clustering to directly cluster web pages as 
+the example with nonnegative constraints shown in section we 
+represent each cluster by a latent topic i e the dimensionality of 
+the latent space is set to the number of clusters we want then the 
+problem of eq becomes 
+min 
+u v z 
+j u v z s t z ≥ 
+solving eq we can obtain more interpretable results which 
+could be used for clustering 
+ conclusions 
+in this paper we study the problem of how to combine the 
+information of content and links for web page analysis mainly on 
+classification application we propose a simple approach using factors to 
+model the text content and link structure of web pages documents 
+the directed links are generated from the linear combination of 
+linkage of between source and destination factors by sharing 
+factors between text content and link structure it is easy to combine 
+both the content information and link structure our experiments 
+show our approach is effective for classification we also discuss 
+an extension for clustering application 
+acknowledgment 
+we would like to thank dr dengyong zhou for sharing his code 
+of his algorithm also thanks to the reviewers for constructive 
+comments 
+ references 
+ cmu world wide knowledge base webkb project 
+available at http www cs cmu edu ∼webkb 
+ d achlioptas a fiat a r karlin and f mcsherry web 
+search via hub synthesis in ieee symposium on 
+foundations of computer science pages - 
+ s chakrabarti b e dom and p indyk enhanced hypertext 
+categorization using hyperlinks in l m haas and 
+a tiwary editors proceedings of sigmod- acm 
+international conference on management of data pages 
+ - seattle us acm press new york us 
+ c -c chang and c -j lin libsvm a library for support 
+vector machines software available at 
+http www csie ntu edu tw ∼cjlin libsvm 
+ d cohn and h chang learning to probabilistically identify 
+authoritative documents proc icml pp - 
+ 
+ d cohn and t hofmann the missing link - a probabilistic 
+model of document content and hypertext connectivity in 
+t k leen t g dietterich and v tresp editors advances 
+in neural information processing systems pages 
+ - mit press 
+ c cortes and v vapnik support-vector networks machine 
+learning 
+ s c deerwester s t dumais t k landauer g w 
+furnas and r a harshman indexing by latent semantic 
+analysis journal of the american society of information 
+science - 
+ x he h zha c ding and h simon web document 
+clustering using hyperlink structures computational 
+statistics and data analysis - 
+ t hofmann probabilistic latent semantic indexing in 
+proceedings of the twenty-second annual international 
+sigir conference 
+ t joachims n cristianini and j shawe-taylor composite 
+kernels for hypertext categorisation in c brodley and 
+a danyluk editors proceedings of icml- th 
+international conference on machine learning pages 
+ - williams college us morgan kaufmann 
+publishers san francisco us 
+ j m kleinberg authoritative sources in a hyperlinked 
+environment j acm - 
+ p kolari t finin and a joshi svms for the blogosphere 
+blog identification and splog detection in aaai spring 
+symposium on computational approaches to analysing 
+weblogs march 
+ o kurland and l lee pagerank without hyperlinks 
+structural re-ranking using links induced by language 
+models in sigir proceedings of the th annual 
+international acm sigir conference on research and 
+development in information retrieval pages - new 
+york ny usa acm press 
+ a mccallum k nigam j rennie and k seymore 
+automating the contruction of internet portals with machine 
+learning information retrieval journal - 
+ h -j oh s h myaeng and m -h lee a practical 
+hypertext catergorization method using links and 
+incrementally available class information in sigir 
+proceedings of the rd annual international acm sigir 
+conference on research and development in information 
+retrieval pages - new york ny usa acm 
+press 
+ l page s brin r motowani and t winograd pagerank 
+citation ranking bring order to the web stanford digital 
+library working paper - 
+ c spearman general intelligence objectively determined 
+and measured the american journal of psychology 
+ - apr 
+ b taskar p abbeel and d koller discriminative 
+probabilistic models for relational data in proceedings of 
+ th international uai conference 
+ w xu x liu and y gong document clustering based on 
+non-negative matrix factorization in sigir 
+proceedings of the th annual international acm sigir 
+conference on research and development in informaion 
+retrieval pages - acm press 
+ y yang s slattery and r ghani a study of approaches to 
+hypertext categorization journal of intelligent information 
+systems - - 
+ k yu s yu and v tresp multi-label informed latent 
+semantic indexing in sigir proceedings of the th 
+annual international acm sigir conference on research 
+and development in information retrieval pages - 
+new york ny usa acm press 
+ t zhang a popescul and b dom linear prediction 
+models with graph regularization for web-page 
+categorization in kdd proceedings of the th acm 
+sigkdd international conference on knowledge discovery 
+and data mining pages - new york ny usa 
+ acm press 
+ d zhou j huang and b sch¨olkopf learning from labeled 
+and unlabeled data on a directed graph in proceedings of the 
+ nd international conference on machine learning bonn 
+germany 
+ d zhou b sch¨olkopf and t hofmann semi-supervised 
+learning on directed graphs proc neural info processing 
+systems 

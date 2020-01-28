@@ -1,0 +1,1060 @@
+pthinc a thin-client architecture 
+for mobile wireless web 
+joeng kim ricardo a baratto and jason nieh 
+department of computer science 
+columbia university new york ny usa 
+ jk ricardo nieh  cs columbia edu 
+abstract 
+although web applications are gaining popularity on 
+mobile wireless pdas web browsers on these systems can be 
+quite slow and often lack adequate functionality to access 
+many web sites we have developed pthinc a pda 
+thinclient solution that leverages more powerful servers to run 
+full-function web browsers and other application logic then 
+sends simple screen updates to the pda for display pthinc 
+uses server-side screen scaling to provide high-fidelity 
+display and seamless mobility across a broad range of different 
+clients and screen sizes including both portrait and 
+landscape viewing modes pthinc also leverages existing pda 
+control buttons to improve system usability and maximize 
+available screen resolution for application display we have 
+implemented pthinc on windows mobile and evaluated 
+its performance on mobile wireless devices our results 
+compared to local pda web browsers and other thin-client 
+approaches demonstrate that pthinc provides superior web 
+browsing performance and is the only pda thin client that 
+effectively supports crucial browser helper applications such 
+as video playback 
+categories and subject descriptors c 
+computercommunication-networks distributed systems - client 
+server 
+general terms design experimentation performance 
+ introduction 
+the increasing ubiquity of wireless networks and 
+decreasing cost of hardware is fueling a proliferation of mobile 
+wireless handheld devices both as standalone wireless personal 
+digital assistants pda and popular integrated pda cell 
+phone devices these devices are enabling new forms of 
+mobile computing and communication service providers are 
+leveraging these devices to deliver pervasive web access and 
+mobile web users already often use these devices to access 
+web-enabled information such as news email and localized 
+travel guides and maps it is likely that within a few years 
+most of the devices accessing the web will be mobile 
+users typically access web content by running a web browser 
+and associated helper applications locally on the pda 
+although native web browsers exist for pdas they deliver 
+subpar performance and have a much smaller feature set 
+and more limited functionality than their desktop 
+computing counterparts as a result pda web browsers are 
+often not able to display web content from web sites that 
+leverage more advanced web technologies to deliver a richer web 
+experience this fundamental problem arises for two 
+reasons first because pdas have a completely different 
+hardware software environment from traditional desktop 
+computers web applications need to be rewritten and customized 
+for pdas if at all possible duplicating development costs 
+because the desktop application market is larger and more 
+mature most development effort generally ends up being 
+spent on desktop applications resulting in greater 
+functionality and performance than their pda counterparts 
+second pdas have a more resource constrained environment 
+than traditional desktop computers to provide a smaller 
+form factor and longer battery life desktop web browsers 
+are large complex applications that are unable to run on a 
+pda instead developers are forced to significantly strip 
+down these web browsers to provide a usable pda web 
+browser thereby crippling pda browser functionality 
+thin-client computing provides an alternative approach 
+for enabling pervasive web access from handheld devices 
+a thin-client computing system consists of a server and a 
+client that communicate over a network using a remote 
+display protocol the protocol enables graphical displays to be 
+virtualized and served across a network to a client device 
+while application logic is executed on the server using the 
+remote display protocol the client transmits user input to 
+the server and the server returns screen updates of the 
+applications from the server to the client using a thin-client 
+model for mobile handheld devices pdas can become 
+simple stateless clients that leverage the remote server 
+capabilities to execute web browsers and other helper applications 
+the thin-client model provides several important 
+benefits for mobile wireless web first standard desktop web 
+applications can be used to deliver web content to pdas 
+without rewriting or adapting applications to execute on 
+a pda reducing development costs and leveraging existing 
+software investments second complex web applications can 
+be executed on powerful servers instead of running stripped 
+down versions on more resource constrained pdas 
+providing greater functionality and better performance third 
+web applications can take advantage of servers with faster 
+networks and better connectivity further boosting 
+application performance fourth pdas can be even simpler 
+devices since they do not need to perform complex application 
+logic potentially reducing energy consumption and 
+extend 
+ing battery life finally pda thin clients can be essentially 
+stateless appliances that do not need to be backed up or 
+restored require almost no maintenance or upgrades and do 
+not store any sensitive data that can be lost or stolen this 
+model provides a viable avenue for medical organizations to 
+comply with hipaa regulations while embracing mobile 
+handhelds in their day to day operations 
+despite these potential advantages thin clients have been 
+unable to provide the full range of these benefits in delivering 
+web applications to mobile handheld devices existing thin 
+clients were not designed for pdas and do not account for 
+important usability issues in the context of small form factor 
+devices resulting in difficulty in navigating displayed web 
+content furthermore existing thin clients are ineffective at 
+providing seamless mobility across the heterogeneous mix 
+of device display sizes and resolutions while existing thin 
+clients can already provide faster performance than native 
+pda web browsers in delivering html web content they 
+do not effectively support more display-intensive web helper 
+applications such as multimedia video which is increasingly 
+an integral part of available web content 
+to harness the full potential of thin-client computing in 
+providing mobile wireless web on pdas we have developed 
+pthinc pda thin-client internet computing pthinc 
+builds on our previous work on thinc to provide a 
+thinclient architecture for mobile handheld devices pthinc 
+virtualizes and resizes the display on the server to efficiently 
+deliver high-fidelity screen updates to a broad range of 
+different clients screen sizes and screen orientations including 
+both portrait and landscape viewing modes this enables 
+pthinc to provide the same persistent web session across 
+different client devices for example pthinc can provide 
+the same web browsing session appropriately scaled for 
+display on a desktop computer and a pda so that the same 
+cookies bookmarks and other meta-data are continuously 
+available on both machines simultaneously pthinc s 
+virtual display approach leverages semantic information 
+available in display commands and client-side video hardware to 
+provide more efficient remote display mechanisms that are 
+crucial for supporting more display-intensive web 
+applications given limited display resolution on pdas pthinc 
+maximizes the use of screen real estate for remote display 
+by moving control functionality from the screen to readily 
+available pda control buttons improving system usability 
+we have implemented pthinc on windows mobile and 
+demonstrated that it works transparently with existing 
+applications window systems and operating systems and does 
+not require modifying recompiling or relinking existing 
+software we have quantitatively evaluated pthinc against 
+local pda web browsers and other thin-client approaches on 
+pocket pc devices our experimental results demonstrate 
+that pthinc provides superior web browsing performance 
+and is the only pda thin client that effectively supports 
+crucial browser helper applications such as video playback 
+this paper presents the design and implementation of 
+pthinc section describes the overall usage model and 
+usability characteristics of pthinc section presents the 
+design and system architecture of pthinc section presents 
+experimental results measuring the performance of pthinc 
+on web applications and comparing it against native pda 
+browsers and other popular pda thin-client systems 
+section discusses related work finally we present some 
+concluding remarks 
+ pthinc usage model 
+pthinc is a thin-client system that consists of a simple 
+client viewer application that runs on the pda and a server 
+that runs on a commodity pc the server leverages more 
+powerful pcs to to run web browsers and other application 
+logic the client takes user input from the pda stylus and 
+virtual keyboard and sends them to the server to pass to 
+the applications screen updates are then sent back from 
+the server to the client for display to the user 
+when the pthinc pda client is started the user is 
+presented with a simple graphical interface where information 
+such as server address and port user authentication 
+information and session settings can be provided pthinc first 
+attempts to connect to the server and perform the 
+necessary handshaking once this process has been completed 
+pthinc presents the user with the most recent display of 
+his session if the session does not exist a new session is 
+created existing sessions can be seamlessly continued without 
+changes in the session setting or server configuration 
+unlike other thin-client systems pthinc provides a user 
+with a persistent web session model in which a user can 
+launch a session running a web browser and associated 
+applications at the server then disconnect from that session 
+and reconnect to it again anytime when a user reconnects 
+to the session all of the applications continue running where 
+the user left off so that the user can continue working as 
+though he or she never disconnected the ability to 
+disconnect and reconnect to a session at anytime is an important 
+benefit for mobile wireless pda users which may have 
+intermittent network connectivity 
+pthinc s persistent web session model enables a user to 
+reconnect to a web session from devices other than the one 
+on which the web session was originally initiated this 
+provides users with seamless mobility across different devices 
+if a user loses his pda he can easily use another pda to 
+access his web session furthermore pthinc allows users 
+to use non-pda devices to access web sessions as well a 
+user can access the same persistent web session on a 
+desktop pc as on a pda enabling a user to use the same web 
+session from any computer 
+pthinc s persistent web session model addresses a key 
+problem encountered by mobile web users the lack of a 
+common web environment across computers web browsers 
+often store important information such as bookmarks cookies 
+and history which enable them to function in a much more 
+useful manner the problem that occurs when a user moves 
+between computers is that this data which is specific to a 
+web browser installation cannot move with the user 
+furthermore web browsers often need helper applications to 
+process different media content and those applications may 
+not be consistently available across all computers pthinc 
+addresses this problem by enabling a user to remotely use 
+the exact same web browser environment and helper 
+applications from any computer as a result pthinc can 
+provide a common consistent web browsing environment for 
+mobile users across different devices without requiring them 
+to attempt to repeatedly synchronize different web browsing 
+environments across multiple machines 
+to enable a user to access the same web session on 
+different devices pthinc must provide mechanisms to 
+support different display sizes and resolutions toward this end 
+pthinc provides a zoom feature that enables a user to 
+zoom in and out of a display and allows the display of a web 
+ 
+figure pthinc shortcut keys 
+session to be resized to fit the screen of the device being 
+used for example if the server is running a web session at 
+ × but the client is a pda with a display resolution 
+of × pthinc will resize the desktop display to fit 
+the full display in the smaller screen of the pda pthinc 
+provides the pda user with the option to increase the size 
+of the display by zooming in to different parts of the display 
+users are often familiar with the general layout of commonly 
+visited websites and are able to leverage this resizing 
+feature to better navigate through web pages for example 
+a user can zoom out of the display to view the entire page 
+content and navigate hyperlinks then zoom in to a region 
+of interest for a better view 
+to enable a user to access the same web session on 
+different devices pthinc must also provide mechanisms to 
+support different display orientations in a desktop 
+environment users are typically accustomed to having displays 
+presented in landscape mode where the screen width is larger 
+than its height however in a pda environment the choice 
+is not always obvious some users may prefer having the 
+display in portrait mode as it is easier to hold the device 
+in their hands while others may prefer landscape mode in 
+order to minimize the amount of side-scrolling necessary 
+to view a web page to accommodate pda user 
+preferences pthinc provides an orientation feature that enables 
+it to seamless rotate the display between landscape and 
+portrait mode the landscape mode is particularly useful for 
+pthinc users who frequently access their web sessions on 
+both desktop and pda devices providing those users with 
+the same familiar landscape setting across different devices 
+because screen space is a relatively scarce resource on 
+pdas pthinc runs in fullscreen mode to maximize the 
+screen area available to display the web session to be able 
+to use all of the screen on the pda and still allow the user 
+to control and interact with it pthinc reuses the typical 
+shortcut buttons found on pdas to perform all the 
+control functions available to the user the buttons used by 
+pthinc do not require any os environment changes they 
+are simply intercepted by the pthinc client application 
+when they are pressed figure shows how pthinc 
+utilizes the shortcut buttons to provide easy navigation and 
+improve the overall user experience these buttons are not 
+device specific and the layout shown is common to 
+widelyused pocketpc devices pthinc provides six shortcuts to 
+support its usage model 
+ rotate screen the record button on the left edge is 
+used to rotate the screen between portrait and 
+landscape mode each time the button is pressed 
+ zoom out the leftmost button on the bottom front 
+is used to zoom out the display of the web session 
+providing a bird s eye view of the web session 
+ zoom in the second leftmost button on the bottom 
+front is used to zoom in the display of the web session 
+to more clearly view content of interest 
+ directional scroll the middle button on the bottom 
+front is used to scroll around the display using a single 
+control button in a way that is already familiar to pda 
+users this feature is particularly useful when the user 
+has zoomed in to a region of the display such that only 
+part of the display is visible on the screen 
+ show hide keyboard the second rightmost button on 
+the bottom front is used to bring up a virtual keyboard 
+drawn on the screen for devices which have no physical 
+keyboard the virtual keyboard uses standard pda 
+os mechanisms providing portability across different 
+pda environments 
+ close session the rightmost button on the bottom 
+front is used to disconnect from the pthinc session 
+pthinc uses the pda touch screen stylus and standard 
+user interface mechanisms to provide a user interface 
+pointand-click metaphor similar to that provided by the mouse 
+in a traditional desktop computing environment pthinc 
+does not use a cursor since pda environments do not 
+provide one instead a user can use the stylus to tap on 
+different sections of the touch screen to indicate input focus a 
+single tap on the touch screen generates a corresponding 
+single click mouse event a double tap on the touch screen 
+generates a corresponding double click mouse event pthinc 
+provides two-button mouse emulation by using the stylus to 
+press down on the screen for one second to generate a right 
+mouse click all of these actions are identical to the way 
+users already interact with pda applications in the common 
+pocketpc environment in web browsing users can click on 
+hyperlinks and focus on input boxes by simply tapping on 
+the desired screen area of interest unlike local pda web 
+browsers and other pda applications pthinc leverages 
+more powerful desktop user interface metaphors to enable 
+users to manipulate multiple open application windows 
+instead of being limited to a single application window at any 
+given moment this provides increased browsing flexibility 
+beyond what is currently available on pda devices similar 
+to a desktop environment browser windows and other 
+application windows can be moved around by pressing down 
+and dragging the stylus similar to a mouse 
+ pthinc system architecture 
+pthinc builds on the thinc remote display 
+architecture to provide a thin-client system for pdas pthinc 
+virtualizes the display at the server by leveraging the video 
+device abstraction layer which sits below the window server 
+and above the framebuffer this is a well-defined low-level 
+device-dependent layer that exposes the video hardware to 
+the display system pthinc accomplishes this through a 
+simple virtual display driver that intercepts drawing 
+commands packetizes and sends them over the network 
+ 
+while other thin-client approaches intercept display 
+commands at other layers of the display subsystem pthinc s 
+display virtualization approach provides some key benefits 
+in efficiently supporting pda clients for example 
+intercepting display commands at a higher layer between 
+applications and the window system as is done by x requires 
+replicating and running a great deal of functionality on the 
+pda that is traditionally provided by the desktop window 
+system given both the size and complexity of traditional 
+window systems attempting to replicate this functionality 
+in the restricted pda environment would have proven to 
+be a daunting and perhaps unfeasible task furthermore 
+applications and the window system often require tight 
+synchronization in their operation and imposing a wireless 
+network between them by running the applications on the server 
+and the window system on the client would significantly 
+degrade performance on the other hand intercepting at a 
+lower layer by extracting pixels out of the framebuffer as 
+they are rendered provides a simple solution that requires 
+very little functionality on the pda client but can also 
+result in degraded performance the reason is that by the 
+time the remote display server attempts to send screen 
+updates it has lost all semantic information that may have 
+helped it encode efficiently and it must resort to using a 
+generic and expensive encoding mechanism on the server 
+as well as a potentially expensive decoding mechanism on 
+the limited pda client in contrast to both the high and 
+low level interception approaches pthinc s approach of 
+intercepting at the device driver provides an effective 
+balance between client and server simplicity and the ability to 
+efficiently encode and decode screen updates 
+by using a low-level virtual display approach pthinc 
+can efficiently encode application display commands using 
+only a small set of low-level commands in a pda 
+environment this set of commands provides a crucial component 
+in maintaining the simplicity of the client in the 
+resourceconstrained pda environment the display commands are 
+shown in table and work as follows copy instructs the 
+client to copy a region of the screen from its local framebuffer 
+to another location this command improves the user 
+experience by accelerating scrolling and opaque window 
+movement without having to resend screen data from the server 
+sfill pfill and bitmap are commands that paint a 
+fixed-size region on the screen they are useful for 
+accelerating the display of solid window backgrounds desktop 
+patterns backgrounds of web pages text drawing and 
+certain operations in graphics manipulation programs sfill 
+fills a sizable region on the screen with a single color pfill 
+replicates a tile over a screen region bitmap performs a 
+fill using a bitmap of ones and zeros as a stipple to apply 
+a foreground and background color finally raw is used 
+to transmit unencoded pixel data to be displayed verbatim 
+on a region of the screen this command is invoked as a 
+last resort if the server is unable to employ any other 
+command and it is the only command that may be compressed 
+to mitigate its impact on network bandwidth 
+pthinc delivers its commands using a non-blocking 
+serverpush update mechanism where as soon as display updates 
+are generated on the server they are sent to the client 
+clients are not required to explicitly request display 
+updates thus minimizing the impact that the typical 
+varying network latency of wireless links may have on the 
+responsiveness of the system keeping in mind that resource 
+command description 
+copy copy a frame buffer area to specified 
+coordinates 
+sfill fill an area with a given pixel color value 
+pfill tile an area with a given pixel pattern 
+bitmap fill a region using a bit pattern 
+raw display raw pixel data at a given location 
+table pthinc protocol display commands 
+constrained pdas and wireless networks may not be able 
+to keep up with a fast server generating a large number of 
+updates pthinc is able to coalesce clip and discard 
+updates automatically if network loss or congestion occurs or 
+the client cannot keep up with the rate of updates this 
+type of behavior proves crucial in a web browsing 
+environment where for example a page may be redrawn multiple 
+times as it is rendered on the fly by the browser in this 
+case the pda will only receive and render the final result 
+which clearly is all the user is interesting in seeing 
+pthinc prioritizes the delivery of updates to the pda 
+using a shortest-remaining-size-first srsf preemptive 
+update scheduler srsf is analogous to 
+shortest-remainingprocessing-time scheduling which is known to be optimal 
+for minimizing mean response time in an interactive system 
+in a web browsing environment short jobs are associated 
+with text and basic page layout components such as the 
+page s background which are critical web content for the 
+user on the other hand large jobs are often lower priority 
+beautifying elements or even worse web page banners 
+and advertisements which are of questionable value to the 
+user as he or she is browsing the page using srsf pthinc 
+is able to maximize the utilization of the relatively scarce 
+bandwidth available on the wireless connection between the 
+pda and the server 
+ display management 
+to enable users to just as easily access their web browser 
+and helper applications from a desktop computer at home 
+as from a pda while on the road pthinc provides a 
+resize mechanism to zoom in and out of the display of a web 
+session pthinc resizing is completely supported by the 
+server not the client the server resamples updates to fit 
+within the pdas viewport before they are transmitted over 
+the network pthinc uses fant s resampling algorithm to 
+resize pixel updates this provides smooth visually 
+pleasing updates with properly antialiasing and has only modest 
+computational requirements 
+pthinc s resizing approach has a number of advantages 
+first it allows the pda to leverage the vastly superior 
+computational power of the server to use high quality resampling 
+algorithms and produce higher quality updates for the pda 
+to display second resizing the screen does not translate into 
+additional resource requirements for the pda since it does 
+not need to perform any additional work finally better 
+utilization of the wireless network is attained since rescaling 
+the updates reduces their bandwidth requirements 
+to enable users to orient their displays on a pda to 
+provide a viewing experience that best accommodates user 
+preferences and the layout of web pages or applications 
+pthinc provides a display rotation mechanism to switch 
+between landscape and portrait viewing modes pthinc 
+display rotation is completely supported by the client not 
+the server pthinc does not explicitly recalculate the 
+ge 
+ometry of display updates to perform rotation which would 
+be computationally expensive instead pthinc simply 
+changes the way data is copied into the framebuffer to switch 
+between display modes when in portrait mode data is 
+copied along the rows of the framebuffer from left to right 
+when in landscape mode data is copied along the columns 
+of the framebuffer from top to bottom these very fast and 
+simple techniques replace one set of copy operations with 
+another and impose no performance overhead pthinc 
+provides its own rotation mechanism to support a wide range of 
+devices without imposing additional feature requirements on 
+the pda although some newer pda devices provide native 
+support for different orientations this mechanism is not 
+dynamic and requires the user to rotate the pda s entire user 
+interface before starting the pthinc client windows 
+mobile provides native api mechanisms for pda applications 
+to rotate their ui on the fly but these mechanisms deliver 
+poor performance and display quality as the rotation is 
+performed naively and is not completely accurate 
+ video playback 
+video has gradually become an integral part of the world 
+wide web and its presence will only continue to increase 
+web sites today not only use animated graphics and flash 
+to deliver web content in an attractive manner but also 
+utilize streaming video to enrich the web interface users are 
+able to view pre-recorded and live newscasts on cnn watch 
+sports highlights on espn and even search through large 
+collection of videos on google video to allow applications 
+to provide efficient video playback interfaces have been 
+created in display systems that allow video device drivers to 
+expose their hardware capabilities back to the applications 
+pthinc takes advantage of these interfaces and its virtual 
+device driver approach to provide a virtual bridge between 
+the remote client and its hardware and the applications and 
+transparently support video playback 
+on top of this architecture pthinc uses the yuv 
+colorspace to encode the video content which provides a 
+number of benefits first it has become increasingly common 
+for pda video hardware to natively support yuv and be 
+able to perform the colorspace conversion and scaling 
+automatically as a result pthinc is able to provide fullscreen 
+video playback without any performance hits second the 
+use of yuv allows for a more efficient representation of rgb 
+data without loss of quality by taking advantage of the 
+human eye s ability to better distinguish differences in 
+brightness than in color in particular pthinc uses the yv 
+format which allows full color rgb data to be encoded 
+using just bits per pixel third yuv data is produced 
+as one of the last steps of the decoding process of most 
+video codecs allowing pthinc to provide video playback 
+in a manner that is format independent finally even if the 
+pda s video hardware is unable to accelerate playback the 
+colorspace conversion process is simple enough that it does 
+not impose unreasonable requirements on the pda 
+a more concrete example of how pthinc leverages the 
+pda video hardware to support video playback can be seen 
+in our prototype implementation on the popular dell axim 
+x v pda which is equipped with the intel g 
+multimedia accelerator in this case pthinc creates an 
+offscreen buffer in video memory and writes and reads from 
+this memory region data on the yv format when a new 
+video frame arrives video data is copied from the buffer to 
+figure experimental testbed 
+an overlay surface in video memory which is independent 
+of the normal surface used for traditional drawing as the 
+yv data is put onto the overlay the intel accelerator 
+automatically performs both colorspace conversion and scaling 
+by using the overlay surface pthinc has no need to redraw 
+the screen once video playback is over since the overlapped 
+surface is unaffected in addition specific overlay regions 
+can be manipulated by leveraging the video hardware for 
+example to perform hardware linear interpolation to smooth 
+out the frame and display it fullscreen and to do automatic 
+rotation when the client runs in landscape mode 
+ experimental results 
+we have implemented a pthinc prototype that runs the 
+client on widely-used windows mobile-based pocket pc 
+devices and the server on both windows and linux operating 
+systems to demonstrate its effectiveness in supporting 
+mobile wireless web applications we have measured its 
+performance on web applications we present experimental results 
+on different pda devices for two popular web applications 
+browsing web pages and playing video content from the web 
+we compared pthinc against native web applications 
+running locally on the pda to demonstrate the improvement 
+that pthinc can provide over the traditional fat-client 
+approach we also compared pthinc against three of the 
+most widely used thin clients that can run on pdas citrix 
+meta-framexp microsoft remote desktop and vnc 
+ virtual network computing we follow common 
+practice and refer to citrix metaframexp and microsoft remote 
+desktop by their respective remote display protocols ica 
+ independent computing architecture and rdp remote 
+desktop protocol 
+ experimental testbed 
+we conducted our web experiments using two different 
+wireless pocket pc pdas in an isolated wi-fi network 
+testbed as shown in figure the testbed consisted of two 
+pda client devices a packet monitor a thin-client server 
+and a web server except for the pdas all of the other 
+machines were ibm netfinity r servers with dual mhz 
+intel piii cpus and mb ram and were connected on 
+a switched mbps fastethernet network the web server 
+used was apache the network emulator was 
+nistnet and the packet monitor was ethereal the 
+pda clients connected to the testbed through a b 
+lucent orinoco ap- wireless access point all experiments 
+using the wireless network were conducted within ten feet 
+of the access point so we considered the amount of packet 
+loss to be negligible in our experiments 
+two pocket pc pdas were used to provide results across 
+both older less powerful models and newer higher 
+performance models the older model was a dell axim x with 
+ 
+client × × depth resize clip 
+rdp no yes -bit no yes 
+vnc yes yes -bit no no 
+ica yes yes -bit yes no 
+pthinc yes yes -bit yes no 
+table thin-client testbed configuration setting 
+a mhz intel xscale pxa cpu and mb ram 
+running windows mobile and a dell truemobile 
+ ghz compactflash card for wireless networking the 
+newer model was a dell axim x v with a mhz intel 
+xscale xpa cpu and mb ram running windows 
+mobile and integrated b wireless networking the 
+x v has an intel g multimedia accelerator with mb 
+video memory both pdas are capable of -bit color but 
+have different screen sizes and display resolutions the x 
+has a inch diagonal screen with × resolution the 
+x v has a inch diagonal screen with × 
+the four thin clients that we used support different 
+levels of display quality as summarized in table the rdp 
+client only supports a fixed × display resolution on 
+the server with -bit color depth while other platforms 
+provide higher levels of display quality to provide a fair 
+comparison across all platforms we conducted our experiments 
+with thin-client sessions configured for two possible 
+resolutions × and × both ica and vnc were 
+configured to use the native pda resolution of -bit color 
+depth the current pthinc prototype uses -bit color 
+directly and the client downsamples updates to the -bit color 
+depth available on the pda rdp was configured using only 
+ -bit color depth since it does not support any better color 
+depth since both pthinc and ica provide the ability to 
+view the display resized to fit the screen we measured both 
+clients with and without the display resized to fit the pda 
+screen each thin client was tested using landscape rather 
+than portrait mode when available all systems run on the 
+x v could run in landscape mode because the hardware 
+provides a landscape mode feature however the x does 
+not provide this functionality only pthinc directly 
+supports landscape mode so it was the only system that could 
+run in landscape mode on both the x and x v 
+to provide a fair comparison we also standardized on 
+common hardware and operating systems whenever possible 
+all of the systems used the netfinity server as the thin-client 
+server for the two systems designed for windows servers 
+ica and rdp we ran windows server on the server 
+for the other systems which support x-based servers vnc 
+and pthinc we ran the debian linux unstable 
+distribution with the linux kernel on the server we used the 
+latest thin-client server versions available on each platform 
+at the time of our experiments namely citrix metaframe 
+xp server for windows feature release microsoft 
+remote desktop built into windows xp and windows 
+using rdp and vnc 
+ application benchmarks 
+we used two web application benchmarks for our 
+experiments based on two common application scenarios browsing 
+web pages and playing video content from the web since 
+many thin-client systems including two of the ones tested 
+are closed and proprietary we measured their performance 
+in a noninvasive manner by capturing network traffic with 
+a packet monitor and using a variant of slow-motion 
+benchmarking previously developed to measure thin-client 
+performance in pda environments this measurement 
+methodology accounts for both the display decoupling that 
+can occur between client and server in thin-client systems 
+as well as client processing time which may be significant 
+in the case of pdas 
+to measure web browsing performance we used a web 
+browsing benchmark based on the web text page load test 
+from the ziff-davis i-bench benchmark suite the 
+benchmark consists of javascript controlled load of pages from 
+the web server the pages contain both text and 
+graphics with pages varying in size the graphics are embedded 
+images in gif and jpeg formats the original i-bench 
+benchmark was modified for slow-motion benchmarking by 
+introducing delays of several seconds between the pages 
+using javascript then two tests were run one where 
+delays where added between each page and one where pages 
+where loaded continuously without waiting for them to be 
+displayed on the client in the first test delays were 
+sufficiently adjusted in each case to ensure that each page could 
+be received and displayed on the client completely without 
+temporal overlap in transferring the data belonging to two 
+consecutive pages we used the packet monitor to record 
+the packet traffic for each run of the benchmark then used 
+the timestamps of the first and last packet in the trace to 
+obtain our latency measures the packet monitor also 
+recorded the amount of data transmitted between the client 
+and the server the ratio between the data traffic in the two 
+tests yields a scale factor this scale factor shows the loss 
+of data between the server and the client due to inability of 
+the client to process the data quickly enough the product 
+of the scale factor with the latency measurement produces 
+the true latency accounting for client processing time 
+to run the web browsing benchmark we used mozilla 
+firefox running on the thin-client server for the thin 
+clients and windows internet explorer ie mobile for 
+and mobile for for the native browsers on the x and 
+x v pdas respectively in all cases the web browser used 
+was sized to fill the entire display region available 
+to measure video playback performance we used a video 
+benchmark that consisted of playing a s mpeg- video 
+clip containing a mix of news and entertainment 
+programming at full-screen resolution the video clip is mb and 
+consists of x pixel frames with an ideal frame rate 
+of frames sec we measured video performance using 
+slow-motion benchmarking by monitoring resulting packet 
+traffic at two playback rates frames second fps and 
+fps and comparing the results to determine playback 
+delays and frame drops that occur at fps to measure overall 
+video quality for example quality means that all 
+video frames were played at real-time speed on the other 
+hand quality could mean that half the video data was 
+dropped or that the clip took twice as long to play even 
+though all of the video data was displayed 
+to run the video benchmark we used windows media 
+player for windows-based thin-client servers mplayer 
+pre for x-based thin-client servers and windows media 
+player mobile and mobile for the native video players 
+running locally on the x and x v pdas respectively in 
+all cases the video player used was sized to fill the entire 
+display region available 
+ measurements 
+figures and show the results of running the web 
+brows 
+ 
+ 
+ 
+ 
+pthinc 
+resized 
+pthincica 
+resized 
+icavncrdplocal 
+latency s 
+platform 
+axim x x or less 
+axim x v x 
+axim x x 
+axim x v x 
+figure browsing benchmark average page latency 
+ing benchmark for each platform we show results for up to 
+four different configurations two on the x and two on the 
+x v depending on whether each configuration was 
+supported however not all platforms could support all 
+configurations the local browser only runs at the display 
+resolution of the pda × or less for the x v and the 
+x rdp only runs at × neither platform could 
+support × display resolution ica only ran on the 
+x and could not run on the x v because it did not work 
+on windows mobile 
+figure shows the average latency per web page for each 
+platform pthinc provides the lowest average web 
+browsing latency on both pdas on the x pthinc performs 
+up to times better than other thin-client systems and 
+times better than the local browser on the x v pthinc 
+performs up to times better than other thin-client 
+systems and times better than the native browser in fact 
+all of the thin clients except vnc outperform the local 
+pda browser demonstrating the performance benefits of 
+the thin-client approach usability studies have shown that 
+web pages should take less than one second to download 
+for the user to experience an uninterrupted web browsing 
+experience the measurements show that only the thin 
+clients deliver subsecond web page latencies in contrast the 
+local browser requires more than seconds on average per 
+web page the local browser performs worse since it needs 
+to run a more limited web browser to process the html 
+javascript and do all the rendering using the limited 
+capabilities of the pda the thin clients can take advantage of 
+faster server hardware and a highly tuned web browser to 
+process the web content much faster 
+figure shows that rdp is the next fastest platform after 
+pthinc however rdp is only able to run at a fixed 
+resolution of × and -bit color depth furthermore rdp 
+also clips the display to the size of the pda screen so that 
+it does not need to send updates that are not visible on the 
+pda screen this provides a performance benefit 
+assuming the remaining web content is not viewed but degrades 
+performance when a user scrolls around the display to view 
+other web content rdp achieves its performance with 
+significantly lower display quality compared to the other thin 
+clients and with additional display clipping not used by other 
+systems as a result rdp performance alone does not 
+provide a complete comparison with the other platforms in 
+contrast pthinc provides the fastest performance while 
+at the same time providing equal or better display quality 
+than the other systems 
+ 
+ 
+ 
+ 
+ 
+pthinc 
+resized 
+pthincica 
+resized 
+icavncrdplocal 
+datasize kb 
+platform 
+axim x x or less 
+axim x v x 
+axim x x 
+axim x v x 
+figure browsing benchmark average page data 
+transferred 
+since vnc and ica provide similar display quality to 
+pthinc these systems provide a more fair comparison of 
+different thin-client approaches ica performs worse in part 
+because it uses higher-level display primitives that require 
+additional client processing costs vnc performs worse in 
+part because it loses display data due to its client-pull 
+delivery mechanism and because of the client processing costs 
+in decompressing raw pixel primitives in both cases their 
+performance was limited in part because their pda clients 
+were unable to keep up with the rate at which web pages 
+were being displayed 
+figure also shows measurements for those thin clients 
+that support resizing the display to fit the pda screen 
+namely ica and pthinc resizing requires additional 
+processing which results in slower average web page latencies 
+the measurements show that the additional delay incurred 
+by ica when resizing versus not resizing is much more 
+substantial than for pthinc ica performs resizing on the 
+slower pda client in contrast pthinc leverage the more 
+powerful server to do resizing reducing the performance 
+difference between resizing and not resizing unlike ica 
+pthinc is able to provide subsecond web page download 
+latencies in both cases 
+figure shows the data transferred in kb per page when 
+running the slow-motion version of the tests all of the 
+platforms have modest data transfer requirements of roughly 
+ kb per page or less this is well within the 
+bandwidth capacity of wi-fi networks the measurements show 
+that the local browser does not transfer the least amount of 
+data this is surprising as html is often considered to be 
+a very compact representation of content instead rdp is 
+the most bandwidth efficient platform largely as a result of 
+using only -bit color depth and screen clipping so that it 
+does not transfer the entire web page to the client pthinc 
+overall has the largest data requirements slightly more than 
+vnc this is largely a result of the current pthinc 
+prototype s lack of native support for -bit color data in the wire 
+protocol however this result also highlights pthinc s 
+performance as it is faster than all other systems even while 
+transferring more data furthermore as newer pda models 
+support full -bit color these results indicate that pthinc 
+will continue to provide good web browsing performance 
+since display usability and quality are as important as 
+performance figures to compare screenshots of the 
+different thin clients when displaying a web page in this case 
+from the popular bbc news website except for ica all of 
+the screenshots were taken on the x v in landscape mode 
+ 
+figure browser screenshot rdp x figure browser screenshot vnc x 
+figure browser screenshot ica resized x figure browser screenshot pthinc resized x 
+using the maximum display resolution settings for each 
+platform given in table the ica screenshot was taken on the 
+x since ica does not run on the x v while the 
+screenshots lack the visual fidelity of the actual device display 
+several observations can be made figure shows that rdp 
+does not support fullscreen mode and wastes lots of screen 
+space for controls and ui elements requiring the user to 
+scroll around in order to access the full contents of the web 
+browsing session figure shows that vnc makes better 
+use of the screen space and provides better display quality 
+but still forces the user to scroll around to view the web 
+page due to its lack of resizing support figure shows 
+ica s ability to display the full web page given its resizing 
+support but that its lack of landscape capability and poorer 
+resize algorithm significantly compromise display quality in 
+contrast figure shows pthinc using resizing to provide 
+a high quality fullscreen display of the full width of the web 
+page pthinc maximizes the entire viewing region by 
+moving all controls to the pda buttons in addition pthinc 
+leverages the server computational power to use a high 
+quality resizing algorithm to resize the display to fit the pda 
+screen without significant overhead 
+figures and show the results of running the video 
+playback benchmark for each platform except ica we 
+show results for an x and x v configuration ica could 
+not run on the x v as noted earlier the measurements 
+were done using settings that reflected the environment a 
+user would have to access a web session from both a 
+desktop computer and a pda as such a × server 
+display resolution was used whenever possible and the video 
+was shown at fullscreen rdp was limited to × 
+display resolution as noted earlier since viewing the entire 
+video display is the only really usable option we resized 
+the display to fit the pda screen for those platforms that 
+supported this feature namely ica and pthinc 
+figure shows the video quality for each platform pthinc 
+is the only thin client able to provide perfect video playback 
+quality similar to the native pda video player all of the 
+other thin clients deliver very poor video quality with the 
+exception of rdp on the x v which provided unacceptable 
+ video quality none of the other systems were even able 
+to achieve video quality vnc and ica have the worst 
+quality at on the x device 
+pthinc s native video support enables superior video 
+performance while other thin clients suffer from their 
+inability to distinguish video from normal display updates 
+they attempt to apply ineffective and expensive 
+compression algorithms on the video data and are unable to keep up 
+with the stream of updates generated resulting in dropped 
+frames or long playback times vnc suffers further from 
+its client-pull update model because video frames are 
+generated faster than the rate at which the client can process 
+and send requests to the server to obtain the next display 
+update figure shows the total data transferred during 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pthincicavncrdplocal 
+videoquality 
+platform 
+axim x 
+axim x v 
+figure video benchmark fullscreen video quality 
+ 
+ 
+ 
+ 
+pthincicavncrdplocal 
+videodatasize mb 
+platform 
+axim x 
+axim x v 
+figure video benchmark fullscreen video data 
+video playback for each system the native player is the 
+most bandwidth efficient platform sending less than mb 
+of data which corresponds to about mbps of bandwidth 
+pthinc s video quality requires about mb of data 
+which corresponds to a bandwidth usage of less than mbps 
+while the other thin clients send less data than thinc 
+they do so because they are dropping video data resulting 
+in degraded video quality 
+figures to compare screenshots of the different thin 
+clients when displaying the video clip except for ica all of 
+the screenshots were taken on the x v in landscape mode 
+using the maximum display resolution settings for each 
+platform given in table the ica screenshot was taken on the 
+x since ica does not run on the x v figures and 
+show that rdp and vnc are unable to display the entire 
+video frame on the pda screen rdp wastes screen space 
+for ui elements and vnc only shows the top corner of the 
+video frame on the screen figure shows that ica 
+provides resizing to display the entire video frame but did not 
+proportionally resize the video data resulting in strange 
+display artifacts in contrast figure shows pthinc using 
+resizing to provide a high quality fullscreen display of the 
+entire video frame pthinc provides visually more appealing 
+video display than rdp vnc or ica 
+ related work 
+several studies have examined the web browsing 
+performance of thin-client computing the ability for 
+thin clients to improve web browsing performance on 
+wireless pdas was first quantitatively demonstrated in a 
+previous study by one of the authors this study 
+demonstrated that thin clients can provide both faster web 
+browsing performance and greater web browsing functionality 
+the study considered a wide range of web content including 
+content from medical information systems our work builds 
+on this previous study and consider important issues such as 
+how usable existing thin clients are in pda environments 
+the trade-offs between thin-client usability and performance 
+performance across different pda devices and the 
+performance of thin clients on common web-related applications 
+such as video 
+many thin clients have been developed and some have 
+pda clients including microsoft s remote desktop 
+citrix metraframe xp virtual network computing 
+ gotomypc and tarantella these systems 
+were first designed for desktop computing and retrofitted 
+for pdas unlike pthinc they do not address key 
+system architecture and usability issues important for pdas 
+this limits their display quality system performance 
+available screen space and overall usability on pdas pthinc 
+builds on previous work by two of the authors on thinc 
+extending the server architecture and introducing a client 
+interface and usage model to efficiently support pda devices 
+for mobile web applications 
+other approaches to improve the performance of mobile 
+wireless web browsing have focused on using transcoding 
+and caching proxies in conjunction with the fat client model 
+ they work by pushing functionality to external 
+proxies and using specialized browsing applications on the 
+pda device that communicate with the proxy our 
+thinclient approach differs fundamentally from these fat-client 
+approaches by pushing all web browser logic to the server 
+leveraging existing investments in desktop web browsers and 
+helper applications to work seamlessly with production 
+systems without any additional proxy configuration or web 
+browser modifications 
+with the emergence of web browsing on small display 
+devices web sites have been redesigned using mechanisms like 
+wap and specialized native web browsers have been 
+developed to tailor the needs of these devices recently opera 
+has developed the opera mini web browser which uses 
+an approach similar to the thin-client model to provide 
+access across a number of mobile devices that would normally 
+be incapable of running a web browser instead of requiring 
+the device to process web pages it uses a remote server to 
+pre-process the page before sending it to the phone 
+ conclusions 
+we have introduced pthinc a thin-client architecture 
+for wireless pdas pthinc provides key architectural and 
+usability mechanisms such as server-side screen resizing 
+clientside screen rotation using simple copy techniques yuv video 
+support and maximizing screen space for display updates 
+and leveraging existing pda control buttons for ui 
+elements pthinc transparently supports traditional 
+desktop browsers and their helper applications on pda devices 
+and desktop machines providing mobile users with 
+ubiquitous access to a consistent personalized and full-featured 
+web environment across heterogeneous devices we have 
+implemented pthinc and measured its performance on 
+web applications compared to existing thin-client systems 
+and native web applications our results on multiple 
+mobile wireless devices demonstrate that pthinc delivers web 
+browsing performance up to times better than existing 
+thin-client systems and times better than a native pda 
+browser in addition pthinc is the only pda thin client 
+ 
+figure video screenshot rdp x figure video screenshot vnc x 
+figure video screenshot ica resized x 
+figure video screenshot pthinc resized x 
+that transparently provides full-screen full frame rate video 
+playback making web sites with multimedia content 
+accessible to mobile web users 
+ acknowledgements 
+this work was supported in part by nsf itr grants 
+ccr and cns- and an ibm sur award 
+ references 
+ r baratto l kim and j nieh thinc a virtual 
+display architecture for thin-client computing in 
+proceedings of the th acm symposium on operating 
+systems principles sosp oct 
+ citrix metaframe http www citrix com 
+ b c cumberland g carius and a muir microsoft 
+windows nt server terminal server edition 
+technical reference microsoft press redmond wa 
+ a fox i goldberg s d gribble and d c lee 
+experience with top gun wingman a proxy-based 
+graphical web browser for the com palmpilot in 
+proceedings of middleware lake district england 
+september 
+ gotomypc http www gotomypc com 
+ health insurance portability and accountability act 
+http www hhs gov ocr hipaa 
+ i-bench version http 
+ etestinglabs com benchmarks i-bench i-bench asp 
+ a joshi on proxy agents mobility and web access 
+mobile networks and applications - 
+ j kangasharju y g kwon and a ortega design and 
+implementation of a soft caching proxy computer 
+networks and isdn systems - - 
+ a lai j nieh b bohra v nandikonda a p surana 
+and s varshneya improving web browsing on wireless 
+pdas using thin-client computing in proceedings of the 
+ th international world wide web conference www 
+may 
+ a maheshwari a sharma k ramamritham and 
+p shenoy transquid transcoding and caching proxy for 
+heterogenous ecommerce environments in proceedings of 
+the th ieee workshop on research issues in data 
+engineering ride feb 
+ net vnc viewer for pocketpc 
+http dotnetvnc sourceforge net 
+ j nieh s j yang and n novik measuring thin-client 
+performance using slow-motion benchmarking acm 
+trans computer systems - feb 
+ j nielsen designing web usability new riders 
+publishing indianapolis in 
+ opera mini browser 
+http www opera com products mobile operamini 
+ t richardson q stafford-fraser k r wood and 
+a hopper virtual network computing ieee internet 
+computing jan feb 
+ r w scheifler and j gettys the x window system 
+acm trans gr - apr 
+ sun secure global desktop 
+http www sun com software products sgd 
+ s j yang j nieh s krishnappa a mohla and 
+m sajjadpour web browsing performance of wireless 
+thin-client computing in proceedings of the th 
+international world wide web conference www may 
+ 
+ 

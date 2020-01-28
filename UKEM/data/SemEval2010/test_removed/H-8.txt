@@ -1,0 +1,985 @@
+robust test collections for retrieval evaluation 
+ben carterette 
+center for intelligent information retrieval 
+computer science department 
+university of massachusetts amherst 
+amherst ma 
+carteret cs umass edu 
+abstract 
+low-cost methods for acquiring relevance judgments can be 
+a boon to researchers who need to evaluate new retrieval 
+tasks or topics but do not have the resources to make 
+thousands of judgments while these judgments are very 
+useful for a one-time evaluation it is not clear that they can 
+be trusted when re-used to evaluate new systems in this 
+work we formally define what it means for judgments to 
+be reusable the confidence in an evaluation of new systems 
+can be accurately assessed from an existing set of relevance 
+judgments we then present a method for augmenting a set 
+of relevance judgments with relevance estimates that require 
+no additional assessor effort using this method practically 
+guarantees reusability with as few as five judgments per 
+topic taken from only two systems we can reliably 
+evaluate a larger set of ten systems even the smallest sets of 
+judgments can be useful for evaluation of new systems 
+categories and subject descriptors h information 
+storage and retrieval h systems and software 
+performance evaluation 
+general terms experimentation measurement 
+reliability 
+ introduction 
+consider an information retrieval researcher who has 
+invented a new retrieval task she has built a system to 
+perform the task and wants to evaluate it since the task is 
+new it is unlikely that there are any extant relevance 
+judgments she does not have the time or resources to judge 
+every document or even every retrieved document she can 
+only judge the documents that seem to be the most 
+informative and stop when she has a reasonable degree of confidence 
+in her conclusions but what happens when she develops a 
+new system and needs to evaluate it or another research 
+group decides to implement a system to perform the task 
+can they reliably reuse the original judgments can they 
+evaluate without more relevance judgments 
+evaluation is an important aspect of information retrieval 
+research but it is only a semi-solved problem for most 
+retrieval tasks it is impossible to judge the relevance of every 
+document there are simply too many of them the solution 
+used by nist at trec text retrieval conference is the 
+pooling method all competing systems contribute 
+n documents to a pool and every document in that pool 
+is judged this method creates large sets of judgments that 
+are reusable for training or evaluating new systems that did 
+not contribute to the pool 
+this solution is not adequate for our hypothetical 
+researcher the pooling method gives thousands of relevance 
+judgments but it requires many hours of paid annotator 
+time as a result there have been a slew of recent papers 
+on reducing annotator effort in producing test collections 
+cormack et al zobel sanderson and joho 
+carterette et al and aslam et al among others 
+as we will see the judgments these methods produce can 
+significantly bias the evaluation of a new set of systems 
+returning to our hypothetical resesarcher can she reuse 
+her relevance judgments first we must formally define 
+what it means to be reusable in previous work 
+reusability has been tested by simply assessing the accuracy of a set 
+of relevance judgments at evaluating unseen systems while 
+we can say that it was right of the time or that it had a 
+rank correlation of these numbers do not have any 
+predictive power they do not tell us which systems are likely 
+to be wrong or how confident we should be in any one we 
+need a more careful definition of reusability 
+specifically the question of reusability is not how 
+accurately we can evaluate new systems a malicious 
+adversary can always produce a new ranked list that has not 
+retrieved any of the judged documents the real question 
+is how much confidence we have in our evaluations and 
+more importantly whether we can trust our estimates of 
+confidence even if confidence is not high as long as we 
+can trust it we can identify which systems need more 
+judgments in order to increase confidence any set of judgments 
+no matter how small becomes reusable to some degree 
+small reusable test collections could have a huge impact 
+on information retrieval research research groups would 
+be able to share the relevance judgments they have done 
+in-house for pilot studies new tasks or new topics the 
+amount of data available to researchers would grow 
+exponentially over time 
+ robust evaluation 
+above we gave an intuitive definition of reusability a 
+collection is reusable if we can trust our estimates of 
+confidence in an evaluation by that we mean that if we have 
+made some relevance judgments and have for example 
+confidence that system a is better than system b we would 
+like there to be no more than chance that our 
+assessment of the relative quality of the systems will change as 
+we continue to judge documents our evaluation should be 
+robust to missing judgments 
+in our previous work we defined confidence as the 
+probability that the difference in an evaluation measure calculated 
+for two systems is less than zero this notion of 
+confidence is defined in the context of a particular evaluation 
+task that we call comparative evaluation determining the 
+sign of the difference in an evaluation measure other 
+evaluation tasks could be defined estimating the magnitude of 
+the difference or the values of the measures themselves are 
+examples that entail different notions of confidence 
+we therefore see confidence as a probability estimate one 
+of the questions we must ask about a probability estimate is 
+what it means what does it mean to have confidence 
+that system a is better than system b as described above 
+we want it to mean that if we continue to judge documents 
+there will only be a chance that our assessment will 
+change if this is what it means we can trust the confidence 
+estimates but do we know it has that meaning 
+our calculation of confidence rested on an assumption 
+about the probability of relevance of unjudged documents 
+specifically that each unjudged document was equally likely 
+to be relevant or nonrelevant this assumption is almost 
+certainly not realistic in most ir applications as it turns 
+out it is this assumption that determines whether the 
+confidence estimates can eb trusted before elaborating on this 
+we formally define confidence 
+ estimating confidence 
+average precision ap is a standard evaluation metric 
+that captures both the ability of a system to rank relevant 
+documents highly precision as well as its ability to retrieve 
+relevant documents recall it is typically written as the 
+mean precision at the ranks of relevant documents 
+ap 
+ 
+ r i∈r 
+prec r i 
+where r is the set of relevant documents and r i is the rank 
+of document i let xi be a random variable indicating the 
+relevance of document i if documents are ordered by rank 
+we can express precision as prec i i i 
+j xj 
+average precision then becomes the quadratic equation 
+ap 
+ 
+xi 
+n 
+i 
+xi i 
+i 
+j 
+xj 
+ 
+ 
+xi 
+n 
+i j≥i 
+aijxixj 
+where aij max r i r j using aij instead of i 
+allows us to number the documents arbitrarily to see why 
+this is true consider a toy example a list of documents 
+with relevant documents b c at ranks and and 
+nonrelevant document a at rank average precision will be 
+ 
+ 
+ 
+ 
+x 
+b 
+ 
+xbxa 
+ 
+xbxc 
+ 
+x 
+a 
+ 
+xaxc 
+ 
+x 
+c 
+ 
+ 
+ 
+because xa xb xc though the ordering 
+b a c is different from the labeling a b c it does not 
+affect the computation 
+we can now see average precision itself is a random 
+variable with a distribution over all possible assignments of 
+relevance to all documents this random variable has an 
+expectation a variance confidence intervals and a certain 
+probability of being less than or equal to a given value 
+all of these are dependent on the probability that 
+document i is relevant pi p xi suppose in our 
+previous example we do not know the relevance judgments 
+but we believe pa pb pc we can 
+then compute e g p ap · · 
+or p ap 
+ 
+ · · 
+summing over all possibilities we can compute 
+expectation and variance 
+e ap ≈ 
+ 
+pi 
+aiipi 
+j i 
+aij pipj 
+v ar ap ≈ 
+ 
+ pi 
+n 
+i 
+a 
+iipiqi 
+j i 
+a 
+ijpipj − pipj 
+ 
+i j 
+ aiiaijpipj − pi 
+k j i 
+ aijaikpipjpk − pi 
+ap asymptotically converges to a normal distribution with 
+expectation and variance as defined above 
+for our comparative evaluation task we are interested in 
+the sign of the difference in two average precisions δap 
+ap − ap as we showed in our previous work δap has 
+a closed form when documents are ordered arbitrarily 
+δap 
+ 
+xi 
+n 
+i j≥i 
+cij xixj 
+cij aij − bij 
+where bij is defined analogously to aij for the second 
+ranking since ap is normal δap is normal as well meaning 
+we can use the normal cumulative density function to 
+determine the confidence that a difference in ap is less than 
+zero 
+since topics are independent we can easily extend this 
+to mean average precision map map is also normally 
+distributed its expectation and variance are 
+emap 
+ 
+t t∈t 
+e apt 
+vmap 
+ 
+t 
+t∈t 
+v ar apt 
+δmap map − map 
+confidence can then be estimated by calculating the 
+expectation and variance and using the normal density function 
+to find p δmap 
+ confidence and robustness 
+having defined confidence we turn back to the issue of 
+trust in confidence estimates and show how it ties into the 
+robustness of the collection to missing judgments 
+ 
+these are actually approximations to the true expectation 
+and variance but the error is a negligible o n −n 
+ 
+let z be the set of all pairs of ranked results for a 
+common set of topics suppose we have a set of m relevance 
+judgments xm 
+ x x xm using small x rather than 
+capital x to distinguish between judged and unjudged 
+documents these are the judgments against which we compute 
+confidence let zα be the subset of pairs in z for which 
+we predict that δmap − with confidence α given the 
+judgments xm 
+ for the confidence estimates to be 
+accurate we need at least α · zα of these pairs to actually have 
+δmap − after we have judged every document if they 
+do we can trust the confidence estimates our evaluation 
+will be robust to missing judgments 
+if our confidence estimates are based on unrealistic 
+assumptions we cannot expect them to be accurate the 
+assumptions they are based on are the probabilities of 
+relevance pi we need these to be realistic 
+we argue that the best possible distribution of relevance 
+p xi is the one that explains all of the data all of the 
+observations made about the retrieval systems while at the 
+same time making no unwarranted assumptions this is 
+known as the principle of maximum entropy 
+the entropy of a random variable x with distribution 
+p x is defined as h p − i p x i log p x i 
+this has found a wide array of uses in computer science and 
+information retrieval the maximum entropy distribution 
+is the one that maximizes h this distribution is unique 
+and has an exponential form the following theorem shows 
+the utility of a maximum entropy distribution for relevance 
+when estimating confidence 
+theorem if p xn 
+ i xm 
+ argmaxph p confidence 
+estimates will be accurate 
+where xm 
+is the set of relevance judgments defined above 
+xn 
+is the full set of documents that we wish to estimate the 
+relevance of and i is some information about the documents 
+ unspecified as of now we forgo the proof for the time 
+being but it is quite simple 
+this says that the better the estimates of relevance the 
+more accurate the evaluation the task of creating a reusable 
+test collection thus becomes the task of estimating the 
+relevance of unjudged documents 
+the theorem and its proof say nothing whatsoever about 
+the evaluation metric the probability estimates are entirely 
+indepedent of the measure we are interested in this means 
+the same probability estimates can tell us about average 
+precision as well as precision recall bpref etc 
+furthermore we could assume that the relevance of 
+documents i and j is independent and achieve the same result 
+which we state as a corollary 
+corollary if p xi i xm 
+ argmaxph p confidence 
+estimates will be accurate 
+the task therefore becomes the imputation of the missing 
+values of relevance the theorem implies that the closer we 
+get to the maximum entropy distribution of relevance the 
+closer we get to robustness 
+ predicting relevance 
+in our statement of theorem we left the nature of the 
+information i unspecified one of the advantages of our 
+confidence estimates is that they admit information from a wide 
+variety of sources essentially anything that can be 
+modeled can be used as information for predicting relevance a 
+natural source of information is the retrieval systems 
+themselves how they ranked the judged documents how often 
+they failed to rank relevant documents how they perform 
+across topics and so on if we treat each system as an 
+information retrieval expert providing an opinion about the 
+relevance of each document the problem becomes one of 
+expert opinion aggregation 
+this is similar to the metasearch or data fusion problem 
+in which the task is to take k input systems and merge them 
+into a single ranking aslam et al previously identified a 
+connection between evaluation and metasearch our 
+problem has two key differences 
+ we explicitly need probabilities of relevance that we 
+can plug into eq metasearch algorithms have no 
+such requirement 
+ we are accumulating relevance judgments as we 
+proceed with the evaluation and are able to re-estimate 
+relevance given each new judgment 
+in light of above we introduce a probabilistic model for 
+expert combination 
+ a model for expert opinion aggregation 
+suppose that each expert j provides a probability of 
+relevance qij pj xi the information about the 
+relevance of document i will then be the set of k expert opinions 
+i qi qi qi · · · qik the probability distribution 
+we wish to find is the one that maximizes the entropy of 
+pi p xi qi 
+as it turns out finding the maximum entropy model is 
+equivalent to finding the parameters that maximize the 
+likelihood blower explicitly shows that finding the 
+maximum entropy model for a binary variable is equivalent to 
+solving a logistic regression then 
+pi p xi qi 
+exp k 
+j λjqij 
+ exp k 
+j λj qij 
+ 
+where λ · · · λk are the regression parameters we include 
+a beta prior for p λj with parameters α β this can be 
+seen as a type of smoothing to account for the fact that the 
+training data is highly biased 
+this model has the advantage of including the 
+statistical dependence between the experts a model of the same 
+form was shown by clemen winkler to be the best for 
+aggregating expert probabilities a similar 
+maximumentropy-motivated approach has been used for expert 
+aggregation aslam montague used a similar model for 
+metasearch but assumed independence among experts 
+where do the qij s come from using raw uncalibrated 
+scores as predictors will not work because score distributions 
+vary too much between topics a language modeling ranker 
+for instance will typically give a much higher score to the 
+top retrieved document for a short query than to the top 
+retrieved document for a long query 
+we could train a separate predicting model for each topic 
+but that does not take advantage of all of the information we 
+have we may only have a handful of judgments for a topic 
+not enough to train a model to any confidence furthermore 
+it seems reasonable to assume that if an expert makes good 
+predictions for one topic it will make good predictions for 
+other topics as well we could use a hierarchical model 
+but that will not generalize to unseen topics instead we 
+will calibrate the scores of each expert individually so that 
+scores can be compared both within topic and between topic 
+thus our model takes into account not only the dependence 
+between experts but also the dependence between experts 
+performances on different tasks topics 
+ calibrating experts 
+each expert gives us a score and a rank for each document 
+we need to convert these to probabilities a method such 
+as the one used by manmatha et al could be used to 
+convert scores into probabilities of relevance the pairwise 
+preference method of carterette petkova could also be 
+used interpeting the ranking of one document over another 
+as an expression of preference 
+let q 
+ij be expert j s self-reported probability that 
+document i is relevant intuitively it seems clear that q 
+ij should 
+decrease with rank and it should be zero if document i 
+is unranked the expert did not believe it to be relevant 
+the pairwise preference model can handle these two 
+requirements easily so we will use it let θrj i be the relevance 
+coefficient of the document at rank rj i we want to find 
+the θs that maximize the likelihood function 
+ljt θ 
+rj i rj k 
+exp θrj i − θrj k 
+ exp θrj i − θrj k 
+we again include a beta prior on p θrj i with parameters 
+ rt and nt the size of the sets of judged 
+relevant and nonrelevant documents respectively using these 
+as prior parameters ensures that the resulting probabilities 
+will be concentrated around the ratio of relevant documents 
+that have been discovered for topic t this means that the 
+probability estimates decrease by rank and are higher for 
+topics that have more relevant documents 
+after finding the θ that maximizes the likelihood we have 
+q 
+ij 
+exp θrj i 
+ exp θrj i 
+ we define θ∞ −∞ so that the 
+probability that an unranked document is relevant is 
+since q 
+ij is based on the rank at which a document is 
+retrieved rather than the identity of the document itself 
+the probabilities are identical from expert to expert e g 
+if expert e put document a at rank and expert d put 
+document b at rank we will have q 
+ae q 
+bd therefore 
+we only have to solve this once for each topic 
+the above model gives topic-independent probabilities for 
+each document but suppose an expert who reports 
+probability is only right of the time its opinion should 
+be discounted based on its observed performance 
+specifically we want to learn a calibration function qij cj q 
+ij 
+that will ensure that the predicted probabilities are tuned 
+to the expert s ability to retrieve relevant documents given 
+the judgments that have been made to this point 
+platt s svm calibration method fits a sigmoid 
+function between q 
+ij and the relevance judgments to obtain qij 
+cj q 
+ij 
+exp aj bjq 
+ij 
+ exp aj bj q 
+ij 
+ since q 
+ij is topic-independent 
+we only need to learn one calibration function for each 
+expert 
+once we have the calibration function it is applied to 
+adjust the experts predictions to their actual performance 
+the calibrated probabilities are plugged into model to 
+find the document probabilities 
+figure conceptual diagram of our aggregation 
+model experts e e have ranked documents 
+a b c for topic t and documents d e f for topic 
+t the first step is to obtain q 
+ij next is calibration 
+to true performance to find qij finally we obtain 
+pi p xi qi qi · · · 
+ model summary 
+our model has three components that differ by the data 
+they take as input and what they produce as output a 
+conceptual diagram is shown in figure 
+ ranks → probabilities per system per topic this 
+gives us q 
+ij expert j s self-reported probability of the 
+relevance of document i this is unsupervised it 
+requires no labeled data though if we have some we use 
+it to set prior parameters 
+ probabilities → calibrated probabilities per system 
+this gives us qij cj q 
+ij expert j s calibrated 
+probability of the relevance of document i this is 
+semisupervised we have relevance judgments at some ranks 
+which we use to impute the probability of relevance at 
+other ranks 
+ calibrated probabilities → document probabilities this 
+gives us pi p xi qi the probability of relevance 
+of document i given calibrated expert probabilities qij 
+this is supervised we learn coefficients from a set of 
+judged documents and use those to estimate the 
+relevance of the unjudged documents 
+although the model appears rather complex it is really 
+just three successive applications of logistic regression as 
+such it can be implemented in a statistical programming 
+language such as r in a few lines of code the use of beta 
+ conjugate priors ensures that no expensive computational 
+methods such as mcmc are necessary so the model is 
+trained and applied fast enough to be used on-line our code 
+is available at http ciir cs umass edu  carteret 
+ experiments 
+three hypotheses are under consideration the first and 
+most important is that using our expert aggregation model 
+to predict relevance produces test collections that are robust 
+enough to be reusable that is we can trust the estimates of 
+confidence when we evaluate systems that did not contribute 
+any judgments to the pool 
+the other two hypotheses relate to the improvement we 
+see by using better estimates of relevance than we did in our 
+previous work these are that a it takes fewer relevance 
+track no topics no runs no judged no rel 
+ad-hoc 
+ad-hoc 
+ad-hoc 
+ad-hoc 
+ad-hoc 
+ad-hoc 
+web 
+robust 
+terabyte 
+table number of topics number of runs number 
+of documents judged and number found relevant for 
+each of our data sets 
+judgments to reach confidence and b the accuracy of 
+the predictions is higher than if we were to simply assume 
+pi for all unjudged documents 
+ data 
+we obtained full ad-hoc runs submitted to trecs 
+through each run ranks at most documents for 
+topics topics for trec additionally we obtained 
+all runs from the web track of trec the robust 
+track 
+of trec and the terabyte ad-hoc track of trec 
+these are the tracks that have replaced the ad-hoc track 
+since its end in statistics are shown in table 
+we set aside the trec ad-hoc set for training 
+trecs and - ad-hoc and - for primary testing 
+and the remaining sets for additional testing 
+we use the qrels files assembled by nist as truth the 
+number of relevance judgments made and relevant 
+documents found for each track are listed in table 
+for computational reasons we truncate ranked lists at 
+ documents there is no reason that we could not go 
+deeper but calculating variance is o n 
+ and thus very 
+timeconsuming because of the reciprocal rank nature of ap we 
+do not lose much information by truncating at rank 
+ algorithms 
+we will compare three algorithms for acquiring relevance 
+judgments the baseline is a variation of trec pooling that 
+we will call incremental pooling ip this algorithm takes 
+a number k as input and presents the first k documents in 
+rank order without regard to topic to be judged it does 
+not estimate the relevance of unjudged documents it simply 
+assumes any unjudged document is nonrelevant 
+the second algorithm is that presented in carterette et 
+al algorithm documents are selected based on how 
+interesting they are in determining whether a difference 
+in mean average precision exists for this approach pi 
+for all i there is no estimation of probabilities we will call 
+this mtc for minimal test collection 
+the third algorithm augments mtc with updated 
+estimates of probabilities of relevance we will call this rtc 
+for robust test collection it is identical to algorithm 
+except that every th iteration we estimate pi for all unjudged 
+documents i using the expert aggregation model of section 
+rtc has smoothing prior distribution parameters that 
+must be set we trained using the ad-hoc set we limited 
+ 
+robust here means robust retrieval this is different from 
+our goal of robust evaluation 
+algorithm mtc given two ranked lists and confidence 
+level α predict the sign of δmap 
+ pi ← for all documents i 
+ while p δmap α do 
+ calculate weight wi for all unjudged documents i 
+ see carterette et al for details 
+ j ← argmaxiwi 
+ xj ← if document j is relevant otherwise 
+ pj ← xj 
+ end while 
+the search to uniform priors with relatively high variance 
+for expert aggregation the prior parameters are α β 
+ experimental design 
+first we want to know whether we can augment a set 
+of relevance judgments with a set of relevance probabilities 
+in order to reuse the judgments to evaluate a new set of 
+systems for each experimental trial 
+ pick a random subset of k runs 
+ from those k pick an initial c k to evaluate 
+ run rtc to confidence on the initial c 
+ using the model from section estimate the 
+probabilities of relevance for all documents retrieved by all 
+k runs 
+ calculate emap for all k runs and p δmap 
+for all pairs of runs 
+we do the same for mtc but omit step note that 
+after evaluating the first c systems we make no additional 
+relevance judgments 
+to put our method to the test we selected c we will 
+build a set of judgments from evaluating only two initial 
+systems we will then generalize to a set of k of 
+which those two are a subset 
+as we run more trials we obtain the data we need to test 
+all three of our hypotheses 
+ experimental evaluation 
+recall that a set of judgments is robust if the accuracy of 
+the predictions it makes is at least its estimated confidence 
+one way to evaluate robustness is to bin pairs by their 
+confidence then calculate the accuracy over all the pairs in each 
+bin we would like the accuracy to be no less than the lowest 
+confidence score in the bin but preferably higher 
+since summary statistics are useful we devised the 
+following metric suppose we are a bookmaker taking bets 
+on whether δmap we use rtc or mtc to set the 
+odds o p δmap 
+ −p δmap 
+ suppose a bettor wagers on 
+δmap ≥ if it turns out that δmap we win the 
+dollar otherwise we pay out o if our confidence 
+estimates are perfectly accurate we break even if confidence 
+is greater than accuracy we lose money we win if accuracy 
+is greater than confidence 
+counterintuitively the most desirable outcome is 
+breaking even if we lose money we cannot trust the confidence 
+estimates but if we win money we have either 
+underestimated confidence or judged more documents than necessary 
+however the cost of not being able to trust the confidence 
+estimates is higher than the cost of extra relevance 
+judgments so we will treat positive outcomes as good 
+the amount we win on each pairwise comparison i is 
+wi yi − − yi 
+pi 
+ − pi 
+ 
+yi − pi 
+ − pi 
+yi if δmap and otherwise and pi p δmap 
+ the summary statistic is w the mean of wi 
+note that as pi increases we lose more for being wrong 
+this is as it should be the penalty should be great for 
+missing the high probability predictions however since our 
+losses grow without bound as predictions approach certainty 
+we cap −wi at 
+for our hypothesis that rtc requires fewer judgments 
+than mtc we are interested in the number of judgments 
+needed to reach confidence on the first pair of systems 
+the median is more interesting than the mean most pairs 
+require a few hundred judgments but a few pairs require 
+several thousand the distribution is therefore highly skewed 
+and the mean strongly affected by those outliers 
+finally for our hypothesis that rtc is more accurate 
+than mtc we will look at kendall s τ correlation between 
+a ranking of k systems by a small set of judgments and the 
+true ranking using the full set of judgments kendall s τ 
+a nonparametric statistic based on pairwise swaps between 
+two lists is a standard evaluation for this type of study 
+it ranges from − perfectly anti-correlated to rankings 
+identical with meaning that half of the pairs are swapped 
+as we touched on in the introduction though an accuracy 
+measure like rank correlation is not a good evaluation of 
+reusability we include it for completeness 
+ hypothesis testing 
+running multiple trials allows the use of statistical 
+hypothesis testing to compare algorithms using the same sets 
+of systems allows the use of paired tests 
+as we stated above we are more interested in the median 
+number of judgments than the mean a test for difference 
+in median is the wilcoxon sign rank test we can also use 
+a paired t-test to test for a difference in mean 
+for rank correlation we can use a paired t-test to test for 
+a difference in τ 
+ results and analysis 
+the comparison between mtc and rtc is shown in 
+table with mtc and uniform probabilities of relevance the 
+results are far from robust we cannot reuse the relevance 
+judgments with much confidence but with rtc the 
+results are very robust there is a slight dip in accuracy when 
+confidence gets above nonetheless the confidence 
+predictions are trustworthy mean wi shows that rtc is much 
+closer to than mtc the distribution of confidence scores 
+shows that at least confidence is achieved more than 
+ of the time indicating that neither algorithm is being 
+too conservative in its confidence estimates the confidence 
+estimates are rather low overall that is because we have 
+built a test collection from only two initial systems 
+recall from section that we cannot require or even expect 
+a minimum level of confidence when we generalize to new 
+systems 
+more detailed results for both algorithms are shown in 
+figure the solid line is the ideal result that would give 
+w rtc is on or above this line at all points until 
+confidence reaches about after that there is a slight 
+dip in accuracy which we discuss below note that both 
+mtc rtc 
+confidence in bin accuracy in bin accuracy 
+ − 
+ − 
+ − 
+ − 
+ − 
+ − 
+ 
+w − − 
+median judged 
+mean τ 
+table confidence that p δmap and 
+accuracy of prediction when generalizing a set of 
+relevance judgments acquired using mtc and rtc 
+each bin contains over trials from the adhoc 
+ - sets rtc is much more robust than mtc 
+w is defined in section closer to is better 
+median judged is the number of judgments to reach 
+ confidence on the first two systems mean τ is 
+the average rank correlation for all systems 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+accuracy 
+confidence 
+breakeven 
+rtc 
+mtc 
+figure confidence vs accuracy of mtc and 
+rtc the solid line is the perfect result that would 
+give w performance should be on or above this 
+line each point represents at least pairwise 
+comparisons 
+algorithms are well above the line up to around confidence 
+ this is because the baseline performance on these data 
+sets is high it is quite easy to achieve accuracy doing 
+very little work 
+number of judgments the median number of 
+judgments required by mtc to reach confidence on the first 
+two systems is an average of per topic the median 
+required by rtc is about per topic although the 
+numbers are close rtc s median is significantly lower by a 
+paired wilcoxon test p for comparison a pool 
+of depth would result in a minimum of judgments 
+for each pair 
+the difference in means is much greater mtc required a 
+mean of judgments per topic while rtc required a 
+mean of per topic recall that means are strongly 
+skewed by a few pairs that take thousands of judgments 
+this difference is significant by a paired t-test p 
+ten percent of the sets resulted in or fewer judgments 
+ less than two per topic performance on these is very high 
+w and accuracy when confidence is at least 
+ this shows that even tiny collections can be reusable 
+for the of sets with more than judgments accuracy 
+is when confidence is at least 
+rank correlation mtc and rtc both rank the 
+systems by emap eq calculated using their respective 
+probability estimates the mean τ rank correlation between 
+true map and emap is for mtc and for rtc 
+this difference is significant by a paired t-test p 
+note that we do not expect the τ correlations to be high 
+since we are ranking the systems with so few relevance 
+judgments it is more important that we estimate confidence in 
+each pairwise comparison correctly 
+we ran ip for the same number of judgments that mtc 
+took for each pair then ranked the systems by map 
+using only those judgments all unjudged documents assumed 
+nonrelevant we calculated the τ correlation to the true 
+ranking the mean τ correlation is which is not 
+significantly different from mtc but is significantly lower than 
+rtc using uniform estimates of probability is 
+indistinguishable from the baseline whereas estimating relevance by 
+expert aggregation boosts performance a great deal nearly 
+ over both mtc and ip 
+overfitting it is possible to overfit if too many 
+judgments come from the first two systems the variance 
+in δmap is reduced and the confidence estimates become 
+unreliable we saw this in table and figure where rtc 
+exhibits a dip in accuracy when confidence is around 
+in fact the number of judgments made prior to a wrong 
+prediction is over greater than the number made prior 
+to a correct prediction 
+overfitting is difficult to quantify exactly because 
+making more relevance judgments does not always cause it at 
+higher confidence levels more relevance judgments are made 
+and as table shows accuracy is greater at those higher 
+confidences obviously having more relevance judgments 
+should increase both confidence and accuracy the 
+difference seems to be when one system has a great deal more 
+judgments than the other 
+pairwise comparisons our pairwise comparisons fall 
+into one of three groups 
+ the two original runs from which relevance judgments 
+are acquired 
+ one of the original runs vs one of the new runs 
+ two new runs 
+table shows confidence vs accuracy results for each of 
+these three groups interestingly performance is worst when 
+comparing one of the original runs to one of the additional 
+runs this is most likely due to a large difference in the 
+number of judgments affecting the variance of δmap 
+nevertheless performance is quite good on all three subsets 
+worst case the case intuitively most likely to 
+produce an error is when the two systems being compared have 
+retrieved very few documents in common if we want the 
+judgments to be reusable we should to be able to generalize 
+even to runs that are very different from the ones used to 
+acquire the relevance judgments 
+a simple measure of similarity of two runs is the average 
+percentage of documents they retrieved in common for each 
+topic we calculated this for all pairs then looked at 
+performance on pairs with low similarity results are shown in 
+accuracy 
+confidence two original one original no original 
+ − - 
+ − - 
+ − - 
+ − - 
+ − 
+ − 
+ 
+w − − − 
+table confidence vs accuracy of rtc when 
+comparing the two original runs one original run and 
+one new run and two new runs rtc is robust in 
+all three cases 
+accuracy when similar 
+confidence − − − 
+ − 
+ − 
+ − 
+ − 
+ − 
+ − 
+ 
+w − − 
+table confidence vs accuracy of rtc when a 
+pair of systems retrieved - documents in 
+common broken out into - - and 
+ rtc is robust in all three cases 
+table performance is in fact very robust even when 
+similarity is low when the two runs share very few documents 
+in common w is actually positive 
+mtc and ip both performed quite poorly in these cases 
+when the similarity was between and both mtc 
+and ip correctly predicted δmap only of the time 
+compared to an success rate for rtc 
+by data set all the previous results have only been 
+on the ad-hoc collections we did the same experiments on 
+our additional data sets and broke out the results by data 
+set to see how performance varies the results in table 
+show everything about each set including binned accuracy 
+w mean τ and median number of judgments to reach 
+confidence on the first two systems the results are highly 
+consistent from collection to collection suggesting that our 
+method is not overfitting to any particular data set 
+ conclusions and future work 
+in this work we have offered the first formal definition of 
+the common idea of reusability of a test collection and 
+presented a model that is able to achieve reusability with 
+very small sets of relevance judgments table and figure 
+together show how biased a small set of judgments can be 
+mtc is dramatically overestimating confidence and is much 
+less accurate than rtc which is able to remove the bias to 
+give a robust evaluation 
+the confidence estimates of rtc in addition to being 
+accurate provide a guide for obtaining additional judgments 
+focus on judging documents from the lowest-confidence 
+comparisons in the long run we see small sets of relevance 
+judgaccuracy 
+confidence ad-hoc ad-hoc ad-hoc ad-hoc ad-hoc web robust terabyte 
+ − 
+ − 
+ − 
+ − 
+ − 
+ − 
+ 
+w - - - - - - - - 
+median judged 
+mean τ 
+table accuracy w mean τ and median number of judgments for all testing sets the results are highly 
+consistent across data sets 
+ments being shared by researchers each group 
+contributing a few more judgments to gain more confidence about 
+their particular systems as time goes on the number of 
+judgments grows until there is confidence in every 
+evaluation-and there is a full test collection for the task 
+we see further use for this method in scenarios such as 
+web retrieval in which the corpus is frequently changing it 
+could be applied to evaluation on a dynamic test collection 
+as defined by soboroff 
+the model we presented in section is by no means the 
+only possibility for creating a robust test collection a 
+simpler expert aggregation model might perform as well or 
+better though all our efforts to simplify failed in addition to 
+expert aggregation we could estimate probabilities by 
+looking at similarities between documents this is an obvious 
+area for future exploration 
+additionally it will be worthwhile to investigate the issue 
+of overfitting the circumstances it occurs under and what 
+can be done to prevent it in the meantime capping 
+confidence estimates at is a hack that solves the problem 
+we have many more experimental results that we 
+unfortunately did not have space for but that reinforce the notion 
+that rtc is highly robust with just a few judgments per 
+topic we can accurately assess the confidence in any 
+pairwise comparison of systems 
+acknowledgments 
+this work was supported in part by the center for intelligent 
+information retrieval and in part by the defense advanced 
+research projects agency darpa under contract number 
+hr - -c- any opinions findings and conclusions 
+or recommendations expressed in this material are those of 
+the author and do not necessarily reflect those of the 
+sponsor 
+ references 
+ j aslam and m montague models for metasearch in 
+proceedings of sigir pages - 
+ j aslam and r savell on the effectiveness of evaluating 
+retrieval systems in the absence of relevance judgments in 
+proceedings of sigir pages - 
+ j a aslam v pavlu and r savell a unified model for 
+metasearch pooling and system evaluation in proceedings 
+of cikm pages - 
+ j a aslam v pavlu and e yilmaz a statistical method 
+for system evaluation using incomplete judgments in 
+proceedings of sigir pages - 
+ a l berger s d pietra and v j d pietra a 
+maximum entropy approach to natural language 
+processing computational linguistics - 
+ d j blower an easy derivation of logistic regression from 
+the bayesian and maximum entropy perspective in 
+proceedings of the rd international workship on 
+bayesian inference and maximum entropy methods in 
+science and engineering pages - 
+ b carterette and j allan research methodology in 
+studies of assessor effort for retrieval evaluation in 
+proceedings of riao 
+ b carterette j allan and r k sitaraman minimal test 
+collections for retrieval evaluation in proceedings of 
+sigir pages - 
+ b carterette and d i petkova learning a ranking from 
+pairwise preferences in proceedings of sigir 
+ r t clemen and r l winkler unanimity and 
+compromise among probability forecasters management 
+science - july 
+ g v cormack c r palmer and c l clarke efficient 
+construction of large test collections in proceedings of 
+sigir pages - 
+ a gelman j b carlin h s stern and d b rubin 
+bayesian data analysis chapman hall crc 
+ e t jaynes probability theory the logic of science 
+cambridge university press 
+ r manmatha and h sever a formal approach to score 
+normalization for metasearch in proceedings of hlt 
+pages - 
+ i j myung s ramamoorti and j andrew d baily 
+maximum entropy aggregation of expert predictions 
+management science - october 
+ j platt probabilistic outputs for support vector machines 
+and comparison to regularized likelihood methods pages 
+ - 
+ m sanderson and h joho forming test collections with 
+no system pooling in proceedings of the th annual 
+international acm sigir conference on research and 
+development in information retrieval pages - 
+ i soboroff dynamic test collections measuring search 
+effectiveness on the live web in proceedings of sigir 
+pages - 
+ k sparck jones and c j van rijsbergen information 
+retrieval test collections journal of documentation 
+ - 
+ e m voorhees and d k harman editors trec 
+experiment and evaluation in information retrieval mit 
+press 
+ j zobel how reliable are the results of large-scale 
+information retrieval experiments in proceedings of 
+sigir pages - 

@@ -1,0 +1,552 @@
+a cross-layer approach to resource discovery 
+and distribution in mobile ad-hoc networks 
+chaiporn jaikaeo 
+computer engineering 
+kasetsart university thailand 
+ - ext 
+cpj cpe ku ac th 
+xiang cao 
+computer and information sciences 
+university of delaware usa 
+ - - 
+cao cis udel edu 
+chien-chung shen 
+computer and information sciences 
+university of delaware usa 
+ - - 
+cshen cis udel edu 
+abstract 
+this paper describes a cross-layer approach to designing robust 
+p p system over mobile ad-hoc networks the design is based on 
+simple functional primitives that allow routing at both p p and 
+network layers to be integrated to reduce overhead with these 
+primitives the paper addresses various load balancing techniques 
+preliminary simulation results are also presented 
+categories and subject descriptors 
+c distributed systems distributed applications 
+general terms 
+algorithms and design 
+ introduction 
+mobile ad-hoc networks manets consist of mobile nodes that 
+autonomously establish connectivity via multi-hop wireless 
+communications without relying on any existing pre-configured 
+network infrastructure or centralized control manets are useful 
+in situations where impromptu communication facilities are 
+required such as battlefield communications and disaster relief 
+missions as manet applications demand collaborative 
+processing and information sharing among mobile nodes resource 
+ service discovery and distribution have become indispensable 
+capabilities 
+one approach to designing resource discovery and distribution 
+schemes over manets is to construct a peer-to-peer p p 
+system or an overlay which organizes peers of the system into a 
+logical structure on top of the actual network topology however 
+deploying such p p systems over manets may result in either a 
+large number of flooding operations triggered by the reactive 
+routing process or inefficiency in terms of bandwidth utilization in 
+proactive routing schemes either way constructing an overlay 
+will potentially create a scalability problem for large-scale 
+manets 
+due to the dynamic nature of manets p p systems should be 
+robust by being scalable and adaptive to topology changes these 
+systems should also provide efficient and effective ways for peers 
+to interact as well as other desirable application specific features 
+this paper describes a design paradigm that uses the following 
+two functional primitives to design robust resource discovery and 
+distribution schemes over manets 
+ positive negative feedback query packets are used to 
+explore a route to other peers holding resources of interest 
+optionally advertisement packets are sent out to advertise 
+routes from other peers about available resources when 
+traversing a route these control packets measure goodness 
+of the route and leave feedback information on each node 
+along the way to guide subsequent control packets to 
+appropriate directions 
+ sporadic random walk as the network topology and or 
+the availability of resources change existing routes may 
+become stale while better routes become available sporadic 
+random walk allows a control packet to explore different 
+paths and opportunistically discover new and or better 
+routes 
+adopting this paradigm the whole manet p p system operates 
+as a collection of autonomous entities which consist of different 
+types of control packets such as query and advertisement packets 
+these packets work collaboratively but indirectly to achieve 
+common tasks such as resource discovery routing and load 
+balancing with collaboration among these entities a manet p p 
+system is able to  learn the network dynamics by itself and adjust 
+its behavior accordingly without the overhead of organizing peers 
+into an overlay 
+the remainder of this paper is organized as follows related work 
+is described in the next section section describes the resource 
+discovery scheme section describes the resource distribution 
+scheme the replica invalidation scheme is described in section 
+followed by it performance evaluation in section section 
+concludes the paper 
+ related work 
+for manets p p systems can be classified based on the design 
+principle into layered and cross-layer approaches a layered 
+approach adopts a p p-like solution where resource discovery is 
+facilitated as an application layer protocol and query reply 
+messages are delivered by the underlying manet routing protocols 
+for instance konark makes use of a underlying multicast 
+protocol such that service providers and queriers advertise and 
+search services via a predefined multicast group respectively 
+proem is a high-level mobile computing platform for p p 
+systems over manets it defines a transport protocol that sits on 
+top of the existing tcp ip stack hence relying on an existing 
+routing protocol to operate with limited control over how control 
+and data packets are routed in the network it is difficult to avoid 
+the inefficiency of the general-purpose routing protocols which 
+are often reactive and flooding-based 
+in contrast cross-layer approaches either relies on its own routing 
+mechanism or augments existing manet routing algorithms to 
+support resource discovery ds which is the pioneering 
+work deploying p p system on mobile devices exploits data 
+locality and node mobility to dissemination data in a single-hop 
+fashion hence long search latency may be resulted as a ds 
+node can get data of interest only if the node that holds the data is 
+in its radio coverage mohan et al propose an adaptive service 
+discovery algorithm that combines both push and pull models 
+specifically a service provider querier broadcasts 
+advertisement query only when the number of nodes advertising or 
+querying which is estimated by received control packets is below a 
+threshold during a period of time in this way the number of 
+control packets on the network is constrained thus providing good 
+scalability despite the mechanism to reduce control packets high 
+overhead may still be unavoidable especially when there are 
+many clients trying to locate different services due to the fact that 
+the algorithm relies on flooding 
+for resource replication yin and cao design and evaluate 
+cooperative caching techniques for manets caching however 
+is performed reactively by intermediate nodes when a querier 
+requests data from a server data items or resources are never 
+pushed into other nodes proactively thanedar et al propose a 
+lightweight content replication scheme using an expanding ring 
+technique if a server detects the number of requests exceed a 
+threshold within a time period it begins to replicate its data onto 
+nodes capable of storing replicas whose hop counts from the 
+server are of certain values since data replication is triggered by 
+the request frequency alone it is possible that there are replicas 
+unnecessarily created in a large scope even though only nodes 
+within a small range request this data our proposed resource 
+replication mechanism in contrast attempts to replicate a data 
+item in appropriate areas instead of a large area around the server 
+where the item is requested frequently 
+ resource discovery 
+we propose a cross-layer hybrid resource discovery scheme that 
+relies on the multiple interactions of query reply and 
+advertisement packets we assume that each resource is associated with a 
+unique id 
+ initially when a node wants to discover a resource it 
+deploys query packets which carry the corresponding resource 
+id and randomly explore the network to search for the requested 
+resource upon receiving such a query packet a reply packet is 
+generated by the node providing the requested resource 
+advertisement packets can also be used to proactively inform other 
+nodes about what resources are available at each node in addition 
+to discovering the  identity of the node providing the requested 
+resource it may be also necessary to discover a  route leading to 
+this node for further interaction 
+to allow intermediate nodes to make a decision on where to 
+forward query packets each node maintains two tables neighbor 
+ 
+the assumption of unique id is made for brevity in exposition 
+and resources could be specified via attribute-value assertions 
+table and pheromone table the neighbor table maintains a list of 
+all current neighbors obtained via a neighbor discovery protocol 
+the pheromone table maintains the mapping of a resource id and 
+a neighbor id to a pheromone value this table is initially empty 
+and is updated by a reply packet generated by a successful query 
+figure illustrates an example of a neighbor table and a 
+pheromone table maintained by node a having four neighbors when 
+node a receives a query packet searching for a resource it makes 
+a decision to which neighbor it should forward the query packet 
+by computing the desirability of each of the neighbors that have 
+not been visited before by the same query packet for a resource 
+id r the desirability of choosing a neighbor n δ r n is obtained 
+from the pheromone value of the entry whose neighbor and 
+resource id fields are n and r respectively if no such entry exists in 
+the pheromone table δ r n is set to zero 
+once the desirabilities of all valid next hops have been calculated 
+they are normalized to obtain the probability of choosing each 
+neighbor in addition a small probability is also assigned to those 
+neighbors with zero desirability to exercise the sporadic random 
+walk primitive based on these probabilities a next hop is 
+selected to forward the query packet to when a query packet 
+encounters a node with a satisfying resource a reply packet is 
+returned to the querying node the returning reply packet also 
+updates the pheromone table at each node on its return trip by 
+increasing the pheromone value in the entry whose resource id and 
+neighbor id fields match the id of the discovered resource and 
+the previous hop respectively if such an entry does not exist a 
+new entry is added into the table therefore subsequent query 
+packets looking for the same resource when encountering this 
+pheromone information are then guided toward the same 
+destination with a small probability of taking an alternate path 
+since the hybrid discovery scheme neither relies on a manet 
+routing protocol nor arranges nodes into a logical overlay query 
+packets are to traverse the actual network topology in dense 
+networks relatively large nodal degrees can have potential impacts 
+on this random exploring mechanism to address this issue the 
+hybrid scheme also incorporates proactive advertisement in 
+addition to the reactive query to perform proactive advertisement 
+each node periodically deploys an advertising packet containing a 
+list of its available resources ids these packets will traverse 
+away from the advertising node in a random walk manner up to a 
+limited number of hops and advertise resource information to 
+surrounding nodes in the same way as reply packets in the hybrid 
+scheme an increase of pheromone serves as a positive feedback 
+which indirectly guides query packets looking for similar 
+resources intuitively the amount of pheromone increased is 
+inversely proportional to the distance the reply packet has traveled 
+back and other metrics such as quality of the resource could 
+contribute to this amount as well each node also performs an 
+implicit negative feedback for resources that have not been given 
+a positive feedback for some time by regularly decreasing the 
+pheromone in all of its pheromone table entries over time in 
+addition pheromone can be reduced by an explicit negative response 
+for instance a reply packet returning from a node that is not 
+willing to provide a resource due to excessive workload as a result 
+load balancing can be achieved via positive and negative 
+feedback a node serving too many nodes can either return fewer 
+responses to query packets or generate negative responses 
+ the rd international conference on mobile technology applications and systems - mobility 
+figure example illustrating neighbor and pheromone tables maintained by node a a wireless connectivity around a showing 
+that it currently has four neighbors b a s neighbor table and c a possible pheromone table of a 
+figure sample scenarios illustrating the three mechanisms supporting load-balancing a resource replication b resource 
+relocation and c resource division 
+ resource distribution 
+in addition to resource discovery a querying node usually 
+attempts to access and retrieve the contents of a resource after a 
+successful discovery in certain situations it is also beneficial to 
+make a resource readily available at multiple nodes when the 
+resource can be relocated and or replicated such as data files 
+furthermore in manets we should consider not only the amount 
+of load handled by a resource provider but also the load on those 
+intermediate nodes that are located on the communication paths 
+between the provider and other nodes as well hence we describe 
+a cross-layer hybrid resource distribution scheme to achieve load 
+balancing by incorporating the functionalities of resource 
+relocation resource replication and resource division 
+ resource replication 
+multiple replicas of a resource in the network help prevent a 
+single node as well as nodes surrounding it from being overloaded 
+by a large number of requests and data transfers an example is 
+when a node has obtained a data file from another node the 
+requesting node and the intermediate nodes can cache the file and 
+start sharing that file with other surrounding nodes right away in 
+addition replicable resources can also be proactively replicated at 
+other nodes which are located in certain strategic areas for 
+instance to help nodes find a resource quickly we could replicate 
+the resource so that it becomes reachable by random walk for a 
+specific number of hops from any node with some probability as 
+depicted in figure a 
+to realize this feature the hybrid resource distribution scheme 
+employs a different type of control packet called resource 
+replication packet which is responsible for finding an appropriate 
+place to create a replica of a resource a resource replication 
+packet of type r is deployed by a node that is providing the 
+resource r itself unlike a query packet which follows higher 
+pheromone upstream toward a resource it is looking for a 
+resource replication packet tends to be propelled away from similar 
+resources by moving itself downstream toward weaker 
+pheromone when a resource replication packet finds itself in an area 
+with sufficiently low pheromone it makes a decision whether it 
+should continue exploring or turn back the decision depends on 
+conditions such as current workload and or remaining energy of 
+the node being visited as well as popularity of the resource itself 
+ resource relocation 
+in certain situations a resource may be required to transfer from 
+one node to another for example a node may no longer want to 
+possess a file due to the shortage of storage space but it cannot 
+simply delete the file since other nodes may still need it in the 
+future in this case the node can choose to create replicas of the 
+file by the aforementioned resource replication mechanism and 
+then delete its own copy let us consider a situation where a 
+majority of nodes requesting for a resource are located far away from 
+a resource provider as shown on the top of figure b if the 
+resource r is relocatable it is preferred to be relocated to another 
+area that is closer to those nodes similar to the bottom of the 
+same figure hence network bandwidth is more efficiently 
+utilized 
+the rd conference on mobile technology applications and systems - mobility 
+the hybrid resource distribution scheme incorporates resource 
+relocation algorithms that are adaptive to user requests and aim to 
+reduce communication overhead specifically by following the 
+same pheromone maintenance concept the hybrid resource 
+distribution scheme introduces another type of pheromone which 
+corresponds to user requests instead of resources this type of 
+pheromone called request pheromone is setup by query packets 
+that are in their exploring phases not returning ones to guide a 
+resource to a new location 
+ resource division 
+certain types of resources can be divided into smaller 
+subresources e g a large file being broken into smaller files and 
+distributed to multiple locations to avoid overloading a single 
+node as depicted in figure c the hybrid resource distribution 
+scheme incorporates a resource division mechanism that operates 
+at a thin layer right above all the other mechanisms described 
+earlier the resource division mechanism is responsible for 
+decomposing divisible resources into sub-resources and then adds 
+an extra keyword to distinguish each sub-resource from one 
+another therefore each of these sub-resources will be seen by the 
+other mechanisms as one single resource which can be 
+independently discovered replicated and relocated the resource division 
+mechanism is also responsible for combining data from these 
+subresources together e g merging pieces of a file and delivering 
+the final result to the application 
+ replica invalidation 
+although replicas improve accessibility and balance load replica 
+invalidation becomes a critical issue when nodes caching 
+updatable resources may concurrently update their own replicas 
+which renders replicas held by other nodes obsolete most 
+existing solutions to the replica invalidation problem either impose 
+constrains that only the data source could perform update and 
+invalidate other replicas or resort to network-wide flooding which 
+results in heavy network traffic and leads to scalability problem 
+or both the lack of infrastructure supports and frequent topology 
+changes in manets further challenge the issue 
+we apply the same cross-layer paradigm to invalidating replicas 
+in manets which allows concurrent updates performed by 
+multiple replicas to coordinate concurrent updates and disseminate 
+replica invalidations a special infrastructure called validation 
+mesh or mesh for short is adaptively maintained among nodes 
+possessing  valid replicas of a resource once a node has updated 
+its replica an invalidation packet will only be disseminated over 
+the validation mesh to inform other replica-possessing nodes that 
+their replicas become invalid and should be deleted the structure 
+ topology of the validation mesh keeps evolving when nodes 
+request and cache a resource when nodes update their 
+respective replicas and invalidate other replicas and when nodes 
+move to accommodate the dynamics our scheme integrates the 
+components of swarm intelligence to adaptively maintain the 
+validation mesh without relying on any underlying manet routing 
+protocol in particular the scheme takes into account concurrent 
+updates initiated by multiple nodes to ensure the consistency 
+among replicas in addition version number is used to distinguish 
+new from old replicas when invalidating any stale replica 
+simulation results show that the proposed scheme effectively facilitates 
+concurrent replica updates and efficiently perform replica 
+invalidation without incurring network-wide flooding 
+figure depicts the idea of  validation mesh which maintains 
+connectivity among nodes holding valid replicas of a resource to 
+avoid network-wide flooding when invalidating replicas 
+figure examples showing maintenance of validation mesh 
+there are eight nodes in the sample network and we start with 
+only node a holding the valid file as shown in figure a later 
+on node g issues a query packet for the file and eventually 
+obtains the file from a via nodes b and d since intermediate nodes 
+are allowed to cache forwarded data nodes b d and g will now 
+hold valid replicas of the file as a result a validation mesh is 
+established among nodes a b d and g as depicted in figure 
+ b in figure c another node h has issued a query packet 
+for the same file and obtained it from node b s cache via node e 
+at this point six nodes hold valid replicas and are connected 
+through the validation mesh now we assume node g updates its 
+replica of the file and informs the other nodes by sending an 
+invalidation packet over the validation mesh consequently all 
+other nodes except g remove their replicas of the file from their 
+storage and the validation mesh is torn down however query 
+forwarding pheromone as denoted by the dotted arrows in figure 
+ d is setup at these nodes via the  reverse paths in which the 
+invalidation packets have traversed so that future requests for this 
+file will be forwarded to node g in figure e node h makes a 
+new request for the file again this time its query packet follows 
+the pheromone toward node g where the updated file can be 
+obtained eventually a new validation mesh is established over 
+nodes g b d e and h 
+to maintain a validation mesh among the nodes holding valid 
+replicas one of them is designated to be the focal node initially 
+the node that originally holds the data is the focal node as nodes 
+update replicas the node that last or most recently updates a 
+ the rd international conference on mobile technology applications and systems - mobility 
+corresponding replica assumes the role of focal node we also 
+name nodes such as g and h who originate requests to replicate 
+data as clients and nodes b d and e who locally cache passing 
+data as data nodes for instance in figures a b and c 
+node a is the focal node in figures d e and f node g 
+becomes the focal node in addition to accommodate newly 
+participating nodes and mobility of nodes the focal node periodically 
+floods the validation mesh with a keep-alive packet so that nodes 
+who can hear this packet are considered themselves to be part of 
+the validation mesh if a node holding a valid updated replica 
+doesn t hear a keep-alive packet for a certain time interval it will 
+deploy a search packet using the resource discovery mechanism 
+described in section to find another node termed attachment 
+point currently on the validation mesh so that it can attach itself 
+to once an attachment point is found a search reply packet is 
+returned to the disconnected node who originated the search 
+intermediate nodes who forward the search reply packet will 
+become part of the validation mesh as well to illustrate the effect of 
+node mobility in figure f node h has moved to a location 
+where it is not directly connected to the mesh via the resource 
+discovery mechanism node h relies on an intermediate node f to 
+connect itself to the mesh here node f although part of the 
+validation mesh doesn t hold data replica and hence is termed 
+nondata node 
+client and data node who keep hearing the keep-alive packets 
+from the focal node act as if they are holding a valid replica so 
+that they can reply to query packets like node b in figure c 
+replying a request from node h while a disconnected node 
+attempting to discover an attachment point to reattach itself to the 
+mesh the disconnected node can t reply to a query packet for 
+instance in figure f node h does not reply to any query packet 
+before it reattaches itself to the mesh 
+although validation mesh provides a conceptual topology that 
+connects all replicas together coordinates concurrent updates 
+and disseminates invalidation packets the technical issue is 
+how such a mesh topology could be effectively and efficiently 
+maintained and evolved when a nodes request and cache a 
+resource b when nodes update their respective replicas and 
+invalidate other replicas and c when nodes move without relying 
+on any manet routing protocols the two primitives work 
+together to facilitate efficient search and adaptive maintenance 
+ performance evaluation 
+we have conducted simulation experiments using the qualnet 
+simulator to evaluate the performance of the described resource 
+discovery resource distribution and replica invalidation schemes 
+however due to space limitation only the performance of the 
+replica invalidation is reported in our experiments eighty nodes 
+are uniformly distributed over a terrain of size × m 
+ 
+each node has a communication range of approximately m 
+over a mbps wireless channel using ieee as the mac 
+layer we use the random-waypoint mobility model with a pause 
+time of second nodes may move at the minimum and maximum 
+speeds of m s and m s respectively table lists other 
+parameter settings used in the simulation initially there is one 
+resource server node in network two nodes are randomly picked 
+up every seconds as clients every β seconds we check the 
+number of nodes n which have gotten data then we randomly 
+pickup min γ n nodes from them to initiate data update each 
+experiment is run for minutes 
+table simulation settings 
+hop limit 
+advertise hop limit 
+keepalive interval second 
+num search 
+advertise interval second 
+expiration interval second 
+average query generation rate query sec 
+max of concurrent update γ 
+frequency of update β s 
+we evaluate the performance under different mobility speed the 
+density the maximum number of concurrent update nodes and 
+update frequency using two metrics 
+ average overhead per update measures the average number of 
+packets transmitted per update in the network 
+ average delay per update measures how long our approach 
+takes to finish an update on average 
+all figures shown present the results with a confidence 
+interval 
+figure overhead vs speed 
+for nodes 
+figure overhead vs density 
+figure overhead vs max 
+ concurrent updates 
+figure overhead vs freq 
+figure delay vs speed figure delay vs density 
+the rd conference on mobile technology applications and systems - mobility 
+figure delay vs max 
+ concurrent updates 
+figure delay vs freq 
+figures and show the overhead versus various parameter 
+values in figure the overhead increases as the speed increase 
+which is due to the fact that as the speed increase nodes move out 
+of mesh more frequently and will send out more search packets 
+however the overhead is not high and even in speed m sec 
+the overhead is below packets in contrast the packets will be 
+expected to be more than packets at various speeds when 
+flooding is used 
+figure shows that the overhead almost remains the same under 
+various densities that is attributed to only flooding over the mesh 
+instead of the whole network the size of mesh doesn t vary much 
+on various densities so that the overhead doesn t vary much 
+figure shows that overhead also almost remains the same under 
+various maximum number of concurrent updates that s because 
+one more node just means one more flood over the mesh during 
+update process so that the impact is limited 
+figure shows that if updates happen more frequently the 
+overhead is higher this is because the more quickly updates happen 
+ there will be more keep alive message over the mesh between 
+two updates and nodes move out of mesh more frequently and 
+send out more search packets 
+figures and show the delay versus various parameter 
+values from figure we know the delay increases as the speed 
+increases which is due to the fact that with increasing speed 
+clients will move out of mesh with higher probability when these 
+clients want to update data they will spend time to first search the 
+mesh the faster the speed the more time clients need to spend to 
+search the mesh 
+figure shows that delay is negligibly affected by the density 
+delay decreases slightly as the number of nodes increases due to 
+the fact that the more nodes in the network the more nodes 
+receives the advertisement packets which helps the search packet 
+find the target so that the delay of update decreases 
+figure shows that delay decreases slightly as the maximum 
+number of concurrent updates increases the larger the maximum 
+number of concurrent updates is the more nodes are picked up to 
+do update then with higher probability one of these nodes is still 
+in mesh and finishes the update immediately don t need to search 
+mesh first which decreases the delay 
+figure shows how the delay varies with the update frequency 
+when updates happen more frequently the delay will higher 
+because the less frequently the more time nodes in mesh have to 
+move out of mesh then they need to take time to search the mesh 
+when they do update which increases the delay 
+the simulation results show that the replica invalidation scheme 
+can significantly reduce the overhead with an acceptable delay 
+ conclusion 
+to facilitate resource discovery and distribution over manets 
+one approach is to designing peer-to-peer p p systems over 
+manets which constructs an overlay by organizing peers of the 
+system into a logical structure on the top of manets physical 
+topology however deploying overlay over manets may result 
+in either a large number of flooding operations triggered by the 
+routing process or inefficiency in terms of bandwidth usage 
+specifically overlay routing relies on the network-layer routing 
+protocols in the case of a reactive routing protocol routing on the 
+overlay may cause a large number of flooded route discovery 
+message since the routing path in each routing step must be 
+discovered on demand on the other hand if a proactive routing 
+protocol is adopted each peer has to periodically broadcast 
+control messages which leads to poor efficiency in terms of 
+bandwidth usage either way constructing an overlay will potentially 
+suffer from the scalability problem the paper describes a design 
+paradigm that uses the functional primitives of positive negative 
+feedback and sporadic random walk to design robust resource 
+discovery and distribution schemes over manets in particular 
+the scheme offers the features of cross-layer design of p p 
+systems which allows the routing process at both the p p and the 
+network layers to be integrated to reduce overhead scalability 
+and mobility support which minimizes the use of global flooding 
+operations and adaptively combines proactive resource 
+advertisement and reactive resource discovery and load balancing 
+which facilitates resource replication relocation and division to 
+achieve load balancing 
+ references 
+ a oram peer-to-peer harnessing the power of disruptive 
+technologies o reilly march 
+ s helal n desai v verma and c lee konark - a 
+service discovery and delivery protocol for ad-hoc 
+networks in the third ieee conference on wireless 
+communication networks wcnc new orleans louisiana 
+ g krotuem proem a peer-to-peer computing platform 
+for mobile ad-hoc networks in advanced topic workshop 
+middleware for mobile computing germany 
+ m papadopouli and h schulzrinne a performance 
+analysis of ds a peer-to-peer data dissemination and 
+prefetching tool for mobile users in advances in wired and 
+wireless communications ieee sarnoff symposium digest 
+ewing nj best student paper poster award 
+ u mohan k almeroth and e belding-royer scalable 
+service discovery in mobile ad-hoc networks in ifip 
+networking conference athens greece may 
+ l yin and g cao supporting cooperative caching in ad 
+hoc networks in ieee infocom 
+ v thanedar k almeroth and e belding-royer a 
+lightweight content replication scheme for mobile ad-hoc 
+environments in ifip networking conference athens greece 
+may 
+ the rd international conference on mobile technology applications and systems - mobility 

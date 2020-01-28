@@ -1,0 +1,874 @@
+vocabulary independent spoken term detection 
+jonathan mamou 
+ibm haifa research labs 
+haifa israel 
+mamou il ibm com 
+bhuvana ramabhadran olivier siohan 
+ibm t j watson research center 
+yorktown heights n y usa 
+ bhuvana siohan  us ibm com 
+abstract 
+we are interested in retrieving information from speech data 
+like broadcast news telephone conversations and roundtable 
+meetings today most systems use large vocabulary 
+continuous speech recognition tools to produce word transcripts 
+the transcripts are indexed and query terms are retrieved 
+from the index however query terms that are not part 
+of the recognizer s vocabulary cannot be retrieved and the 
+recall of the search is affected in addition to the output 
+word transcript advanced systems provide also phonetic 
+transcripts against which query terms can be matched 
+phonetically such phonetic transcripts suffer from lower 
+accuracy and cannot be an alternative to word transcripts 
+we present a vocabulary independent system that can 
+handle arbitrary queries exploiting the information provided 
+by having both word transcripts and phonetic transcripts 
+a speech recognizer generates word confusion networks and 
+phonetic lattices the transcripts are indexed for query 
+processing and ranking purpose the value of the proposed 
+method is demonstrated by the relative high performance of 
+our system which received the highest overall ranking for 
+us english speech data in the recent nist spoken term 
+detection evaluation 
+categories and subject descriptors 
+h information storage and retrieval information 
+search and retrieval 
+general terms 
+algorithms 
+ introduction 
+the rapidly increasing amount of spoken data calls for 
+solutions to index and search this data 
+the classical approach consists of converting the speech to 
+word transcripts using a large vocabulary continuous speech 
+recognition lvcsr tool in the past decade most of the 
+research efforts on spoken data retrieval have focused on 
+extending classical ir techniques to word transcripts some of 
+these works have been done in the framework of the nist 
+trec spoken document retrieval tracks and are described 
+by garofolo et al these tracks focused on retrieval 
+from a corpus of broadcast news stories spoken by 
+professionals one of the conclusions of those tracks was that 
+the effectiveness of retrieval mostly depends on the 
+accuracy of the transcripts while the accuracy of automatic 
+speech recognition asr systems depends on the scenario 
+and environment state-of-the-art systems achieved better 
+than accuracy in transcription of such data in 
+garofolo et al concluded that spoken document retrieval 
+is a solved problem 
+however a significant drawback of such approaches is that 
+search on queries containing out-of-vocabulary oov terms 
+will not return any results oov terms are missing words 
+from the asr system vocabulary and are replaced in the 
+output transcript by alternatives that are probable given 
+the recognition acoustic model and the language model it 
+has been experimentally observed that over of user 
+queries can contain oov terms as queries often 
+relate to named entities that typically have a poor coverage 
+in the asr vocabulary the effects of oov query terms in 
+spoken data retrieval are discussed by woodland et al 
+in many applications the oov rate may get worse over time 
+unless the recognizer s vocabulary is periodically updated 
+another approach consists of converting the speech to 
+phonetic transcripts and representing the query as a 
+sequence of phones the retrieval is based on searching the 
+sequence of phones representing the query in the phonetic 
+transcripts the main drawback of this approach is the 
+inherent high error rate of the transcripts therefore such 
+approach cannot be an alternative to word transcripts 
+especially for in-vocabulary iv query terms that are part of 
+the vocabulary of the asr system 
+a solution would be to combine the two different 
+approaches presented above we index both word transcripts 
+and phonetic transcripts during query processing the 
+information is retrieved from the word index for iv terms and 
+from the phonetic index for oov terms we would like to 
+be able to process also hybrid queries i e queries that 
+include both iv and oov terms consequently we need to 
+merge pieces of information retrieved from word index and 
+phonetic index proximity information on the occurrences 
+of the query terms is required for phrase search and for 
+proximity-based ranking in classical ir the index stores for 
+each occurrence of a term its offset therefore we cannot 
+merge posting lists retrieved by phonetic index with those 
+retrieved by word index since the offset of the occurrences 
+retrieved from the two different indices are not comparable 
+the only element of comparison between phonetic and word 
+transcripts are the timestamps no previous work 
+combining word and phonetic approach has been done on phrase 
+search we present a novel scheme for information retrieval 
+that consists of storing during the indexing process for each 
+unit of indexing phone or word its timestamp we search 
+queries by merging the information retrieved from the two 
+different indices word index and phonetic index according 
+to the timestamps of the query terms we analyze the 
+retrieval effectiveness of this approach on the nist spoken 
+term detection evaluation data 
+the paper is organized as follows we describe the audio 
+processing in section the indexing and retrieval methods 
+are presented in section experimental setup and results 
+are given in section in section we give an overview of 
+related work finally we conclude in section 
+ automatic speech recognition 
+system 
+we use an asr system for transcribing speech data it 
+works in speaker-independent mode for best recognition 
+results a speaker-independent acoustic model and a 
+language model are trained in advance on data with similar 
+characteristics 
+typically asr generates lattices that can be considered 
+as directed acyclic graphs each vertex in a lattice is 
+associated with a timestamp and each edge u v is labeled with 
+a word or phone hypothesis and its prior probability which 
+is the probability of the signal delimited by the timestamps 
+of the vertices u and v given the hypothesis the -best 
+path transcript is obtained from the lattice using dynamic 
+programming techniques 
+mangu et al and hakkani-tur et al propose a 
+compact representation of a word lattice called word 
+confusion network wcn each edge u v is labeled with a word 
+hypothesis and its posterior probability i e the probability 
+of the word given the signal one of the main advantages 
+of wcn is that it also provides an alignment for all of the 
+words in the lattice as explained in the three main 
+steps for building a wcn from a word lattice are as follows 
+ compute the posterior probabilities for all edges in the 
+word lattice 
+ extract a path from the word lattice which can be 
+the -best the longest or any random path and call 
+it the pivot path of the alignment 
+ traverse the word lattice and align all the transitions 
+with the pivot merging the transitions that 
+correspond to the same word or label and occur in the 
+same time interval by summing their posterior 
+probabilities 
+the -best path of a wcn is obtained from the path 
+containing the best hypotheses as stated in although 
+wcns are more compact than word lattices in general the 
+ -best path obtained from wcn has a better word accuracy 
+than the -best path obtained from the corresponding word 
+lattice 
+typical structures of a lattice and a wcn are given in 
+figure 
+figure typical structures of a lattice and a wcn 
+ retrieval model 
+the main problem with retrieving information from 
+spoken data is the low accuracy of the transcription 
+particularly on terms of interest such as named entities and 
+content words generally the accuracy of a word transcript 
+is characterized by its word error rate wer there are 
+three kinds of errors that can occur in a transcript 
+substitution of a term that is part of the speech by another 
+term deletion of a spoken term that is part of the speech 
+and insertion of a term that is not part of the speech 
+substitutions and deletions reflect the fact that an 
+occurrence of a term in the speech signal is not recognized these 
+misses reduce the recall of the search substitutions and 
+insertions reflect the fact that a term which is not part of the 
+speech signal appears in the transcript these misses reduce 
+the precision of the search 
+search recall can be enhanced by expanding the transcript 
+with extra words these words can be taken from the other 
+alternatives provided by the wcn these alternatives may 
+have been spoken but were not the top choice of the asr 
+such an expansion tends to correct the substitutions and 
+the deletions and consequently might improve recall but 
+will probably reduce precision using an appropriate 
+ranking model we can avoid the decrease in precision mamou et 
+al have presented in the enhancement in the recall and 
+the map by searching on wcn instead of considering only 
+the -best path word transcript in the context of spoken 
+document retrieval we have adapted this model of iv search to 
+term detection in word transcripts oov terms are deleted 
+or substituted therefore the usage of phonetic transcripts 
+is more desirable however due to their low accuracy we 
+have preferred to use only the -best path extracted from the 
+phonetic lattices we will show that the usage of phonetic 
+transcripts tends to improve the recall without affecting the 
+precision too much using an appropriate ranking 
+ spoken document detection task 
+as stated in the std evaluation plan the task 
+consists in finding all the exact matches of a specific query 
+in a given corpus of speech data a query is a phrase 
+containing several words the queries are text and not speech 
+note that this task is different from the more classical task of 
+spoken document retrieval manual transcripts of the speech 
+are not provided but are used by the evaluators to find true 
+occurrences by definition true occurrences of a query are 
+found automatically by searching the manual transcripts 
+using the following rule the gap between adjacent words in 
+a query must be less than seconds in the corresponding 
+speech for evaluating the results each system output 
+occurrence is judged as correct or not according to whether it 
+is close in time to a true occurrence of the query retrieved 
+from manual transcripts it is judged as correct if the 
+midpoint of the system output occurrence is less than or equal 
+to seconds from the time span of a true occurrence of 
+the query 
+ indexing 
+we have used the same indexing process for wcn and 
+phonetic transcripts each occurrence of a unit of indexing 
+ word or phone u in a transcript d is indexed with the 
+following information 
+ the begin time t of the occurrence of u 
+ the duration d of the occurrence of u 
+in addition for wcn indexing we store 
+ the confidence level of the occurrence of u at the 
+time t that is evaluated by its posterior probability 
+pr u t d 
+ the rank of the occurrence of u among the other 
+hypotheses beginning at the same time t rank u t d 
+note that since the task is to find exact matches of the 
+phrase queries we have not filtered stopwords and the 
+corpus is not stemmed before indexing 
+ search 
+in the following we present our approach for 
+accomplishing the std task using the indices described above the 
+terms are extracted from the query the vocabulary of the 
+asr system building word transcripts is given terms that 
+are part of this vocabulary are iv terms the other terms 
+are oov for an iv query term the posting list is extracted 
+from the word index for an oov query term the term is 
+converted to a sequence of phones using a joint maximum 
+entropy n-gram model for example the term prosody 
+is converted to the sequence of phones p r aa z ih 
+d iy the posting list of each phone is extracted from the 
+phonetic index 
+the next step consists of merging the different posting 
+lists according to the timestamp of the occurrences in order 
+to create results matching the query first we check that 
+the words and phones appear in the right order according to 
+their begin times second we check that the gap in time 
+between adjacent words and phones is reasonable 
+conforming to the requirements of the std evaluation the distance 
+in time between two adjacent query terms must be less than 
+ seconds for oov search we check that the distance 
+in time between two adjacent phones of a query term is less 
+that seconds this value has been determined empirically 
+in such a way we can reduce the effect of insertion errors 
+since we allow insertions between the adjacent words and 
+phones our query processing does not allow substitutions 
+and deletions 
+example let us consider the phrase query prosody 
+research the term prosody is oov and the term research 
+is iv the term prosody is converted to the sequence of 
+phones p r aa z ih d iy the posting list of each 
+phone is extracted from the phonetic index we merge the 
+posting lists of the phones such that the sequence of phones 
+appears in the right order and the gap in time between the 
+pairs of phones p r r aa aa z z ih ih d d iy is 
+less than seconds we obtain occurrences of the term 
+prosody the posting list of research is extracted from the 
+word index and we merge it with the occurrences found for 
+prosody such that they appear in the right order and the 
+distance in time between prosody and research is less than 
+ seconds 
+note that our indexing model allows to search for different 
+types of queries 
+ queries containing only iv terms using the word index 
+ queries containing only oov terms using the phonetic 
+index 
+ keyword queries containing both iv and oov terms 
+using the word index for iv terms and the phonetic 
+index for oov terms for query processing the 
+different sets of matches are unified if the query terms have 
+or semantics and intersected if the query terms have 
+and semantics 
+ phrase queries containing both iv and oov terms for 
+query processing the posting lists of the iv terms 
+retrieved from the word index are merged with the 
+posting lists of the oov terms retrieved from the phonetic 
+index the merging is possible since we have stored 
+the timestamps for each unit of indexing word and 
+phone in both indices 
+the std evaluation has focused on the fourth query type 
+it is the hardest task since we need to combine posting lists 
+retrieved from phonetic and word indices 
+ ranking 
+since iv terms and oov terms are retrieved from two 
+different indices we propose two different functions for scoring 
+an occurrence of a term afterward an aggregate score is 
+assigned to the query based on the scores of the query terms 
+because the task is term detection we do not use a 
+document frequency criterion for ranking the occurrences 
+let us consider a query q k kn associated with 
+a boosting vector b b bj this vector associates 
+a boosting factor to each rank of the different hypotheses 
+the boosting factors are normalized between and if the 
+rank r is larger than j we assume br 
+ in vocabulary term ranking 
+for iv term ranking we extend the work of mamou et 
+al on spoken document retrieval to term detection we 
+use the information provided by the word index we define 
+the score score k t d of a keyword k occurring at a time t 
+in the transcript d by the following formula 
+score k t d brank k t d × pr k t d 
+note that ≤ score k t d ≤ 
+ out of vocabulary term ranking 
+for oov term ranking we use the information provided 
+by the phonetic index we give a higher rank to occurrences 
+of oov terms that contain phones close in time to each 
+other we define a scoring function that is related to the 
+average gap in time between the different phones let us 
+consider a keyword k converted to the sequence of phones 
+ pk 
+ pk 
+l we define the normalized score score k tk 
+ d 
+of a keyword k pk 
+ pk 
+l where each pk 
+i occurs at time 
+tk 
+i with a duration of dk 
+i in the transcript d by the following 
+formula 
+score k tk 
+ d − 
+l 
+i × tk 
+i − tk 
+i− dk 
+i− 
+l 
+note that according to what we have ex-plained in 
+section we have ∀ ≤ i ≤ l tk 
+i − tk 
+i− dk 
+i− 
+ sec × tk 
+i − tk 
+i− dk 
+i− and consequently 
+ score k tk 
+ d ≤ the duration of the keyword 
+occurrence is tk 
+l − tk 
+ dk 
+l 
+example let us consider the sequence p r aa z 
+ih d iy and two different occurrences of the sequence 
+for each phone we give the begin time and the duration in 
+second 
+occurrence p r aa 
+ z ih d iy 
+occurrence p r aa 
+ z ih d iy 
+according to our formula the score of the first occurrence 
+is and the score of the second occurrence is in the 
+first occurrence there are probably some insertion or silence 
+between the phone p and r and between the phone d and iy 
+the silence can be due to the fact that the phones belongs 
+to two different words ans therefore it is not an occurrence 
+of the term prosody 
+ combination 
+the score of an occurrence of a query q at time t in the 
+document d is determined by the multiplication of the score 
+of each keyword ki where each ki occurs at time ti with a 
+duration di in the transcript d 
+score q t d 
+n 
+i 
+score ki ti d γn 
+note that according to what we have ex-plained in 
+section we have ∀ ≤ i ≤ n ti − ti− di− sec 
+our goal is to estimate for each found occurrence how 
+likely the query appears it is different from classical ir 
+that aims to rank the results and not to score them since 
+the probability to have a false alarm is inversely proportional 
+to the length of the phrase query we have boosted the score 
+of queries by a γn exponent that is related to the number 
+of keywords in the phrase we have determined empirically 
+the value of γn n 
+the begin time of the query occurrence is determined by 
+the begin time t of the first query term and the duration 
+of the query occurrence by tn − t dn 
+ experiments 
+ experimental setup 
+our corpus consists of the evaluation set provided by nist 
+for the std evaluation it includes three 
+different source types in us english three hours of broadcast 
+news bnews three hours of conversational telephony 
+speech cts and two hours of conference room meetings 
+ confmtg as shown in section these different 
+collections have different accuracies cts and confmtg are 
+spontaneous speech for the experiments we have processed 
+the query set provided by nist that includes queries 
+each query is a phrase containing between one to five terms 
+common and rare terms terms that are in the manual 
+transcripts and those that are not testing and determination 
+of empirical values have been achieved on another set of 
+speech data and queries the development set also provided 
+by nist 
+we have used the ibm research prototype asr system 
+described in for transcribing speech data we have 
+produced wcns for the three different source types -best 
+phonetic transcripts were generated only for bnews and 
+cts since confmtg phonetic transcripts have too low 
+accuracy we have adapted juru a full-text search 
+library written in java to index the transcripts and to store 
+the timestamps of the words and phones search results have 
+been retrieved as described in section 
+for each found occurrence of the given query our system 
+outputs the location of the term in the audio recording 
+ begin time and duration the score indicating how likely 
+is the occurrence of query as defined in section and a 
+hard binary decision as to whether the detection is 
+correct we measure precision and recall by comparing the 
+results obtained over the automatic transcripts only the 
+results having true hard decision to the results obtained over 
+the reference manual transcripts our aim is to evaluate the 
+ability of the suggested retrieval approach to handle 
+transcribed speech data thus the closer the automatic results 
+to the manual results is the better the search effectiveness 
+over the automatic transcripts will be the results returned 
+from the manual transcription for a given query are 
+considered relevant and are expected to be retrieved with highest 
+scores this approach for measuring search effectiveness 
+using manual data as a reference is very common in speech 
+retrieval research 
+beside the recall and the precision we use the evaluation 
+measures defined by nist for the std evaluation 
+the actual term-weighted value atwv and the 
+maximum term-weighted value mtwv the term-weighted 
+value twv is computed by first computing the miss and 
+false alarm probabilities for each query separately then 
+using these and an arbitrarily chosen prior probability to 
+compute query-specific values and finally averaging these 
+query-specific values over all queries q to produce an overall 
+system value 
+twv θ − averageq pmiss q θ β × pf a q θ 
+where β c 
+v 
+ pr− 
+q − θ is the detection threshold for 
+the evaluation the cost value ratio c v has been 
+determined to and the prior probability of a query prq to 
+ − 
+ therefore β 
+miss and false alarm probabilities for a given query q are 
+functions of θ 
+pmiss q θ − 
+ncorrect q θ 
+ntrue q 
+pf a q θ 
+nspurious q θ 
+nnt q 
+corpus wer subr delr insr 
+bnews wcn 
+cts wcn 
+confmtg wcn 
+table wer and distribution of the error types over word -best path extracted from wcns for the 
+different source types 
+where 
+ ncorrect q θ is the number of correct detections 
+ retrieved by the system of the query q with a score 
+greater than or equal to θ 
+ nspurious q θ is the number of spurious detections of 
+the query q with a score greater than or equal to θ 
+ ntrue q is the number of true occurrences of the query 
+q in the corpus 
+ nnt q is the number of opportunities for incorrect 
+detection of the query q in the corpus it is the 
+nontarget query trials it has been defined by the 
+following formula nnt q tspeech − ntrue q tspeech 
+is the total amount of speech in the collection in 
+seconds 
+atwv is the actual term-weighted value it is the 
+detection value attained by the system as a result of the system 
+output and the binary decision output for each putative 
+occurrence it ranges from −∞ to mtwv is the 
+maximum term-weighted value over the range of all possible 
+values of θ it ranges from to 
+we have also provided the detection error tradeoff det 
+curve of miss probability pmiss vs false alarm 
+probability pf a 
+we have used the stdeval tool to extract the relevant 
+results from the manual transcripts and to compute atwv 
+mtwv and the det curve 
+we have determined empirically the following values for 
+the boosting vector defined in section bi 
+i 
+ 
+ wer analysis 
+we use the word error rate wer in order to characterize 
+the accuracy of the transcripts wer is defined as follows 
+s d i 
+n 
+× 
+where n is the total number of words in the corpus and 
+s i and d are the total number of substitution insertion 
+and deletion errors respectively the substitution error rate 
+ subr is defined by 
+s 
+s d i 
+× 
+deletion error rate delr and insertion error rate insr 
+are defined in a similar manner 
+table gives the wer and the distribution of the error 
+types over -best path transcripts extracted from wcns 
+the wer of the -best path phonetic transcripts is 
+approximately two times worse than the wer of word transcripts 
+that is the reason why we have not retrieved from phonetic 
+transcripts on confmtg speech data 
+ theta threshold 
+we have determined empirically a detection threshold θ 
+per source type and the hard decision of the occurrences 
+having a score less than θ is set to false false occurrences 
+returned by the system are not considered as retrieved and 
+therefore are not used for computing atwv precision and 
+recall 
+the value of the threshold θ per source type is reported in 
+table it is correlated to the accuracy of the transcripts 
+basically setting a threshold aims to eliminate from the 
+retrieved occurrences false alarms without adding misses 
+the higher the wer is the higher the θ threshold should 
+be 
+bnews cts confmtg 
+ 
+table values of the θ threshold per source type 
+ processing resource profile 
+we report in table the processing resource profile 
+concerning the index size note that our index is compressed 
+using ir index compression techniques the indexing time 
+includes both audio processing generation of word and 
+phonetic transcripts and building of the searchable indices 
+index size mb hs 
+indexing time hp hs 
+index memory usage mb 
+search speed sec p hs 
+search memory usage mb 
+table processing resource profile hs hours of 
+speech hp processing hours sec p processing 
+seconds 
+ retrieval measures 
+we compare our approach wcn phonetic presented in 
+section with another approach -best-wcn phonetic 
+the only difference between these two approaches is that 
+in -best-wcn phonetic we index only the -best path 
+extracted from the wcn instead of indexing all the wcn 
+wcn phonetic was our primary system for the evaluation 
+and -best-wcn phonetic was one of our contrastive 
+systems average precision and recall mtwv and atwv on 
+the queries are given in table we provide also the 
+det curve for wcn phonetic approach in figure the 
+point that maximizes the twv the mtwv is specified on 
+each curve note that retrieval performance has been 
+evaluated separately for each source type since the accuracy of 
+the speech differs per source type as shown in section 
+as expected we can see that mtwv and atwv decrease 
+in higher wer the retrieval performance is improved when 
+measure bnews cts confmtg 
+wcn phonetic atwv 
+mtwv 
+precision 
+recall 
+ -best-wcn phonetic atwv 
+mtwv 
+precision 
+recall 
+table atwv mtwv precision and recall per source type 
+figure det curve for wcn phonetic approach 
+using wcns relatively to -best path it is due to the fact 
+that miss probability is improved by indexing all the 
+hypotheses provided by the wcns this observation confirms 
+the results shown by mamou et al in the context of 
+spoken document retrieval the atwv that we have obtained 
+is close to the mtwv we have combined our ranking model 
+with appropriate threshold θ to eliminate results with lower 
+score therefore the effect of false alarms added by wcns 
+is reduced 
+wcn phonetic approach was used in the recent nist std 
+evaluation and received the highest overall ranking among 
+eleven participants for comparison the system that ranked 
+at the third place obtained an atwv of for bnews 
+ for cts and for confmtg 
+ influence of the duration of the query on 
+the retrieval performance 
+we have analysed the retrieval performance according to 
+the average duration of the occurrences in the manual 
+transcripts the query set was divided into three different 
+quantiles according to the duration we have reported in table 
+atwv and mtwv according to the duration we can see 
+that we performed better on longer queries one of the 
+reasons is the fact that the asr system is more accurate on 
+long words hence it was justified to boost the score of the 
+results with the exponent γn as explained in section 
+according to the length of the query 
+quantile - - - 
+bnews atwv 
+mtwv 
+cts atwv 
+mtwv 
+confmtg atwv 
+mtwv 
+table atwv mtwv according to the duration 
+of the query occurrences per source type 
+ oov vs iv query processing 
+we have randomly chosen three sets of queries from the 
+query sets provided by nist queries containing only iv 
+terms queries containing only oov terms and hybrid 
+queries containing both iv and oov terms the following 
+experiment has been achieved on the bnews collection and 
+iv and oov terms has been determined according to the 
+vocabulary of bnews asr system 
+we would like to compare three different approaches of 
+retrieval using only word index using only phonetic index 
+combining word and phonetic indices table summarizes 
+the retrieval performance according to each approach and 
+to each type of queries using a word-based approach for 
+dealing with oov and hybrid queries affects drastically the 
+performance of the retrieval precision and recall are null 
+using a phone-based approach for dealing with iv queries 
+affects also the performance of the retrieval relatively to the 
+word-based approach 
+as expected the approach combining word and phonetic 
+indices presented in section leads to the same retrieval 
+performance as the word approach for iv queries and to 
+the same retrieval performance as the phonetic approach for 
+oov queries this approach always outperforms the others 
+and it justifies the fact that we need to combine word and 
+phonetic search 
+ related work 
+in the past decade the research efforts on spoken data 
+retrieval have focused on extending classical ir techniques 
+to spoken documents some of these works have been done 
+in the context of the trec spoken document retrieval 
+evaluations and are described by garofolo et al an 
+lvcsr system is used to transcribe the speech into -best 
+path word transcripts the transcripts are indexed as clean 
+text for each occurrence its document its word offset and 
+additional information are stored in the index a generic ir 
+system over the text is used for word spotting and search 
+as described by brown et al and james this 
+stratindex word phonetic word and phonetic 
+precision recall precision recall precision recall 
+iv queries 
+oov queries 
+hybrid queries 
+table comparison of word and phonetic approach on iv and oov queries 
+egy works well for transcripts like broadcast news collections 
+that have a low wer in the range of - and are 
+redundant by nature the same piece of information is 
+spoken several times in different manners moreover the 
+algorithms have been mostly tested over long queries stated in 
+plain english and retrieval for such queries is more robust 
+against speech recognition errors 
+an alternative approach consists of using word lattices in 
+order to improve the effectiveness of sdr singhal et al 
+ propose to add some terms to the transcript in order 
+to alleviate the retrieval failures due to asr errors from 
+an ir perspective a classical way to bring new terms is 
+document expansion using a similar corpus their approach 
+consists in using word lattices in order to determine which 
+words returned by a document expansion algorithm should 
+be added to the original transcript the necessity to use a 
+document expansion algorithm was justified by the fact that 
+the word lattices they worked with lack information about 
+word probabilities 
+chelba and acero in propose a more compact word 
+lattice the position specific posterior lattice pspl this 
+data structure is similar to wcn and leads to a more 
+compact index the offset of the terms in the speech documents 
+is also stored in the index however the evaluation 
+framework is carried out on lectures that are relatively planned 
+in contrast to conversational speech their ranking model 
+is based on the term confidence level but does not take into 
+consideration the rank of the term among the other 
+hypotheses mamou et al propose a model for spoken document 
+retrieval using wcns in order to improve the recall and the 
+map of the search however in the above works the 
+problem of queries containing oov terms is not addressed 
+popular approaches to deal with oov queries are based 
+on sub-words transcripts where the sub-words are typically 
+phones syllables or word fragments sequences of phones 
+ the classical approach consists of using 
+phonetic transcripts the transcripts are indexed in the same 
+manner as words in using classical text retrieval techniques 
+during query processing the query is represented as a 
+sequence of phones the retrieval is based on searching the 
+string of phones representing the query in the phonetic 
+transcript to account for the high recognition error rates some 
+other systems use richer transcripts like phonetic lattices 
+they are attractive as they accommodate high error rate 
+conditions as well as allow for oov queries to be used 
+ however phonetic lattices contain many 
+edges that overlap in time with the same phonetic label and 
+are difficult to index moreover beside the improvement in 
+the recall of the search the precision is affected since 
+phonetic lattices are often inaccurate consequently phonetic 
+approaches should be used only for oov search for 
+searching queries containing also iv terms this technique affects 
+the performance of the retrieval in comparison to the word 
+based approach 
+saraclar and sproat in show improvement in word 
+spotting accuracy for both iv and oov queries using 
+phonetic and word lattices where a confidence measure of a 
+word or a phone can be derived they propose three 
+different retrieval strategies search both the word and the 
+phonetic indices and unify the two different sets of results 
+search the word index for iv queries search the phonetic 
+index for oov queries search the word index and if no result 
+is returned search the phonetic index however no strategy 
+is proposed to deal with phrase queries containing both iv 
+and oov terms amir et al in propose to merge a 
+word approach with a phonetic approach in the context of 
+video retrieval however the phonetic transcript is obtained 
+from a text to phonetic conversion of the -best path of the 
+word transcript and is not based on a phonetic decoding of 
+the speech data 
+an important issue to be considered when looking at the 
+state-of-the-art in retrieval of spoken data is the lack of a 
+common test set and appropriate query terms this paper 
+uses such a task and the std evaluation is a good summary 
+of the performance of different approaches on the same test 
+conditions 
+ conclusions 
+this work studies how vocabulary independent spoken 
+term detection can be performed efficiently over different 
+data sources previously phonetic-based and word-based 
+approaches have been used for ir on speech data the 
+former suffers from low accuracy and the latter from limited 
+vocabulary of the recognition system in this paper we have 
+presented a vocabulary independent model of indexing and 
+search that combines both the approaches the system can 
+deal with all kinds of queries although the phrases that need 
+to combine for the retrieval information extracted from two 
+different indices a word index and a phonetic index the 
+scoring of oov terms is based on the proximity in time 
+between the different phones the scoring of iv terms is based 
+on information provided by the wcns we have shown an 
+improvement in the retrieval performance when using all the 
+wcn and not only the -best path and when using phonetic 
+index for search of oov query terms this approach always 
+outperforms the other approaches using only word index or 
+phonetic index 
+as a future work we will compare our model for oov 
+search on phonetic transcripts with a retrieval model based 
+on the edit distance 
+ acknowledgements 
+jonathan mamou is grateful to david carmel and ron 
+hoory for helpful and interesting discussions 
+ references 
+ nist spoken term detection evaluation 
+website http www nist gov speech tests std 
+ nist spoken term detection std evaluation 
+plan 
+http www nist gov speech tests std docs std -evalplan-v pdf 
+ c allauzen m mohri and m saraclar general 
+indexation of weighted automata - application to 
+spoken utterance retrieval in proceedings of the 
+hlt-naacl workshop on interdiciplinary 
+approaches to speech indexing and retrieval boston 
+ma usa 
+ a amir m berg and h permuter mutual relevance 
+feedback for multimodal query formulation in video 
+retrieval in mir proceedings of the th acm 
+sigmm international workshop on multimedia 
+information retrieval pages - new york ny 
+usa acm press 
+ a amir a efrat and s srinivasan advances in 
+phonetic word spotting in cikm proceedings of 
+the tenth international conference on information and 
+knowledge management pages - new york 
+ny usa acm press 
+ m brown j foote g jones k jones and s young 
+open-vocabulary speech indexing for voice and video 
+mail retrieval in proceedings acm multimedia 
+pages - hong-kong november 
+ d carmel e amitay m herscovici y s maarek 
+y petruschka and a soffer juru at trec 
+ experiments with index pruning in proceedings of the 
+tenth text retrieval conference trec- national 
+institute of standards and technology nist 
+ c chelba and a acero indexing uncertainty for 
+spoken document search in interspeech pages 
+ - lisbon portugal 
+ c chelba and a acero position specific posterior 
+lattices for indexing speech in proceedings of the rd 
+annual conference of the association for 
+computational linguistics acl ann arbor mi 
+ 
+ s chen conditional and joint models for 
+grapheme-to-phoneme conversion in eurospeech 
+geneva switzerland 
+ m clements s robertson and m miller phonetic 
+searching applied to on-line distance learning modules 
+in digital signal processing workshop and the 
+ nd signal processing education workshop 
+proceedings of ieee th pages - 
+ j garofolo g auzanne and e voorhees the trec 
+spoken document retrieval track a success story in 
+proceedings of the ninth text retrieval conference 
+ trec- national institute of standards and 
+technology nist 
+ d hakkani-tur and g riccardi a general algorithm 
+for word graph matrix decomposition in proceedings 
+of the ieee internation conference on acoustics 
+speech and signal processing icassp pages 
+ - hong-kong 
+ d james the application of classical information 
+retrieval techniques to spoken documents phd thesis 
+university of cambridge downing college 
+ d a james a system for unrestricted topic retrieval 
+from radio news broadcasts in proc icassp 
+pages - atlanta ga 
+ b logan p moreno j v thong and e whittaker 
+an experimental study of an audio indexing system 
+for the web in proceedings of icslp 
+ j mamou d carmel and r hoory spoken 
+document retrieval from call-center conversations in 
+sigir proceedings of the th annual 
+international acm sigir conference on research and 
+development in information retrieval pages - 
+new york ny usa acm press 
+ l mangu e brill and a stolcke finding consensus 
+in speech recognition word error minimization and 
+other applications of confusion networks computer 
+speech and language - 
+ a martin g doddington t kamm m ordowski 
+and m przybocki the det curve in assessment of 
+detection task performance in proc eurospeech 
+pages - rhodes greece 
+ k ng and v w zue subword-based approaches for 
+spoken document retrieval speech commun 
+ - 
+ y peng and f seide fast two-stage 
+vocabulary-independent search in spontaneous speech 
+in acoustics speech and signal processing 
+proceedings icassp ieee international 
+conference volume pages - 
+ m saraclar and r sproat lattice-based search for 
+spoken utterance retrieval in hlt-naacl 
+main proceedings pages - boston 
+massachusetts usa 
+ f seide p yu c ma and e chang 
+vocabulary-independent search in spontaneous speech 
+in icassp- ieee international conference on 
+acoustics speech and signal processing 
+ a singhal j choi d hindle d lewis and 
+f pereira at t at trec- in proceedings of the 
+seventh text retrieval conference trec- 
+national institute of standards and technology 
+nist 
+ a singhal and f pereira document expansion for 
+speech retrieval in sigir proceedings of the 
+ nd annual international acm sigir conference on 
+research and development in information retrieval 
+pages - new york ny usa acm press 
+ h soltau b kingsbury l mangu d povey 
+g saon and g zweig the ibm conversational 
+telephony system for rich transcription in proceedings 
+of the ieee international conference on acoustics 
+speech and signal processing icassp march 
+ k thambiratnam and s sridharan dynamic match 
+phone-lattice searches for very fast and accurate 
+unrestricted vocabulary keyword spotting in 
+acoustics speech and signal processing proceedings 
+ icassp ieee international conference 
+ p c woodland s e johnson p jourlin and k s 
+jones effects of out of vocabulary words in spoken 
+document retrieval poster session in sigir 
+proceedings of the rd annual international acm 
+sigir conference on research and development in 
+information retrieval pages - new york ny 
+usa acm press 

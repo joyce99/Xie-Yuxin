@@ -1,0 +1,884 @@
+real-time agent characterization 
+and prediction 
+h van dyke parunak sven brueckner robert matthews john sauter steve brophy 
+newvectors llc 
+ green court suite 
+ann arbor mi usa 
+ 
+ van parunak sven brueckner robert matthews john sauter steve brophy  newvectors net 
+abstract 
+reasoning about agents that we observe in the world is 
+challenging our available information is often limited to observations of 
+the agent s external behavior in the past and present to 
+understand these actions we need to deduce the agent s internal state 
+which includes not only rational elements such as intentions and 
+plans but also emotive ones such as fear in addition we often 
+want to predict the agent s future actions which are constrained 
+not only by these inward characteristics but also by the dynamics 
+of the agent s interaction with its environment bee behavior 
+evolution and extrapolation uses a faster-than-real-time 
+agentbased model of the environment to characterize agents internal 
+state by evolution against observed behavior and then predict 
+their future behavior taking into account the dynamics of their 
+interaction with the environment 
+categories and subject descriptors 
+i artificial intelligence learning - parameter learning 
+i artificial intelligence distributed artificial 
+intelligence- multiagent systems 
+general terms 
+algorithms measurement experimentation 
+ introduction 
+reasoning about agents that we observe in the world must 
+integrate two disparate levels our observations are often limited 
+to the agent s external behavior which can frequently be 
+summarized numerically as a trajectory in space-time perhaps 
+punctuated by actions from a fairly limited vocabulary however this 
+behavior is driven by the agent s internal state which in the case 
+of a human may involve high-level psychological and cognitive 
+concepts such as intentions and emotions a central challenge in 
+many application domains is reasoning from external observations 
+of agent behavior to an estimate of their internal state such 
+reasoning is motivated by a desire to predict the agent s behavior 
+this problem has traditionally been addressed under the 
+rubric of plan recognition or plan inference work to date 
+focuses almost entirely on recognizing the rational state as opposed 
+to the emotional state of a single agent as opposed to an 
+interacting community and frequently takes advantage of explicit 
+communications between agents as in managing conversational 
+protocols many realistic problems deviate from these conditions 
+increasing the number of agents leads to a combinatorial 
+explosion that can swamp conventional analysis 
+environmental dynamics can frustrate agent intentions 
+the agents often are trying to hide their intentions and even 
+their presence rather than intentionally sharing information 
+an agent s emotional state may be at least as important as its 
+rational state in determining its behavior 
+domains that exhibit these constraints can often be 
+characterized as adversarial and include military combat competitive 
+business tactics and multi-player computer games 
+bee behavioral evolution and extrapolation is a novel 
+approach to recognizing the rational and emotional state of multiple 
+interacting agents based solely on their behavior without recourse 
+to intentional communications from them it is inspired by 
+techniques used to predict the behavior of nonlinear dynamical 
+systems in which a representation of the system is continually fit to 
+its recent past behavior for nonlinear dynamical systems the 
+representation is a closed-form mathematical equation in bee it is a 
+set of parameters governing the behavior of software agents 
+representing the individuals being analyzed the current version of 
+bee characterizes and predicts the behavior of agents 
+representing soldiers engaged in urban combat 
+section reviews relevant previous work section 
+describes the architecture of bee section reports results from 
+experiments with the system section concludes further details 
+that cannot be included here for the sake of space are available in 
+an on-line technical report 
+ previous work 
+bee bears comparison with previous research in ai plan 
+recognition hidden markov models and nonlinear dynamics 
+systems trajectory prediction 
+ plan recognition in ai 
+agent theory commonly describes an agent s cognitive state 
+in terms of its beliefs desires and intentions the so-called bdi 
+model an agent s beliefs are propositions about the state 
+of the world that it considers true based on its perceptions its 
+desires are propositions about the world that it would like to be 
+true desires are not necessarily consistent with one another an 
+agent might desire both to be rich and not to work at the same 
+time an agent s intentions or goals are a subset of its desires 
+that it has selected based on its beliefs to guide its future actions 
+unlike desires goals must be consistent with one another or at 
+least believed to be consistent by the agent 
+an agent s goals guide its actions thus one ought to be able 
+to learn something about an agent s goals by observing its past 
+actions and knowledge of the agent s goals in turn enables 
+conclusions about what the agent may do in the future 
+this process of reasoning from an agent s actions to its goals 
+is known as plan recognition or plan inference this body of 
+work surveyed recently at is rich and varied it covers both 
+single-agent and multi-agent e g robot soccer team plans 
+intentional vs non-intentional actions speech vs non-speech 
+behavior adversarial vs cooperative intent complete vs incomplete 
+world knowledge and correct vs faulty plans among other 
+dimensions 
+plan recognition is seldom pursued for its own sake it 
+usually supports a higher-level function for example in 
+humancomputer interfaces recognizing a user s plan can enable the 
+system to provide more appropriate information and options for user 
+action in a tutoring system inferring the student s plan is a first 
+step to identifying buggy plans and providing appropriate 
+remediation in many cases the higher-level function is predicting 
+likely future actions by the entity whose plan is being inferred 
+we focus on plan recognition in support of prediction an 
+agent s plan is a necessary input to a prediction of its future 
+behavior but hardly a sufficient one at least two other influences 
+one internal and one external need to be taken into account 
+the external influence is the dynamics of the environment 
+which may include other agents the dynamics of the real world 
+impose significant constraints 
+the environment may interfere with the desires of the agent 
+ 
+most interactions among agents and between agents and the 
+world are nonlinear when iterated these can generate chaos 
+ extreme sensitivity to initial conditions 
+a rational analysis of an agent s goals may enable us to 
+predict what it will attempt but any nontrivial plan with several steps 
+will depend sensitively at each step to the reaction of the 
+environment and our prediction must take this reaction into account 
+as well actual simulation of futures is one way the only one we 
+know now to deal with the impact of environmental dynamics on 
+an agent s actions 
+human agents are also subject to an internal 
+influence the agent s emotional state can 
+modulate its decision process and its focus of attention 
+ and thus its perception of the environment in 
+extreme cases emotion can lead an agent to 
+choose actions that from the standpoint of a 
+logical analysis may appear irrational 
+current work on plan recognition for 
+prediction focuses on the rational plan and does not 
+take into account either external environmental 
+influences or internal emotional biases bee 
+integrates all three elements into its predictions 
+ hidden markov models 
+bee is superficially similar to hidden markov models 
+ hmm s in both cases the agent has hidden internal state 
+ the agent s personality and observable state its outward 
+behavior and we wish to learn the hidden state from the observable 
+state by evolution in bee by the baum-welch algorithm in 
+hmm s and then predict the agent s future behavior by 
+extrapolation via ghosts in bee by the forward algorithm in hmm s 
+bee offers two important benefits over hmm s 
+first a single agent s hidden variables do not satisfy the 
+markov property that is their values at t depend not only on 
+their values at t but also on the hidden variables of other agents 
+one could avoid this limitation by constructing a single hmm 
+over the joint state space of all of the agents but this approach is 
+combinatorially prohibitive bee combines the efficiency of 
+independently modeling individual agents with the reality of taking 
+into account interactions among them 
+second markov models assume that transition probabilities 
+are stationary this assumption is unrealistic in dynamic 
+situations bee s evolutionary process continually updates the agents 
+personalities based on actual observations and thus automatically 
+accounts for changes in the agents personalities 
+ real-time nonlinear systems fitting 
+many systems of interest can be described by a vector of real 
+numbers that changes as a function of time the dimensions of the 
+vector define the system s state space one typically analyzes 
+such systems as vector differential equations e g 
+ xf 
+dt 
+xd 
+ 
+when f is nonlinear the system can be formally chaotic and 
+starting points arbitrarily close to one another can lead to 
+trajectories that diverge exponentially rapidly long-range prediction of 
+such a system is impossible however it is often useful to 
+anticipate the system s behavior a short distance into the future a 
+common technique is to fit a convenient functional form for f to the 
+system s trajectory in the recent past then extrapolate this fit into 
+the future figure this process is repeated constantly 
+providing the user with a limited look-ahead 
+this approach is robust and widely applied but requires 
+systems that can efficiently be described with mathematical 
+equations bee extends this approach to agent behaviors which it fits 
+to observed behavior using a genetic algorithm 
+ architecture 
+bee predicts the future by observing the emergent behavior 
+of agents representing the entities of interest in a fine-grained 
+agent simulation key elements of the bee 
+architecture include the model of an individual 
+agent the pheromone infrastructure through 
+which agents interact the information sources 
+that guide them and the overall evolutionary 
+cycle that they execute 
+ agent model 
+the agents in bee are inspired by two 
+bodies of work our previous work on fine-grained 
+agents that coordinate their actions through 
+digital pheromones in a shared environment 
+ and the success of previous 
+agentbased combat modeling 
+digital pheromones are scalar variables that 
+agents deposit and sense at their current location 
+a 
+c 
+b 
+d 
+a 
+c 
+b 
+d 
+figure tracking a 
+nonlinear dynamical system a 
+system state space b system 
+trajectory over time c recent 
+measurements of system state 
+d short-range prediction 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+in the environment agents respond to local concentrations of 
+these variables tropistically climbing or descending local 
+gradients their movements change the deposit patterns this feedback 
+loop together with processes of evaporation and propagation in 
+the environment support complex patterns of interaction and 
+coordination among the agents table shows the bee s 
+current pheromone flavors for example a living member of the 
+adversary emits a red-alive pheromone while roads emit a 
+mobility pheromone 
+our soldier agents are inspired by einstein and mana 
+einstein represents an agent as a set of six weights each in 
+ - describing the agent s response to six kinds of 
+information four of these describe the number of alive friendly alive 
+enemy injured friendly and injured enemy troops within the 
+agent s sensor range the other two weights relate to the agent s 
+distance to its own flag and that of the adversary representing 
+objectives that it seeks to protect and attack respectively a 
+positive weight indicates attraction to the entity described by the 
+weight while a negative weight indicates repulsion 
+mana extends the concepts in einstein friendly and 
+enemy flags are replaced by the waypoints pursued by each side 
+mana includes low medium and high threat enemies in 
+addition it defines a set of triggers e g reaching a waypoint being 
+shot at making contact with the enemy being injured that shift 
+the agent from one personality vector to another a default state 
+defines the personality vector when no trigger state is active 
+the personality vectors in mana and einstein reflect both 
+rational and emotive aspects of decision-making the notion of 
+being attracted or repelled by friendly or adversarial forces in 
+various states of health is an important component of what we 
+informally think of as emotion e g fear compassion 
+aggression and the use of the term personality in both einstein and 
+mana suggests that the system designers are thinking 
+anthropomorphically though they do not use emotion to describe the 
+effect they are trying to achieve the notion of waypoints to 
+which an agent is attracted reflects goal-oriented rationality 
+bee uses an integrated rational-emotive personality model 
+a bee agent s rationality is a vector of seven desires which 
+are values in - protectred the adversary protectblue 
+ friendly forces protectgreen civilians protectkeysites 
+avoidcombat avoiddetection and survive negative values 
+reverse the sense suggested by the label for example a negative 
+value of protectred indicates a desire to harm red and an agent 
+with a high positive desire to protectred will be attracted to 
+redalive red-casualty and mobility pheromone and 
+will move at maximum speed 
+the emotive component of a bee s personality is based on 
+the ortony-clore-collins occ framework and is described 
+in detail elsewhere occ define emotions as valanced 
+reactions to agents states or events in the environment this notion 
+of reaction is captured in mana s trigger states an important 
+advance in bee s emotional model is the recognition that agents 
+may differ in how sensitive they are to triggers for example 
+threatening situations tend to stimulate the emotion of fear but a 
+given level of threat will produce more fear in a new recruit than 
+in a seasoned veteran thus our model includes not only 
+emotions but dispositions each emotion has a corresponding 
+disposition dispositions are relatively stable and considered constant 
+over the time horizon of a run of the bee while emotions vary 
+based on the agent s disposition and the stimuli to which it is 
+exposed 
+interviews with military domain experts identified the two 
+most crucial emotions for combat behavior as anger with the 
+corresponding disposition irritability and fear whose disposition 
+is cowardice table shows which pheromones trigger which 
+emotions for example red-casualty pheromone stimulates 
+both anger and fear in a red agent but not in a blue agent 
+emotions are modeled as agent hormones internal pheromones that 
+are augmented in the presence of the triggering environmental 
+condition and evaporate over time 
+a non-zero emotion modifies the agent s actions elevated 
+level anger increases movement likelihood weapon firing 
+likelihood and tendency toward an exposed posture elevated fear 
+decreases these likelihoods 
+figure summarizes the bee s personality model the left 
+side is a straightforward bdi model we prefer the term goal to 
+intention the right side is the emotive component where an 
+appraisal of the agent s beliefs moderated by the disposition 
+leads to an emotion that in turn influences the bdi analysis 
+table pheromone flavors in bee 
+pheromone 
+flavor 
+description 
+redalive 
+redcasualty 
+bluealive 
+bluecasualty 
+greenalive 
+greencasualty 
+emitted by a living or dead entity of the 
+appropriate group red enemy blue friendly 
+green neutral 
+weaponsfire emitted by a firing weapon 
+keysite 
+emitted by a site of particular importance to 
+red 
+cover emitted by locations that afford cover from fire 
+mobility 
+emitted by roads and other structures that 
+enhance agent mobility 
+redthreat 
+bluethreat 
+determined by external process see section 
+ 
+table interactions of pheromones and dispositions emotions 
+dispositions emotions 
+red 
+perspective 
+blue 
+perspective 
+green 
+perspective 
+pheromone 
+irritability 
+ anger 
+cowardice 
+ fear 
+irritability 
+ anger 
+cowardice 
+ fear 
+irritability 
+ anger 
+cowardice 
+ fearredalive x x 
+redcasualty x x 
+bluealive x x x x 
+bluecasualty x x 
+greencasualty x x x x 
+weaponsfire x x x x x x 
+keysites x x 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ the bee cycle 
+bee s major innovation is 
+extending the nonlinear systems technique of 
+section to agent behaviors this 
+section describes this process at a high 
+level then details the multi-page 
+pheromone infrastructure that 
+implements it 
+ overview 
+figure is an overview of 
+behavior evolution and extrapolation each 
+active entity in the battlespace has an 
+persistent avatar that continuously 
+generates a stream of ghost agents 
+representing itself we call the combined 
+modeling entity consisting of avatar and ghosts a polyagent 
+ghosts live on a timeline indexed by that begins in the past 
+and runs into the future is offset with respect to the current time 
+t the timeline is divided into discrete pages each representing 
+a successive value of the avatar inserts the ghosts at the 
+insertion horizon in our current system the insertion horizon is at - t 
+ - meaning that ghosts are inserted into a page representing 
+the state of the world minutes ago at the insertion horizon 
+each ghost s behavioral parameters desires and dispositions are 
+sampled from distributions to explore alternative personalities of 
+the entity it represents 
+each page between the insertion horizon and t now 
+records the historical state of the world at the point in the past to 
+which it corresponds as ghosts move from page to page they 
+interact with this past state based on their behavioral parameters 
+these interactions mean that their fitness depends not just on their 
+own actions but also on the behaviors of the rest of the 
+population which is also evolving because advances faster than real 
+time eventually t actual time at this point each ghost is 
+evaluated based on its location compared with the actual location 
+of its corresponding real-world entity 
+the fittest ghosts have three functions 
+ the personality of each entity s fittest ghost is reported to the 
+rest of the system as the likely personality of that entity this 
+information enables us to characterize individual warriors as 
+unusually cowardly or brave 
+ the fittest ghosts breed genetically and their offspring return 
+to the insertion horizon to continue the fitting process 
+ the fittest ghosts for each entity form the basis for a 
+population of ghosts that run past the avatar s present into the 
+future each ghost that runs into the future explores a 
+different possible future of the battle analogous to how some 
+people plan ahead by mentally simulating different ways that 
+a situation might unfold analysis of the behaviors of these 
+different possible futures yields predictions 
+thus bee has three distinct notions of time all of which 
+may be distinct from real-world time 
+ domain time t is the current time in the domain being 
+modeled if bee is applied to a real-world situation this time 
+is the same as real-world time in our experiments we apply 
+bee to a simulated battle and domain time is the time stamp 
+published by the simulator during actual runs the simulator 
+is often paused so domain time runs slower than real time 
+when we replay logs from simulation runs we can speed 
+them up so that domain time runs faster 
+than real time 
+ bee time for a page records the 
+domain time corresponding to the state 
+of the world represented on that page 
+and is offset from the current domain 
+time 
+ shift time is incremented every time the 
+ghosts move from one page to the next 
+the relation between shift time and real 
+time depends on the processing 
+resources available 
+ pheromone infrastructure 
+bee must operate very rapidly to 
+keep pace with the ongoing battle thus 
+we use simple agents coordinated using pheromone mechanisms 
+we have described the basic dynamics of our pheromone 
+infrastructure elsewhere this infrastructure runs on the nodes of a 
+graph-structured environment in the case of bee a rectangular 
+lattice each node maintains a scalar value for each flavor of 
+pheromone and provides three functions 
+it aggregates deposits from individual agents fusing 
+information across multiple agents and through time 
+it evaporates pheromones over time providing an innovative 
+alternative to traditional truth maintenance traditionally 
+knowledge bases remember everything they are told unless 
+they have a reason to forget pheromone-based systems 
+immediately begin to forget everything they learn unless it is 
+continually reinforced thus inconsistencies automatically 
+remove themselves within a known period 
+it diffuses pheromones to nearby places disseminating 
+information for access by nearby agents 
+the distribution of each pheromone flavor over the 
+environment forms a field that represents some aspect of the state of the 
+world at an instant in time each page of the timeline is a 
+complete pheromone field for the world at the bee time represented 
+by that page the behavior of the pheromones on each page 
+depends on whether the page represents the past or the future 
+environment 
+beliefs 
+desires 
+goal emotion 
+disposition 
+state process 
+analysis 
+action 
+perception 
+appraisal 
+rational emotive 
+figure bee s integrated rational and 
+emotive personality model 
+ghost time 
+ t now 
+avatar 
+insertion horizon 
+measure ghost fitness 
+prediction horizon 
+observe ghost prediction 
+ghosts 
+readpersonality 
+readprediction 
+entity 
+ghost time 
+ t now 
+avatar 
+insertion horizon 
+measure ghost fitness 
+prediction horizon 
+observe ghost prediction 
+ghosts 
+readpersonality 
+readprediction 
+entity 
+figure behavioral emulation and extrapolation each avatar 
+generates a stream of ghosts that sample the personality space of its 
+entity they evolve against the entity s recent observed behavior and 
+the fittest ghosts run into the future to generate predictions 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+in pages representing the future t the usual pheromone 
+mechanisms apply ghosts deposit pheromone each time they 
+move to a new page and pheromones evaporate and propagate 
+from one page to the next 
+in pages representing the past t we have an observed 
+state of the real world this has two consequences for pheromone 
+management first we can generate the pheromone fields directly 
+from the observed locations of individual entities so there is no 
+need for the ghosts to make deposits second we can adjust the 
+pheromone intensities based on the changed locations of entities 
+from page to page so we do not need to evaporate or propagate 
+the pheromones both of these simplifications reflect the fact that 
+in our current system we have complete knowledge of the past 
+when we introduce noise and uncertainty we will probably need 
+to introduce dynamic pheromones in the past as well as the future 
+execution of the pheromone infrastructure proceeds on two 
+time scales running in separate threads 
+the first thread updates the book of pages each time the 
+domain time advances past the next page boundary at each step 
+the former now page is replaced with a new current page 
+whose pheromones correspond to the locations and strengths of 
+observed units 
+an empty page is added at the prediction horizon 
+the oldest page is discarded since it has passed the insertion 
+horizon 
+the second thread moves the ghosts from one page to the 
+next as fast as the processor allows at each step 
+ghosts reaching the t page are evaluated for fitness and 
+removed or evolved 
+new ghosts from the avatars and from the evolutionary process 
+are inserted at the insertion horizon 
+a population of ghosts based on the fittest ghosts are inserted at 
+ t to run into the future 
+ghosts that have moved beyond the prediction horizon are 
+removed 
+all ghosts plan their next actions based on the pheromone field 
+in the pages they currently occupy 
+the system computes the next state of each page including 
+executing the actions elected by the ghosts and in future 
+pages evaporating pheromones and recording new deposits 
+from the recently arrived ghosts 
+ghost movement based on pheromone gradients is a simple 
+process so this system can support realistic agent populations 
+without excessive computer load in our current system each 
+avatar generates eight ghosts per shift since there are about 
+entities in the battlespace about units each of red and blue and 
+about of green we must support about ghosts per page or 
+about over the entire book 
+how fast a processor do we need let p be the real-time 
+duration of a page in seconds if each page represents seconds of 
+domain time and we are replaying a simulation at x domain 
+time p let n be the number of pages between the insertion 
+horizon and t in our current system n then a shift rate 
+of n p shifts per second will permit ghosts to run from the 
+insertion horizon to the current time at least once before a new page is 
+generated empirically this level is a lower bound for reasonable 
+performance and easily achievable on stock wintel platforms 
+ information sources 
+the flexibility of the bee s pheromone infrastructure 
+permits the integration of numerous information sources as input to 
+our characterizations of entity personalities and predictions of 
+their future behavior our current system draws on three sources 
+of information but others can readily be added 
+real-world observations -observations from the real 
+world are encoded into the pheromone field each increment of 
+bee time as a new current page is generated table identifies 
+the entities that generate each flavor of pheromone 
+statistical estimates of threat regions -statistical 
+techniques estimate the level of threat to each force red or blue 
+based on the topology of the battlefield and the known disposition 
+of forces for example a broad open area with no cover is 
+threatening especially if the opposite force occupies its margins the 
+results of this process are posted to the pheromone pages as 
+redthreat pheromone representing a threat to red and 
+bluethreat pheromone representing a threat to blue 
+ai-based plan recognition -while plan recognition is not 
+sufficient for effective prediction it is a valuable input we 
+dynamically configure a bayes net based on heuristics to identify 
+the likely goals that each entity may hold the destinations of 
+these goals function as virtual pheromones ghosts include their 
+distance to such points in their action decisions achieving the 
+result of gradient following without the computational expense of 
+maintaining a pheromone field 
+ experimental results 
+we have tested bee in a series of experiments in which 
+human wargamers make decisions that are played out in a battlefield 
+simulator the commander for each side red and blue has at his 
+disposal a team of pucksters human operators who set waypoints 
+for individual units in the simulator each puckster is responsible 
+for four to six units the simulator moves the units determines 
+firing actions and resolves the outcome of conflicts it is 
+important to emphasize that this simulator is simply a surrogate 
+for a sensor feed from a real-world battlefield 
+ fitting dispositions 
+to test our ability to fit personalities based on behavior one 
+red puckster responsible for four units is designated the 
+emotional puckster he selects two of his units to be cowardly 
+ chickens and two to be irritable rambos he does not 
+disclose this assignment during the run he moves each unit 
+according to the commander s orders until the unit encounters 
+circumstances that would trigger the emotion associated with the unit s 
+disposition then he manipulates chickens as though they are 
+fearful avoiding combat and moving away from blue and 
+moves rambos into combat as quickly as possible our software 
+receives position reports on all units every twenty seconds 
+ 
+this process known as sad statistical anomaly detection is 
+developed by our colleagues rafael alonso hua li and john 
+asmuth at sarnoff corporation alonso and li are now at set 
+corporation 
+ 
+this process known as kip knowledge-based intention 
+projection is developed by our colleagues paul nielsen jacob 
+crossman and rich frederiksen at soar technology 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the difference between the two disposition values 
+ irritability - cowardice of the fittest ghosts proves a better indicator of 
+the emotional state of the corresponding entity than either value 
+by itself figure shows the delta disposition for each of the eight 
+fittest ghosts at each time step plotted against the time in seconds 
+for a unit played as a chicken the values clearly trend negative 
+figure shows a similar plot for a rambo rambos tend to die 
+early and often do not give their ghosts enough time to evolve a 
+clear picture of their personality but in 
+this case the positive delta disposition is 
+evident before the unit s demise 
+to characterize a unit s personality 
+we maintain a -second exponentially 
+weighted moving average of the delta 
+disposition and declare the unit to be a 
+chicken or rambo if this value passes a 
+negative or positive threshold respectively currently this 
+threshold is set at we are exploring additional filters for example 
+a rapid rate of increase enhances the likelihood of calling a 
+rambo units that seek to avoid detection and avoid combat are 
+more readily called chicken 
+table shows the detection results for emotional units in a 
+recent series of experiments we never called a rambo a chicken 
+in the one case where we called a chicken a rambo logs show 
+that in fact the unit was being played aggressively rushing toward 
+oncoming blue forces the brave die young so we almost never 
+detect units played intentionally as rambos 
+figure shows a comparison on a separate series of 
+experiments of our emotion detector compared with humans two 
+cowards were played in each of eleven games human observers in 
+each game were able to detect a total of of the cowards bee 
+was able to detect cowards chickens much earlier than the 
+human while missing only one chicken that the humans detected 
+in addition to these results on units intentionally played as 
+emotional bee sometimes detects other units as cowardly or 
+brave analysis of these units shows that these characterizations 
+were appropriate units that flee in the face of enemy forces or 
+weapons fire are detected as chickens while those that stand their 
+ground or rush the adversary are denominated as rambos 
+ integrated predictions 
+each ghost that runs into the future generates a possible path 
+that its unit might follow the paths in the resulting set over all 
+ghosts vary in how likely they are the risk they pose to their own 
+or the opposite side and so forth in the experiments reported 
+here we select the future whose ghost receives the most guidance 
+from pheromones in the environment at each step along the way 
+in this sense it is the most likely future in these experiments we 
+receive position reports only on units that have actually come 
+within visual range of blue units or on average fewer than half of 
+the live red units at any time 
+we evaluate predictions spatially comparing an entity s 
+actual location with the location predicted 
+for it minutes earlier we compare 
+bee with two baselines a 
+gametheoretic predictor based on linguistic 
+geometry and estimates by military 
+officers in both cases we use a cep 
+ circular error probable measure of 
+accuracy the radius of the circle that one 
+would have to draw around each prediction to capture of the 
+actual unit locations the higher the cep measure the worse the 
+accuracy 
+figure compares our accuracy with that of the 
+gametheoretic predictor each point gives the median cep measure 
+over all predictions in a single run points above the diagonal 
+favor bee while points below the line favor the game-theoretic 
+predictor in all but two missions bee is more accurate in one 
+mission the two systems are comparable while in one the 
+gametable experimental results on fitting 
+disposition runs 
+called 
+correctly 
+called 
+incorrectly 
+not 
+called 
+chickens 
+rambos 
+figure delta disposition for a chicken s ghosts 
+figure delta disposition for a rambo 
+cowards found vs percent of run time 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+percent of run time wall clock 
+cowardsfound outof 
+human 
+arm-a 
+figure bee vs human 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+theoretic predictor is more accurate 
+in raid runs bee generated predictions at each of 
+two time horizons and minutes while in non-raid 
+runs staff generated predictions figure shows a 
+box-andwhisker plot of the cep measures in meters of these predictions 
+the box covers the inter-quartile range with a line at the median 
+whiskers extend to the most distant data points within of the 
+interquartile range from the edge of the box squares show outliers 
+within interquartile ranges and stars show more distant outliers 
+bee s median score even at minutes is lower than either staff 
+median the wilcoxon test shows that the difference between the 
+h scores is significant at the level while that between 
+the h scores is significant at more than 
+ conclusions 
+in many domains it is important to reason from an entity s 
+observed behavior to an estimate of its internal state and then to 
+extrapolate that estimate to predict the entity s future behavior 
+bee performs this task using a faster-than-real-time simulation of 
+swarming agents coordinated through digital pheromones this 
+simulation integrates knowledge of threat regions a cognitive 
+analysis of the agent s beliefs desires and intentions a model of 
+the agent s emotional disposition and state and the dynamics of 
+interactions with the environment by evolving agents in this rich 
+environment we can fit their internal state to their observed 
+behavior in realistic wargames the system successfully detects 
+deliberately played emotions and makes reasonable predictions 
+about the entities future behaviors 
+bee can only model internal state variables that impact the 
+agent s external behavior it cannot fit variables that the agent 
+does not manifest externally since the basis for the evolutionary 
+cycle is a comparison of the outward behavior of the simulated 
+agent with that of the real entity this limitation is serious if our 
+purpose is to understand the entity s internal state for its own 
+sake if our purpose of fitting agents is to predict their subsequent 
+behavior the limitation is much less serious state variables that 
+do not impact behavior while invisible to a behavior-based 
+analysis are irrelevant to a behavioral prediction 
+the bee architecture lends itself to extension in several 
+promising directions 
+the various inputs being integrated by the bee are only an 
+example of the kinds of information that can be handled the 
+basic principle of using a dynamical simulation to integrate a 
+wide range of influences can be extended to other inputs as 
+well requiring much less additional engineering than other 
+more traditional ways of reasoning about how different 
+knowledge sources come together in impacting an agent s behavior 
+with such a change in inputs bee could be applied more 
+widely than its current domain of adversarial reasoning in 
+urban warfare potential applications of interest include computer 
+games business strategy and sensor fusion 
+our initial limited repertoire of emotions is a small subset of 
+those that have been distinguished by psychologists and that 
+might be useful for understanding and projecting behavior we 
+expect to extend the set of emotions and supporting 
+dispositions that bee can detect 
+the mapping between an agent s psychological cognitive and 
+emotional state and its outward behavior is not one-to-one 
+several different internal states might be consistent with a 
+given observed behavior under one set of environmental 
+conditions but might yield distinct behaviors under other conditions 
+if the environment in the recent past is one that confounds such 
+distinct internal states we will be unable to distinguish them 
+as long as the environment stays in this state our predictions 
+will be accurate whichever of the internal states we assign to 
+the agent if the environment then shifts to one under which the 
+different internal states lead to different behaviors using the 
+previously chosen internal state will yield inaccurate 
+predictions one way to address these concerns is to probe the real 
+world perturbing it in ways that would stimulate distinct 
+behaviors from entities whose psychological state is otherwise 
+indistinguishable such probing is an important intelligence 
+technique bee s faster-than-real-time simulation may enable us to 
+identify appropriate probing actions greatly increasing the 
+effectiveness of intelligence efforts 
+ acknowledgements 
+this material is based in part upon work supported by the defense 
+advanced research projects agency darpa under contract 
+no nbchc any opinions findings and conclusions or 
+recommendations expressed in this material are those of the 
+author s and do not necessarily reflect the views of the darpa or 
+the department of interior-national business center doi-nbc 
+distribution statement a approved for public release 
+distribution unlimited 
+ references 
+ baum l e petrie t soules g and weiss n a 
+maximization technique occurring in the statistical analysis of 
+prob 
+bee median error 
+ 
+ 
+ 
+ 
+ 
+ 
+glnaidemrorre 
+figure median errors for bee vs linguistic geometry on 
+each run -squares are defend missions triangles are move 
+missions diamonds are attack missions 
+raid h staff h raid h staff h 
+ 
+ 
+ 
+ 
+ 
+figure box-and-whisker plots of raid and staff predictions 
+at and minutes horizons y-axis is cep radius in meters 
+lower values indicate greater accuracy 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+abilistic functions of markov chains ann math statist 
+ - 
+ brueckner s return from the ant synthetic ecosystems for 
+manufacturing control thesis at humboldt university 
+berlin department of computer science 
+ carberry s techniques for plan recognition user 
+modeling and user-adapted interaction - - 
+ ferber j and müller j -p influences and reactions a 
+model of situated multiagent systems in proceedings of 
+second international conference on multi-agent systems 
+ icmas- aaai - 
+ haddadi a and sundermeyer k belief-desire-intention 
+agent architectures in g m p o hare and n r jennings 
+editors foundations of distributed artificial intelligence 
+john wiley new york ny - 
+ ilachinski a artificial war multiagent-based simulation of 
+combat singapore world scientific 
+ kantz h and schreiber t nonlinear time series analysis 
+cambridge uk cambridge university press 
+ kott a real-time adversarial intelligence decision 
+making raid vol darpa arlington va 
+web site 
+ lauren m k and stephen r t map-aware non-uniform 
+automata mana -a new zealand approach to scenario 
+modelling journal of battlefield technology march 
+ ff 
+ michel f formalisme méthodologie et outils pour la 
+modélisation et la simulation de systèmes multi-agents thesis at 
+université des sciences et techniques du languedoc 
+department of informatique 
+ ortony a clore g l and collins a the cognitive 
+structure of emotions cambridge uk cambridge university 
+press 
+ parunak h v d bisson r brueckner s matthews r 
+and sauter j representing dispositions and emotions in 
+simulated combat in proceedings of workshop on defence 
+applications of multi-agent systems damas at 
+aamas springer - 
+ parunak h v d and brueckner s ant-like missionaries 
+and cannibals synthetic pheromones for distributed motion 
+control in proceedings of fourth international conference 
+on autonomous agents agents - 
+ parunak h v d and brueckner s modeling uncertain 
+domains with polyagents in proceedings of international 
+joint conference on autonomous agents and multi-agent 
+systems aamas acm 
+ parunak h v d brueckner s fleischer m and odell j 
+a design taxonomy of multi-agent interactions in 
+proceedings of agent-oriented software engineering iv 
+springer - 
+ parunak h v d brueckner s matthews r sauter j 
+and brophy s characterizing and predicting agents via 
+multi-agent evolution altarum institute ann arbor mi 
+ http www newvectors net staff parunakv bee pdf 
+ parunak h v d brueckner s and sauter j digital 
+pheromones for coordination of unmanned vehicles in 
+proceedings of workshop on environments for multi-agent 
+systems e mas springer - 
+ parunak h v d brueckner s a and sauter j digital 
+pheromone mechanisms for coordination of unmanned 
+vehicles in proceedings of first international conference on 
+autonomous agents and multi-agent systems aamas 
+ acm - 
+ rabiner l r a tutorial on hidden markov models and 
+selected applications in speech recognition proceedings of 
+the ieee - 
+ rao a s and georgeff m p modeling rational agents 
+within a bdi architecture in proceedings of international 
+conference on principles of knowledge representation and 
+reasoning kr- morgan kaufman - 
+ sauter j a matthews r parunak h v d and 
+brueckner s evolving adaptive pheromone path planning 
+mechanisms in proceedings of autonomous agents and 
+multiagent systems aamas acm - 
+ stilman b linguistic geometry from search to 
+construction boston kluwer 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

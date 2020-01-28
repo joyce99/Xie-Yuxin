@@ -1,0 +1,1187 @@
+tracking immediate predecessors 
+in distributed computations 
+emmanuelle anceaume jean-michel h´elary michel raynal 
+irisa campus beaulieu 
+ rennes cedex france 
+firstname lastname irisa fr 
+abstract 
+a distributed computation is usually modeled as a partially 
+ordered set of relevant events the relevant events are a 
+subset of the primitive events produced by the computation 
+an important causality-related distributed computing 
+problem that we call the immediate predecessors tracking ipt 
+problem consists in associating with each relevant event on 
+the fly and without using additional control messages the 
+set of relevant events that are its immediate predecessors in 
+the partial order so ipt is the on-the-fly computation of 
+the transitive reduction i e hasse diagram of the causality 
+relation defined by a distributed computation this paper 
+addresses the ipt problem it presents a family of 
+protocols that provides each relevant event with a timestamp that 
+exactly identifies its immediate predecessors the family is 
+defined by a general condition that allows application 
+messages to piggyback control information whose size can be 
+smaller than n the number of processes in that sense 
+this family defines message size-efficient ipt protocols 
+according to the way the general condition is implemented 
+different ipt protocols can be obtained two of them are 
+exhibited 
+categories and subject descriptors 
+c distributed systems 
+general terms 
+asynchronous distributed computations 
+ introduction 
+a distributed computation consists of a set of processes 
+that cooperate to achieve a common goal a main 
+characteristic of these computations lies in the fact that the 
+processes do not share a common global memory and 
+communicate only by exchanging messages over a 
+communication network moreover message transfer delays are finite 
+but unpredictable this computation model defines what 
+is known as the asynchronous distributed system model it 
+is particularly important as it includes systems that span 
+large geographic areas and systems that are subject to 
+unpredictable loads consequently the concepts tools and 
+mechanisms developed for asynchronous distributed systems 
+reveal to be both important and general 
+causality is a key concept to understand and master the 
+behavior of asynchronous distributed systems more 
+precisely given two events e and f of a distributed 
+computation a crucial problem that has to be solved in a lot of 
+distributed applications is to know whether they are causally 
+related i e if the occurrence of one of them is a consequence 
+of the occurrence of the other the causal past of an event 
+e is the set of events from which e is causally dependent 
+events that are not causally dependent are said to be 
+concurrent vector clocks have been introduced to allow 
+processes to track causality and concurrency between the 
+events they produce the timestamp of an event produced 
+by a process is the current value of the vector clock of the 
+corresponding process in that way by associating vector 
+timestamps with events it becomes possible to safely decide 
+whether two events are causally related or not 
+usually according to the problem he focuses on a 
+designer is interested only in a subset of the events produced by 
+a distributed execution e g only the checkpoint events are 
+meaningful when one is interested in determining 
+consistent global checkpoints it follows that detecting causal 
+dependencies or concurrency on all the events of the 
+distributed computation is not desirable in all applications 
+ in other words among all the events that may occur 
+in a distributed computation only a subset of them are 
+relevant in this paper we are interested in the restriction of 
+the causality relation to the subset of events defined as being 
+the relevant events of the computation 
+being a strict partial order the causality relation is 
+transitive as a consequence among all the relevant events that 
+causally precede a given relevant event e only a subset are 
+its immediate predecessors those are the events f such that 
+there is no relevant event on any causal path from f to e 
+unfortunately given only the vector timestamp associated 
+with an event it is not possible to determine which events of 
+its causal past are its immediate predecessors this comes 
+from the fact that the vector timestamp associated with e 
+determines for each process the last relevant event 
+belong 
+ing to the causal past of e but such an event is not 
+necessarily an immediate predecessor of e however some 
+applications require to associate with each relevant event only 
+the set of its immediate predecessors those applications are 
+mainly related to the analysis of distributed computations 
+some of those analyses require the construction of the 
+lattice of consistent cuts produced by the computation 
+it is shown in that the tracking of immediate 
+predecessors allows an efficient on the fly construction of this lattice 
+more generally these applications are interested in the very 
+structure of the causal past in this context the 
+determination of the immediate predecessors becomes a major issue 
+ additionally in some circumstances this determination 
+has to satisfy behavior constraints if the communication 
+pattern of the distributed computation cannot be modified 
+the determination has to be done without adding control 
+messages when the immediate predecessors are used to 
+monitor the computation it has to be done on the fly 
+we call immediate predecessor tracking ipt the 
+problem that consists in determining on the fly and without 
+additional messages the immediate predecessors of relevant 
+events this problem consists actually in determining the 
+transitive reduction hasse diagram of the causality graph 
+generated by the relevant events of the computation 
+solving this problem requires tracking causality hence using 
+vector clocks previous works have addressed the efficient 
+implementation of vector clocks to track causal dependence on 
+relevant events their aim was to reduce the size of 
+timestamps attached to messages an efficient vector clock 
+implementation suited to systems with fifo channels is proposed 
+in another efficient implementation that does not 
+depend on channel ordering property is described in the 
+notion of causal barrier is introduced in to reduce 
+the size of control information required to implement causal 
+multicast however none of these papers considers the 
+ipt problem this problem has been addressed for the first 
+time to our knowledge in where an ipt protocol 
+is described but without correctness proof moreover in 
+this protocol timestamps attached to messages are of size 
+n this raises the following question which to our 
+knowledge has never been answered are there efficient vector 
+clock implementation techniques that are suitable for the ipt 
+problem 
+this paper has three main contributions a positive 
+answer to the previous open question the design of a 
+family of efficient ipt protocols and a formal 
+correctness proof of the associated protocols from a 
+methodological point of view the paper uses a top-down approach it 
+states abstract properties from which more concrete 
+properties and protocols are derived the family of ipt 
+protocols is defined by a general condition that allows 
+application messages to piggyback control information whose size 
+can be smaller than the system size i e smaller than the 
+number of processes composing the system in that sense 
+this family defines low cost ipt protocols when we 
+consider the message size in addition to efficiency the proposed 
+approach has an interesting design property namely the 
+family is incrementally built in three steps the basic 
+vector clock protocol is first enriched by adding to each process 
+a boolean vector whose management allows the processes 
+to track the immediate predecessor events then a general 
+condition is stated to reduce the size of the control 
+information carried by messages finally according to the way this 
+condition is implemented three ipt protocols are obtained 
+the paper is composed of seven sections sections 
+introduces the computation model vector clocks and the notion 
+of relevant events section presents the first step of the 
+construction that results in an ipt protocol in which each 
+message carries a vector clock and a boolean array both 
+of size n the number of processes section improves 
+this protocol by providing the general condition that allows 
+a message to carry control information whose size can be 
+smaller than n section provides instantiations of this 
+condition section provides a simulation study comparing 
+the behaviors of the proposed protocols finally section 
+concludes the paper due to space limitations proofs of 
+lemmas and theorems are omitted they can be found in 
+ 
+ model and vector clock 
+ distributed computation 
+a distributed program is made up of sequential local 
+programs which communicate and synchronize only by 
+exchanging messages a distributed computation describes the 
+execution of a distributed program the execution of a local 
+program gives rise to a sequential process let p p 
+pn be the finite set of sequential processes of the distributed 
+computation each ordered pair of communicating processes 
+ pi pj is connected by a reliable channel cij through which 
+pi can send messages to pj we assume that each message 
+is unique and a process does not send messages to itself 
+ 
+message transmission delays are finite but unpredictable 
+moreover channels are not necessarily fifo process speeds 
+are positive but arbitrary in other words the underlying 
+computation model is asynchronous 
+the local program associated with pi can include send 
+receive and internal statements the execution of such a 
+statement produces a corresponding send receive internal 
+event these events are called primitive events let ex 
+i 
+be the x-th event produced by process pi the sequence 
+hi e 
+i e 
+i ex 
+i constitutes the history of pi denoted 
+hi let h ∪n 
+i hi be the set of events produced by a 
+distributed computation this set is structured as a partial 
+order by lamport s happened before relation denoted 
+hb 
+→ and defined as follows ex 
+i 
+hb 
+→ ey 
+j if and only if 
+ i j ∧ x y local precedence ∨ 
+ ∃m ex 
+i send m ∧ ey 
+j receive m msg prec ∨ 
+ ∃ ez 
+k ex 
+i 
+hb 
+→ ez 
+k ∧ e z 
+k 
+hb 
+→ ey 
+j transitive closure 
+max ex 
+i ey 
+j is a partial function defined only when ex 
+i and 
+ey 
+j are ordered it is defined as follows max ex 
+i ey 
+j ex 
+i if 
+ey 
+j 
+hb 
+→ ex 
+i max ex 
+i ey 
+j ey 
+i if ex 
+i 
+hb 
+→ ey 
+j 
+clearly the restriction of 
+hb 
+→ to hi for a given i is a total 
+order thus we will use the notation ex 
+i ey 
+i iff x y 
+throughout the paper we will use the following notation 
+if e ∈ hi is not the first event produced by pi then pred e 
+denotes the event immediately preceding e in the sequence 
+hi if e is the first event produced by pi then pred e is 
+denoted by ⊥ meaning that there is no such event and 
+∀e ∈ hi ⊥ e the partial order bh h 
+hb 
+→ 
+constitutes a formal model of the distributed computation it is 
+associated with 
+ 
+this assumption is only in order to get simple protocols 
+ 
+p 
+p 
+p 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure timestamped relevant events and immediate predecessors graph hasse diagram 
+ relevant events 
+for a given observer of a distributed computation only 
+some events are relevant 
+ an interesting example 
+of what an observation is is the detection of predicates 
+on consistent global states of a distributed computation 
+ in that case a relevant event corresponds 
+to the modification of a local variable involved in the global 
+predicate another example is the checkpointing problem 
+where a relevant event is the definition of a local checkpoint 
+ 
+the left part of figure depicts a distributed computation 
+using the classical space-time diagram in this figure only 
+relevant events are represented the sequence of relevant 
+events produced by process pi is denoted by ri and r 
+∪n 
+i ri ⊆ h denotes the set of all relevant events let → 
+be the relation on r defined in the following way 
+∀ e f ∈ r × r e → f ⇔ e 
+hb 
+→ f 
+the poset r → constitutes an abstraction of the 
+distributed computation in the following we consider a 
+distributed computation at such an abstraction level 
+moreover without loss of generality we consider that the set of 
+relevant events is a subset of the internal events if a 
+communication event has to be observed a relevant internal event 
+can be generated just before a send and just after a receive 
+communication event occurred each relevant event is 
+identified by a pair process id sequence number see figure 
+definition the relevant causal past of an event e ∈ 
+h is the partially ordered subset of relevant events f such 
+that f 
+hb 
+→ e it is denoted ↑ e we have ↑ e f ∈ 
+r f 
+hb 
+→ e 
+note that if e ∈ r then ↑ e f ∈ r f → e in 
+the computation described in figure we have for the 
+event e identified ↑ e 
+the following properties are immediate consequences of the 
+previous definitions let e ∈ h 
+cp if e is not a receive event then 
+↑ e 
+ 
+ 
+ 
+∅ if pred e ⊥ 
+↑ pred e ∪ pred e if pred e ∈ r 
+↑ pred e if pred e ∈ r 
+cp if e is a receive event of a message m then 
+↑ e 
+ 
+ 
+ 
+↑ send m if pred e ⊥ 
+↑ pred e ∪ ↑ send m ∪ pred e 
+if pred e ∈ r 
+↑ pred e ∪ ↑ send m if pred e ∈ r 
+ 
+those events are sometimes called observable events 
+definition let e ∈ hi for every j such that ↑ e ∩ 
+rj ∅ the last relevant event of pj with respect to e is 
+lastr e j max f f ∈↑ e ∩ rj when ↑ e ∩ rj ∅ 
+lastr e j is denoted by ⊥ meaning that there is no such 
+event 
+let us consider the event e identified in figure we 
+have lastr e lastr e lastr e 
+ the following properties relate the events lastr e j 
+and lastr f j for all the predecessors f of e in the relation 
+hb 
+→ these properties follow directly from the definitions 
+let e ∈ hi 
+lr ∀e ∈ hi 
+lastr e i 
+ 
+ 
+ 
+⊥ if pred e ⊥ 
+pred e if pred e ∈ r 
+lastr pred e i if pred e ∈ r 
+lr if e is not a receipt event ∀j i 
+lastr e j lastr pred e j 
+lr if e is a receive event of m ∀j i 
+lastr e j max lastr pred e j lastr send m j 
+ vector clock system 
+definition as a fundamental concept associated with the 
+causality theory vector clocks have been introduced in 
+simultaneously and independently by fidge and mattern 
+ a vector clock system is a mechanism that associates 
+timestamps with events in such a way that the 
+comparison of their timestamps indicates whether the 
+corresponding events are or are not causally related and if they are 
+which one is the first more precisely each process pi has a 
+vector of integers v ci n such that v ci j is the number 
+of relevant events produced by pj that belong to the 
+current relevant causal past of pi note that v ci i counts the 
+number of relevant events produced so far by pi when a 
+process pi produces a relevant event e it associates with 
+e a vector timestamp whose value denoted e v c is equal 
+to the current value of v ci 
+vector clock implementation the following 
+implementation of vector clocks is based on the observation 
+that ∀i ∀e ∈ hi ∀j e v ci j y ⇔ lastr e j ey 
+j 
+where e v ci is the value of v ci just after the occurrence 
+of e this relation results directly from the properties lr 
+lr and lr each process pi manages its vector clock 
+v ci n according to the following rules 
+vc v ci n is initialized to 
+vc each time it produces a relevant event e pi increments 
+its vector clock entry v ci i v ci i v ci i to 
+ 
+indicate it has produced one more relevant event then 
+pi associates with e the timestamp e v c v ci 
+vc when a process pi sends a message m it attaches to 
+m the current value of v ci let m v c denote this 
+value 
+vc when pi receives a message m it updates its vector 
+clock as follows ∀k v ci k max v ci k m v c k 
+ immediate predecessors 
+in this section the immediate predecessor tracking 
+ ipt problem is stated section then some technical 
+properties of immediate predecessors are stated and proved 
+ section these properties are used to design the basic 
+ipt protocol and prove its correctness section this 
+ipt protocol previously presented in without proof is 
+built from a vector clock protocol by adding the 
+management of a local boolean array at each process 
+ the ipt problem 
+as indicated in the introduction some applications e g 
+analysis of distributed executions detection of 
+distributed properties require to determine on-the-fly and 
+without additional messages the transitive reduction of the 
+relation → i e we must not consider transitive causal 
+dependency given two relevant events f and e we say that f 
+is an immediate predecessor of e if f → e and there is no 
+relevant event g such that f → g → e 
+definition the immediate predecessor tracking 
+ ipt problem consists in associating with each relevant event 
+e the set of relevant events that are its immediate 
+predecessors moreover this has to be done on the fly and without 
+additional control message i e without modifying the 
+communication pattern of the computation 
+as noted in the introduction the ipt problem is the 
+computation of the hasse diagram associated with the partially 
+ordered set of the relevant events produced by a distributed 
+computation 
+ formal properties of ipt 
+in order to design a protocol solving the ipt problem it 
+is useful to consider the notion of immediate relevant 
+predecessor of any event whether relevant or not first we 
+observe that by definition the immediate predecessor on 
+pj of an event e is necessarily the lastr e j event 
+second for lastr e j to be immediate predecessor of e there 
+must not be another lastr e k event on a path between 
+lastr e j and e these observations are formalized in the 
+following definition 
+definition let e ∈ hi the set of immediate 
+relevant predecessors of e denoted ip e is the set of the relevant 
+events lastr e j j n such that ∀k lastr e j ∈↑ 
+ lastr e k 
+it follows from this definition that ip e ⊆ lastr e j j 
+ n ⊂↑ e when we consider figure the graph 
+depicted in its right part describes the immediate predecessors 
+of the relevant events of the computation defined in its left 
+part more precisely a directed edge e f means that the 
+relevant event e is an immediate predecessor of the relevant 
+event f 
+ 
+the following lemmas show how the set of immediate 
+predecessors of an event is related to those of its predecessors 
+in the relation 
+hb 
+→ they will be used to design and prove 
+the protocols solving the ipt problem to ease the reading 
+of the paper their proofs are presented in appendix a 
+the intuitive meaning of the first lemma is the following 
+if e is not a receive event all the causal paths arriving at e 
+have pred e as next-to-last event see cp so if pred e 
+is a relevant event all the relevant events belonging to its 
+relevant causal past are separated from e by pred e and 
+pred e becomes the only immediate predecessor of e in 
+other words the event pred e constitutes a reset w r t 
+the set of immediate predecessors of e on the other hand 
+if pred e is not relevant it does not separate its relevant 
+causal past from e 
+lemma if e is not a receive event ip e is equal to 
+∅ if pred e ⊥ 
+ pred e if pred e ∈ r 
+ip pred e if pred e ∈ r 
+the intuitive meaning of the next lemma is as follows if 
+e is a receive event receive m the causal paths arriving 
+at e have either pred e or send m as next-to-last events 
+if pred e is relevant as explained in the previous lemma 
+this event hides from e all its relevant causal past and 
+becomes an immediate predecessor of e concerning the 
+last relevant predecessors of send m only those that are 
+not predecessors of pred e remain immediate predecessors 
+of e 
+lemma let e ∈ hi be the receive event of a message 
+m if pred e ∈ ri then ∀j ip e ∩ rj is equal to 
+ pred e if j i 
+∅ if lastr pred e j ≥ lastr send m j 
+ip send m ∩ rj if lastr pred e j lastr send m j 
+the intuitive meaning of the next lemma is the following 
+if e is a receive event receive m and pred e is not 
+relevant the last relevant events in the relevant causal past of e are 
+obtained by merging those of pred e and those of send m 
+and by taking the latest on each process so the 
+immediate predecessors of e are either those of pred e or those 
+of send m on a process where the last relevant events 
+of pred e and of send m are the same event f none of 
+the paths from f to e must contain another relevant event 
+and thus f must be immediate predecessor of both events 
+pred e and send m 
+lemma let e ∈ hi be the receive event of a message 
+m if pred e ∈ ri then ∀j ip e ∩ rj is equal to 
+ip pred e ∩ rj if lastr pred e j lastr send m j 
+ip send m ∩ rj if lastr pred e j lastr send m j 
+ip pred e ∩ip send m ∩rj if lastr pred e j lastr 
+ send m j 
+ a basic ipt protocol 
+the basic protocol proposed here associates with each 
+relevant event e an attribute encoding the set ip e of its 
+immediate predecessors from the previous lemmas the set 
+ 
+actually this graph is the hasse diagram of the partial 
+order associated with the distributed computation 
+ 
+ip e of any event e depends on the sets ip of the events 
+pred e and or send m when e receive m hence the 
+idea to introduce a data structure allowing to manage the 
+sets ips inductively on the poset h 
+hb 
+→ to take into 
+account the information from pred e each process manages 
+a boolean array ipi such that ∀e ∈ hi the value of ipi 
+when e occurs denoted e ipi is the boolean array 
+representation of the set ip e more precisely ∀j ipi j 
+ ⇔ lastr e j ∈ ip e as recalled in section the 
+knowledge of lastr e j for every e and every j is based 
+on the management of vectors v ci thus the set ip e is 
+determined in the following way 
+ip e ey 
+j e v ci j y ∧ e ipi j j n 
+each process pi updates ipi according to the lemmas 
+ and 
+ it results from lemma that if e is not a receive event 
+the current value of ipi is sufficient to determine e ipi 
+it results from lemmas and that if e is a receive 
+event e receive m then determining e ipi 
+involves information related to the event send m more 
+precisely this information involves ip send m and 
+the timestamp of send m needed to compare the 
+events lastr send m j and lastr pred e j for 
+every j so both vectors send m v cj and send m ipj 
+ assuming send m produced by pj are attached to 
+message m 
+ moreover ipi must be updated upon the occurrence 
+of each event in fact the value of ipi just after an 
+event e is used to determine the value succ e ipi in 
+particular as stated in the lemmas the determination 
+of succ e ipi depends on whether e is relevant or not 
+thus the value of ipi just after the occurrence of event 
+e must keep track of this event 
+the following protocol previously presented in without 
+proof ensures the correct management of arrays v ci as in 
+section and ipi according to the lemmas of section 
+ the timestamp associated with a relevant event e is 
+denoted e ts 
+r initialization both v ci n and ipi n are 
+initialized to 
+r each time it produces a relevant event e 
+- pi associates with e the timestamp e ts defined 
+as follows e ts k v ci k ipi k 
+- pi increments its vector clock entry v ci i 
+ namely it executes v ci i v ci i 
+- pi resets ipi ∀ i ipi ipi i 
+r when pi sends a message m to pj it attaches to m 
+the current values of v ci denoted m v c and the 
+boolean array ipi denoted m ip 
+r when it receives a message m from pj pi executes the 
+following updates 
+∀k ∈ n case 
+v ci k m v c k thenv ci k m v c k 
+ipi k m ip k 
+v ci k m v c k then ipi k min ipi k m ip k 
+v ci k m v c k then skip 
+endcase 
+the proof of the following theorem directly follows from 
+lemmas and 
+theorem the protocol described in section solves 
+the ipt problem for any relevant event e the timestamp 
+e ts contains the identifiers of all its immediate 
+predecessors and no other event identifier 
+ a general condition 
+this section addresses a previously open problem 
+namely how to solve the ipt problem without requiring each 
+application message to piggyback a whole vector clock and 
+a whole boolean array first a general condition that 
+characterizes which entries of vectors v ci and ipi can be 
+omitted from the control information attached to a message 
+sent in the computation is defined section it is then 
+shown section that this condition is both sufficient and 
+necessary 
+however this general condition cannot be locally 
+evaluated by a process that is about to send a message thus 
+locally evaluable approximations of this general condition 
+must be defined to each approximation corresponds a 
+protocol implemented with additional local data structures in 
+that sense the general condition defines a family of ipt 
+protocols that solve the previously open problem this issue 
+is addressed in section 
+ to transmit or not to transmit control 
+information 
+let us consider the previous ipt protocol section 
+rule r shows that a process pj does not systematically 
+update each entry v cj k each time it receives a message 
+m from a process pi there is no update of v cj k when 
+v cj k ≥ m v c k in such a case the value m v c k is 
+useless and could be omitted from the control information 
+transmitted with m by pi to pj 
+similarly some entries ipj k are not updated when a 
+message m from pi is received by pj this occurs when 
+ v cj k m v c k ∧ m ip k or when v cj k 
+m v c k or when m v c k in the latest case as 
+m ip k ipi k then no update of ipj k is necessary 
+differently some other entries are systematically reset to 
+ this occurs when v cj k m v c k ∧ m ip k 
+these observations lead to the definition of the condition 
+k m k that characterizes which entries of vectors v ci and 
+ipi can be omitted from the control information attached 
+to a message m sent by a process pi to a process pj 
+definition k m k ≡ 
+ send m v ci k 
+∨ send m v ci k pred receive m v cj k 
+∨ 
+ 
+ send m v ci k pred receive m v cj k 
+∧ send m ipi k 
+ a necessary and sufficient condition 
+we show here that the condition k m k is both 
+necessary and sufficient to decide which triples of the form 
+ k send m v ci k send m ipi k can be omitted in an 
+outgoing message m sent by pi to pj a triple attached to 
+m will also be denoted k m v c k m ip k due to space 
+limitations the proofs of lemma and lemma are given 
+in the proof of theorem follows directly from these 
+lemmas 
+ 
+lemma sufficiency if k m k is true then the triple 
+ k m v c k m ip k is useless with respect to the correct 
+management of ipj k and v cj k 
+lemma necessity if k m k is false then the triple 
+ k m v c k m ip k is necessary to ensure the correct 
+management of ipj k and v cj k 
+theorem when a process pi sends m to a process pj 
+the condition k m k is both necessary and sufficient not to 
+transmit the triple k send m v ci k send m ipi k 
+ a family of ipt protocols based 
+on evaluable conditions 
+it results from the previous theorem that if pi could 
+evaluate k m k when it sends m to pj this would 
+allow us improve the previous ipt protocol in the following 
+way in rule r the triple k v ci k ipi k is 
+transmitted with m only if ¬k m k moreover rule r is 
+appropriately modified to consider only triples carried by m 
+however as previously mentioned pi cannot locally 
+evaluate k m k when it is about to send m more 
+precisely when pi sends m to pj pi knows the exact values of 
+send m v ci k and send m ipi k they are the current 
+values of v ci k and ipi k but as far as the value of 
+pred receive m v cj k is concerned two cases are 
+possible case i if pred receive m 
+hb 
+→ send m then pi can 
+know the value of pred receive m v cj k and 
+consequently can evaluate k m k case ii if pred receive m 
+and send m are concurrent pi cannot know the value of 
+pred receive m v cj k and consequently cannot evaluate 
+k m k moreover when it sends m to pj whatever the 
+case i or ii that actually occurs pi has no way to know 
+which case does occur hence the idea to define evaluable 
+approximations of the general condition let k m k be 
+an approximation of k m k that can be evaluated by a 
+process pi when it sends a message m to be correct the 
+condition k must ensure that every time pi should 
+transmit a triple k v ci k ipi k according to theorem i e 
+each time ¬k m k then pi transmits this triple when it 
+uses condition k hence the definition of a correct 
+evaluable approximation 
+definition a condition k locally evaluable by a 
+process when it sends a message m to another process is 
+correct if ∀ m k ¬k m k ⇒ ¬k m k or equivalently 
+∀ m k k m k ⇒ k m k 
+this definition means that a protocol evaluating k to 
+decide which triples must be attached to messages does not 
+miss triples whose transmission is required by theorem 
+let us consider the constant condition denoted k 
+that is always false i e ∀ m k k m k false this 
+trivially correct approximation of k actually corresponds 
+to the particular ipt protocol described in section in 
+which each message carries a whole vector clock and a 
+whole boolean vector the next section presents a better 
+approximation of k denoted k 
+ a boolean matrix-based evaluable 
+condition 
+condition k is based on the observation that condition 
+k is composed of sub-conditions some of them can be 
+pj 
+send m 
+pi 
+v ci k x 
+ipi k 
+v cj k ≥ x receive m 
+figure the evaluable condition k 
+locally evaluated while the others cannot more 
+precisely k ≡ a ∨ α ∨ β ∧ b where a ≡ send m v ci k 
+and b ≡ send m ipi k are locally evaluable 
+whereas α ≡ send m v ci k pred receive m v cj k and 
+β ≡ send m v ci k pred receive m v cj k are not 
+but from easy boolean calculus a∨ α∨β ∧b ⇒ a∨α∨ 
+ β ∧ b ≡ k this leads to condition k ≡ a ∨ γ ∧ b where 
+γ α ∨ β ≡ send m v ci k ≤ pred receive m v cj k 
+i e k ≡ send m v ci k ≤ pred receive m v cj k ∧ 
+send m ipi k ∨ send m v ci k 
+so pi needs to approximate the predicate send m v ci k 
+≤ pred receive m v cj k to be correct this 
+approximation has to be a locally evaluable predicate ci j k such that 
+when pi is about to send a message m to pj ci j k ⇒ 
+ send m v ci k ≤ pred receive m v cj k informally 
+that means that when ci j k holds the local context of 
+pi allows to deduce that the receipt of m by pj will not 
+lead to v cj k update pj knows as much as pi about 
+pk hence the concrete condition k is the following 
+k ≡ send m v ci k ∨ ci j k ∧ send m ipi k 
+let us now examine the design of such a predicate 
+ denoted ci first the case j i can be ignored since it is 
+assumed section that a process never sends a 
+message to itself second in the case j k the relation 
+send m v ci j ≤ pred receive m v cj j is always true 
+because the receipt of m by pj cannot update v cj j thus 
+∀j i ci j j must be true now let us consider the case 
+where j i and j k figure suppose that there exists 
+an event e receive m with e send m m sent by 
+pj and piggybacking the triple k m v c k m ip k and 
+m v c k ≥ v ci k hence m v c k receive m v ci k 
+as v cj k cannot decrease this means that as long as v ci k 
+does not increase for every message m sent by pi to pj we 
+have the following send m v ci k receive m v ci k 
+send m v cj k ≤ receive m v cj k i e ci j k must 
+remain true in other words once ci j k is true the only 
+event of pi that could reset it to false is either the receipt 
+of a message that increases v ci k or if k i the 
+occurrence of a relevant event that increases v ci i similarly 
+once ci j k is false the only event that can set it to true is 
+the receipt of a message m from pj piggybacking the triple 
+ k m v c k m ip k with m v c k ≥ v ci k 
+in order to implement the local predicates ci j k each 
+process pi is equipped with a boolean matrix mi as in 
+such that m j k ⇔ ci j k it follows from the 
+previous discussion that this matrix is managed according to the 
+following rules note that its i-th line is not significant case 
+j i and that its diagonal is always equal to 
+m initialization ∀ j k mi j k is initialized to 
+ 
+m each time it produces a relevant event e pi resets 
+the ith column of its matrix ∀j i mi j i 
+m when pi sends a message no update of mi occurs 
+m when it receives a message m from pj pi executes the 
+following updates 
+∀ k ∈ n case 
+v ci k m v c k then ∀ i j k mi k 
+mi j k 
+v ci k m v c k then mi j k 
+v ci k m v c k then skip 
+endcase 
+the following lemma results from rules m -m the 
+theorem that follows shows that condition k m k is correct 
+ both are proved in 
+lemma ∀i ∀m sent by pi to pj ∀k we have 
+send m mi j k ⇒ 
+send m v ci k ≤ pred receive m v cj k 
+theorem let m be a message sent by pi to pj let 
+k m k ≡ send m mi j k ∧ send m ipi k 
+ ∨ send m v ci k we have k m k ⇒ k m k 
+ resulting ipt protocol 
+the complete text of the ipt protocol based on the 
+previous discussion follows 
+rm initialization 
+- both v ci n and ipi n are set to 
+and ∀ j k mi j k is set to 
+rm each time it produces a relevant event e 
+- pi associates with e the timestamp e ts defined 
+as follows e ts k v ci k ipi k 
+- pi increments its vector clock entry v ci i 
+ namely it executes v ci i v ci i 
+- pi resets ipi ∀ i ipi ipi i 
+- pi resets the ith column of its boolean matrix 
+∀j i mi j i 
+rm when pi sends a message m to pj it attaches to m the 
+set of triples each made up of a process id an integer 
+and a boolean k v ci k ipi k mi j k ∨ 
+ipi k ∧ v ci k 
+rm when pi receives a message m from pj it executes the 
+following updates 
+∀ k m v c k m ip k carried by m 
+case 
+v ci k m v c k then v ci k m v c k 
+ipi k m ip k 
+∀ i j k mi k 
+ 
+actually the value of this column remains constant after 
+its first update in fact ∀j mi j i can be set to only upon 
+the receipt of a message from pj carrying the value v cj i 
+ see r but as mj i i pj does not send v cj i to 
+pi so it is possible to improve the protocol by executing 
+this reset of the column mi i only when pi produces 
+its first relevant event 
+mi j k 
+v ci k m v c k then ipi k min ipi k m ip k 
+mi j k 
+v ci k m v c k then skip 
+endcase 
+ a tradeoff 
+the condition k m k shows that a triple has not to be 
+transmitted when mi j k ∧ ipi k ∨ v ci k 
+ let us first observe that the management of ipi k 
+is governed by the application program more precisely 
+the ipt protocol does not define which are the 
+relevant events it has only to guarantee a correct 
+management of ipi k differently the matrix mi does not belong 
+to the problem specification it is an auxiliary variable of 
+the ipt protocol which manages it so as to satisfy the 
+following implication when pi sends m to pj mi j k 
+ ⇒ pred receive m v cj k ≥ send m v ci k the 
+fact that the management of mi is governed by the protocol 
+and not by the application program leaves open the 
+possibility to design a protocol where more entries of mi are equal 
+to this can make the condition k m k more often 
+satisfied 
+and can consequently allow the protocol to transmit 
+less triples 
+we show here that it is possible to transmit less triples 
+at the price of transmitting a few additional boolean 
+vectors the previous ipt matrix-based protocol section 
+is modified in the following way the rules rm and 
+rm are replaced with the modified rules rm and rm 
+ mi k denotes the kth column of mi 
+rm when pi sends a message m to pj it attaches to m 
+the following set of -uples each made up of a 
+process id an integer a boolean and a boolean vector 
+ k v ci k ipi k mi k mi j k ∨ ipi k 
+ ∧ v ci k 
+rm when pi receives a message m from pj it executes the 
+following updates 
+∀ k m v c k m ip k m m n k carried by m 
+case 
+v ci k m v c k then v ci k m v c k 
+ipi k m ip k 
+∀ i mi k m m k 
+v ci k m v c k then ipi k min ipi k m ip k 
+∀ i mi k 
+max mi k m m k 
+v ci k m v c k then skip 
+endcase 
+similarly to the proofs described in it is possible to 
+prove that the previous protocol still satisfies the 
+property proved in lemma namely ∀i ∀m sent by pi to pj 
+∀k we have send m mi j k ⇒ send m v ci k ≤ 
+pred receive m v cj k 
+ 
+let us consider the previously described protocol section 
+ where the value of each matrix entry mi j k is always 
+equal to the reader can easily verify that this setting 
+correctly implements the matrix moreover k m k is then 
+always false it actually coincides with k k m which 
+corresponds to the case where whole vectors have to be 
+transmitted with each message 
+ 
+intuitively the fact that some columns of matrices m are 
+attached to application messages allows a transitive 
+transmission of information more precisely the relevant history 
+of pk known by pj is transmitted to a process pi via a causal 
+sequence of messages from pj to pi in contrast the 
+protocol described in section used only a direct transmission of 
+this information in fact as explained section the 
+predicate c locally implemented by the matrix m was based on 
+the existence of a message m sent by pj to pi piggybacking 
+the triple k m v c k m ip k and m v c k ≥ v ci k 
+i e on the existence of a direct transmission of information 
+ by the message m 
+the resulting ipt protocol defined by the rules rm 
+rm rm and rm uses the same condition k m k 
+as the previous one it shows an interesting tradeoff between 
+the number of triples k v ci k ipi k whose transmission 
+is saved and the number of boolean vectors that have to 
+be additionally piggybacked it is interesting to notice that 
+the size of this additional information is bounded while each 
+triple includes a non-bounded integer namely a vector clock 
+value 
+ experimental study 
+this section compares the behaviors of the previous 
+protocols this comparison is done with a simulation study 
+ipt denotes the protocol presented in section that 
+uses the condition k m k which is always equal to false 
+ipt denotes the protocol presented in section that uses 
+the condition k m k where messages carry triples 
+finally ipt denotes the protocol presented in section that 
+also uses the condition k m k but where messages carry 
+additional boolean vectors 
+this section does not aim to provide an in-depth 
+simulation study of the protocols but rather presents a general 
+view on the protocol behaviors to this end it compares 
+ipt and ipt with regard to ipt more precisely for 
+ipt the aim was to evaluate the gain in terms of triples 
+ k v ci k ipi k not transmitted with respect to the 
+systematic transmission of whole vectors as done in ipt for 
+ipt the aim was to evaluate the tradeoff between the 
+additional boolean vectors transmitted and the number of saved 
+triples the behavior of each protocol was analyzed on a set 
+of programs 
+ simulation parameters 
+the simulator provides different parameters enabling to 
+tune both the communication and the processes features 
+these parameters allow to set the number of processes for 
+the simulated computation to vary the rate of 
+communication send receive events and to alter the time duration 
+between two consecutive relevant events moreover to be 
+independent of a particular topology of the underlying 
+network a fully connected network is assumed internal events 
+have not been considered 
+since the presence of the triples k v ci k ipi k 
+piggybacked by a message strongly depends on the frequency at 
+which relevant events are produced by a process different 
+time distributions between two consecutive relevant events 
+have been implemented e g normal uniform and poisson 
+distributions the senders of messages are chosen 
+according to a random law to exhibit particular configurations 
+of a distributed computation a given scenario can be 
+provided to the simulator message transmission delays follow 
+a standard normal distribution finally the last parameter 
+of the simulator is the number of send events that occurred 
+during a simulation 
+ parameter settings 
+to compare the behavior of the three ipt protocols we 
+performed a large number of simulations using different 
+parameters setting we set to the number of processes 
+participating to a distributed computation the number of 
+communication events during the simulation has been set to 
+ the parameter λ of the poisson time distribution λ 
+is the average number of relevant events in a given time 
+interval has been set so that the relevant events are generated 
+at the beginning of the simulation with the uniform time 
+distribution a relevant event is generated in the average 
+every communication events the location parameter of 
+the standard normal time distribution has been set so that 
+the occurrence of relevant events is shifted around the third 
+part of the simulation experiment 
+as noted previously the simulator can be fed with a 
+given scenario this allows to analyze the worst case scenarios 
+for ipt and ipt these scenarios correspond to the case 
+where the relevant events are generated at the maximal 
+frequency i e each time a process sends or receives a message 
+it produces a relevant event 
+finally the three ipt protocols are analyzed with the 
+same simulation parameters 
+ simulation results 
+the results are displayed on the figures a- d these 
+figures plot the gain of the protocols in terms of the number 
+of triples that are not transmitted y axis with respect to 
+the number of communication events x axis from these 
+figures we observe that whatever the time distribution 
+followed by the relevant events both ipt and ipt exhibit 
+a behavior better than ipt i e the total number of 
+piggybacked triples is lower in ipt and ipt than in ipt 
+even in the worst case see figure d 
+let us consider the worst scenario in that case the gain 
+is obtained at the very beginning of the simulation and lasts 
+as long as it exists a process pj for which ∀k v cj k 
+in that case the condition ∀k k m k is satisfied as soon 
+as ∃k v cj k both ipt and ipt behave as ipt 
+ the shape of the curve becomes flat since the condition 
+k m k is no longer satisfied 
+figure a shows that during the first events of the 
+simulation the slope of curves ipt and ipt are steep the 
+same occurs in figure d that depicts the worst case 
+scenario then the slope of these curves decreases and remains 
+constant until the end of the simulation in fact as soon as 
+v cj k becomes greater than the condition ¬k m k 
+reduces to mi j k ∨ ipi k 
+figure b displays an interesting feature it considers λ 
+ as the relevant events are taken only during the very 
+beginning of the simulation this figure exhibits a very steep 
+slope as the other figures the figure shows that as soon as 
+no more relevant events are taken on average of the 
+triples are not piggybacked by the messages this shows 
+the importance of matrix mi furthermore ipt benefits 
+from transmitting additional boolean vectors to save triple 
+transmissions the figures a- c show that the average 
+gain of ipt with respect to ipt is close to 
+finally figure c underlines even more the importance 
+ 
+of matrix mi when very few relevant events are taken 
+ipt and ipt turn out to be very efficient indeed this 
+figure shows that very quickly the gain in number of triples 
+that are saved is very high actually of the triples are 
+saved 
+ lessons learned from the simulation 
+of course all simulation results are consistent with the 
+theoretical results ipt is always better than or equal to 
+ipt and ipt is always better than ipt the simulation 
+results teach us more 
+ the first lesson we have learnt concerns the matrix mi 
+its use is quite significant but mainly depends on the time 
+distribution followed by the relevant events on the one 
+hand when observing figure b where a large number of 
+relevant events are taken in a very short time ipt can save 
+up to of the triples however we could have 
+expected a more sensitive gain of ipt since the boolean vector 
+ip tends to stabilize to when no relevant events 
+are taken in fact as discussed in section the 
+management of matrix mi within ipt does not allow a transitive 
+transmission of information but only a direct transmission 
+of this information this explains why some columns of mi 
+may remain equal to while they could potentially be equal 
+to differently as ipt benefits from transmitting 
+additional boolean vectors providing a transitive transmission 
+information it reaches a gain of 
+on the other hand when very few relevant events are 
+taken in a large period of time see figure c the behavior of 
+ipt and ipt turns out to be very efficient since the 
+transmission of up to of the triples is saved this comes from 
+the fact that very quickly the boolean vector ipi tends to 
+stabilize to and that matrix mi contains very few 
+ since very few relevant events have been taken thus a 
+direct transmission of the information is sufficient to quickly 
+get matrices mi equal to 
+ the second lesson concerns ipt more precisely the 
+tradeoff between the additional piggybacking of boolean 
+vectors and the number of triples whose transmission is saved 
+with n adding booleans to a triple does not 
+substantially increases its size the figures a- c exhibit the 
+number of triples whose transmission is saved the average 
+gain in number of triples of ipt with respect to ipt is 
+about 
+ conclusion 
+this paper has addressed an important causality-related 
+distributed computing problem namely the immediate 
+predecessors tracking problem it has presented a family of 
+protocols that provide each relevant event with a timestamp 
+that exactly identify its immediate predecessors the 
+family is defined by a general condition that allows application 
+messages to piggyback control information whose size can 
+be smaller than n the number of processes in that sense 
+this family defines message size-efficient ipt protocols 
+according to the way the general condition is implemented 
+different ipt protocols can be obtained three of them have 
+been described and analyzed with simulation experiments 
+interestingly it has also been shown that the efficiency of 
+the protocols measured in terms of the size of the control 
+information that is not piggybacked by an application 
+message depends on the pattern defined by the communication 
+events and the relevant events 
+last but not least it is interesting to note that if one is not 
+interested in tracking the immediate predecessor events the 
+protocols presented in the paper can be simplified by 
+suppressing the ipi booleans vectors but keeping the boolean 
+matrices mi the resulting protocols that implement a 
+vector clock system are particularly efficient as far as the 
+size of the timestamp carried by each message is concerned 
+interestingly this efficiency is not obtained at the price of 
+additional assumptions such as fifo channels 
+ references 
+ anceaume e h´elary j -m and raynal m tracking 
+immediate predecessors in distributed computations res 
+report irisa univ rennes france 
+ baldoni r prakash r raynal m and singhal m 
+efficient ∆-causal broadcasting journal of computer 
+systems science and engineering - 
+ chandy k m and lamport l distributed snapshots 
+determining global states of distributed systems acm 
+transactions on computer systems - 
+ diehl c jard c and rampon j -x reachability analysis 
+of distributed executions proc tapsoft 
+springer-verlag lncs pp - 
+ fidge c j timestamps in message-passing systems that 
+preserve partial ordering proc th australian 
+computing conference pp - 
+ fromentin e jard c jourdan g -v and raynal m 
+on-the-fly analysis of distributed computations ipl 
+ - 
+ fromentin e and raynal m shared global states in 
+distributed computations jcss - 
+ fromentin e raynal m garg v k and tomlinson a 
+on-the-fly testing of regular patterns in distributed 
+computations proc icpp vol - 
+ garg v k principles of distributed systems kluwer 
+academic press pages 
+ h´elary j -m most´efaoui a netzer r h b and raynal 
+m communication-based prevention of useless 
+ckeckpoints in distributed computations distributed 
+computing - 
+ h´elary j -m melideo g and raynal m tracking 
+causality in distributed systems a suite of efficient 
+protocols proc sirocco carleton university press 
+pp - l aquila italy june 
+ h´elary j -m netzer r and raynal m consistency issues 
+in distributed checkpoints ieee tse 
+ - 
+ hurfin m mizuno m raynal m and singhal m efficient 
+distributed detection of conjunction of local predicates 
+in asynch computations ieee tse - 
+ lamport l time clocks and the ordering of events in a 
+distributed system comm acm - 
+ marzullo k and sabel l efficient detection of a class of 
+stable properties distributed computing - 
+ mattern f virtual time and global states of distributed 
+systems proc int conf parallel and distributed 
+algorithms cosnard quinton raynal robert eds 
+north-holland pp - 
+ prakash r raynal m and singhal m an adaptive 
+causal ordering algorithm suited to mobile computing 
+environment jpdc - 
+ raynal m and singhal s logical time capturing 
+causality in distributed systems ieee computer 
+ - 
+ singhal m and kshemkalyani a an efficient 
+implementation of vector clocks ipl - 
+ wang y m consistent global checkpoints that contain 
+a given set of local checkpoints ieee toc 
+ - 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+gaininnumberoftriples 
+communication events number 
+ipt 
+ipt 
+ipt 
+relevant events 
+ a the relevant events follow a uniform distribution 
+ ratio 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+gaininnumberoftriples 
+communication events number 
+ipt 
+ipt 
+ipt 
+relevant events 
+ b the relevant events follow a poisson distribution 
+ λ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+gaininnumberoftriples 
+communication events number 
+ipt 
+ipt 
+ipt 
+relevant events 
+ c the relevant events follow a normal distribution 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+gaininnumberoftriples 
+communication events number 
+ipt 
+ipt 
+ipt 
+relevant events 
+ d for each pi pi takes a relevant event and 
+broadcast to all processes 
+figure experimental results 
+ 

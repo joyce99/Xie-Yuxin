@@ -1,0 +1,1308 @@
+fairness in dead-reckoning based distributed 
+multi-player games 
+sudhir aggarwal hemant banavar 
+department of computer science 
+florida state university tallahassee fl 
+email sudhir banavar  cs fsu edu 
+sarit mukherjee sampath rangarajan 
+center for networking research 
+bell laboratories holmdel nj 
+email sarit sampath  bell-labs com 
+abstract 
+in a distributed multi-player game that uses dead-reckoning vectors 
+to exchange movement information among players there is 
+inaccuracy in rendering the objects at the receiver due to network delay 
+between the sender and the receiver the object is placed at the 
+receiver at the position indicated by the dead-reckoning vector but by 
+that time the real position could have changed considerably at the 
+sender this inaccuracy would be tolerable if it is consistent among 
+all players that is at the same physical time all players see 
+inaccurate with respect to the real position of the object but the same 
+position and trajectory for an object but due to varying network 
+delays between the sender and different receivers the inaccuracy 
+is different at different players as well this leads to unfairness 
+in game playing in this paper we first introduce an error 
+measure for estimating this inaccuracy then we develop an algorithm 
+for scheduling the sending of dead-reckoning vectors at a sender 
+that strives to make this error equal at different receivers over time 
+this algorithm makes the game very fair at the expense of 
+increasing the overall mean error of all players to mitigate this effect we 
+propose a budget based algorithm that provides improved fairness 
+without increasing the mean error thereby maintaining the accuracy 
+of game playing we have implemented both the scheduling 
+algorithm and the budget based algorithm as part of bzflag a popular 
+distributed multi-player game we show through experiments that 
+these algorithms provide fairness among players in spite of widely 
+varying network delays an additional property of the proposed 
+algorithms is that they require less number of drs to be exchanged 
+ compared to the current implementation of bzflag to achieve the 
+same level of accuracy in game playing 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems-distributed applications 
+general terms 
+algorithms design experimentation performance 
+ introduction 
+in a distributed multi-player game players are normally 
+distributed across the internet and have varying delays to each other 
+or to a central game server usually in such games the players are 
+part of the game and in addition they may control entities that make 
+up the game during the course of the game the players and the 
+entities move within the game space a player sends information 
+about her movement as well as the movement of the entities she 
+controls to the other players using a dead-reckoning dr vector 
+a dr vector contains information about the current position of the 
+player entity in terms of x y and z coordinates at the time the dr 
+vector was sent as well as the trajectory of the entity in terms of 
+the velocity component in each of the dimensions each of the 
+participating players receives such dr vectors from one another and 
+renders the other players entities on the local consoles until a new 
+dr vector is received for that player entity in a peer-to-peer game 
+players send dr vectors directly to each other in a client-server 
+game these dr vectors may be forwarded through a game server 
+the idea of dr is used because it is almost impossible for 
+players entities to exchange their current positions at every time unit 
+dr vectors are quantization of the real trajectory which we refer 
+to as real path at a player normally a new dr vector is computed 
+and sent whenever the real path deviates from the path extrapolated 
+using the previous dr vector say in terms of distance in the x y 
+z plane by some amount specified by a threshold we refer to the 
+trajectory that can be computed using the sequence of dr vectors 
+as the exported path therefore at the sending player there is a 
+deviation between the real path and the exported path the error due 
+to this deviation can be removed if each movement of player entity 
+is communicated to the other players at every time unit that is a 
+dr vector is generated at every time unit thereby making the real 
+and exported paths the same given that it is not feasible to 
+satisfy this due to bandwidth limitations this error is not of practical 
+interest therefore the receiving players can at best follow the 
+exported path because of the network delay between the sending 
+and receiving players when a dr vector is received and rendered 
+at a player the original trajectory of the player entity may have 
+already changed thus in physical time there is a deviation at the 
+receiving player between the exported path and the rendered 
+trajectory which we refer to as placed path we refer to this error 
+as the export error note that the export error in turn results in a 
+deviation between the real and the placed paths 
+the export error manifests itself due to the deviation between the 
+exported path at the sender and the placed path at the receiver i 
+ 
+before the dr vector is received at the receiver referred to as the 
+before export error and ii after the dr vector is received at the 
+receiver referred to as the after export error in an earlier paper 
+we showed that by synchronizing the clocks at all the players and 
+by using a technique based on time-stamping messages that carry 
+the dr vectors we can guarantee that the after export error is made 
+zero that is the placed and the exported paths match after the dr 
+vector is received we also showed that the before export error can 
+never be eliminated since there is always a non-zero network delay 
+but can be significantly reduced using our technique 
+henceforth we assume that the players use such a technique which results 
+in unavoidable but small overall export error 
+in this paper we consider the problem of different and varying 
+network delays between each sender-receiver pair of a dr vector 
+and consequently the different and varying export errors at the 
+receivers due to the difference in the export errors among the 
+receivers the same entity is rendered at different physical time at 
+different receivers this brings in unfairness in game playing for 
+instance a player with a large delay would always see an entity 
+late in physical time compared to the other players and 
+therefore her action on the entity would be delayed in physical time 
+even if she reacted instantaneously after the entity was rendered 
+our goal in this paper is to improve the fairness of these games in 
+spite of the varying network delays by equalizing the export error 
+at the players we explore whether the time-average of the export 
+errors which is the cumulative export error over a period of time 
+averaged over the time period at all the players can be made the 
+same by scheduling the sending of the dr vectors appropriately at 
+the sender we propose two algorithms to achieve this 
+both the algorithms are based on delaying or dropping the 
+sending of dr vectors to some players on a continuous basis to 
+try and make the export error the same at all the players at an 
+abstract level the algorithm delays sending dr vectors to players 
+whose accumulated error so far in the game is smaller than others 
+this would mean that the export error due to this dr vector at these 
+players will be larger than that of the other players thereby making 
+them the same the goal is to make this error at least approximately 
+equal at every dr vector with the deviation in the error becoming 
+smaller as time progresses 
+the first algorithm which we refer to as the scheduling 
+algorithm is based on estimating the delay between players and 
+refining the sending of dr vectors by scheduling them to be sent 
+to different players at different times at every dr generation point 
+through an implementation of this algorithm using the open source 
+game bzflag we show that this algorithm makes the game very fair 
+ we measure fairness in terms of the standard deviation of the 
+error the drawback of this algorithm is that it tends to push the 
+error of all the players towards that of the player with the worst 
+error which is the error at the farthest player in terms of delay 
+from the sender of the dr to alleviate this effect we propose 
+a budget based algorithm which budgets how the drs are sent to 
+different players at a high level the algorithm is based on the 
+idea of sending more drs to players who are farther away from 
+the sender compared to those who are closer experimental results 
+from bzflag illustrates that the budget based algorithm follows a 
+more balanced approach it improves the fairness of the game but 
+at the same time does so without pushing up the mean error of the 
+players thereby maintaining the accuracy of the game in addition 
+the budget based algorithm is shown to achieve the same level of 
+accuracy of game playing as the current implementation of bzflag 
+using much less number of dr vectors 
+ previous work 
+earlier work on network games to deal with network latency has 
+mostly focussed on compensation techniques for packet delay and 
+loss these methods are aimed at making large delays and 
+message loss tolerable for players but does not consider the 
+problems that may be introduced by varying delays from the server to 
+different players or from the players to one another for example 
+the concept of local lag has been used in where each player 
+delays every local operation for a certain amount of time so that 
+remote players can receive information about the local operation and 
+execute the same operation at the about same time thus reducing 
+state inconsistencies the online multi-player game mimaze 
+ for example takes a static bucket synchronization approach to 
+compensate for variable network delays in mimaze each player 
+delays all events by ms regardless of whether they are 
+generated locally or remotely players with a network delay larger 
+than ms simply cannot participate in the game in general 
+techniques based on bucket synchronization depend on imposing a 
+worst case delay on all the players 
+there have been a few papers which have studied the problem of 
+fairness in a distributed game by more sophisticated message 
+delivery mechanisms but these works assume the existence of 
+a global view of the game where a game server maintains a view 
+ or state of the game players can introduce objects into the game 
+or delete objects that are already part of the game for example in 
+a first-person shooter game by shooting down the object these 
+additions and deletions are communicated to the game server 
+using action messages based on these action messages the state 
+of the game is changed at the game server and these changes are 
+communicated to the players using update messages fairness is 
+achieved by ordering the delivery of action and update messages at 
+the game server and players respectively based on the notion of a 
+fair-order which takes into account the delays between the game 
+server and the different players objects that are part of the game 
+may move but how this information is communicated to the players 
+seems to be beyond the scope of these works in this sense these 
+works are very limited in scope and may be applicable only to 
+firstperson shooter games and that too to only games where players are 
+not part of the game 
+dr vectors can be exchanged directly among the players 
+ peerto-peer model or using a central server as a relay client-server 
+model it has been shown in that multi-player games that 
+use dr vectors together with bucket synchronization are not 
+cheatproof unless additional mechanisms are put in place both the 
+scheduling algorithm and the budget-based algorithm described in 
+our paper use dr vectors and hence are not cheat-proof for 
+example a receiver could skew the delay estimate at the sender to 
+make the sender believe that the delay between the sender and the 
+receiver is high thereby gaining undue advantage we emphasize 
+that the focus of this paper is on fairness without addressing the 
+issue of cheating 
+in the next section we describe the game model that we use 
+and illustrate how senders and receivers exchange dr vectors and 
+how entities are rendered at the receivers based on the time-stamp 
+augmented dr vector exchange as described in in section 
+we describe the dr vector scheduling algorithm that aims to make 
+the export error equal across the players with varying delays from 
+the sender of a dr vector followed by experimental results 
+obtained from instrumentation of the scheduling algorithm on the 
+open source game bzflag section describes the budget based 
+algorithm that achieves improved fairness but without reducing the 
+level accuracy of game playing conclusions are presented in 
+section 
+ 
+ game model 
+the game architecture is based on players distributed across the 
+internet and exchanging dr vectors to each other the dr 
+vectors could either be sent directly from one player to another 
+ peerto-peer model or could be sent through a game server which 
+receives the dr vector from a player and forwards it to other players 
+ client-server model as mentioned before we assume 
+synchronized clocks among the participating players 
+each dr vector sent from one player to another specifies the 
+trajectory of exactly one player entity we assume a linear dr vector 
+in that the information contained in the dr vector is only enough at 
+the receiving player to compute the trajectory and render the entity 
+in a straight line path such a dr vector contains information about 
+the starting position and velocity of the player entity where the 
+velocity is constant 
+ thus the dr vectors sent by a player specifies 
+the current time at the player when the dr vector is computed not 
+the time at which this dr vector is sent to the other players as we 
+will explain later the current position of the player entity in terms 
+of the x y z coordinates and the velocity vector in the direction 
+of x y and z coordinates specifically the ith 
+dr vector sent by 
+player j about the kth 
+entity is denoted by drj 
+ik and is represented 
+by the following tuple tj 
+ik xj 
+ik yj 
+ik zj 
+ik vxj 
+ik vyj 
+ik vzj 
+ik 
+without loss of generality in the rest of the discussion we 
+consider a sequence of dr vectors sent by only one player and for 
+only one entity for simplicity we consider a two dimensional 
+game space rather than a three dimensional one hence we use 
+dri to denote the ith 
+such dr vector represented as the tuple 
+ ti xi yi vxi vyi the receiving player computes the starting 
+position for the entity based on xi yi and the time difference 
+between when the dr vector is received and the time ti at which it 
+was computed note that the computation of time difference is 
+feasible since all the clocks are synchronized the receiving player 
+then uses the velocity components to project and render the 
+trajectory of the entity this trajectory is followed until a new dr vector 
+is received which changes the position and or velocity of the entity 
+timet 
+real 
+exported 
+placed 
+dt 
+a 
+b 
+c 
+d 
+dr 
+ t x y vx vy 
+computed at time t and 
+sent to the receiver 
+dr 
+ t x y vx vy 
+computed at time t and 
+sent to the receiver 
+t 
+dt 
+placed 
+e 
+figure trajectories and deviations 
+based on this model figure illustrates the sending and 
+receiv 
+other type of dr vectors include quadratic dr vectors which 
+specify the acceleration of the entity and cubic spline dr vectors 
+that consider the starting position and velocity and the ending 
+position and velocity of the entity 
+ing of dr vectors and the different errors that are encountered the 
+figure shows the reception of dr vectors at a player henceforth 
+called the receiver the horizontal axis shows the time which is 
+synchronized among all the players the vertical axis tries to 
+conceptually capture the two-dimensional position of an entity 
+assume that at time t a dr vector dr is computed by the sender 
+and immediately sent to the receiver assume that dr is received 
+at the receiver after a delay of dt time units the receiver 
+computes the initial position of the entity as x vx × dt y 
+vy × dt shown as point e the thick line ebd represents the 
+projected and rendered trajectory at the receiver based on the 
+velocity components vx and vy placed path at time t a dr vector 
+dr is computed for the same entity and immediately sent to the 
+receiver 
+ assume that dr is received at the receiver after a delay 
+of dt time units when this dr vector is received assume that the 
+entity is at point d a new position for the entity is computed as 
+ x vx × dt y vy × dt and the entity is moved to this 
+position point c the velocity components vx and vy are used 
+to project and render this entity further 
+let us now consider the error due to network delay although 
+dr was computed at time t and sent to the receiver it did not 
+reach the receiver until time t dt this means although the 
+exported path based on dr at the sender at time t is the 
+trajectory ac until time t dt at the receiver this entity was being 
+rendered at trajectory bd based on dr only at time t dt 
+did the entity get moved to point c from which point onwards the 
+exported and the placed paths are the same the deviation between 
+the exported and placed paths creates an error component which we 
+refer to as the export error a way to represent the export error is 
+to compute the integral of the distance between the two trajectories 
+over the time when they are out of sync we represent the integral 
+of the distances between the placed and exported paths due to some 
+dr dri over a time interval t t as err dri t t in the 
+figure the export error due to dr is computed as the integral of 
+the distance between the trajectories ac and bd over the time 
+interval t t dt note that there could be other ways of 
+representing this error as well but in this paper we use the integral of 
+the distance between the two trajectories as a measure of the export 
+error note that there would have been an export error created due 
+to the reception of dr at which time the placed path would have 
+been based on a previous dr vector this is not shown in the figure 
+but it serves to remind the reader that the export error is cumulative 
+when a sequence of dr vectors are received starting from time 
+t onwards there is a deviation between the real and the exported 
+paths as we discussed earlier this export error is unavoidable 
+the above figure and example illustrates one receiver only but 
+in reality dr vectors dr and dr are sent by the sender to all 
+the participating players each of these players receives dr and 
+dr after varying delays thereby creating different export error 
+values at different players the goal of the dr vector scheduling 
+algorithm to be described in the next section is to make this 
+ cumulative export error equal at every player independently for each of 
+the entities that make up the game 
+ scheduling algorithm 
+forsending dr vectors 
+in section we showed how delay from the sender of a new dr 
+ 
+normally dr vectors are not computed on a periodic basis but 
+on an on-demand basis where the decision to compute a new dr 
+vector is based on some threshold being exceeded on the deviation 
+between the real path and the path exported by the previous dr 
+vector 
+ 
+vector to the receiver of the dr vector could lead to export error 
+because of the deviation of the placed path from the exported path 
+at the receiver until this new dr vector is received we also 
+mentioned that the goal of the dr vector scheduling algorithm is to 
+make the export error equal at all receivers over a period of time 
+since the game is played in a distributed environment it makes 
+sense for the sender of an entity to keep track of all the errors at the 
+receivers and try to make them equal however the sender cannot 
+know the actual error at a receiver till it gets some information 
+regarding the error back from the receiver our algorithm estimates 
+the error to compute a schedule to send dr vectors to the receivers 
+and corrects the error when it gets feedbacks from the receivers in 
+this section we provide motivations for the algorithm and describe 
+the steps it goes through throughout this section we will use the 
+following example to illustrate the algorithm 
+timet 
+exported path 
+placed path 
+at receiver 
+dt 
+a 
+b 
+c 
+d 
+e 
+f 
+t 
+g 
+g 
+dt 
+dr sent 
+to receiver 
+dr sent 
+to receiver 
+t 
+ t 
+ 
+da 
+da 
+g 
+h 
+i 
+j 
+k 
+l 
+n 
+m 
+dr estimated 
+to be received 
+by receiver 
+dr estimated 
+to be received 
+by receiver 
+dr actually 
+received by 
+receiver 
+dr actually 
+received by 
+receiver 
+dr sent to 
+both receivers 
+dr computed 
+by sender 
+placed path 
+at receiver 
+figure dr vector flow between a sender and two receivers 
+and the evolution of estimated and actual placed paths at the 
+receivers dr t t x y vx vy sent at time t to 
+both receivers dr t t 
+ x y vx vy sent at time 
+t 
+ t δ to receiver and dr t t 
+ x y vx vy 
+sent at time t 
+ t δ to receiver 
+consider the example in figure the figure shows a single 
+sender sending dr vectors for an entity to two different receivers 
+ and dr computed at t is sent and received by the receivers 
+sometime between t and t at which time they move the location 
+of the entity to match the exported path thus the path of the 
+entity is shown only from the point where the placed path matches 
+the exported path for dr now consider dr at time t dr 
+is computed by the sender but assume that it is not immediately 
+sent to the receivers and is only sent after time δ to receiver 
+ at time t 
+ t δ and after time δ to receiver at time 
+t 
+ t δ note that the sender includes the sending 
+timestamp with the dr vector as shown in the figure assume that 
+the sender estimates it will be clear shortly why the sender has to 
+estimate the delay that after a delay of dt receiver will receive 
+it will use the coordinate and velocity parameters to compute the 
+entity s current location and move it there point c and from this 
+time onwards the exported and the placed paths will become the 
+same however in reality receiver receives dr after a delay 
+of da which is less than sender s estimates of dt and moves 
+the corresponding entity to point h similarly the sender estimates 
+that after a delay of dt receiver will receive dr will compute 
+the current location of the entity and move it to that point point 
+e while in reality it receives dr after a delay of da dt and 
+moves the entity to point n the other points shown on the placed 
+and exported paths will be used later in the discussion to describe 
+different error components 
+ computation of relative export error 
+referring back to the discussion from section from the sender s 
+perspective the export error at receiver due to dr is given 
+by err dr t t δ dt the integral of the distance 
+between the trajectories ac and db over the time interval t t 
+δ dt of figure this is due to the fact that the sender uses 
+the estimated delay dt to compute this error similarly the 
+export error from the sender s perspective at received due to dr 
+is given by err dr t t δ dt the integral of the 
+distance between the trajectories ae and df over the time interval 
+ t t δ dt note that the above errors from the sender s 
+perspective are only estimates in reality the export error will be 
+either smaller or larger than the estimated value based on whether 
+the delay estimate was larger or smaller than the actual delay that 
+dr experienced this difference between the estimated and the 
+actual export error is the relative export error which could either 
+be positive or negative which occurs for every dr vector that is 
+sent and is accumulated at the sender 
+the concept of relative export error is illustrated in figure 
+since the actual delay to receiver is da the export error 
+induced by dr at receiver is err dr t t δ da 
+this means there is an error in the estimated export error and the 
+sender can compute this error only after it gets a feedback from the 
+receiver about the actual delay for the delivery of dr i e the 
+value of da we propose that once receiver receives dr it 
+sends the value of da back to the sender the receiver can 
+compute this information as it knows the time at which dr was sent 
+ t 
+ t δ which is appended to the dr vector as shown in 
+figure and the local receiving time which is synchronized with 
+the sender s clock therefore the sender computes the relative 
+export error for receiver represented using r as 
+r err dr t t δ dt 
+− err dr t t δ da 
+ err dr t δ dt t δ da 
+similarly the relative export error for receiver is computed as 
+r err dr t t δ dt 
+− err dr t t δ da 
+ err dr t δ dt t δ da 
+note that r as da dt and r as da dt 
+relative export errors are computed by the sender as and when it 
+receives the feedback from the receivers this example shows the 
+ 
+relative export error values after dr is sent and the corresponding 
+feedbacks are received 
+ equalization of error among receivers 
+we now explain what we mean by making the errors equal 
+at all the receivers and how this can be achieved as stated 
+before the sender keeps estimates of the delays to the receivers dt 
+and dt in the example of figure this says that at time t 
+when dr is computed the sender already knows how long it may 
+take messages carrying this dr vector to reach the receivers the 
+sender uses this information to compute the export errors which are 
+err dr t t δ dt and err dr t t δ dt 
+for receivers and respectively note that the areas of these error 
+components are a function of δ and δ as well as the network 
+delays dt and dt if we are to make the exports errors due to dr 
+the same at both receivers the sender needs to choose δ and δ 
+such that 
+err dr t t δ dt err dr t t δ dt 
+but when t was computed there could already have been 
+accumulated relative export errors due to previous dr vectors dr and 
+the ones before let us represent the accumulated relative error up 
+to dri for receiver j as ri 
+j to accommodate these accumulated 
+relative errors the sender should now choose δ and δ such that 
+r 
+ err dr t t δ dt 
+r 
+ err dr t t δ dt 
+the δi determines the scheduling instant of the dr vector at the 
+sender for receiver i this method of computation of δ s ensures 
+that the accumulated export error i e total actual error for each 
+receiver equalizes at the transmission of each dr vector 
+in order to establish this assume that the feedback for dr vector 
+di from a receiver comes to the sender before schedule for di is 
+computed let si 
+m and ai 
+m denote the estimated error for receiver 
+m used for computing schedule for di and accumulated error for 
+receiver m computed after receiving feedback for di respectively 
+then ri 
+m ai 
+m −si 
+m in order to compute the schedule instances 
+ i e δ s for di for any pair of receivers m and n we do ri− 
+m 
+si 
+m ri− 
+n si 
+n the following theorem establishes the fact 
+that the accumulated export error is equalized at every scheduling 
+instant 
+theorem when the schedule instances for sending di 
+are computed for any pair of receivers m and n the following 
+condition is satisfied 
+i− 
+k 
+ak 
+m si 
+m 
+i− 
+k 
+ak 
+n si 
+n 
+proof by induction assume that the premise holds for some i 
+we show that it holds for i the base case for i holds since 
+initially r 
+m r 
+n and the s 
+m s 
+n is used to compute the 
+scheduling instances 
+in order to compute the schedule for di the we first compute 
+the relative errors as 
+ri 
+m ai 
+m − si 
+m and ri 
+n ai 
+n − si 
+n 
+then to compute δ s we execute 
+ri 
+m si 
+m ri 
+n si 
+n 
+ai 
+m − si 
+m si 
+m ai 
+n − si 
+n si 
+n 
+adding the condition of the premise on both sides we get 
+i 
+k 
+ak 
+m si 
+m 
+i 
+k 
+ak 
+n si 
+n 
+ computation of the export error 
+let us now consider how the export errors can be computed 
+from the previous section to find δ and δ we need to find 
+err dr t t δ dt and err dr t t δ dt 
+note that the values of r 
+ and r 
+ are already known at the sender 
+consider the computation of err dr t t δ dt this is 
+the integral of the distance between the trajectories ac due to dr 
+and bd due to dr from dr and dr point a is x y 
+ x y and point b is x y x t − t × vx y 
+ t − t × vy the trajectory ac can be represented as a 
+function of time as x t y t x vx × t y vy × t 
+and the trajectory of bd can be represented as x t y t 
+ x vx × t y vy × t 
+the distance between the two trajectories as a function of time 
+then becomes 
+dist t x t − x t y t − y t 
+ x − x vx − vx t 
+ y − y vy − vy t 
+ vx − vx vy − vy t 
+ x − x vx − vx 
+ y − y vy − vy t 
+ x − x y − y 
+let 
+a vx − vx 
+ vy − vy 
+b x − x vx − vx 
+ y − y vy − vy 
+c x − x 
+ y − y 
+then dist t can be written as 
+dist t a × t b × t c 
+then err dr t t for some time interval t t becomes 
+t 
+t 
+dist t dt 
+t 
+t 
+a × t b × t c dt 
+a closed form solution for the indefinite integral 
+a × t b × t c dt 
+ at b 
+√ 
+at bt c 
+ a 
+ 
+ 
+ 
+ln 
+ 
+ b 
+ at 
+√ 
+a 
+ at bt c c 
+ 
+√ 
+a 
+− 
+ 
+ 
+ln 
+ 
+ b 
+ at 
+√ 
+a 
+ at bt c b 
+a− 
+ 
+err dr t t δ dt and err dr t t δ dt 
+can then be calculated by applying the appropriate limits to the 
+above solution in the next section we consider the computation 
+of the δ s for n receivers 
+ 
+ computation of scheduling instants 
+we again look at the computation of δ s by referring to figure 
+the sender chooses δ and δ such that r 
+ err dr t t 
+δ dt r 
+ err dr t t δ dt if r 
+ and r 
+ both 
+are zero then δ and δ should be chosen such that err dr t t 
+δ dt err dr t t δ dt this equality will hold 
+if δ dt δ dt thus if there is no accumulated relative 
+export error all that the sender needs to do is to choose the δ s in 
+such a way that they counteract the difference in the delay to the 
+two receivers so that they receive the dr vector at the same time 
+as discussed earlier because the sender is not able to a priori learn 
+the delay there will always be an accumulated relative export error 
+from a previous dr vector that does have to be taken into account 
+to delve deeper into this consider the computation of the 
+export error as illustrated in the previous section to compute the 
+δ s we require that r 
+ err dr t t δ dt r 
+ 
+err dr t t δ dt that is 
+r 
+ 
+t δ dt 
+t 
+dist t dt r 
+ 
+t δ dt 
+t 
+dist t dt 
+that is 
+r 
+ 
+t dt 
+t 
+dist t dt 
+t dt δ 
+t dt 
+dist t dt 
+r 
+ 
+t dt 
+t 
+dist t dt 
+t dt δ 
+t dt 
+dist t dt 
+the components r 
+ r 
+ are already known to or estimated by 
+the sender further the error components 
+t dt 
+t 
+dist t dt and 
+t dt 
+t 
+dist t dt can be a priori computed by the sender using 
+estimated values of dt and dt let us use e to denote r 
+ 
+t dt 
+t 
+dist t dt and e to denote r 
+ 
+t dt 
+t 
+dist t dt 
+then we require that 
+e 
+t dt δ 
+t dt 
+dist t dt e 
+t dt δ 
+t dt 
+dist t dt 
+assume that e e then for the above equation to hold we 
+require that 
+t dt δ 
+t dt 
+dist t dt 
+t dt δ 
+t dt 
+dist t dt 
+to make the game as fast as possible within this framework the δ 
+values should be made as small as possible so that dr vectors are 
+sent to the receivers as soon as possible subject to the fairness 
+requirement given this we would choose δ to be zero and compute 
+δ from the equation 
+e e 
+t dt δ 
+t dt 
+dist t dt 
+in general if there are n receivers n when a sender 
+generates a dr vector and decides to schedule them to be sent it first 
+computes the ei values for all of them from the accumulated 
+relative export errors and estimates of delays then it finds the smallest 
+of these values let ek be the smallest value the sender makes δk 
+to be zero and computes the rest of the δ s from the equality 
+ei 
+t dti δi 
+t dti 
+dist t dt ek 
+∀i ≤ i ≤ n i k 
+the δ s thus obtained gives the scheduling instants of the dr 
+vector for the receivers 
+ steps of the scheduling algorithm 
+for the purpose of the discussion below as before let us denote 
+the accumulated relative export error at a sender for receiver k up 
+until dri to be ri 
+k let us denote the scheduled delay at the sender 
+before dri is sent to receiver k as δi 
+k given the above discussion 
+the algorithm steps are as follows 
+ the sender computes dri at say time ti and then 
+computes δi 
+k and ri− 
+k ∀k ≤ k ≤ n based on the estimation 
+of delays dtk ∀k ≤ k ≤ n as per equation it 
+schedules dri to be sent to receiver k at time ti δi 
+k 
+ the dr vectors are sent to the receivers at the scheduled 
+times which are received after a delay of dak ∀k ≤ k ≤ 
+n where dak ≤ or dtk the receivers send the value of 
+dak back to the sender the receiver can compute this value 
+based on the time stamps on the dr vector as described 
+earlier 
+ the sender computes ri 
+k as described earlier and illustrated 
+in figure the sender also recomputes using exponential 
+averaging method similar to round-trip time estimation by 
+tcp the estimate of delay dtk from the new value of 
+dak for receiver k 
+ go back to step to compute dri when it is required 
+and follow the steps of the algorithm to schedule and send 
+this dr vector to the receivers 
+ handling cases in practice 
+so far we implicity assumed that dri is sent out to all receivers 
+before a decision is made to compute the next dr vector dri 
+and the receivers send the value of dak corresponding to dri and 
+this information reaches the sender before it computes dri so 
+that it can compute ri 
+k and then use it in the computation of δi 
+k 
+two issues need consideration with respect to the above algorithm 
+when it is used in practice 
+ it may so happen that a new dr vector is computed even 
+before the previous dr vector is sent out to all receivers 
+how will this situation be handled 
+ what happens if the feedback does not arrive before dri 
+is computed and scheduled to be sent 
+let us consider the first scenario we assume that dri has been 
+scheduled to be sent and the scheduling instants are such that δi 
+ 
+δi 
+ · · · δi 
+n assume that dri is to be computed because 
+the real path has deviated exceeding a threshold from the path 
+exported by dri at time ti where ti δi 
+k ti ti δi 
+k 
+this means dri has been sent only to receivers up to k in the 
+scheduled order in our algorithm in this case the scheduled delay 
+ordering queue is flushed which means dri is not sent to receivers 
+still queued to receive it but a new scheduling order is computed 
+for all the receivers to send dri 
+for those receivers who have been sent dri assume for now 
+that daj ≤ j ≤ k has been received from all receivers the 
+scenario where daj has not been received will be considered as a part 
+of the second scenario later for these receivers ei 
+j ≤ j ≤ k 
+can be computed for those receivers j k ≤ j ≤ n to 
+whom dri was not sent ei 
+j does not apply consider a receiver 
+j k ≤ j ≤ n to whom dri was not sent refer to 
+figure for such a receiver j when dri is to be scheduled and 
+ 
+timeti 
+exported path 
+dtj 
+a 
+b 
+c 
+d 
+ti- 
+gi 
+j 
+dri computed by sender 
+and dri for receiver k to 
+n is removed from queue 
+dri scheduled 
+for receiver k 
+ti 
+g 
+h 
+e 
+f 
+dri scheduled 
+for receiver j 
+dri computed 
+by sender 
+placed path 
+at receiver k 
+gi 
+j 
+figure schedule computation when dri is not sent to 
+receiver j k ≤ j ≤ n 
+δi 
+j needs to be computed the total export error is the accumulated 
+relative export error at time ti when schedule for dri was 
+computed plus the integral of the distance between the two trajectories 
+ac and bd of figure over the time interval ti ti δi 
+j 
+dtj note that this integral is given by err dri ti ti 
+err dri ti ti δi 
+j dtj therefore instead of ei 
+j 
+of equation we use the value ri− 
+j err dri ti ti 
+err dri ti ti δi 
+j dtj where ri− 
+j is relative 
+export error used when the schedule for dri was computed 
+now consider the second scenario here the feedback dak 
+corresponding to dri has not arrived before dri is computed and 
+scheduled in this case ri 
+k cannot be computed thus in the 
+computation of δk for dri this will be assumed to be zero we 
+do assume that a reliable mechanism is used to send dak back to 
+the sender when this information arrives at a later time ri 
+k will 
+be computed and accumulated to future relative export errors for 
+example ri 
+k if dak is received before dri is computed and 
+used in the computation of δk when a future dr vector is to be 
+scheduled for example dri 
+ experimental results 
+in order to evaluate the effectiveness and quantify benefits 
+obtained through the use of the scheduling algorithm we implemented 
+the proposed algorithm in bzflag battle zone flag game 
+it is a first-person shooter game where the players in teams drive 
+tanks and move within a battle field the aim of the players is to 
+navigate and capture flags belonging to the other team and bring 
+them back to their own area the players shoot each other s tanks 
+using shooting bullets the movement of the tanks as well as that 
+of the shots are exchanged among the players using dr vectors 
+we have modified the implementation of bzflag to 
+incorporate synchronized clocks among the players and the server and 
+exchange time-stamps with the dr vector we set up a testbed with 
+four players running the instrumented version of bzflag with one 
+as a sender and the rest as receivers the scheduling approach and 
+the base case where each dr vector was sent to all the receivers 
+concurrently at every trigger point were implemented in the same 
+run by tagging the dr vectors according to the type of approach 
+used to send the dr vector nistnet was used to introduce 
+delays across the sender and the three receivers mean delays of 
+ ms ms and ms were introduced between the sender and 
+first second and the third receiver respectively we introduce a 
+variance of msec to the mean delay of each receiver to model 
+variability in delay the sender logged the errors of each receiver 
+every milliseconds for both the scheduling approach and the 
+base case the sender also calculated the standard deviation and 
+the mean of the accumulated export error of all the receivers every 
+ milliseconds figure plots the mean and standard deviation 
+of the accumulated export error of all the receivers in the 
+scheduling case against the base case note that the x-axis of these graphs 
+ and the other graphs that follow represents the system time when 
+the snapshot of the game was taken 
+observe that the standard deviation of the error with scheduling 
+is much lower as compared to the base case this implies that the 
+accumulated errors of the receivers in the scheduling case are closer 
+to one another this shows that the scheduling approach achieves 
+fairness among the receivers even if they are at different distances 
+ i e latencies from the sender 
+observe that the mean of the accumulated error increased 
+multifold with scheduling in comparison to the base case further 
+exploration for the reason for the rise in the mean led to the conclusion 
+that every time the dr vectors are scheduled in a way to equalize 
+the total error it pushes each receivers total error higher also as 
+the accumulated error has an estimated component the schedule is 
+not accurate to equalize the errors for the receivers leading to the 
+dr vector reaching earlier or later than the actual schedule in 
+either case the error is not equalized and if the dr vector reaches 
+late it actually increases the error for a receiver beyond the highest 
+accumulated error this means that at the next trigger this receiver 
+will be the one with highest error and every other receiver s error 
+will be pushed to this error value this flip-flop effect leads to 
+the increase in the accumulated error for all the receivers 
+the scheduling for fairness leads to the decrease in standard 
+deviation i e increases the fairness among different players but it 
+comes at the cost of higher mean error which may not be a 
+desirable feature this led us to explore different ways of equalizing the 
+accumulated errors the approach discussed in the following 
+section is a heuristic approach based on the following idea using the 
+same amount of dr vectors over time as in the base case instead 
+of sending the dr vectors to all the receivers at the same frequency 
+as in the base case if we can increase the frequency of sending 
+the dr vectors to the receiver with higher accumulated error and 
+decrease the frequency of sending dr vectors to the receiver with 
+lower accumulated error we can equalize the export error of all 
+receivers over time at the same time we wish to decrease the 
+error of the receiver with the highest accumulated error in the base 
+case of course this receiver would be sent more dr vectors than 
+in the base case we refer to such an algorithm as a budget based 
+algorithm 
+ budget based algorithm 
+in a game the sender of an entity sends dr vectors to all the 
+receivers every time a threshold is crossed by the entity lower 
+the threshold more dr vectors are generated during a given time 
+period since the dr vectors are sent to all the receivers and the 
+network delay between the sender-receiver pairs cannot be avoided 
+the before export error 
+with the most distant player will always 
+ 
+note that after export error is eliminated by using synchronized 
+clock among the players 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanaccumulatederror 
+time in seconds 
+base case 
+scheduling algorithm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+standarddeviationofaccumulatederror 
+time in seconds 
+base case 
+scheduling algorithm 
+figure mean and standard deviation of error with scheduling and without i e base case 
+be higher than the rest in order to mitigate the imbalance in the 
+error we propose to send dr vectors selectively to different 
+players based on the accumulated errors of these players the budget 
+based algorithm is based on this idea and there are two variations 
+of it one is a probabilistic budget based scheme and the other a 
+deterministic budget base scheme 
+ probabilistic budget based scheme 
+the probabilistic budget based scheme has three main steps a 
+lower the dead reckoning threshold but at the same time keep the 
+total number of drs sent the same as the base case b at every 
+trigger probabilistically pick a player to send the dr vector to 
+and c send the dr vector to the chosen player these steps are 
+described below 
+the lowering of dr threshold is implemented as follows 
+lowering the threshold is equivalent to increasing the number of trigger 
+points where dr vectors are generated suppose the threshold is 
+such that the number of triggers caused by it in the base case is t 
+and at each trigger n dr vectors sent by the sender which results 
+in a total of nt dr vectors our goal is to keep the total number of 
+dr vectors sent by the sender fixed at nt but lower the number of 
+dr vectors sent at each trigger i e do not send the dr vector to 
+all the receivers let n and t be the number of dr vectors sent 
+at each trigger and number of triggers respectively in the modified 
+case we want to ensure n t nt since we want to increase the 
+number of trigger points i e t t this would mean that n n 
+that is not all receivers will be sent the dr vector at every trigger 
+in the probabilistic budget based scheme at each trigger a 
+probability is calculated for each receiver to be sent a dr vector and 
+only one receiver is sent the dr n this probability is based 
+on the relative weights of the receivers accumulated errors that 
+is a receiver with a higher accumulated error will have a higher 
+probability of being sent the dr vector consider that the 
+accumulated error for three players are a a and a respectively 
+then the probability of player receiving the dr vector would 
+be a 
+a a a 
+ similarly for the other players once the player is 
+picked the dr vector is sent to that player 
+to compare the probabilistic budget based algorithm with the 
+base case we needed to lower the threshold for the base case for 
+fair comparison as the dead reckoning threshold in the base 
+case was already very fine it was decided that instead of 
+lowering the threshold the probabilistic budget based approach would 
+be compared against a modified base case that would use the 
+normal threshold as the budget based algorithm but the base case was 
+modified such that every third trigger would be actually used to 
+send out a dr vector to all the three receivers used in our 
+experiments this was called as the base case as it resulted in 
+number of dr vectors being sent as compared to the base case 
+the budget per trigger for the probability based approach was 
+calculated as one dr vector at each trigger as compared to three dr 
+vectors at every third trigger in the base case thus the two cases 
+lead to the same number of dr vectors being sent out over time 
+in order to evaluate the effectiveness of the probabilistic budget 
+based algorithm we instrumented the bzflag game to use this 
+approach we used the same testbed consisting of one sender and 
+three receivers with delays of ms ms and ms from the 
+sender and with low delay variance ms and moderate delay 
+variance ms the results are shown in figures and as 
+mentioned earlier the x-axis of these graphs represents the system 
+time when the snapshot of the game was taken observe from the 
+figures that the standard deviation of the accumulated error among 
+the receivers with the probabilistic budget based algorithm is less 
+than the base case and the mean is a little higher than the 
+base case this implies that the game is fairer as compared to the 
+ base case at the cost of increasing the mean error by a small 
+amount as compared to the base case 
+the increase in mean error in the probabilistic case compared to 
+the base case can be attributed to the fact that the even though 
+the probabilistic approach on average sends the same number of 
+dr vectors as the base case it sometimes sends dr vectors to 
+a receiver less frequently and sometimes more frequently than the 
+ base case due to its probabilistic nature when a receiver does 
+not receive a dr vector for a long time the receiver s trajectory 
+is more and more off of the sender s trajectory and hence the rate 
+of buildup of the error at the receiver is higher at times when 
+a receiver receives dr vectors more frequently it builds up error 
+at a lower rate but there is no way of reversing the error that was 
+built up when it did not receive a dr vector for a long time this 
+leads the receivers to build up more error in the probabilistic case 
+as compared to the base case where the receivers receive a dr 
+vector almost periodically 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanaccumulatederror 
+time in seconds 
+ base case 
+deterministic algorithm 
+probabilistic algorithm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+standarddeviationofaccumulatederror 
+time in seconds 
+ base case 
+deterministic algorithm 
+probabilistic algorithm 
+figure mean and standard deviation of error for different algorithms including budget based algorithms for low delay variance 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanaccumulatederror 
+time in seconds 
+ base case 
+deterministic algorithm 
+probabilistic algorithm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+standarddeviationofaccumulatederror 
+time in seconds 
+ base case 
+deterministic algorithm 
+probabilistic algorithm 
+figure mean and standard deviation of error for different algorithms including budget based algorithms for moderate delay 
+variance 
+ deterministic budget based scheme 
+to bound the increase in mean error we decided to modify the 
+budget based algorithm to be deterministic the first two steps 
+of the algorithm are the same as in the probabilistic algorithm the 
+trigger points are increased to lower the threshold and accumulated 
+errors are used to compute the probability that a receiver will 
+receiver a dr vector once these steps are completed a deterministic 
+schedule for the receiver is computed as follows 
+ if there is any receiver s tagged to receive a dr vector at 
+the current trigger the sender sends out the dr vector to the 
+respective receiver s if at least one receiver was sent a dr 
+vector the sender calculates the probabilities of each receiver 
+receiving a dr vector as explained before and follows steps 
+ to else it does not do anything 
+ for each receiver the probability value is multiplied with the 
+budget available at each trigger which is set to as explained 
+below to give the frequency of sending the dr vector to each 
+receiver 
+ if any of the receiver s frequency after multiplying with the 
+budget goes over the receiver s frequency is set as and 
+the surplus amount is equally distributed to all the receivers 
+by adding the amount to their existing frequencies this 
+process is repeated until all the receivers have a frequency of 
+less than or equal to this is due to the fact that at a trigger 
+we cannot send more than one dr vector to the respective 
+receiver that will be wastage of dr vectors by sending 
+redundant information 
+ frequency gives us the schedule at which the sender should 
+send dr vectors to the respective receiver credit obtained 
+previously explained in step if any is subtracted from the 
+schedule observe that the resulting value of the schedule 
+might not be an integer hence the value is rounded off by 
+taking the ceiling of the schedule for example if the 
+frequency is this implies that we would like to have a dr 
+vector sent every triggers however we are constrained 
+to send it at the th trigger giving us a credit of when we 
+do send the dr vector next time we would be able to send it 
+ 
+on the rd trigger because of the credit 
+ the difference between the schedule and the ceiling of the 
+schedule is the credit that the receiver has obtained which 
+is remembered for the future and used at the next time as 
+explained in step 
+ for each of those receivers who were sent a dr vector at 
+the current trigger the receivers are tagged to receive the 
+next dr vector at the trigger that happens exactly schedule 
+ the ceiling of the schedule number of times away from the 
+current trigger observe that no other receiver s schedule is 
+modified at this point as they all are running a schedule 
+calculated at some previous point of time those schedules will 
+be automatically modified at the trigger when they are 
+scheduled to receive the next dr vector at the first trigger the 
+sender sends the dr vector to all the receivers and uses a 
+relative probability of n for each receiver and follows the 
+steps to to calculate the next schedule for each receiver 
+in the same way as mentioned for other triggers this 
+algorithm ensures that every receiver has a guaranteed schedule 
+of receiving dr vectors and hence there is no irregularity in 
+sending the dr vector to any receiver as was observed in the 
+budget based probabilistic algorithm 
+we used the testbed described earlier three receivers with 
+varying delays to evaluate the deterministic algorithm using the budget 
+of dr vector per trigger so as to use the same number of dr 
+vectors as in the base case results from our experiments are 
+shown in figures and it can be observed that the standard 
+deviation of error in the deterministic budget based algorithm is less 
+than the base case and also has the same mean error as the 
+base case this indicates that the deterministic algorithm is more 
+fair than the base case and at the same time does not increase 
+the mean error thereby leading to a better game quality compared 
+to the probabilistic algorithm 
+in general when comparing the deterministic approach to the 
+probabilistic approach we found that the mean accumulated 
+error was always less in the deterministic approach with respect to 
+standard deviation of the accumulated error we found that in the 
+fixed or low variance cases the deterministic approach was 
+generally lower but in higher variance cases it was harder to draw 
+conclusions as the probabilistic approach was sometimes better than 
+the deterministic approach 
+ conclusions and future work 
+in distributed multi-player games played across the internet 
+object and player trajectory within the game space are exchanged in 
+terms of dr vectors due to the variable delay between players 
+these dr vectors reach different players at different times there is 
+unfair advantage gained by receivers who are closer to the sender 
+of the dr as they are able to render the sender s position more 
+accurately in real time in this paper we first developed a model 
+for estimating the error in rendering player trajectories at the 
+receivers we then presented an algorithm based on scheduling the 
+dr vectors to be sent to different players at different times thereby 
+equalizing the error at different players this algorithm is aimed 
+at making the game fair to all players but tends to increase the 
+mean error of the players to counter this effect we presented 
+budget based algorithms where the dr vectors are still 
+scheduled to be sent at different players at different times but the 
+algorithm balances the need for fairness with the requirement that the 
+error of the worst case players who are furthest from the sender 
+are not increased compared to the base case where all dr vectors 
+are sent to all players every time a dr vector is generated we 
+presented two variations of the budget based algorithms and through 
+experimentation showed that the algorithms reduce the standard 
+deviation of the error thereby making the game more fair and at the 
+same time has comparable mean error to the base case 
+ references 
+ s aggarwal h banavar a khandelwal s mukherjee and 
+s rangarajan accuracy in dead-reckoning based 
+distributed multi-player games proceedings of acm 
+sigcomm workshop on network and system support 
+for games netgames aug 
+ l gautier and c diot design and evaluation of mimaze 
+a multiplayer game on the internet in proc of ieee 
+multimedia icmcs 
+ m mauve consistency in replicated continuous 
+interactive media in proc of the acm conference on 
+computer supported cooperative work cscw 
+pp - 
+ s k singhal and d r cheriton exploiting position 
+history for efficient remote rendering in networked 
+virtual reality presence teleoperators and virtual 
+environments vol no pp - 
+ c diot and l gautier a distributed architecture for 
+multiplayer interactive applications on the internet in 
+ieee network magazine vol pp - 
+ l pantel and l c wolf on the impact of delay on 
+real-time multiplayer games in proc of acm 
+nossdav may 
+ y lin k guo and s paul sync-ms synchronized 
+messaging service for real-time multi-player distributed 
+games in proc of th ieee international conference on 
+network protocols icnp nov 
+ k guo s mukherjee s rangarajan and s paul a fair 
+message exchange framework for distributed multi-player 
+games in proc of netgames may 
+ n e baughman and b n levine cheat-proof playout for 
+centralized and distributed online games in proc of ieee 
+infocom april 
+ m allman and v paxson on estimating end-to-end 
+network path properties in proc of acm sigcomm 
+sept 
+ bzflag forum bzflag game url 
+http www bzflag org 
+ nation institute of standards and technology nist net 
+url http snad ncsl nist gov nistnet 
+ 

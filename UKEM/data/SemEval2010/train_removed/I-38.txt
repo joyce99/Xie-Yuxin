@@ -1,0 +1,1073 @@
+bidding algorithms for a distributed combinatorial auction 
+benito mendoza 
+ 
+and jos´e m vidal 
+computer science and engineering 
+university of south carolina 
+columbia sc 
+mendoza  engr sc edu vidal sc edu 
+abstract 
+distributed allocation and multiagent coordination 
+problems can be solved through combinatorial auctions 
+however most of the existing winner determination algorithms 
+for combinatorial auctions are centralized the pause 
+auction is one of a few efforts to release the auctioneer from 
+having to do all the work it might even be possible to get 
+rid of the auctioneer it is an increasing price 
+combinatorial auction that naturally distributes the problem of 
+winner determination amongst the bidders in such a way that 
+they have an incentive to perform the calculation it can 
+be used when we wish to distribute the computational load 
+among the bidders or when the bidders do not wish to reveal 
+their true valuations unless necessary pause establishes 
+the rules the bidders must obey however it does not tell 
+us how the bidders should calculate their bids we have 
+developed a couple of bidding algorithms for the bidders in 
+a pause auction our algorithms always return the set of 
+bids that maximizes the bidder s utility since the problem 
+is np-hard run time remains exponential on the number 
+of items but it is remarkably better than an exhaustive 
+search in this paper we present our bidding algorithms 
+discuss their virtues and drawbacks and compare the 
+solutions obtained by them to the revenue-maximizing solution 
+found by a centralized winner determination algorithm 
+categories and subject descriptors 
+i computing methodologies distributed 
+artificial intelligence-intelligent agents multiagent systems 
+general terms 
+algorithms performance 
+ introduction 
+both the research and practice of combinatorial auctions 
+have grown rapidly in the past ten years in a 
+combinatorial auction bidders can place bids on combinations of 
+items called packages or bidsets rather than just 
+individual items once the bidders place their bids it is necessary 
+to find the allocation of items to bidders that maximizes 
+the auctioneer s revenue this problem known as the 
+winner determination problem is a combinatorial optimization 
+problem and is np-hard nevertheless several 
+algorithms that have a satisfactory performance for problem 
+sizes and structures occurring in practice have been 
+developed the practical applications of combinatorial auctions 
+include allocation of airport takeoff and landing time slots 
+procurement of freight transportation services procurement 
+of public transport services and industrial procurement 
+because of their wide applicability one cannot hope for a 
+general-purpose winner determination algorithm that can 
+efficiently solve every instance of the problem thus 
+several approaches and algorithms have been proposed to 
+address the winner determination problem however most of 
+the existing winner determination algorithms for 
+combinatorial auctions are centralized meaning that they require 
+all agents to send their bids to a centralized auctioneer who 
+then determines the winners examples of these algorithms 
+are cass bidtree and cabob we believe that 
+distributed solutions to the winner determination problem 
+should be studied as they offer a better fit for some 
+applications as when for example agents do not want to reveal 
+their valuations to the auctioneer 
+the pause progressive adaptive user selection 
+environment auction is one of a few efforts to distribute 
+the problem of winner determination amongst the bidders 
+pause establishes the rules the participants have to adhere 
+to so that the work is distributed amongst them however 
+it is not concerned with how the bidders determine what 
+they should bid 
+in this paper we present two algorithms pausebid and 
+cachedpausebid which enable agents in a pause 
+auction to find the bidset that maximizes their utility our 
+algorithms implement a myopic utility maximizing strategy 
+and are guaranteed to find the bidset that maximizes the 
+agent s utility given the outstanding best bids at a given 
+time pausebid performs a branch and bound search 
+completely from scratch every time that it is called 
+cachedpausebid is a caching-based algorithm which explores fewer 
+nodes since it caches some solutions 
+ 
+ - - - - rps c ifaamas 
+ the pause auction 
+a pause auction for m items has m stages stage 
+consists of having simultaneous ascending price open-cry 
+auctions and during this stage the bidders can only place bids on 
+individual items at the end of this state we will know what 
+the highest bid for each individual item is and who placed 
+that bid each successive stage k m consists of 
+an ascending price auction where the bidders must submit 
+bidsets that cover all items but each one of the bids must be 
+for k items or less the bidders are allowed to use bids that 
+other agents have placed in previous rounds when building 
+their bidsets thus allowing them to find better solutions 
+also any new bidset has to have a sum of bid prices which 
+is bigger than that of the currently winning bidset at the 
+end of each stage k all agents know the best bid for every 
+subset of size k or less also at any point in time after stage 
+ has ended there is a standing bidset whose value increases 
+monotonically as new bidsets are submitted since in the 
+final round all agents consider all possible bidsets we know 
+that the final winning bidset will be one such that no agent 
+can propose a better bidset note however that this 
+bidset is not guaranteed to be the one that maximizes revenue 
+since we are using an ascending price auction so the 
+winning bid for each set will be only slightly bigger than the 
+second highest bid for the particular set of items that is 
+the final prices will not be the same as the prices in a 
+traditional combinatorial auction where all the bidders bid their 
+true valuation however there remains the open question 
+of whether the final distribution of items to bidders found 
+in a pause auction is the same as the revenue maximizing 
+solution our test results provide an answer to this question 
+the pause auction makes the job of the auctioneer very 
+easy all it has to do is to make sure that each new 
+bidset has a revenue bigger than the current winning bidset as 
+well as make sure that every bid in an agent s bidset that 
+is not his does indeed correspond to some other agents 
+previous bid the computational problem shifts from one of 
+winner determination to one of bid generation each agent 
+must search over the space of all bidsets which contain at 
+least one of its bids the search is made easier by the fact 
+that the agent needs to consider only the current best bids 
+and only wants bidsets where its own utility is higher than 
+in the current winning bidset each agent also has a clear 
+incentive for performing this computation namely its 
+utility only increases with each bidset it proposes of course it 
+might decrease with the bidsets that others propose 
+finally the pause auction has been shown to be envy-free in 
+that at the conclusion of the auction no bidder would prefer 
+to exchange his allocation with that of any other bidder 
+we can even envision completely eliminating the 
+auctioneer and instead have every agent perform the task of the 
+auctioneer that is all bids are broadcast and when an 
+agent receives a bid from another agent it updates the set 
+of best bids and determines if the new bid is indeed better 
+than the current winning bid the agents would have an 
+incentive to perform their computation as it will increase their 
+expected utility also any lies about other agents bids are 
+easily found out by keeping track of the bids sent out by 
+every agent the set of best bids namely the only one that 
+can increase an agent s bid value is the agent itself 
+anyone claiming a higher value for some other agent is lying 
+the only thing missing is an algorithm that calculates the 
+utility-maximizing bidset for each agent 
+ problem formulation 
+a bid b is composed of three elements bitems 
+ the set of 
+items the bid is over bagent 
+ the agent that placed the bid 
+and bvalue 
+ the value or price of the bid the agents 
+maintain a set b of the current best bids one for each set of items 
+of size ≤ k where k is the current stage at any point in the 
+auction after the first round there will also be a set w ⊆ b 
+of currently winning bids this is the set of bids that covers 
+all the items and currently maximizes the revenue where 
+the revenue of w is given by 
+r w 
+b∈w 
+bvalue 
+ 
+agent i s value function is given by vi s ∈ where s is a 
+set of items given an agent s value function and the current 
+winning bidset w we can calculate the agent s utility from 
+w as 
+ui w 
+b∈w bagent i 
+vi bitems 
+ − bvalue 
+ 
+that is the agent s utility for a bidset w is the value it 
+receives for the items it wins in w minus the price it must 
+pay for those items if the agent is not winning any items 
+then its utility is zero 
+the goal of the bidding agents in the pause auction is to 
+maximize their utility subject to the constraint that their 
+next set of bids must have a total revenue that is at least 
+bigger than the current revenue where is the smallest 
+increment allowed in the auction formally given that w is 
+the current winning bidset agent i must find a g 
+i such that 
+r g 
+i ≥ r w and 
+g 
+i arg max 
+g⊆ b 
+ui g 
+where each g is a set of bids that covers all items and 
+∀b∈g b ∈ b or bagent 
+ i and bvalue 
+ b bitems 
+ and 
+size bitems 
+ ≤ k and where b items is the value of the 
+bid in b for the set items if there is no bid for those items 
+it returns zero that is each bid b in g must satisfy at least 
+one of the two following conditions b is already in b 
+b is a bid of size ≤ k in which the agent i bids higher than 
+the price for the same items in b 
+ bidding algorithms 
+according to the pause auction during the first stage we 
+have only several english auctions with the bidders 
+submitting bids on individual items in this case an agent s 
+dominant strategy is to bid higher than the current winning bid 
+until it reaches its valuation for that particular item our 
+algorithms focus on the subsequent stages k when 
+k agents have to find g 
+i this can be done by 
+performing a complete search on b however this approach is 
+computationally expensive since it produces a large search 
+tree our algorithms represent alternative approaches to 
+overcome this expensive search 
+ the pausebid algorithm 
+in the pausebid algorithm shown in figure we 
+implement some heuristics to prune the search tree given 
+that bidders want to maximize their utility and that at any 
+given point there are likely only a few bids within b which 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+pausebid i k 
+ my-bids ← ∅ 
+ their-bids ← ∅ 
+ for b ∈ b 
+ do if bagent 
+ i or vi bitems 
+ bvalue 
+ then my-bids ← my-bids 
+ new bid bitems 
+ i vi bitems 
+ 
+ else their-bids ← their-bids b 
+ for s ∈ subsets of k or fewer items such that 
+vi s and ¬∃b∈bbitems 
+ s 
+ do my-bids ← my-bids new bid s i vi s 
+ bids ← my-bids their-bids 
+ g 
+← ∅ £ global variable 
+ u 
+← ui w £ global variable 
+ pbsearch bids ∅ 
+ surplus ← b∈g bagent i bvalue 
+− b bitems 
+ 
+ if surplus 
+ then return g 
+ my-payment ← vi g 
+ − u 
+ for b ∈ g 
+ bagent 
+ i 
+ do if my-payment ≤ 
+ then bvalue 
+← b bitems 
+ 
+ else bvalue 
+← b bitems 
+ 
+ my-payment ·bvalue 
+−b bitems 
+ 
+surplus 
+ return g 
+figure the pausebid algorithm which implements 
+a branch and bound search i is the agent and k is 
+the current stage of the auction for k ≥ 
+the agent can dominate we start by defining my-bids to be 
+the list of bids for which the agent s valuation is higher than 
+the current best bid as given in b we set the value of 
+these bids to be the agent s true valuation but we won t 
+necessarily be bidding true valuation as we explain later 
+similarly we set their-bids to be the rest of the bids from b 
+finally the agent s search list is simply the concatenation 
+of my-bids and their-bids note that the agent s own bids 
+are placed first on the search list as this will enable us to do 
+more pruning pausebid lines to the agent can now 
+perform a branch and bound search on the branch-on-bids 
+tree produced by these bids this branch and bound search 
+is implemented by pbsearch figure our algorithm not 
+only implements the standard bound but it also implements 
+other pruning techniques in order to further reduce the size 
+of the search tree 
+the bound we use is the maximum utility that the agent 
+can expect to receive from a given set of bids we call it u 
+ 
+initially u 
+is set to ui w pausebid line since that 
+is the utility the agent currently receives and any solution 
+he proposes should give him more utility if pbsearch ever 
+comes across a partial solution where the maximum utility 
+the agent can expect to receive is less than u 
+then that 
+subtree is pruned pbsearch line note that we can 
+determine the maximum utility only after the algorithm has 
+searched over all of the agent s own bids which are first on 
+the list because after that we know that the solution will 
+not include any more bids where the agent is the winner 
+thus the agent s utility will no longer increase for example 
+pbsearch bids g 
+ if bids ∅ then return 
+ b ← first bids 
+ bids ← bids −b 
+ g ← g b 
+ ¯ig ← items not in g 
+ if g does not contain a bid from i 
+ then return 
+ if g includes all items 
+ then min-payment ← max r w − r g − ri g 
+b∈g bagent i b bitems 
+ 
+ max-utility ← vi g − min-payment 
+ if r g r w and max-utility ≥ u 
+ then g 
+← g 
+ u 
+← max-utility 
+ pbsearch bids g − b £ b is out 
+ else max-revenue ← r g max h ¯ig hi ¯ig 
+ if max-revenue ≤ r w 
+ then pbsearch bids g − b £ b is out 
+ elseif bagent 
+ i 
+ then min-payment ← r w 
+− r g − ri g − h ¯ig 
+ max-utility ← vi g − min-payment 
+ if max-utility u 
+ then pbsearch x ∈ bids 
+xitems 
+∩ bitems 
+ ∅ g £ b is in 
+ pbsearch bids g − b £ b is out 
+ else 
+ pbsearch x ∈ bids 
+xitems 
+∩ bitems 
+ ∅ g £ b is in 
+ pbsearch bids g − b £ b is out 
+ return 
+figure the pbsearch recursive procedure where 
+bids is the set of available bids and g is the current 
+partial solution 
+if an agent has only one bid in my-bids then the maximum 
+utility he can expect is equal to his value for the items in 
+that bid minus the minimum possible payment we can make 
+for those items and still come up with a set of bids that has 
+revenue greater than r w the calculation of the minimum 
+payment is shown in line for the partial solution case and 
+line for the case where we have a complete solution in 
+pbsearch note that in order to calculate the min-payment 
+for the partial solution case we need an upper bound on the 
+payments that we must make for each item this upper 
+bound is provided by 
+h s 
+s∈s 
+max 
+b∈b s∈bitems 
+bvalue 
+size bitems 
+ 
+this function produces a bound identical to the one used by 
+the bidtree algorithm-it merely assigns to each individual 
+item in s a value equal to the maximum bid in b divided 
+by the number of items in that bid 
+to prune the branches that cannot lead to a solution with 
+revenue greater than the current w the algorithm considers 
+both the values of the bids in b and the valuations of the 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+agent similarly to we define 
+hi s k 
+s∈s 
+max 
+s size s ≤k and s∈s and vi s 
+vi s 
+size s 
+ 
+which assigns to each individual item s in s the maximum 
+value produced by the valuation of s divided by the size 
+of s where s is a set for which the agent has a valuation 
+greater than zero contains s and its size is less or equal 
+than k the algorithm uses the heuristics h and hi lines 
+and of pbsearch to prune the just mentioned branches 
+in the same way an a 
+algorithm uses its heuristic a final 
+pruning technique implemented by the algorithm is ignoring 
+any branches where the agent has no bids in the current 
+answer g and no more of the agent s bids are in the list 
+ pbsearch lines and 
+the resulting g 
+found by pbsearch is thus the set of bids 
+that has revenue bigger than r w and maximizes agent i s 
+utility however agent i s bids in g 
+are still set to his own 
+valuation and not to the lowest possible price lines to 
+in pausebid are responsible for setting the agent s payments 
+so that it can achieve its maximum utility u 
+ if the agent 
+has only one bid in g 
+then it is simply a matter of reducing 
+the payment of that bid by u 
+from the current maximum of 
+the agent s true valuation however if the agent has more 
+than one bid then we face the problem of how to distribute 
+the agent s payments among these bids there are many 
+ways of distributing the payments and there does not appear 
+to be a dominant strategy for performing this distribution 
+we have chosen to distribute the payments in proportion to 
+the agent s true valuation for each set of items 
+pausebid assumes that the set of best bids b and the 
+current best winning bidset w remains constant during its 
+execution and it returns the agent s myopic utility-maximizing 
+bidset if there is one using a branch and bound search 
+however it repeats the whole search at every stage we 
+can minimize this problem by caching the result of previous 
+searches 
+ the cachedpausebid algorithm 
+the cachedpausebid algorithm shown in figure is 
+our second approach to solve the bidding problem in the 
+pause auction it is based in a cache table called c-table 
+where we store some solutions to avoid doing a complete 
+search every time the problem is the same the agent i has 
+to find g 
+i we note that g 
+i is a bidset that contains at least 
+one bid of the agent i let s be a set of items for which the 
+agent i has a valuation such that vi s ≥ b s let gs 
+i 
+be a bidset over s such that r gs 
+i ≥ r w and 
+gs 
+i arg max 
+g⊆ b 
+ui g 
+where each g is a set of bids that covers all items and 
+∀b∈g b ∈ b or bagent 
+ i and bvalue 
+ b bitems 
+ and 
+ ∃b∈gbitems 
+ s and bagent 
+ i that is gs 
+i is i s best 
+bidset for all items which includes a bid from i for all s items 
+in the pause auction we cannot bid for sets of items with 
+size greater than k so if we have for each set of items s for 
+which vi s and size s ≤ k its corresponding gs 
+i then 
+g 
+i is the gs 
+i that maximizes the agent s utility that is 
+g 
+i arg max 
+ s vi s ∧size s ≤k 
+ui gs 
+i 
+each agent i implements a hash table c-table such that 
+c-table s gs 
+for all s which vi s ≥ b s we can 
+cachedpausebid i k k-changed 
+ for each s in c-table 
+ do if vi s b s 
+ then remove s from c-table 
+ else if k-changed and size s k 
+ then b ← b new bid i s vi s 
+ g 
+← ∅ 
+ u 
+← ui w 
+ for each s with size s ≤ k in c-table 
+ do ¯s ← items − s 
+ gs 
+← c-table s £ global variable 
+ min-payment ← max r w b∈gs b bitems 
+ 
+ us 
+← r gs 
+ − min-payment £ global variable 
+ if k-changed and size s k 
+or ∃b∈b bitems 
+⊆ ¯s and bagent 
+ i 
+ then b ← b ∈ b bitems 
+⊆ ¯s 
+ bids ← b 
+ b ∈ b bitems 
+⊆ ¯s and b ∈ b 
+ for b ∈ bids 
+ do if vi bitems 
+ bvalue 
+ then bagent 
+← i 
+ bvalue 
+← vi bitems 
+ 
+ if k-changed and size s k 
+ then n ← size bids 
+ us 
+← 
+ else n ← size b 
+ g ← ∅ new bid s i vi s 
+ cpbsearch bids g n 
+ c-table s ← gs 
+ if us 
+ u 
+and r gs 
+ ≥ r w 
+ then surplus ← 
+b∈gs bagent i bvalue 
+− b bitems 
+ 
+ if surplus 
+ then my-payment ← vi gs 
+ − ui gs 
+ 
+ for b ∈ gs 
+ bagent 
+ i 
+ do if my-payment ≤ 
+ then bvalue 
+← b bitems 
+ 
+ else bvalue 
+← b bitems 
+ 
+my-payment ·bvalue 
+−b bitems 
+ 
+surplus 
+ u 
+← ui gs 
+ 
+ g 
+← gs 
+ else if us 
+≤ and vi s b s 
+ then remove s from c-table 
+ return g 
+figure the cachedpausebid algorithm that 
+implements a caching based search to find a bidset that 
+maximizes the utility for the agent i k is the 
+current stage of the auction for k ≥ and k-changed is 
+a boolean that is true right after the auction moved 
+to the next stage 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+cpbsearch bids g n 
+ if bids ∅ or n ≤ then return 
+ b ← first bids 
+ bids ← bids −b 
+ g ← g b 
+ ¯ig ← items not in g 
+ if g includes all items 
+ then min-payment ← max r w − r g − ri g 
+b∈g bagent i b bitems 
+ 
+ max-utility ← vi g − min-payment 
+ if r g r w and max-utility ≥ us 
+ then gs 
+← g 
+ us 
+← max-utility 
+ cpbsearch bids g − b n − £ b is out 
+ else max-revenue ← r g max h ¯ig hi ¯ig 
+ if max-revenue ≤ r w 
+ then cpbsearch bids g − b n − £ b is out 
+ elseif bagent 
+ i 
+ then min-payment ← r w 
+− r g − ri g − h ¯ig 
+ max-utility ← vi g − min-payment 
+ if max-utility us 
+ then cpbsearch x ∈ bids 
+xitems 
+∩ bitems 
+ ∅ g n £ b is in 
+ cpbsearch bids g − b n − £ b is out 
+ else 
+ cpbsearch x ∈ bids 
+xitems 
+∩ bitems 
+ ∅ g n £ b is in 
+ cpbsearch bids g − b n − £ b is out 
+ return 
+figure the cpbsearch recursive procedure where 
+bids is the set of available bids g is the current 
+partial solution and n is a value that indicates how deep 
+in the list bids the algorithm has to search 
+then find g 
+by searching for the gs 
+ stored in c-table s 
+that maximizes the agent s utility considering only the set 
+of items s with size s ≤ k the problem remains in 
+maintaining the c-table updated and avoiding to search every 
+gs 
+every time cachedpausebid deals with this and other 
+details 
+let b be the set of bids that contains the new best bids 
+that is b contains the bids recently added to b and the bids 
+that have changed price always higher bidder or both and 
+were already in b let ¯s items − s be the complement 
+of s the set of items not included in s cachedpausebid 
+takes three parameters i the agent k the current stage of 
+the auction and k-changed a boolean that is true right after 
+the auction moved to the next stage initially c-table has 
+one row or entry for each set s for which vi s we 
+start by eliminating the entries corresponding to each set s 
+for which vi s b s from c-table line then in the 
+case that k-changed is true for each set s with size s k 
+we add to b a bid for that set with value equal to vi s 
+and bidder agent i line this a bid that the agent is now 
+allowed to consider we then search for g 
+amongst the gs 
+stored in c-table for this we only need to consider the sets 
+with size s ≤ k line but how do we know that the gs 
+in c-table s is still the best solution for s there are only 
+two cases when we are not sure about that and we need 
+to do a search to update c-table s these cases are i 
+when k-changed is true and size s ≤ k since there was 
+no gs 
+stored in c-table for this s ii when there exists at 
+least one bid in b for the set of items ¯s or a subset of it 
+submitted by an agent different than i since it is probable 
+that this new bid can produce a solution better than the one 
+stored in c-table s 
+we handle the two cases mentioned above in lines to 
+of cachedpausebid in both of these cases since gs 
+must 
+contain a bid for s we need to find a bidset that cover the 
+missing items that is ¯s thus our search space consists 
+of all the bids on b for the set of items ¯s or for a subset 
+of it we build the list bids that contains only those bids 
+however we put the bids from b at the beginning of bids 
+ line since they are the ones that have changed then 
+we replace the bids in bids that have a price lower than the 
+valuation the agent i has for those same items with a bid 
+from agent i for those items and value equal to the agent s 
+valuation lines - 
+the recursive procedure cpbsearch called in line of 
+cachedpausebid and shown in figure is the one that 
+finds the new gs 
+ cpbsearch is a slightly modified version 
+of our branch and bound search implemented in pbsearch 
+the first modification is that it has a third parameter n that 
+indicates how deep on the list bids we want to search since 
+it stops searching when n less or equal to zero and not only 
+when the list bids is empty line each time that there is 
+a recursive call of cpbsearch n is decreased by one when a 
+bid from bids is discarded or out lines and 
+and n remains the same otherwise lines and we set 
+the value of n before calling cpbsearch to be the size of the 
+list bids cachedpausebid line in case i since we want 
+cpbsearch to search over all bids and we set n to be the 
+number of bids from b included in bids cachedpausebid 
+line in case ii since we know that only the those first n 
+bids in bids changed and can affect our current gs 
+ 
+another difference with pbsearch is that the bound in 
+cpbsearch is us 
+which we set to be cachedpausebid line 
+ when in case i and r gs 
+ −min-payment cachedpausebid 
+line when in case ii we call cpbsearch with g already 
+containing a bid for s after cpbsearch is executed we 
+are sure that we have the right gs 
+ so we store it in the 
+corresponding c-table s cachedpausebid line 
+when we reach line in cachedpausebid we are sure 
+that we have the right gs 
+ however agent i s bids in gs 
+are 
+still set to his own valuation and not to the lowest possible 
+price if us 
+is greater than the current u 
+ lines to 
+in cachedpausebid are responsible for setting the agent s 
+payments so that it can achieve its maximum utility us 
+ 
+as in pausebid we have chosen to distribute the payments 
+in proportion to the agent s true valuation for each set of 
+items in the case that us 
+less than or equal to zero and 
+the valuation that the agent i has for the set of items s is 
+lower than the current value of the bid in b for the same 
+set of items we remove the corresponding c-table s since 
+we know that is not worthwhile to keep it in the cache table 
+ cachedpausebid line 
+the cachedpausebid function is called when k and 
+returns the agent s myopic utility-maximizing bidset if there 
+is one it assumes that w and b remains constant during 
+its execution 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+generatevalues i items 
+ for x ∈ items 
+ do vi x expd 
+ for n ← num-bids − items 
+ do s s ←two random sets of items with values 
+ vi s ∪ s vi s vi s expd 
+figure algorithm for the generation of random 
+value functions expd x returns a random number 
+taken from an exponential distribution with mean 
+ x 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of items 
+cachedpausebid 
+ 
+ 
+ 
+ 
+pausebid 
+ 
+ 
+ 
+ 
+figure average percentage of convergence 
+ y-axis which is the percentage of times that our 
+algorithms converge to the revenue-maximizing 
+solution as function of the number of items in the 
+auction 
+ test and comparison 
+we have implemented both algorithms and performed a 
+series of experiments in order to determine how their 
+solution compares to the revenue-maximizing solution and how 
+their times compare with each other in order to do our 
+tests we had to generate value functions for the agents 
+ 
+the algorithm we used is shown in figure the type of 
+valuations it generates correspond to domains where a set 
+of agents must perform a set of tasks but there are cost 
+savings for particular agents if they can bundle together certain 
+subsets of tasks for example imagine a set of robots which 
+must pick up and deliver items to different locations since 
+each robot is at a different location and has different 
+abilities each one will have different preferences over how to 
+bundle their costs for the item bundles are subadditive 
+which means that their preferences are superadditive the 
+first experiment we performed simply ensured the proper 
+ 
+note that we could not use cats because it generates 
+sets of bids for an indeterminate number of agents it is as 
+if you were told the set of bids placed in a combinatorial 
+auction but not who placed each bid or even how many 
+people placed bids and then asked to determine the value 
+function of every participant in the auction 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of items 
+cachedpausebid 
+ 
+ 
+ 
+ 
+ 
+pausebid 
+ 
+ 
+ 
+ 
+ 
+ 
+figure average percentage of revenue from our 
+algorithms relative to maximum revenue y-axis as 
+function of the number of items in the auction 
+functioning of our algorithms we then compared the 
+solutions found by both of them to the revenue-maximizing 
+solution as found by cass when given a set of bids that 
+corresponds to the agents true valuation that is for each 
+agent i and each set of items s for which vi s we 
+generated a bid this set of bids was fed to cass which 
+implements a centralized winner determination algorithm to find 
+the solution which maximizes revenue note however that 
+the revenue from the pause auction on all the auctions is 
+always smaller than the revenue of the revenue-maximizing 
+solution when the agents bid their true valuations since 
+pause uses english auctions the final prices roughly 
+represent the second-highest valuation plus for that set of 
+items 
+we fixed the number of agents to be and we 
+experimented with different number of items namely from to 
+ we ran both algorithms times for each 
+combination when we compared the solutions of our algorithms 
+to the revenue-maximizing solution we realized that they 
+do not always find the same distribution of items as the 
+revenue-maximizing solution as shown in figure the 
+cases where our algorithms failed to arrive at the 
+distribution of the revenue-maximizing solution are those where 
+there was a large gap between the first and second 
+valuation for a set or sets of items if the revenue-maximizing 
+solution contains the bid or bids using these higher 
+valuation then it is impossible for the pause auction to find this 
+solution because that bid those bids is never placed for 
+example if agent i has vi and the second highest 
+valuation for is only then i only needs to place a bid 
+of in order to win that item if the revenue-maximizing 
+solution requires that be sold for then that solution 
+will never be found because that bid will never be placed 
+we also found that average percentage of times that our 
+algorithms converges to the revenue-maximizing solution 
+decreases as the number of items increases for items is 
+almost but decreases a little bit less than percent as 
+the items increase so that this average percentage of 
+convergence is around for items in a few instances our 
+algorithms find different solutions this is due to the different 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+number of items 
+cachedpausebid 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pausebid 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure average number of expanded nodes 
+ y-axis as function of items in the auction 
+ordering of the bids in the bids list which makes them search 
+in different order 
+we know that the revenue generated by the pause 
+auction is generally lower than the revenue of the 
+revenuemaximizing solution but how much lower to answer this 
+question we calculated percentage representing the 
+proportion of the revenue given by our algorithms relative to the 
+revenue given by cass we found that the percentage of 
+revenue of our algorithms increases in average as the 
+number of items increases as shown in figure however 
+we found that cachedpausebid generates a higher revenue 
+than pausebid higher in average except for auctions 
+with items where both have about the same percentage 
+again this difference is produced by the order of the search 
+in the case of items both algorithms produce in average 
+a revenue proportion of while in the other extreme 
+ items cachedpausebid produced in average a revenue 
+proportion of while pausebid produced in average a 
+revenue proportion of 
+the scalability of our algorithms can be determined by 
+counting the number of nodes expanded in the search tree 
+for this we count the number of times that pbsearch gets 
+invoked for each time that pausebid is called and the 
+number of times that fastpausebidsearch gets invoked for each 
+time that cachedpausebid respectively for each of our 
+algorithms as expected since this is an np-hard problem 
+the number of expanded nodes does grow exponentially with 
+the number of items as shown in figure however we 
+found that cachedpausebid outperforms pausebid since 
+it expands in average less than half the number of nodes 
+for example the average number of nodes expanded when 
+ items is zero for cachedpausebid while for pausebid is 
+ and in the other extreme items cachedpausebid 
+expands in average only nodes while pausebid expands in 
+average nodes a difference of more than nodes 
+although the number of nodes expanded by our algorithms 
+increases as function of the number of items the actual 
+number of nodes is a much smaller than the worst-case scenario 
+of nn 
+where n is the number of items for example for 
+items we expand slightly more than 
+nodes for the case of 
+pausebid and less than that for the case of 
+cachedpause 
+ 
+ 
+ 
+ 
+ 
+number of items 
+cachedpausebid 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pausebid 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure average time in seconds that takes to 
+finish an auction y-axis as function of the number of 
+items in the auction 
+bid which are much smaller numbers than 
+ notice also 
+that our value generation algorithm figure generates a 
+number of bids that is exponential on the number of items 
+as might be expected in many situations as such these 
+results do not support the conclusion that time grows 
+exponentially with the number of items when the number of 
+bids is independent of the number of items we expect that 
+both algorithms will grow exponentially as a function the 
+number of bids but stay roughly constant as the number of 
+items grows 
+we wanted to make sure that less expanded nodes does 
+indeed correspond to faster execution especially since our 
+algorithms execute different operations we thus ran the 
+same experiment with all the agents in the same machine 
+an intel centrino ghz laptop pc with gb of ram and 
+a rmp gb hard drive and calculated the average 
+time that takes to finish an auction for each algorithm as 
+shown in figure cachedpausebid is faster than 
+pausebid the difference in execution speed is even more clear as 
+the number of items increases 
+ related work 
+a lot of research has been done on various aspects of 
+combinatorial auctions we recommend for a good review 
+however the study of distributed winner determination 
+algorithms for combinatorial auctions is still relatively new 
+one approach is given by the algorithms for distributing 
+the winner determination problem in combinatorial auctions 
+presented in but these algorithms assume the 
+computational entities are the items being sold and thus end up 
+with a different type of distribution the vsa algorithm 
+ is another way of performing distributed winner 
+determination in combinatorial auction but it assumes the bids 
+themselves perform the computation this algorithm also 
+fails to converge to a solution for most cases in the 
+authors present a distributed mechanism for calculating vcg 
+payments in a mechanism design problem their 
+mechanism roughly amounts to having each agent calculate the 
+payments for two other agents and give these to a secure 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+central server which then checks to make sure results from 
+all pairs agree otherwise a re-calculation is ordered this 
+general idea which they call the redundancy principle could 
+also be applied to our problem but it requires the existence 
+of a secure center agent that everyone trusts another 
+interesting approach is given in where the bidding agents 
+prioritize their bids thus reducing the set of bids that the 
+centralized winner determination algorithm must consider 
+making that problem easier finally in the computation 
+procuring clock auction the agents are given an 
+everincreasing percentage of the surplus achieved by their 
+proposed solution over the current best as such it assumes 
+the agents are impartial computational entities not the set 
+of possible buyers as assumed by the pause auction 
+ conclusions 
+we believe that distributed solutions to the winner 
+determination problem should be studied as they offer a better fit 
+for some applications as when for example agents do not 
+want to reveal their valuations to the auctioneer or when 
+we wish to distribute the computational load among the 
+bidders the pause auction is one of a few approaches 
+to decentralize the winner determination problem in 
+combinatorial auctions with this auction we can even envision 
+completely eliminating the auctioneer and instead have 
+every agent performe the task of the auctioneer however 
+while pause establishes the rules the bidders must obey it 
+does not tell us how the bidders should calculate their bids 
+we have presented two algorithms pausebid and 
+cachedpausebid that bidder agents can use to engage in a pause 
+auction both algorithms implement a myopic utility 
+maximizing strategy that is guaranteed to find the bidset that 
+maximizes the agent s utility given the set of outstanding 
+best bids at any given time without considering possible 
+future bids both algorithms find most of the time the 
+same distribution of items as the revenue-maximizing 
+solution the cases where our algorithms failed to arrive at that 
+distribution are those where there was a large gap between 
+the first and second valuation for a set or sets of items 
+as it is an np-hard problem the running time of our 
+algorithms remains exponential but it is significantly better than 
+a full search pausebid performs a branch and bound search 
+completely from scratch each time it is invoked 
+cachedpausebid caches partial solutions and performs a branch 
+and bound search only on the few portions affected by the 
+changes on the bids between consecutive times 
+cachedpausebid has a better performance since it explores fewer 
+nodes less than half and it is faster as expected the 
+revenue generated by a pause auction is lower than the 
+revenue of a revenue-maximizing solution found by a 
+centralized winner determination algorithm however we found 
+that cachedpausebid generates in average higher 
+revenue than pausebid we also found that the revenue 
+generated by our algorithms increases as function of the number 
+of items in the auction 
+our algorithms have shown that it is feasible to implement 
+the complex coordination constraints supported by 
+combinatorial auctions without having to resort to a centralized 
+winner determination algorithm moreover because of the 
+design of the pause auction the agents in the auction also 
+have an incentive to perform the required computation our 
+bidding algorithms can be used by any multiagent system 
+that would use combinatorial auctions for coordination but 
+would rather not implement a centralized auctioneer 
+ references 
+ p j brewer decentralized computation procurement 
+and computational robustness in a smart market 
+economic theory - january 
+ p cramton y shoham and r steinberg editors 
+combinatorial auctions mit press 
+ y fujishima k leyton-brown and y shoham 
+taming the computational complexity of 
+combinatorial auctions optimal and approximate 
+approaches in proceedings of the sixteenth 
+international joint conference on artificial 
+intelligence pages - morgan kaufmann 
+publishers inc 
+ f kelly and r stenberg a combinatorial auction 
+with multiple winners for universal service 
+management science - 
+ a land s powell and r steinberg pause a 
+computationally tractable combinatorial auction in 
+cramton et al chapter pages - 
+ k leyton-brown m pearson and y shoham 
+towards a universal test suite for combinatorial 
+auction algorithms in proceedings of the nd acm 
+conference on electronic commerce pages - 
+acm press http cats stanford edu 
+ m v narumanchi and j m vidal algorithms for 
+distributed winner determination in combinatorial 
+auctions in lnai volume of amec tada springer 
+ 
+ s park and m h rothkopf auctions with 
+endogenously determined allowable combinations 
+technical report rutgets center for operations 
+research january rrr - 
+ d c parkes and j shneidman distributed 
+implementations of vickrey-clarke-groves auctions in 
+proceedings of the third international joint 
+conference on autonomous agents and multiagent 
+systems pages - acm 
+ m h rothkopf a pekec and r m harstad 
+computationally manageable combinational auctions 
+management science - 
+ t sandholm an algorithm for winner determination 
+in combinatorial auctions artificial intelligence 
+ - - february 
+ t sandholm s suri a gilpin and d levine 
+cabob a fast optimal algorithm for winner 
+determination in combinatorial auctions management 
+science - 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

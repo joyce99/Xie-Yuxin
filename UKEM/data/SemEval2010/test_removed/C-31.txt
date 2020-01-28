@@ -1,0 +1,483 @@
+apocrita a distributed peer-to-peer file sharing system 
+for intranets 
+joshua j reynolds robbie mcleod qusay h mahmoud 
+distributed computing and wireless telecommunications technology 
+university of guelph-humber 
+toronto on m w l canada 
+ jreyno rmcleo qmahmoud  uoguelph ca 
+abstract 
+many organizations are required to author documents for various 
+purposes and such documents may need to be accessible by all 
+member of the organization this access may be needed for 
+editing or simply viewing a document in some cases these 
+documents are shared between authors via email to be edited 
+this can easily cause incorrect version to be sent or conflicts 
+created between multiple users trying to make amendments to a 
+document there may even be multiple different documents in the 
+process of being edited the user may be required to search for a 
+particular document which some search tools such as google 
+desktop may be a solution for local documents but will not find a 
+document on another user s machine another problem arises 
+when a document is made available on a user s machine and that 
+user is offline in which case the document is no longer 
+accessible in this paper we present apocrita a revolutionary 
+distributed p p file sharing system for intranets 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems - distributed applications 
+general terms 
+design experimentation performance 
+ introduction 
+the peer-to-peer p p computing paradigm is becoming a 
+completely new form of mutual resource sharing over the 
+internet with the increasingly common place broadband internet 
+access p p technology has finally become a viable way to share 
+documents and media files 
+there are already programs on the market that enable p p file 
+sharing these programs enable millions of users to share files 
+among themselves while the utilization of p p clients is already 
+a gigantic step forward compared to downloading files off 
+websites using such programs are not without their problems 
+the downloaded files still require a lot of manual management by 
+the user the user still needs to put the files in the proper 
+directory manage files with multiple versions delete the files 
+when they are no longer wanted we strive to make the process of 
+sharing documents within an intranet easier 
+many organizations are required to author documents for various 
+purposes and such documents may need to be accessible by all 
+members of the organization this access may be needed for 
+editing or simply viewing a document in some cases these 
+documents are sent between authors via email to be edited this 
+can easily cause incorrect version to be sent or conflicts created 
+between multiple users trying to make amendments to a 
+document there may even be multiple different documents in the 
+process of being edited the user may be required to search for a 
+particular document which some search tools such as google 
+desktop may be a solution for local documents but will not find a 
+document on another user s machine furthermore some 
+organizations do not have a file sharing server or the necessary 
+network infrastructure to enable one in this paper we present 
+apocrita which is a cost-effective distributed p p file sharing 
+system for such organizations 
+the rest of this paper is organized as follows in section we 
+present apocrita the distributed indexing mechanism and 
+protocol are presented in section section presents the 
+peer-topeer distribution model a proof of concept prototype is presented 
+in section and performance evaluations are discussed in 
+section related work is presented is section and finally 
+conclusions and future work are discussed in section 
+ apocrita 
+apocrita is a distributed peer-to-peer file sharing system and has 
+been designed to make finding documents easier in an intranet 
+environment currently it is possible for documents to be located 
+on a user s machine or on a remote machine it is even possible 
+that different revisions could reside on each node on the intranet 
+this means there must be a manual process to maintain document 
+versions apocrita solves this problem using two approaches 
+first due to the inherent nature of apocrita the document will 
+only reside on a single logical location second apocrita provides 
+a method of reverting to previous document versions apocrita 
+permission to make digital or hard copies of all or part of this work for 
+personal or classroom use is granted without fee provided that copies are 
+not made or distributed for profit or commercial advantage and that 
+copies bear this notice and the full citation on the first page to copy 
+otherwise or republish to post on servers or to redistribute to lists 
+requires prior specific permission and or a fee 
+acmse march - winston-salem nc usa 
+copyright acm - - - -   
+ 
+will also distribute documents across multiple machines to ensure 
+high availability of important documents for example if a 
+machine contains an important document and the machine is 
+currently inaccessible the system is capable of maintaining 
+availability of the document through this distribution mechanism 
+it provides a simple interface for searching and accessing files 
+that may exist either locally or remotely the distributed nature of 
+the documents is transparent to the user apocrita supports a 
+decentralized network model where the peers use a discovery 
+protocol to determine peers 
+apocrita is intended for network users on an intranet the main 
+focus is organizations that may not have a network large enough 
+to require a file server and supporting infrastructure it eliminates 
+the need for documents to be manually shared between users 
+while being edited and reduces the possibility of conflicting 
+versions being distributed the system also provides some 
+redundancy and in the event of a single machine failure no 
+important documents will be lost it is operating system 
+independent and easy to access through a web browser or through 
+a standalone application to decrease the time required for 
+indexing a large number of documents the indexing process is 
+distributed across available idle nodes local and remote files 
+should be easily accessible through a virtual mountable file 
+system providing transparency for users 
+ distributed indexing 
+apocrita uses a distributed index for all the documents that are 
+available on the intranet each node will contain part of the full 
+index and be aware of what part of the index each other node has 
+a node will be able to contact each node that contains a unique 
+portion of the index in addition each node has a separate local 
+index of its own documents but as discussed later in the current 
+implementation each node has a copy of the entire index 
+indexing of the documents is distributed therefore if a node is in 
+the process of indexing many documents it will break up the 
+work over the nodes once a node s local index is updated with 
+the new documents the distributed index will then be updated 
+the current distributed indexing system consists of three separate 
+modules nodecontroller filesender and nodeindexer the 
+responsibility of each module is discussed later in this section 
+ indexing protocol 
+the protocol we have designed for the distributed indexing is 
+depicted in figure 
+figure apocrita distributed indexing protocol 
+idle query the idle query is sent out from the initiating 
+node to determine which other nodes may be able to help with the 
+overall indexing process there are no parameters sent with the 
+command the receiving node will respond with either a busy 
+or idle command if the idle command is received the 
+initiating node will add the responding node to a list of available 
+distributed indexing helpers in the case of a busy command 
+being received the responding node is ignored 
+busy once a node received an idl query it will determine 
+whether it can be considered a candidate for distributed indexing 
+this determination is based on the overall cpu usage of the node 
+if the node is using most of its cpu for other processes the node 
+will respond to the idle query with a busy command 
+idle as with the case of the busy response the node 
+receiving the idle query will determine its eligibility for 
+distributed indexing to be considered a candidate for distributed 
+indexing the overall cpu usage must be at a minimum to all for 
+dedicated indexing of the distributed documents if this is the 
+case the node will respond with an idle command 
+incoming file once the initiating node assembles a set of 
+idle nodes to assist with the distributed indexing it will divide the 
+documents to be sent to the nodes to do this it sends an 
+incoming file message which contains the name of the file 
+as well as the size in bytes after the incoming file command 
+has been sent the initiating node will begin to stream the file to 
+the other node the initiating node will loop through the files that 
+are to be sent to the other node each file stream being preceded 
+by the incoming file command with the appropriate 
+parameters 
+index file once the indexing node has completed the 
+indexing process of the set of files it must send the resultant 
+index back to the initiating node the index is comprised of 
+multiple files which exist on the file system of the indexing node 
+as with the incoming file command the indexing node 
+streams each index file after sending an index file command 
+the index file command has two parameters the first being 
+the name of the index and the second is the size of the file in 
+bytes 
+send complete when sending the sets of files for both the 
+index and the files to be indexed the node must notify the 
+corresponding node when the process is complete once the 
+initiating node is finished sending the set of documents to be 
+indexed it will then send a send complete command 
+indicating to the indexing node that there are no more files and 
+the node can proceed with indexing the files in the case of the 
+initiating node sending the index files the indexing node will 
+complete the transfer with the send complete command 
+indicating to the initiating node that there are no more index files 
+to be sent and the initiating node can then assemble those index 
+files into the main index 
+the nodecontroller is responsible for setting up connections with 
+nodes in the idle state to distribute the indexing process using 
+jxta the node controller will obtain a set of nodes this set 
+of nodes is iterated and each one is sent the idle query 
+command the nodes that respond with idle are then collected 
+the set of idle nodes includes the node initiating the distributed 
+indexing process referred to as the local node once the 
+collection of idle nodes is obtained the node updates the set of 
+controllers and evenly divides the set of documents that are to be 
+indexed for example if there are documents and nodes 
+ including the local node then each node will have documents 
+to index for each indexing node an instance of the filesender 
+object is created the filesender is aware of the set of documents 
+that node is responsible for once a filesender object has been 
+created for each node the nodecontroller waits for each 
+filesender to complete when the filesender objects have 
+completed the nodecontroller will take the resultant indexes from 
+ 
+each node and pass them to an instance of the indexcompiler 
+which maintains the index and the list of filesenders once the 
+indexcompiler has completed it will return to the idle state and 
+activate the directory scanner to monitor the locally owned set of 
+documents for changes that may require reindexing 
+the nodeindexer is responsible for receiving documents sent to it 
+by the initiating node and then indexing them using the lucene 
+engine once the indexing is complete the resulting index is 
+streamed back to the initiating node as well as compiled in the 
+indexer nodes own local index before initiating the indexing 
+process it must be sent an idle query message this is the 
+first command that sets off the indexing process the indexer 
+node will determine whether it is considered idle based on the 
+current cpu usage as outlined in the protocol section if the node 
+is not being used and has a low overall cpu usage percentage it 
+will return idle to the idle query command if the indexer 
+nodes cpu usage is above for a specified amount of time it 
+is then considered to be busy and will respond to the idle 
+query command with busy if a node is determined busy it 
+returns to its listening state waiting for another idle query 
+from another initiating node if the node is determined to be idle it 
+will enter the state where it will receive files from the initiating 
+node that it is responsible for indexing once all of the files are 
+received by the initiating node indicated by a send 
+complete message it starts an instance of the lucene indexing 
+engine the files are stored in a temporary directory separate from 
+the nodes local documents that it is responsible for maintaining an 
+index of the lucene index writer then indexes all of the 
+transferred files the index is stored on the drive within a 
+temporary directory separate from the current index after the 
+indexing of the files completes the indexer node enters the state 
+where the index files are sent back to the initiating node the 
+indexer node loops through all of the files created by lucene s 
+indexwriter and streams them to the initiating node once these 
+files are sent back that index is then merged into the indexer 
+nodes own full index of the existing files it then enters the idle 
+state where it will then listen for any other nodes that required 
+distributing the indexing process 
+the filesender object is the initiating node equivalent of the 
+indexer node it initiates the communication between the initiating 
+node and the node that will assist in the distributed indexing the 
+initiating node runs many instances of the filesender node one 
+for each other node it has determined to be idle upon 
+instantiation of the filesender it is passed the node that it is 
+responsible for contacting and the set of files that must be sent 
+the filesender s first job is to send the files that are to be indexed 
+by the other idle node the files are streamed one at a time to the 
+other node it sends each file using the incoming file 
+command with that command it sends the name of the file being 
+sent and the size in bytes once all files have been sent the 
+filesender sends the send complete command the 
+filesender creates an instance of lucene s indexwriter and 
+prepares to create the index in a temporary directory on the file 
+system the filesender will begin to receive the files that are to 
+be saved within the index it receives an index file command 
+with the name of the files and the size in bytes this file is then 
+streamed into the temporary index directory on the filesender 
+node after the transfer of the index files has been completed the 
+filesender notifies the instance of the index compiler that it is 
+ready to combine the index each instance of the filesender has 
+its own unique section of temporary space to store the index that 
+has been transferred back from the indexing node when 
+notifying the indexcompiler it will also pass the location of the 
+particular filesenders directory location of that index 
+ peer-to-peer distribution 
+apocrita uses a peer-to-peer distribution model in order to 
+distribute files files are distributed solely from a serving node to 
+a client node without regard for the availability of file pieces from 
+other clients in the network this means that the file transfers will 
+be fast and efficient and should not severely affect the usability of 
+serving nodes from the point of view of a local user the jxta 
+framework is used in order to implement peer-to-peer 
+functionality this has been decided due to the extremely 
+shorttimeline of the project which allows us to take advantage of over 
+five years of testing and development and support from many 
+large organizations employing jxta in their own products we 
+are not concerned with any potential quality problems because 
+jxta is considered to be the most mature and stable peer-to-peer 
+framework available 
+using jxta terminology there are three types of peers used in 
+node classification 
+edge peers are typically low-bandwidth non-dedicated nodes 
+due to these characteristics edge peers are not used with 
+apocrita 
+relay peers are typically higher-bandwidth dedicated nodes 
+this is the classification of all nodes in the apocrita network and 
+as such are the default classification used 
+rendezvous peers are used to coordinate message passing 
+between nodes in the apocrita network this means that a 
+minimum of one rendezvous peer per subnet is required 
+ peer discovery 
+the apocrita server subsystem uses the jxta peer discovery 
+protocol pdp in order to find participating peers within the 
+network as shown in figure 
+figure apocrita peer discovery process 
+ 
+the pdp listens for peer advertisements from other nodes in the 
+apocrita swarm if a peer advertisement is detected the server 
+will attempt to join the peer group and start actively contributing 
+to the network if no peers are found by the discovery service the 
+server will create a new peer group and start advertising this peer 
+group this new peer group will be periodically advertised on the 
+network any new peers joining the network will attach to this 
+peer group a distinct advantage of using the jxta pdp is that 
+apocrita does not have to be sensitive to particular networking 
+nuances such as maximum transmission unit mtu in 
+addition apocrita does not have to support one-to-many packet 
+delivery methods such as multicast and instead can rely on jxta 
+for this support 
+ index query operation 
+all nodes in the apocrita swarm have a complete and up-to-date 
+copy of the network index stored locally this makes querying the 
+index for search results trivial unlike the gnutella protocol a 
+query does not have to propagate throughout the network this 
+also means that the time to return query results is very fast - much 
+faster than protocols that rely on nodes in the network to pass the 
+query throughout the network and then wait for results this is 
+demonstrated in figure 
+figure apocrita query operation 
+each document in the swarm has a unique document 
+identification number id a node will query the index and a 
+result will be returned with both the document id number as well 
+as a list of peers with a copy of the matched document id it is 
+then the responsibility of the searching peer to contact the peers in 
+the list to negotiate file transfer between the client and server 
+ prototype implementation 
+apocrita uses the lucene framework which is a project under 
+development by the apache software foundation apache 
+lucene is a high-performance full-featured text search engine 
+library written entirely in java in the current implementation 
+apocrita is only capable of indexing plain text documents 
+apocrita uses the jxta framework as a peer-to-peer transport 
+library between nodes jxta is used to pass both messages and 
+files between nodes in the search network by using jxta 
+apocrita takes advantage of a reliable and proven peer-to-peer 
+transport mechanism it uses the pipe facility in order to pass 
+messages and files between nodes the pipe facility provides 
+many different types of pipe advertisements this includes an 
+unsecured unicast pipe a secured unicast pipe and a propagated 
+unsecured pipe 
+message passing is used to pass status messages between nodes in 
+order to aid in indexing searching and retrieval for example a 
+node attempting to find an idle node to participate in indexing will 
+query nodes via the message facility idle nodes will reply with a 
+status message to indicate they are available to start indexing 
+file passing is used within apocrita for file transfer after a file 
+has been searched for and located within the peer group a jxta 
+socket will be opened and file transfer will take place a jxta 
+socket is similar to a standard java socket however a jxta 
+socket uses jxta pipes in underlying network transport file 
+passing uses an unsecured unicast pipe in order to transfer data 
+file passing is also used within apocrita for index transfer index 
+transfer works exactly like a file transfer in fact the index 
+transfer actually passes the index as a file however there is one 
+key difference between file transfer and index transfer in the case 
+of file transfer a socket is created between only two nodes in the 
+case of index transfer a socket must be created between all nodes 
+in the network in order to pass the index which allows for all 
+nodes to have a full and complete index of the entire network in 
+order to facilitate this transfer efficiently index transfer will use 
+an unsecured propagated pipe to communicate with all nodes in 
+the apocrita network 
+ performance evaluation 
+it is difficult to objectively benchmark the results obtained 
+through apocrita because there is no other system currently 
+available with the same goals as apocrita we have however 
+evaluated the performance of the critical sections of the system 
+the critical sections were determined to be the processes that are 
+the most time intensive the evaluation was completed on 
+standard lab computers on a mb s ethernet lan the 
+machines run windows xp with a pentium cpu running at 
+ ghz with mb of ram 
+the indexing time has been run against both the time magazine 
+collection which contains documents and queries and 
+their most relevant results and the npl collection that has a 
+total of documents and queries with expected results 
+each document ranges in size between kb and kb as figure 
+ demonstrates the number of nodes involved in the indexing 
+process affects the time taken to complete the indexing 
+processsometimes even drastically 
+figure node vs index time 
+the difference in going from one indexing node to two indexing 
+nodes is the most drastic and equates to an indexing time 
+faster than a single indexing node the different between two 
+ 
+indexing nodes and three indexing nodes is still significant and 
+represents a faster time than two indexing nodes as the 
+number of indexing nodes increases the results are less dramatic 
+this can be attributed to the time overhead associated with having 
+many nodes perform indexing the time needed to communicate 
+with a node is constant so as the number of nodes increases this 
+constant becomes more prevalent also the complexity of joining 
+the indexing results is a complex operation and is complicated 
+further as the number of indexing nodes increases 
+socket performance is also a very important part of apocrita 
+benchmarks were performed using a mb file on a system with 
+both the client and server running locally this was done to 
+isolate possible network issues although less drastic similar 
+results were shown when the client and server run on independent 
+hardware in order to mitigate possible unexpected errors each 
+test was run times 
+figure java sockets vs jxta sockets 
+as figure demonstrates the performance of jxta sockets is 
+abysmal as compared to the performance of standard java sockets 
+the minimum transfer rate obtained using java sockets is 
+ kb s while the minimum transfer rater obtained using 
+jxta sockets is much lower at kb s the maximum 
+transfer rater obtain using java sockets is kb s while the 
+maximum transfer rate obtained using jxta sockets is 
+ kb s finally the average transfer rate using java sockets is 
+ kb s while the average transfer rate using jxta sockets is 
+ kb s 
+the major problem found in these benchmarks is that the 
+underlying network transport mechanism does not perform as 
+quickly or efficiently as expected in order to garner a 
+performance increase the jxta framework needs to be 
+substituted with a more traditional approach the indexing time is 
+also a bottleneck and will need to be improved for the overall 
+quality of apocrita to be improved 
+ related work 
+several decentralized p p systems exist today that 
+apocrita features some of their functionality however apocrita 
+also has unique novel searching and indexing features that make 
+this system unique for example majestic- is a distributed 
+search and indexing project designed for searching the internet 
+each user would install a client which is responsible for indexing 
+a portion of the web a central area for querying the index is 
+available on the majestic- web page the index itself is not 
+distributed only the act of indexing is distributed the distributed 
+indexing aspect of this project most closely relates apocrita goals 
+yacy is a peer-to-peer web search application yacy consists 
+of a web crawler an indexer a built-in database engine and a p p 
+index exchange protocol yacy is designed to maintain a 
+distributed index of the internet it used a distributed hash table 
+ dht to maintain the index the local node is used to query but 
+all results that are returned are accessible on the internet yacy 
+used many peers and dht to maintain a distributed index 
+apocrita will also use a distributed index in future 
+implementations and may benefit from using an implementation 
+of a dht yacy however is designed as a web search engine 
+and as such solves a much different problem than apocrita 
+ conclusions and future work 
+we presented apocrita a distributed p p searching and indexing 
+system intended for network users on an intranet it can help 
+organizations with no network file server or necessary network 
+infrastructure to share documents it eliminates the need for 
+documents to be manually shared among users while being edited 
+and reduce the possibility of conflicting versions being 
+distributed a proof of concept prototype has been constructed 
+but the results from measuring the network transport mechanism 
+and the indexing time were not as impressive as initially 
+envisioned despite these shortcomings the experience gained 
+from the design and implementation of apocrita has given us 
+more insight into building challenging distributed systems 
+for future work apocrita will have a smart content distribution 
+model in which a single instance of a file can intelligently and 
+transparently replicate throughout the network to ensure a copy of 
+every important file will always be available regardless of the 
+availability of specific nodes in the network in addition we plan 
+to integrate a revision control system into the content distribution 
+portion of apocrita so that users could have the ability to update 
+an existing file that they found and have the old revision 
+maintained and the new revision propagated finally the current 
+implementation has some overhead and redundancy due to the 
+fact that the entire index is maintained on each individual node 
+we plan to design a distributed index 
+ references 
+ rodrigues r liskov b shrira l the design of a robust 
+peer-to-peer system available online 
+http www pmg lcs mit edu  rodrigo ew -robust pdf 
+ chawathe y ratnasamy s breslau l lanham n and 
+chenker s making gnutella-like p p systems scalable in 
+proceedings of sigcomm karlsruhe germany 
+ harvest a distributed search system 
+http harvest sourceforge net 
+ majestic- distributed search engine 
+http www majestic co uk 
+ jxta http www jxta org 
+ yacy distributed p p-based web indexing 
+http www yacy net yacy 
+ lucene search engine library http lucene apache org 
+ test collections time magazine and npl 
+www dcs gla ac uk idom ir resources test collections 
+ 

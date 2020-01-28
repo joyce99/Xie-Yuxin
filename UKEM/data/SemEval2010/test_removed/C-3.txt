@@ -1,0 +1,923 @@
+self-adaptive applications on the grid 
+gosia wrzesinska jason maassen henri e bal 
+dept of computer systems vrije universiteit amsterdam 
+ gosia jason bal  cs vu nl 
+abstract 
+grids are inherently heterogeneous and dynamic one important 
+problem in grid computing is resource selection that is finding 
+an appropriate resource set for the application another problem 
+is adaptation to the changing characteristics of the grid 
+environment existing solutions to these two problems require that a 
+performance model for an application is known however 
+constructing such models is a complex task in this paper we investigate 
+an approach that does not require performance models we start an 
+application on any set of resources during the application run we 
+periodically collect the statistics about the application run and 
+deduce application requirements from these statistics then we adjust 
+the resource set to better fit the application needs this approach 
+allows us to avoid performance bottlenecks such as overloaded wan 
+links or very slow processors and therefore can yield significant 
+performance improvements we evaluate our approach in a number 
+of scenarios typical for the grid 
+categories and subject descriptors c computer 
+communication networks distributed systems-distributed 
+applications 
+ c performance of systems measurement 
+techniques modelling techniques 
+general terms algorithms measurement performance 
+experimentation 
+ introduction 
+in recent years grid computing has become a real alternative to 
+traditional parallel computing a grid provides much computational 
+power and thus offers the possibility to solve very large problems 
+especially if applications can run on multiple sites at the same time 
+ however the complexity of grid environments also 
+is many times larger than that of traditional parallel machines like 
+clusters and supercomputers one important problem is resource 
+selection - selecting a set of compute nodes such that the 
+application achieves good performance even in traditional 
+homogeneous parallel environments finding the optimal number of nodes 
+is a hard problem and is often solved in a trial-and-error fashion 
+in a grid environment this problem is even more difficult because 
+of the heterogeneity of resources the compute nodes have various 
+speeds and the quality of network connections between them varies 
+from low-latency and high-bandwidth local-area networks lans 
+to high-latency and possibly low-bandwidth wide-area networks 
+ wans another important problem is that the performance and 
+availability of grid resources varies over time the network links or 
+compute nodes may become overloaded or the compute nodes may 
+become unavailable because of crashes or because they have been 
+claimed by a higher priority application also new better resources 
+may become available to maintain a reasonable performance level 
+the application therefore needs to adapt to the changing conditions 
+the adaptation problem can be reduced to the resource selection 
+problem the resource selection phase can be repeated during 
+application execution either at regular intervals or when a performance 
+problem is detected or when new resources become available this 
+approach has been adopted by a number of systems for 
+resource selection the application runtime is estimated for some 
+resource sets and the set that yields the shortest runtime is selected 
+for execution predicting the application runtime on a given set of 
+resources however requires knowledge about the application 
+typically an analytical performance model is used but constructing 
+such a model is inherently difficult and requires an expertise which 
+application programmers may not have 
+in this paper we introduce and evaluate an alternative approach 
+to application adaptation and resource selection which does not 
+need a performance model we start an application on any set of 
+resources during the application run we periodically collect 
+information about the communication times and idle times of the 
+processors we use these statistics to automatically estimate the resource 
+requirements of the application next we adjust the resource set the 
+application is running on by adding or removing compute nodes 
+or even entire clusters our adaptation strategy uses the work by 
+eager et al to determine the efficiency and tries to keep the 
+efficiency of the application between a lower and upper threshold 
+derived from their theory processors are added or deleted to stay 
+between the thresholds thus adapting automatically to the 
+changing environment 
+a major advantage of our approach is that it improves 
+application performance in many different situations that are typical for 
+grid computing it handles all of the following cases 
+ automatically adapting the number of processors to the degree 
+of parallelism in the application even when this degree changes 
+dynamically during the computation 
+ migrating part of a computation away from overloaded 
+resources 
+ removing resources with poor communication links that slow 
+down the computation 
+ adding new resources to replace resources that have crashed 
+our work assumes the application is malleable and can run 
+ efficiently on multiple sites of a grid i e using co-allocation 
+it should not use static load balancing or be very sensitive to 
+wide 
+area latencies we have applied our ideas to divide-and-conquer 
+applications which satisfy these requirements divide-and-conquer 
+has been shown to be an attractive paradigm for programming grid 
+applications we believe that our approach can be extended 
+to other classes of applications with the given assumptions 
+we implemented our strategy in satin which is a java-centric 
+framework for writing grid-enabled divide-and-conquer 
+applications we evaluate the performance of our approach on the 
+das- wide-area system and we will show that our approach yields 
+major performance improvements roughly - in the above 
+scenarios 
+the rest of this paper is structured as follows in section we 
+explain what assumptions we are making about the applications and 
+grid resources in section we present our resource selection and 
+adaptation strategy in section we describe its implementation in 
+the satin framework in section we evaluate our approach in a 
+number of grid scenarios in section we compare our approach 
+with the related work finally in section we conclude and 
+describe future work 
+ background and assumptions 
+in this section we describe our assumptions about the applications 
+and their resources we assume the following resource model the 
+applications are running on multiple sites at the same time where 
+sites are clusters or supercomputers we also assume that the 
+processors of the sites are accessible using a grid scheduling system 
+such as koala zorilla or grms processors 
+belonging to one site are connected by a fast lan with a low latency 
+and high bandwidth the different sites are connected by a wan 
+communication between sites suffers from high latencies we 
+assume that the links connecting the sites with the internet backbone 
+might become bottlenecks causing the inter-site communication to 
+suffer from low bandwidths 
+we studied the adaptation problem in the context of 
+divide-andconquer applications however we believe that our methodology 
+can be used for other types of applications as well in this section 
+we summarize the assumptions about applications that are 
+important to our approach 
+the first assumption we make is that the application is 
+malleable i e it is able to handle processors joining and leaving 
+the on-going computation in we showed how 
+divide-andconquer applications can be made fault tolerant and malleable 
+processors can be added or removed at any point in the 
+computation with little overhead the second assumption is that the 
+application can efficiently run on processors with different speeds 
+this can be achieved by using a dynamic load balancing 
+strategy such as work stealing used by divide-and-conquer 
+applications also master-worker applications typically use dynamic 
+load-balancing strategies e g mw - a framework for writing 
+gridenabled master-worker applications we find it a reasonable 
+assumption for a grid application since applications for which the 
+slowest processor becomes a bottleneck will not be able to 
+efficiently utilize grid resources finally the application should be 
+insensitive to wide-area latencies so it can run efficiently on a 
+widearea grid 
+ self-adaptation 
+in this section we will explain how we use application 
+malleability to find a suitable set of resources for a given application and to 
+adapt to changing conditions in the grid environment in order to 
+monitor the application performance and guide the adaptation we 
+added an extra process to the computation which we call 
+adaptation coordinator the adaptation coordinator periodically collects 
+performance statistics from the application processors we 
+introduce a new application performance metric weighted average 
+efficiency which describes the application performance on a 
+heterogeneous set of resources the coordinator uses statistics from 
+application processors to compute the weighted average efficiency if 
+the efficiency falls above or below certain thresholds the 
+coordinator decides on adding or removing processors a heuristic formula 
+is used to decide which processors have to be removed during 
+this process the coordinator learns the application requirements by 
+remembering the characteristics of the removed processors these 
+requirements are then used to guide the adding of new processors 
+ weighted average efficiency 
+in traditional parallel computing a standard metric describing the 
+performance of a parallel application is efficiency efficiency is 
+defined as the average utilization of the processors that is the 
+fraction of time the processors spend doing useful work rather than 
+being idle or communicating with other processors 
+efficiency 
+ 
+n 
+ 
+n 
+i 
+ − overheadi 
+where n is the number of processors and overheadi is the 
+fraction of time the ith 
+processor spends being idle or communicating 
+efficiency indicates the benefit of using multiple processors 
+typically the efficiency drops as new processors are added to 
+the computation therefore achieving a high speedup and thus 
+a low execution time and achieving a high system utilization are 
+conflicting goals the optimal number of processors is the 
+number for which the ratio of efficiency to execution time is 
+maximized adding processors beyond this number yields little benefit 
+this number is typically hard to find but in it was 
+theoretically proven that if the optimal number of processors is used the 
+efficiency is at least therefore adding processors when 
+efficiency is smaller or equal to will only decrease the system 
+utilization without significant performance gains 
+for heterogeneous environments with different processor speeds 
+we extended the notion of efficiency and introduced weighted 
+average efficiency 
+wa efficiency 
+ 
+n 
+ 
+n 
+i 
+speedi − overheadi 
+the useful work done by a processor − overheadi is 
+weighted by multiplying it by the speed of this processor 
+relative to the fastest processor the fastest processor has speed 
+for others holds speed ≤ therefore slower processors are 
+modeled as fast ones that spend a large fraction of the time being 
+idle weighted average efficiency reflects the fact that adding slow 
+processors yields less benefit than adding fast processors 
+in the heterogeneous world it is hardly beneficial to add 
+processors if the efficiency is lower than unless the added processor 
+is faster than some of the currently used processors adding faster 
+processors might be beneficial regardless of the efficiency 
+ application monitoring 
+each processor measures the time it spends communicating or 
+being idle the computation is divided into monitoring periods 
+after each monitoring period the processors compute their overhead 
+over this period as the percentage of the time they spent being idle 
+or communicating in this period apart from total overhead each 
+processor also computes the overhead of inter-cluster and 
+intracluster communication 
+to calculate weighted average efficiency we need to know the 
+relative speeds of the processors which depend on the 
+application and the problem size used since it is impractical to run the 
+ 
+whole application on each processor separately we use 
+applicationspecific benchmarks currently we use the same application with a 
+small problem size as a benchmark and we require the application 
+programmer to specify this problem size this approach requires 
+extra effort from the programmer to find the right problem size and 
+possibly to produce input files for this problem size which may 
+be hard in the future we are planning to generate benchmarks 
+automatically by choosing a random subset of the task graph of the 
+original application 
+benchmarks have to be re-run periodically because the speed of 
+a processor might change if it becomes overloaded by another 
+application for time-shared machines there is a trade-off between 
+the accuracy of speed measurements and the overhead it incurs the 
+longer the benchmark the greater the accuracy of the measurement 
+the more often it is run the faster changes in processor speed are 
+detected in our current implementation the application 
+programmer specifies the length of the benchmark by specifying its 
+problem size and the maximal overhead it is allowed to cause 
+processors run the benchmark at such frequency so as not to exceed the 
+specified overhead in the future we plan to combine 
+benchmarking with monitoring the load of the processor which would allow 
+us to avoid running the benchmark if no change in processor load 
+is detected this optimization will further reduce the benchmarking 
+overhead 
+note that the benchmarking overhead could be avoided 
+completely for more regular applications for example for 
+masterworker applications with tasks of equal or similar size the 
+processor speed could then be measured by counting the tasks 
+processed by this processor within one monitoring period 
+unfortunately divide-and-conquer applications typically exhibit a very 
+irregular structure the sizes of tasks can vary by many orders of 
+magnitude 
+at the end of each monitoring period the processors send the 
+overhead statistics and processor speeds to the coordinator 
+periodically the coordinator computes the weighted average efficiency and 
+other statistics such as average inter-cluster overhead or overheads 
+in each cluster the clocks of the processors are not synchronized 
+with each other or with the clock of the coordinator each 
+processor decides separately when it is time to send data occasionally 
+the coordinator may miss data at the end of a monitoring period 
+so it has to use data from the previous monitoring period for these 
+processors this causes small inaccuracies in the calculations of the 
+coordinator but does not influence the performance of adaptation 
+ adaptation strategy 
+the adaptation coordinator tries to keep the weighted average 
+efficiency between emin and emax when it exceeds emax the 
+coordinator requests new processors from the scheduler the number of 
+requested processors depends on the current efficiency the higher 
+the efficiency the more processors are requested the coordinator 
+starts removing processors when the weighted average efficiency 
+drops below emin the number of nodes that are removed again 
+depends on the weighted average efficiency the lower the 
+efficiency the more nodes are removed the thresholds we use are 
+emax because we know that adding processors when 
+efficiency is lower does not make sense and emin 
+efficiency of or lower might indicate performance problems such 
+as low bandwidth or overloaded processors in that case 
+removing bad processors will be beneficial for the application such low 
+efficiency might also indicate that we simply have too many 
+processors in that case removing some processors may not be beneficial 
+but it will not harm the application the coordinator always tries 
+to remove the worst processors the badness of a processor is 
+determined by the following formula 
+proc badnessi α 
+ 
+speedi 
+ β ic overheadi 
+ γ inw orstcluster i 
+the processor is considered bad if it has low speed 
+speed 
+is 
+big and high inter-cluster overhead ic overhead high 
+intercluster overhead indicates that the bandwidth to this processor s 
+cluster is insufficient removing processors located in a single 
+cluster is desirable since it decreases the amount of wide-area 
+communication therefore processors belonging to the worst 
+cluster are preferred function inw orstcluster i returns for 
+processors belonging to the worst cluster and otherwise the 
+badness of clusters is computed similarly to the badness of 
+processors 
+cluster badnessi α 
+ 
+speedi 
+ β ic overheadi 
+the speed of a cluster is the sum of processor speeds normalized 
+to the speed of the fastest cluster the ic overhead of a cluster is 
+an average of processor inter-cluster overheads the α β and γ 
+coefficients determine the relative importance of the terms those 
+coefficients are established empirically currently we are using 
+the following values α β and γ based 
+on the observation that ic overhead indicates bandwidth 
+problems and processors with speed do not contribute to 
+the computation 
+additionally when one of the clusters has an exceptionally high 
+inter-cluster overhead larger than we conclude that the 
+bandwidth on the link between this cluster and the internet backbone is 
+insufficient for the application in that case we simply remove the 
+whole cluster instead of computing node badness and removing the 
+worst nodes after deciding which nodes are removed the 
+coordinator sends a message to these nodes and the nodes leave the 
+computation figure shows a schematic view of the adaptation 
+strategy dashed lines indicate a part that is not supported yet as 
+will be explained below 
+this simple adaptation strategy allows us to improve application 
+performance in several situations typical for the grid 
+ if an application is started on fewer processors than its degree of 
+parallelism allows it will automatically expand to more 
+processors as soon as there are extra resources available conversely 
+if an application is started on more processors than it can 
+efficiently use a part of the processors will be released 
+ if an application is running on an appropriate set of resources 
+but after a while some of the resources processors and or 
+network links become overloaded and slow down the 
+computation the overloaded resources will be removed after removing 
+the overloaded resources the weighted average efficiency will 
+increase to above the emax threshold and the adaptation 
+coordinator will try to add new resources therefore the application 
+will be migrated from overloaded resources 
+ if some of the original resources chosen by the user are 
+inappropriate for the application for example the bandwidth to one 
+of the clusters is too small the inappropriate resources will be 
+removed if necessary the adaptation component will try to add 
+other resources 
+ if during the computation a substantial part of the processors 
+will crash the adaptation component will try to add new 
+resources to replace the crashed processors 
+ 
+ 
+ 
+ 
+ 
+runtime secs 
+scenario 
+a b c 
+scenario scenario scenario scenario scenario 
+without monitoring and adaptation runtime 
+with monitoring and adaptation runtime 
+with monitoring but no adaptation runtime 
+figure the runtimes of the barnes-hut application scenarios - 
+add nodes 
+faster nodes 
+available 
+if 
+compute weighted 
+average efficiency e wa 
+wait collect 
+statistics 
+rank nodes 
+remove worst nodes 
+wae 
+ewa 
+y 
+n 
+n 
+y 
+above 
+if 
+below 
+if 
+emin 
+maxe 
+figure adaptation strategy 
+ if the application degree of parallelism is changing during the 
+computation the number of nodes the application is running on 
+will be automatically adjusted 
+further improvements are possible but require extra 
+functionality from the grid scheduler and or integration with monitoring 
+services such as nws for example adding nodes to a 
+computation can be improved currently we add any nodes the 
+scheduler gives us however it would be more efficient to ask for the 
+fastest processors among the available ones this could be done for 
+example by passing a benchmark to the grid scheduler so that it 
+can measure processor speeds in an application specific way 
+typically it would be enough to measure the speed of one processor 
+per site since clusters and supercomputers are usually 
+homogeneous an alternative approach would be ranking the processors 
+based on parameters such as clock speed and cache size this 
+approach is sometimes used for resource selection for sequential 
+applications however it is less accurate than using an 
+application specific benchmark 
+also during application execution we can learn some 
+application requirements and pass them to the scheduler one example is 
+minimal bandwidth required by the application the lower bound 
+on minimal required bandwidth is tightened each time a cluster 
+with high inter-cluster overhead is removed the bandwidth 
+between each pair of clusters is estimated during the computation by 
+measuring data transfer times and the bandwidth to the removed 
+cluster is set as a minimum alternatively information from a grid 
+monitoring system can be used such bounds can be passed to the 
+scheduler to avoid adding inappropriate resources it is especially 
+important when migrating from resources that cause performance 
+problems we have to be careful not to add the resources we have 
+just removed currently we use blacklisting - we simply do not 
+allow adding resources we removed before this means however 
+that we cannot use these resources even if the cause of the 
+performance problem disappears e g the bandwidth of a link might 
+improve if the background traffic diminishes 
+we are currently not able to perform opportunistic migration 
+- migrating to better resources when they are discovered if an 
+application runs with efficiency between emin and emax the 
+adaptation component will not undertake any action even if 
+better resources become available enabling opportunistic migration 
+requires again the ability to specify to the scheduler what 
+better resources are faster with a certain minimal bandwidth and 
+receiving notifications when such resources become available 
+existing grid schedulers such as gram from the globus 
+toolkit do not support such functionality the developers of 
+the koala metascheduler have recently started a project 
+whose goal is to provide support for adaptive applications we 
+are currently discussing with them the possibility of providing the 
+functionalities required by us aiming to extend our adaptivity 
+strat 
+egy to support opportunistic migration and to improve the initial 
+resource selection 
+ implementation 
+we incorporated our adaptation mechanism into satin - a java 
+framework for creating grid-enabled divide-and-conquer 
+applications with satin the programmer annotates the sequential code 
+with divide-and-conquer primitives and compiles the annotated 
+code with a special satin compiler that generates the necessary 
+communication and load balancing code satin uses a very 
+efficient grid-aware load balancing algorithm - cluster-aware 
+random work stealing crs which hides wide-area latencies 
+by overlapping local and remote stealing satin also provides 
+transparent fault tolerance and malleability with satin removing 
+and adding processors from to an ongoing computation incurs little 
+overhead 
+we instrumented the satin runtime system to collect runtime 
+statistics and send them to the adaptation coordinator the 
+coordinator is implemented as a separate process both coordinator and 
+satin are implemented entirely in java on top of the ibis 
+communication library the core of ibis is also implemented in java 
+the resulting system therefore is highly portable due to java s 
+write once run anywhere property allowing the software to run 
+unmodified on a heterogeneous grid 
+ibis also provides the ibis registry the registry provides 
+among others a membership service to the processors taking part 
+in the computation the adaptation coordinator uses the registry 
+to discover the application processes and the application processes 
+use this service to discover each other the registry also offers fault 
+detection additional to the fault detection provided by the 
+communication channels finally the registry provides the possibility 
+to send signals to application processes the coordinator uses this 
+functionality to notify the processors that they need to leave the 
+computation currently the registry is implemented as a 
+centralized server 
+for requesting new nodes the zorilla system is used - a 
+peer-to-peer supercomputing middleware which allows 
+straightforward allocation of processors in multiple clusters and or 
+supercomputers zorilla provides locality-aware scheduling which tries to 
+allocate processors that are located close to each other in terms 
+of communication latency in the future zorilla will also support 
+bandwidth-aware scheduling which tries to maximize the total 
+bandwidth in the system zorilla can be easily replaced with 
+another grid scheduler in the future we are planning to integrate 
+our adaptation component with gat which is becoming a 
+standard in the grid community and koala a scheduler that 
+provides co-allocation on top of standard grid middleware such as the 
+globus toolkit 
+ performance evaluation 
+in this section we will evaluate our approach we will demonstrate 
+the performance of our mechanism in a few scenarios the first 
+scenario is an ideal situation the application runs on a 
+reasonable set of nodes i e such that the efficiency is around and 
+no problems such as overloaded networks and processors 
+crashing processors etc occur this scenario allows us to measure the 
+overhead of the adaptation support the remaining scenarios are 
+typical for grid environments and demonstrate that with our 
+adaptation support the application can avoid serious performance 
+bottlenecks such as overloaded processors or network links for each 
+scenario we compare the performance of an application with 
+adaptation support to a non-adaptive version in the non-adaptive version 
+the coordinator does not collect statistics and no benchmarking for 
+measuring processor speeds is performed in the ideal scenario 
+ 
+iteration number 
+ 
+ 
+ 
+ 
+iterationduration secs 
+starting on nodes 
+starting on nodes 
+starting on nodes 
+starting on nodes 
+starting on nodes 
+starting on nodes 
+ no adaptation 
+ with adaptation 
+figure barnes-hut iteration durations with without adaptation 
+too few processors 
+ 
+iteration number 
+ 
+ 
+ 
+ 
+ 
+ 
+iterationduration secs 
+no adaptation 
+with adaptation 
+cpu load introduced 
+overloaded nodes removed 
+started adding nodes 
+ nodes reached 
+figure barnes-hut iteration durations with without adaptation 
+overloaded cpus 
+we additionally measure the performance of an application with 
+collecting statistics and benchmarking turned on but without 
+doing adaptation that is without allowing it to change the number 
+of nodes this allows us to measure the overhead of benchmarking 
+and collecting statistics in all experiments we used a monitoring 
+period of minutes for the adaptive versions of the applications 
+all the experiments were carried out on the das- wide-area 
+system which consists of five clusters located at five dutch 
+uni 
+versities one of the clusters consists of nodes the others of 
+nodes each node contains two ghz pentium processors within 
+a cluster the nodes are connected by fast ethernet the clusters 
+are connected by the dutch university internet backbone in our 
+experiments we used the barnes-hut n-body simulation 
+barneshut simulates the evolution of a large set of bodies under influence 
+of gravitational or electrostatic forces the evolution of n bodies 
+is simulated in iterations of discrete time steps 
+ scenario adaptivity overhead 
+in this scenario the application is started on nodes the nodes 
+are equally divided over clusters nodes in each cluster on 
+this number of nodes the application runs with efficiency so 
+we consider it a reasonable number of nodes as mentioned above 
+in this scenario we measured three runtimes the runtime of the 
+application without adaptation support runtime the runtime with 
+adaptation support runtime and the runtime with monitoring 
+ i e collection of statistics and benchmarking turned on but 
+without allowing it to change the number of nodes runtime those 
+runtimes are shown in figure first group of bars the comparison 
+between runtime and shows the overhead of adaptation support 
+in this experiment it is around almost all overhead comes 
+from benchmarking the benchmark is run - times per 
+monitoring period this overhead can be made smaller by increasing the 
+length of the monitoring period and decreasing the benchmarking 
+frequency the monitoring period we used minutes is relatively 
+short because the runtime of the application was also relatively 
+short - minutes using longer running applications would 
+not allow us to finish the experimentation in a reasonable time 
+however real-world grid applications typically need hours days or 
+even weeks to complete for such applications a much longer 
+monitoring period can be used and the adaptation overhead can be kept 
+much lower for example with the barnes-hut application if the 
+monitoring period is extended to minutes the overhead drops to 
+ note that combining benchmarking with monitoring processor 
+load as described in section would reduce the benchmarking 
+overhead to almost zero since the processor load is not changing 
+the benchmarks would only need to be run at the beginning of the 
+computation 
+ scenario expanding to more nodes 
+in this scenario the application is started on fewer nodes than the 
+application can efficiently use this may happen because the user 
+does not know the right number of nodes or because insufficient 
+nodes were available at the moment the application was started we 
+tried initial numbers of nodes scenario a scenario b 
+and scenario c the nodes were located in or clusters in 
+each of the three sub-scenarios the application gradually expanded 
+to - nodes located in clusters this allowed to reduce the 
+application runtimes by scenario a scenario b and 
+ scenario c with respect to the non-adaptive version those 
+runtimes are shown in figure since barnes-hut is an iterative 
+application we also measured the time of each iteration as shown 
+in figure adaptation reduces the iteration time by a factor of 
+ scenario a scenario b and scenario c which allows 
+us to conclude that the gains in the total runtime would be even 
+bigger if the application were run longer than for iterations 
+ scenario overloaded processors 
+in this scenario we started the application on nodes in clusters 
+after seconds we introduced a heavy artificial load on the 
+processors in one of the clusters such a situation may happen when 
+an application with a higher priority is started on some of the 
+resources figure shows the iteration durations of both the adaptive 
+and non-adaptive versions after introducing the load the iteration 
+ 
+iteration number 
+ 
+ 
+ 
+ 
+ 
+ 
+iterationduration secs 
+no adaptation 
+with adaptation 
+one cluster is badly connected 
+badly connected cluster removed 
+started adding nodes 
+ nodes reached 
+figure barnes-hut iteration durations with without adaptation 
+overloaded network link 
+ 
+iteration number 
+ 
+ 
+ 
+ 
+ 
+ 
+iterationduration secs 
+no adaptation 
+with adaptation 
+one cluster is badly connected 
+ nodes lightly overloaded 
+removed badly connected cluster 
+removed lightly overloaded nodes 
+figure barnes-hut iteration durations with without adaptation 
+overloaded cpus and an overloaded network link 
+duration increased by a factor of to also the iteration times 
+became very variable the adaptive version reacted by removing 
+the overloaded nodes after removing these nodes the weighted 
+average efficiency rose to around which triggered adding new 
+nodes and the application expanded back to nodes so the 
+overloaded nodes were replaced by better nodes which brought the 
+iteration duration back to the initial values this reduced the total 
+runtime by the runtimes are shown in figure 
+ 
+ scenario overloaded network link 
+in this scenario we ran the application on nodes in clusters 
+we simulated that the uplink to one of the clusters was overloaded 
+and the bandwidth on this uplink was reduced to approximately 
+ kb s to simulate low bandwidth we use the traffic-shaping 
+techniques described in the iteration durations in this 
+experiment are shown in figure the iteration durations of the 
+nonadaptive version exhibit enormous variation from to 
+seconds the adaptive version removed the badly connected cluster 
+after the first monitoring period as a result the weighted 
+average efficiency rose to around and new nodes were gradually 
+added until their number reached this brought the iteration 
+times down to around seconds the total runtime was reduced 
+by figure 
+ scenario overloaded processors and an overloaded 
+network link 
+in this scenario we ran the application on nodes in clusters 
+again we simulated an overloaded uplink to one of the clusters 
+additionally we simulated processors with heterogeneous speeds 
+by inserting a relatively light artificial load on the processors in one 
+of the remaining clusters the iteration durations are shown in 
+figure again the non-adaptive version exhibits a great variation in 
+iteration durations from to seconds the adaptive 
+version removes the badly connected cluster after the first monitoring 
+period which brings the iteration duration down to seconds on 
+average after removing one of the clusters since some of the 
+processors are slower approximately times the weighted average 
+efficiency raises only to around since this value lies between 
+emin and emax no nodes are added or removed this example 
+illustrates what the advantages of opportunistic migration would be 
+there were faster nodes available in the system if these nodes were 
+added to the application which could trigger removing the slower 
+nodes the iteration duration could be reduced even further still 
+the adaptation reduced the total runtime by figure 
+ scenario crashing nodes 
+in the last scenario we also run the application on nodes in 
+clusters after seconds out of clusters crash the iteration 
+durations are shown in figure after the crash the iteration 
+duration raised from to seconds the weighted efficiency 
+rose to around which triggered adding new nodes in the 
+adaptive version the number of nodes gradually went back to 
+which brought the iteration duration back to around seconds 
+the total runtime was reduced by figure 
+ related work 
+a number of grid projects address the question of resource 
+selection and adaptation in grads and assist resource 
+selection and adaptation requires a performance model that allows 
+predicting application runtimes in the resource selection phase a 
+number of possible resource sets is examined and the set of 
+resources with the shortest predicted runtime is selected if 
+performance degradation is detected during the computation the resource 
+selection phase is repeated grads uses the ratio of the predicted 
+execution times of certain application phases to the real 
+execution times as an indicator of application performance assist uses 
+the number of iterations per time unit for iterative applications 
+or the number of tasks per time unit for regular master-worker 
+applications as a performance indicator the main difference 
+between these approaches and our approach is the use of performance 
+models the main advantage is that once the performance model 
+is known the system is able to take more accurate migration 
+decisions than with our approach however even if the performance 
+ 
+iteration number 
+ 
+ 
+ 
+ 
+ 
+ 
+iterationduration secs 
+no adaptation 
+with adaptation 
+ out of clusters crash 
+started adding nodes 
+ nodes reached 
+figure barnes-hut iteration durations with without adaptation 
+crashing cpus 
+model is known the problem of finding an optimal resource set i e 
+the resource set with the minimal execution time is np-complete 
+currently both grads and assist examine only a subset of all 
+possible resource sets and therefore there is no guarantee that the 
+resulting resource set will be optimal as the number of available 
+grid resources increases the accuracy of this approach diminishes 
+as the subset of possible resource sets that can be examined in a 
+reasonable time becomes smaller another disadvantage of these 
+systems is that the performance degradation detection is suitable 
+only for iterative or regular applications 
+cactus and gridway do not use performance models 
+however these frameworks are only suitable for sequential 
+ gridway or single-site applications cactus in that case the resource 
+selection problem boils down to selecting the fastest machine or 
+cluster processor clock speed average load and a number of 
+processors in a cluster cactus are used to rank resources and the 
+resource with the highest rank is selected the application is migrated 
+if performance degradation is detected or better resources are 
+discovered both cactus and gridway use the number of iterations per 
+time unit as the performance indicator the main limitation of this 
+methodology is that it is suitable only for sequential or single-site 
+applications moreover resource selection based on clock speed is 
+not always accurate finally performance degradation detection is 
+suitable only for iterative applications and cannot be used for 
+irregular computations such as search and optimization problems 
+the resource selection problem was also studied by the apples 
+project in the context of this project a number of applications 
+were studied and performance models for these applications were 
+created based on such a model a scheduling agent is built that 
+uses the performance model to select the best resource set and the 
+best application schedule on this set apples scheduling agents are 
+written on a case-by-case basis and cannot be reused for another 
+application two reusable templates were also developed for specific 
+classes of applications namely master-worker amwat template 
+and parameter sweep apst template applications migration is 
+not supported by the apples software 
+ 
+in the problem of scheduling master-worker applications 
+is studied the authors assume homogeneous processors i e with 
+the same speed and do not take communication costs into account 
+therefore the problem is reduced to finding the right number of 
+workers the approach here is similar to ours in that no 
+performance model is used instead the system tries to deduce the 
+application requirements at runtime and adjusts the number of workers 
+to approach the ideal number 
+ conclusions and future work 
+in this paper we investigated the problem of resource selection and 
+adaptation in grid environments existing approaches to these 
+problems typically assume the existence of a performance model that 
+allows predicting application runtimes on various sets of resources 
+however creating performance models is inherently difficult and 
+requires knowledge about the application we propose an approach 
+that does not require in-depth knowledge about the application we 
+start the application on an arbitrary set of resources and monitor 
+its performance the performance monitoring allows us to learn 
+certain application requirements such as the number of processors 
+needed by the application or the application s bandwidth 
+requirements we use this knowledge to gradually refine the resource set 
+by removing inadequate nodes or adding new nodes if necessary 
+this approach does not result in the optimal resource set but in a 
+reasonable resource set i e a set free from various performance 
+bottlenecks such as slow network connections or overloaded 
+processors our approach also allows the application to adapt to the 
+changing grid conditions 
+the adaptation decisions are based on the weighted average 
+efficiency - an extension of the concept of parallel efficiency defined 
+for traditional homogeneous parallel machines if the weighted 
+average efficiency drops below a certain level the adaptation 
+coordinator starts removing worst nodes the badness of the nodes is 
+defined by a heuristic formula if the weighted average efficiency 
+raises above a certain level new nodes are added our simple 
+adaptation strategy allows us to handle multiple scenarios typical for 
+grid environments expand to more nodes or shrink to fewer nodes 
+if the application was started on an inappropriate number of 
+processors remove inadequate nodes and replace them with better ones 
+replace crashed processors etc the application adapts fully 
+automatically to changing conditions we implemented our approach 
+in the satin divide-and-conquer framework and evaluated it on 
+the das- distributed supercomputer and demonstrate that our 
+approach can yield significant performance improvements up to 
+in our experiments 
+future work will involve extending our adaptation strategy 
+to support opportunistic migration this however requires grid 
+schedulers with more sophisticated functionality than currently 
+exists further research is also needed to decrease the benchmarking 
+overhead for example the information about cpu load could 
+be used to decrease the benchmarking frequency another line of 
+research that we wish to investigate is using feedback control to 
+refine the adaptation strategy during the application run for 
+example the node badness formula could be refined at runtime based 
+on the effectiveness of the previous adaptation decisions finally 
+the centralized implementation of the adaptation coordinator might 
+become a bottleneck for applications which are running on very 
+large numbers of nodes hundreds or thousands this problem can 
+be solved by implementing a hierarchy of coordinators one 
+subcoordinator per cluster which collects and processes statistics from 
+its cluster and one main coordinator which collects the information 
+from the sub-coordinators 
+acknowledgments 
+this work was carried out in the context of virtual laboratory for 
+e-science project ww vl-e nl this project is supported by a bsik 
+grant from the dutch ministry of education culture and science 
+ oc w and is part of the ict innovation program of the ministry 
+of economic affairs ez 
+references 
+ m aldinucci f andre j buisson s campa m coppola 
+m danelutto and c zoccolo parallel program component 
+adaptivity management in parco sept 
+ g allen d angulo i foster g lanfermann c liu 
+t radke e seidel and j shalf the cactus worm 
+experiments with resource discovery and allocation in a grid 
+environment int l journal of high performance computing 
+applications - 
+ g allen k davis k n dolkas n d doulamis t goodale 
+t kielmann a merzky j nabrzyski j pukacki t radke 
+m russell e seidel j shalf and i taylor enabling 
+applications on the grid - a gridlab overview int l journal of 
+high-performance computing applications - 
+aug 
+ j e baldeschwieler r d blumofe and e a brewer 
+atlas an infrastructure for global computing in th acm 
+sigops european workshop on system support for 
+worldwide applications pages - sept 
+ f berman r wolski h casanova w cirne h dail 
+m faerman s figueira j hayes g obertelli j schopf 
+g shao s smallen n spring a su and d 
+zagorodnov adaptive computing on the grid using apples ieee 
+trans on parallel and distributed systems - 
+apr 
+ d -m chiu m kadansky j provino and j wesley 
+experiences in programming a traffic shaper in th ieee symp on 
+computers and communications pages - 
+ w chrabakh and r wolski gridsat a chaff-based 
+distributed sat solver for the grid in acm ieee 
+conference on supercomputing page 
+ the distributed asci supercomputer das 
+http www cs vu nl das 
+ n drost r v van nieuwport and h e bal simple 
+localityaware co-allocation in peer-to-peer supercomputing in th 
+int l workshop on global peer- -peer computing may 
+ d l eager j zahorjan and e d lazowska speedup 
+versus efficiency in parallel systems ieee transactions on 
+computers - mar 
+ i foster globus toolkit version software for 
+serviceoriented systems in ifip international conference on 
+network and parallel computing pages - springer-verlag 
+lncs 
+ j -p goux s kulkarni m yoder and j linderoth an 
+enabling framework for master-worker applications on the 
+computational grid in th ieee int l symp on high 
+performance distributed computing pages - aug 
+ e heymann m a senar e luque and m livny 
+adaptive scheduling for master-worker applications on the 
+computational grid in st ieee acm international workshop 
+on grid computing pages - springer verlag lncs 
+ 
+ 
+ e huedo r s montero and i m llorente a framework 
+for adaptive execution in grids software - practice 
+experience - 
+ h h mohamed and d h epema experiences with the 
+koala co-allocating scheduler in multiclusters in th 
+ieee acm int l symp on cluster computing and the grid 
+pages - may 
+ a plaat h e bal and r f h hofman sensitivity of 
+parallel applications to large differences in bandwidth and 
+latency in two-layer interconnects in th int l symp on 
+high performance computer architecture pages - 
+jan 
+ j w romein h e bal j schaeffer and a plaat a 
+performance analysis of transposition-table-driven work scheduling 
+in distributed search ieee trans on parallel and distributed 
+systems - may 
+ s s vadhiyar and j j dongarra self adaptivity in grid 
+computing concurrency and computation practice and 
+experience - - 
+ r v van nieuwpoort t kielmann and h e bal efficient 
+load balancing for wide-area divide-and-conquer applications 
+in th acm sigplan symp on principles and practices of 
+parallel programming pages - 
+ r v van nieuwpoort j maassen t kielmann and h e bal 
+satin simple and efficient java-based grid programming 
+scalable computing practice and experience - 
+sept 
+ r v van nieuwpoort j maassen g wrzesinska r 
+hofman c jacobs t kielmann and h e bal ibis a 
+flexible and efficient java-based grid programming environment 
+concurrency computation practice experience 
+ - 
+ r wolski n spring and j hayes the network weather 
+service a distributed resource performance forecasting service 
+for metacomputing journal of future generation computing 
+systems - - oct 
+ g wrzesinska r v van nieuwport j maassen and h e 
+bal fault-tolerance malleability and migration for 
+divideand-conquer applications on the grid in int l parallel and 
+distributed processing symposium apr 
+ 

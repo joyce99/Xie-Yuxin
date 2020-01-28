@@ -1,0 +1,1119 @@
+marginal contribution nets a compact representation 
+scheme for coalitional games 
+ 
+samuel ieong 
+† 
+computer science department 
+stanford university 
+stanford ca 
+sieong stanford edu 
+yoav shoham 
+computer science department 
+stanford university 
+stanford ca 
+shoham stanford edu 
+abstract 
+we present a new approach to representing coalitional games 
+based on rules that describe the marginal contributions of 
+the agents this representation scheme captures 
+characteristics of the interactions among the agents in a natural and 
+concise manner we also develop efficient algorithms for two 
+of the most important solution concepts the shapley value 
+and the core under this representation the shapley value 
+can be computed in time linear in the size of the input the 
+emptiness of the core can be determined in time 
+exponential only in the treewidth of a graphical interpretation of our 
+representation 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent 
+systems j social and behavioral sciences 
+economics f analysis of algorithms and problem 
+complexity 
+general terms 
+algorithms economics 
+ introduction 
+agents can often benefit by coordinating their actions 
+coalitional games capture these opportunities of 
+coordination by explicitly modeling the ability of the agents to take 
+joint actions as primitives as an abstraction coalitional 
+games assign a payoff to each group of agents in the game 
+this payoff is intended to reflect the payoff the group of 
+agents can secure for themselves regardless of the actions 
+of the agents not in the group these choices of primitives 
+are in contrast to those of non-cooperative games of which 
+agents are modeled independently and their payoffs depend 
+critically on the actions chosen by the other agents 
+ coalitional games and e-commerce 
+coalitional games have appeared in the context of 
+e-commerce in kleinberg et al use coalitional games to study 
+recommendation systems in their model each individual 
+knows about a certain set of items is interested in learning 
+about all items and benefits from finding out about them 
+the payoffs to groups of agents are the total number of 
+distinct items known by its members given this coalitional 
+game setting kleinberg et al compute the value of the 
+private information of the agents is worth to the system using 
+the solution concept of the shapley value definition can be 
+found in section these values can then be used to 
+determine how much each agent should receive for participating 
+in the system 
+as another example consider the economics behind 
+supply chain formation the increased use of the internet as a 
+medium for conducting business has decreased the costs for 
+companies to coordinate their actions and therefore 
+coalitional game is a good model for studying the supply chain 
+problem suppose that each manufacturer purchases his raw 
+materials from some set of suppliers and that the suppliers 
+offer higher discount with more purchases the decrease in 
+communication costs will let manufacturers find others 
+interested in the same set of suppliers cheaper and facilitates 
+formation of coalitions to bargain with the suppliers 
+depending on the set of suppliers and how much from each 
+supplier each coalition purchases we can assign payoffs to 
+the coalitions depending on the discount it receives the 
+resulting game can be analyzed using coalitional game 
+theory and we can answer questions such as the stability of 
+coalitions and how to fairly divide the benefits among the 
+participating manufacturers a similar problem 
+combinatorial coalition formation has previously been studied in 
+ evaluation criteria for coalitional game 
+representation 
+to capture the coalitional games described above and 
+perform computations on them we must first find a 
+representation for these games the na¨ıve solution is to enumerate 
+the payoffs to each set of agents therefore requiring space 
+ 
+exponential in the number of agents in the game for the 
+two applications described the number of agents in the 
+system can easily exceed a hundred this na¨ıve approach will 
+not be scalable to such problems therefore it is critical to 
+find good representation schemes for coalitional games 
+we believe that the quality of a representation scheme 
+should be evaluated by four criteria 
+expressivity the breadth of the class of coalitional games 
+covered by the representation 
+conciseness the space requirement of the representation 
+efficiency the efficiency of the algorithms we can develop 
+for the representation 
+simplicity the ease of use of the representation by users 
+of the system 
+the ideal representation should be fully expressive i e it 
+should be able to represent any coalitional games use as 
+little space as possible have efficient algorithms for 
+computation and be easy to use the goal of this paper is to 
+develop a representation scheme that has properties close to 
+the ideal representation 
+unfortunately given that the number of degrees of 
+freedom of coalitional games is o n 
+ not all games can be 
+represented concisely using a single scheme due to information 
+theoretic constraints for any given class of games one may 
+be able to develop a representation scheme that is tailored 
+and more compact than a general scheme for example for 
+the recommendation system game a highly compact 
+representation would be one that simply states which agents know 
+of which products and let the algorithms that operate on 
+the representation to compute the values of coalitions 
+appropriately for some problems however there may not be 
+efficient algorithms for customized representations by 
+having a general representation and efficient algorithms that go 
+with it the representation will be useful as a prototyping 
+tool for studying new economic situations 
+ previous work 
+the question of coalitional game representation has only 
+been sparsely explored in the past in deng 
+and papadimitriou focused on the complexity of different 
+solution concepts on coalitional games defined on graphs 
+while the representation is compact it is not fully 
+expressive in conitzer and sandholm looked into the problem 
+of determining the emptiness of the core in superadditive 
+games they developed a compact representation scheme 
+for such games but again the representation is not fully 
+expressive either in conitzer and sandholm developed a 
+fully expressive representation scheme based on 
+decomposition our work extends and generalizes the representation 
+schemes in through decomposing the game into a set of 
+rules that assign marginal contributions to groups of agents 
+we will give a more detailed review of these papers in section 
+ after covering the technical background 
+ summary of our contributions 
+ we develop the marginal contribution networks 
+representation a fully expressive representation scheme 
+whose size scales according to the complexity of the 
+interactions among the agents we believe that the 
+representation is also simple and intuitive 
+ we develop an algorithm for computing the shapley 
+value of coalitional games under this representation 
+that runs in time linear in the size of the input 
+ under the graphical interpretation of the 
+representation we develop an algorithm for determining the 
+whether a payoff vector is in the core and the emptiness 
+of the core in time exponential only in the treewidth 
+of the graph 
+ preliminaries 
+in this section we will briefly review the basics of 
+coalitional game theory and its two primary solution concepts 
+the shapley value and the core 
+we will also review 
+previous work on coalitional game representation in more detail 
+throughout this paper we will assume that the payoff to 
+a group of agents can be freely distributed among its 
+members this assumption is often known as the transferable 
+utility assumption 
+ technical background 
+we can represent a coalition game with transferable utility 
+by the pair n v where 
+ n is the set of agents and 
+ v n 
+→ r is a function that maps each group of 
+agents s ⊆ n to a real-valued payoff 
+this representation is known as the characteristic form as 
+there are exponentially many subsets it will take space 
+exponential in the number of agents to describe a coalitional 
+game 
+an outcome in a coalitional game specifies the utilities 
+the agents receive a solution concept assigns to each 
+coalitional game a set of reasonable outcomes different 
+solution concepts attempt to capture in some way outcomes 
+that are stable and or fair two of the best known solution 
+concepts are the shapley value and the core 
+the shapley value is a normative solution concept it 
+prescribes a fair way to divide the gains from cooperation 
+when the grand coalition i e n is formed the division 
+of payoff to agent i is the average marginal contribution of 
+agent i over all possible permutations of the agents 
+formally let φi v denote the shapley value of i under 
+characteristic function v then 
+φi v 
+s⊂n 
+s n − s − 
+n 
+ v s ∪ i − v s 
+the shapley value is a solution concept that satisfies many 
+nice properties and has been studied extensively in the 
+economic and game theoretic literature it has a very useful 
+axiomatic characterization 
+efficiency eff a total of v n is distributed to the 
+agents i e i∈n φi v v n 
+symmetry sym if agents i and j are interchangeable 
+then φi v φj v 
+ 
+the materials and terminology are based on the textbooks 
+by mas-colell et al and osborne and rubinstein 
+ 
+as a notational convenience we will use the lower-case 
+letter to represent the cardinality of a set denoted by the 
+corresponding upper-case letter 
+ 
+dummy dum if agent i is a dummy player i e his 
+marginal contribution to all groups s are the same 
+φi v v i 
+additivity add for any two coalitional games v and 
+w defined over the same set of agents n φi v w 
+φi v φi w for all i ∈ n where the game v w is 
+defined as v w s v s w s for all s ⊆ n 
+we will refer to these axioms later in our proof of correctness 
+of the algorithm for computing the shapley value under our 
+representation in section 
+the core is another major solution concept for coalitional 
+games it is a descriptive solution concept that focuses on 
+outcomes that are stable stability under core means that 
+no set of players can jointly deviate to improve their payoffs 
+formally let x s denote i∈s xi an outcome x ∈ rn 
+is 
+in the core if 
+∀s ⊆ n x s ≥ v s 
+the core was one of the first proposed solution concepts 
+for coalitional games and had been studied in detail an 
+important question for a given coalitional game is whether 
+the core is empty in other words whether there is any 
+outcome that is stable relative to group deviation for a 
+game to have a non-empty core it must satisfy the property 
+of balancedness defined as follows let s ∈ rn 
+denote the 
+characteristic vector of s given by 
+ s i 
+ if i ∈ s 
+ otherwise 
+let λs s⊆n be a set of weights such that each λs is in the 
+range between and this set of weights λs s⊆n is a 
+balanced collection if for all i ∈ n 
+s⊆n 
+λs s i 
+a game is balanced if for all balanced collections of weights 
+s⊆n 
+λsv s ≤ v n 
+by the bondereva-shapley theorem the core of a 
+coalitional game is non-empty if and only if the game is 
+balanced therefore we can use linear programming to 
+determine whether the core of a game is empty 
+maximize 
+λ∈r n s⊆n λsv s 
+subject to s⊆n λs s ∀i ∈ n 
+λs ≥ ∀s ⊆ n 
+ 
+if the optimal value of is greater than the value of the 
+grand coalition then the core is empty unfortunately this 
+program has an exponential number of variables in the 
+number of players in the game and hence an algorithm that 
+operates directly on this program would be infeasible in practice 
+in section we will describe an algorithm that answers 
+the question of emptiness of core that works on the dual of 
+this program instead 
+ previous work revisited 
+deng and papadimitriou looked into the complexity of 
+various solution concepts on coalitional games played on 
+weighted graphs in in their representation the set of 
+agents are the nodes of the graph and the value of a set of 
+agents s is the sum of the weights of the edges spanned by 
+them notice that this representation is concise since the 
+space required to specify such a game is o n 
+ however 
+this representation is not general it will not be able to 
+represent interactions among three or more agents for example 
+it will not be able to represent the majority game where a 
+group of agents s will have value of if and only if s n 
+on the other hand there is an efficient algorithm for 
+computing the shapley value of the game and for determining 
+whether the core is empty under the restriction of positive 
+edge weights however in the unrestricted case 
+determining whether the core is non-empty is conp-complete 
+conitzer and sandholm in considered coalitional games 
+that are superadditive they described a concise 
+representation scheme that only states the value of a coalition if the 
+value is strictly superadditive more precisely the semantics 
+of the representation is that for a group of agents s 
+v s max 
+ t t tn ∈π 
+i 
+v ti 
+where π is the set of all possible partitions of s the value 
+v s is only explicitly specified for s if v s is greater than 
+all partitioning of s other than the trivial partition s 
+while this representation can represent all games that are 
+superadditive there are coalitional games that it cannot 
+represent for example it will not be able to represent any 
+games with substitutability among the agents an 
+example of a game that cannot be represented is the unit game 
+where v s as long as s ∅ under this 
+representation the authors showed that determining whether the core 
+is non-empty is conp-complete in fact even determining 
+the value of a group of agents is np-complete 
+in a more recent paper conitzer and sandholm described 
+a representation that decomposes a coalitional game into a 
+number of subgames whose sum add up to the original game 
+ the payoffs in these subgames are then represented by 
+their respective characteristic functions this scheme is fully 
+general as the characteristic form is a special case of this 
+representation for any given game there may be multiple 
+ways to decompose the game and the decomposition may 
+influence the computational complexity for computing the 
+shapley value the authors showed that the complexity is 
+linear in the input description in particular if the largest 
+subgame as measured by number of agents is of size n and 
+the number of subgames is m then their algorithm runs 
+in o m n 
+ time where the input size will also be o m n 
+ 
+on the other hand the problem of determining whether a 
+certain outcome is in the core is conp-complete 
+ marginal contribution nets 
+in this section we will describe the marginal contribution 
+networks representation scheme we will show that the idea 
+is flexible and we can easily extend it to increase its 
+conciseness we will also show how we can use this scheme to 
+represent the recommendation game from the introduction 
+finally we will show that this scheme is fully expressive 
+and generalizes the representation schemes in 
+ rules and marginalcontributionnetworks 
+the basic idea behind marginal contribution networks 
+ mc-nets is to represent coalitional games using sets of 
+rules the rules in mc-nets have the following syntactic 
+ 
+form 
+pattern → value 
+a rule is said to apply to a group of agents s if s meets 
+the requirement of the pattern in the basic scheme these 
+patterns are conjunctions of agents and s meets the 
+requirement of the given pattern if s is a superset of it the 
+value of a group of agents is defined to be the sum over the 
+values of all rules that apply to the group for example if 
+the set of rules are 
+ a ∧ b → 
+ b → 
+then v a v b and v a b 
+mc-nets is a very flexible representation scheme and can 
+be extended in different ways one simple way to extend 
+it and increase its conciseness is to allow a wider class of 
+patterns in the rules a pattern that we will use throughout 
+the remainder of the paper is one that applies only in the 
+absence of certain agents this is useful for expressing 
+concepts such as substitutability or default values formally 
+we express such patterns by 
+ p ∧ p ∧ ∧ pm ∧ ¬n ∧ ¬n ∧ ∧ ¬nn 
+which has the semantics that such rule will apply to a group 
+s only if pi m 
+i ∈ s and nj n 
+j ∈ s we will call 
+the pi m 
+i in the above pattern the positive literals and 
+ nj n 
+j the negative literals note that if the pattern of 
+a rule consists solely of negative literals we will consider 
+that the empty set of agents will also satisfy such pattern 
+and hence v ∅ may be non-zero in the presence of negative 
+literals 
+to demonstrate the increase in conciseness of 
+representation consider the unit game described in section to 
+represent such a game without using negative literals we 
+will need n 
+rules for n players we need a rule of value 
+for each individual agent a rule of value − for each pair of 
+agents to counter the double-counting a rule of value for 
+each triplet of agents etc similar to the inclusion-exclusion 
+principle on the other hand using negative literals we 
+only need n rules value for the first agent value for the 
+second agent in the absence of the first agent value for the 
+third agent in the absence of the first two agents etc the 
+representational savings can be exponential in the number 
+of agents 
+given a game represented as a mc-net we can interpret 
+the set of rules that make up the game as a graph we call 
+this graph the agent graph the nodes in the graph will 
+represent the agents in the game and for each rule in the 
+mcnet we connect all the agents in the rule together and assign 
+a value to the clique formed by the set of agents notice that 
+to accommodate negative literals we will need to annotate 
+the clique appropriately this alternative view of mc-nets 
+will be useful in our algorithm for core-membership in 
+section 
+we would like to end our discussion of the representation 
+scheme by mentioning a trade-off between the 
+expressiveness of patterns and the space required to represent them 
+to represent a coalitional game in characteristic form one 
+would need to specify all n 
+− values there is no 
+overhead on top of that since there is a natural ordering of the 
+groups for mc-nets however specification of the rules 
+requires specifying both the patterns and the values the 
+patterns if not represented compactly may end up 
+overwhelming the savings from having fewer values to specify 
+the space required for the patterns also leads to a 
+tradeoff between the expressiveness of the allowed patterns and 
+the simplicity of representing them however we believe 
+that for most naturally arising games there should be 
+sufficient structure in the problem such that our representation 
+achieves a net saving over the characteristic form 
+ example recommendation game 
+as an example we will use mc-net to represent the 
+recommendation game discussed in the introduction for each 
+product as the benefit of knowing about the product will 
+count only once for each group we need to capture 
+substitutability among the agents this can be captured by a 
+scaled unit game suppose the value of the knowledge about 
+product i is vi and there are ni agents denoted by xj 
+i 
+who know about the product the game for product i can 
+then be represented as the following rules 
+ x 
+i → vi 
+ x 
+i ∧ ¬x 
+i → vi 
+ 
+ xni 
+i ∧ ¬xni− 
+i ∧ · · · ∧ ¬x 
+i → vi 
+the entire game can then be built up from the sets of rules 
+of each product the space requirement will be o mn 
+ 
+where m is the number of products in the system and n 
+is the maximum number of agents who knows of the same 
+product 
+ representation power 
+we will discuss the expressiveness and conciseness of our 
+representation scheme and compare it with the previous 
+works in this subsection 
+proposition marginal contribution networks 
+constitute a fully expressive representation scheme 
+proof consider an arbitrary coalitional game n v in 
+characteristic form representation we can construct a set 
+of rules to describe this game by starting from the singleton 
+sets and building up the set of rules for any singleton set 
+ i we create a rule i → v i for any pair of agents i j 
+we create a rule i ∧ j → v i j − v i − v j we 
+can continue to build up rules in a manner similar to the 
+inclusion-exclusion principle since the game is arbitrary 
+mc-nets are fully expressive 
+using the construction outlined in the proof we can show 
+that our representation scheme can simulate the multi-issue 
+representation scheme of in almost the same amount of 
+space 
+proposition marginal contribution networks use at 
+most a linear factor in the number of agents more space 
+than multi-issue representation for any game 
+proof given a game in multi-issue representation we 
+start by describing each of the subgames which are 
+represented in characteristic form in with a set of rules 
+ 
+we then build up the grand game by including all the rules 
+from the subgames note that our representation may 
+require a space larger by a linear factor due to the need to 
+describe the patterns for each rule on the other hand our 
+approach may have fewer than exponential number of rules 
+for each subgame depending on the structure of these 
+subgames and therefore may be more concise than multi-issue 
+representation 
+on the other hand there are games that require 
+exponentially more space to represent under the multi-issue scheme 
+compared to our scheme 
+proposition marginal contribution networks are 
+exponentially more concise than multi-issue representation for 
+certain games 
+proof consider a unit game over all the agents n as 
+explained in this game can be represented in linear space 
+using mc-nets with negative literals however as there is 
+no decomposition of this game into smaller subgames it will 
+require space o n 
+ to represent this game under the 
+multiissue representation 
+under the agent graph interpretation of mc-nets we can 
+see that mc-nets is a generalization of the graphical 
+representation in namely from weighted graphs to weighted 
+hypergraphs 
+proposition marginal contribution networks can 
+represent any games in graphical form under in the same 
+amount of space 
+proof given a game in graphical form g for each edge 
+ i j with weight wij in the graph we create a rule i j → 
+wij clearly this takes exactly the same space as the size of 
+g and by the additive semantics of the rules it represents 
+the same game as g 
+ computing the shapley value 
+given a mc-net we have a simple algorithm to compute 
+the shapley value of the game considering each rule as a 
+separate game we start by computing the shapley value of 
+the agents for each rule for each agent we then sum up 
+the shapley values of that agent over all the rules we first 
+show that this final summing process correctly computes the 
+shapley value of the agents 
+proposition the shapley value of an agent in a marginal 
+contribution network is equal to the sum of the shapley 
+values of that agent over each rule 
+proof for any group s under the mc-nets 
+representation v s is defined to be the sum over the values of all the 
+rules that apply to s therefore considering each rule as a 
+game by the add axiom discussed in section the 
+shapley value of the game created from aggregating all the rules 
+is equal to the sum of the shapley values over the rules 
+the remaining question is how to compute the shapley 
+values of the rules we can separate the analysis into two 
+cases one for rules with only positive literals and one for 
+rules with mixed literals 
+for rules that have only positive literals the shapley value 
+of the agents is v m where v is the value of the rule and 
+m is the number of agents in the rule this is a direct 
+consequence of the sym axiom of the shapley value as 
+the agents in a rule are indistinguishable from each other 
+for rules that have both positive and negative literals we 
+can consider the positive and the negative literals separately 
+for a given positive literal i the rule will apply only if i 
+occurs in a given permutation after the rest of the positive 
+literals but before any of the negative literals formally let 
+φi denote the shapley value of i p denote the cardinality of 
+the positive set and n denote the cardinality of the negative 
+set then 
+φi 
+ p − n 
+ p n 
+v 
+v 
+p p n 
+n 
+for a given negative literal j j will be responsible for 
+cancelling the application of the rule if all positive literals come 
+before the negative literals in the ordering and j is the first 
+among the negative literals therefore 
+φj 
+p n − 
+ p n 
+ −v 
+−v 
+n p n 
+p 
+by the sym axiom all positive literals will have the value 
+of φi and all negative literals will have the value of φj 
+note that the sum over all agents in rules with mixed 
+literals is this is to be expected as these rules contribute 
+ to the grand coalition the fact that these rules have no 
+effect on the grand coalition may appear odd at first but 
+this is because the presence of such rules is to define the 
+values of coalitions smaller than the grand coalition 
+in terms of computational complexity given that the 
+shapley value of any agent in a given rule can be computed in 
+time linear in the pattern of the rule the total running time 
+of the algorithm for computing the shapley value of the 
+game is linear in the size of the input 
+ answering core-related 
+questions 
+there are a few different but related computational 
+problems associated with the solution concept of the core we 
+will focus on the following two problems 
+definition core-membership given a coalitional game 
+and a payoff vector x determine if x is in the core 
+definition core-non-emptiness given a coalitional 
+game determine if the core is non-empty 
+in the rest of the section we will first show that these 
+two problems are conp-complete and conp-hard 
+respectively and discuss some complexity considerations about 
+these problems we will then review the main ideas of tree 
+decomposition as it will be used extensively in our algorithm 
+for core-membership next we will present the algorithm 
+for core-membership and show that the algorithm runs 
+in polynomial time for graphs of bounded treewidth we end 
+by extending this algorithm to answer the question of 
+corenon-emptiness in polynomial time for graphs of bounded 
+treewidth 
+ computational complexity 
+the hardness of core-membership and 
+core-nonemptiness follows directly from the hardness results of games 
+over weighted graphs in 
+ 
+proposition core-membership for games represented 
+as marginal contribution networks is conp-complete 
+proof core-membership in mc-nets is in the class 
+of conp since any set of agents s of which v s x s 
+will serve as a certificate to show that x does not belong to 
+the core as for its hardness given any instance of 
+coremembership for a game in graphical form of we can 
+encode the game in exactly the same space using mc-net 
+due to proposition since core-membership for games 
+in graphical form is conp-complete core-membership in 
+mc-nets is conp-hard 
+proposition core-non-emptiness for games 
+represented as marginal contribution networks is conp-hard 
+proof the same argument for hardness between games 
+in graphical frm and mc-nets holds for the problem of 
+corenon-emptiness 
+we do not know of a certificate to show that 
+core-nonemptiness is in the class of conp as of now note that 
+the obvious certificate of a balanced set of weights based 
+on the bondereva-shapley theorem is exponential in size in 
+ deng and papadimitriou showed the conp-completeness 
+of core-non-emptiness via a combinatorial 
+characterization namely that the core is non-empty if and only if 
+there is no negative cut in the graph in mc-nets however 
+there need not be a negative hypercut in the graph for the 
+core to be empty as demonstrated by the following game 
+ n 
+v s 
+ 
+ 
+ 
+ if s 
+ if s or 
+ otherwise 
+ 
+applying the bondereva-shapley theorem if we let λ 
+λ λ and λ this set of weights 
+demonstrates that the game is not balanced and hence the core 
+is empty on the other hand this game can be represented 
+with mc-nets as follows weights on hyperedges 
+w w w 
+w w w − 
+w 
+w 
+no matter how the set is partitioned the sum over the 
+weights of the hyperedges in the cut is always non-negative 
+to overcome the computational hardness of these 
+problems we have developed algorithms that are based on tree 
+decomposition techniques for core-membership our 
+algorithm runs in time exponential only in the treewidth of the 
+agent graph thus for graphs of small treewidth such as 
+trees we have a tractable solution to determine if a payoff 
+vector is in the core by using this procedure as a 
+separation oracle i e a procedure for returning the inequality 
+violated by a candidate solution to solving a linear 
+program that is related to core-non-emptiness using the 
+ellipsoid method we can obtain a polynomial time algorithm 
+for core-non-emptiness for graphs of bounded treewidth 
+ review of tree decomposition 
+as our algorithm for core-membership relies heavily 
+on tree decomposition we will first briefly review the main 
+ideas in tree decomposition and treewidth 
+definition a tree decomposition of a graph g v e 
+is a pair x t where t i f is a tree and x xi i ∈ 
+i is a family of subsets of v one for each node of t such 
+that 
+ i∈i xi v 
+ for all edges v w ∈ e there exists an i ∈ i with 
+v ∈ xi and w ∈ xi and 
+ running intersection property for all i j k ∈ i if j 
+is on the path from i to k in t then xi ∩ xk ⊆ xj 
+the treewidth of a tree decomposition is defined as the 
+maximum cardinality over all sets in x less one the treewidth 
+of a graph is defined as the minimum treewidth over all tree 
+decompositions of the graph 
+given a tree decomposition we can convert it into a nice 
+tree decomposition of the same treewidth and of size linear 
+in that of t 
+definition a tree decomposition t is nice if t is rooted 
+and has four types of nodes 
+leaf nodes i are leaves of t with xi 
+introduce nodes i have one child j such that xi xj ∪ 
+ v of some v ∈ v 
+forget nodes i have one child j such that xi xj \ v 
+for some v ∈ xj 
+join nodes i have two children j and k with xi xj 
+xk 
+an example of a partial nice tree decomposition together 
+with a classification of the different types of nodes is in 
+figure in the following section we will refer to nodes in the 
+tree decomposition as nodes and nodes in the agent graph 
+as agents 
+ algorithm for core membership 
+our algorithm for core-membership takes as an input 
+a nice tree decomposition t of the agent graph and a payoff 
+vector x by definition if x belongs to the core then for 
+all groups s ⊆ n x s ≥ v s therefore the difference 
+x s −v s measures how close the group s is to violating 
+the core condition we call this difference the excess of group 
+s 
+definition the excess of a coalition s e s is defined 
+as x s − v s 
+a brute-force approach to determine if a payoff vector 
+belongs to the core will have to check that the excesses of all 
+groups are non-negative however this approach ignores the 
+structure in the agent graph that will allow an algorithm to 
+infer that certain groups have non-negative excesses due to 
+ 
+this is based largely on the materials from a survey paper 
+by bodlaender 
+ 
+i 
+j 
+k l 
+nm 
+introduce node 
+xj 
+xk 
+forget node 
+xl 
+introduce node 
+xm xn 
+leaf node 
+join node 
+xi 
+join node 
+figure example of a partial nice tree 
+decomposition 
+the excesses computed elsewhere in the graph tree 
+decomposition is the key to take advantage of such inferences in a 
+structured way 
+for now let us focus on rules with positive literals 
+suppose we have already checked that the excesses of all sets 
+r ⊆ u are non-negative and we would like to check if the 
+addition of an agent i to the set u will create a group with 
+negative excess a na¨ıve solution will be to compute the 
+excesses of all sets that include i the excess of the group 
+ r ∪ i for any group r can be computed as follows 
+e r ∪ i e r xi − v c 
+where c is the cut between r and i and v c is the sum of 
+the weights of the edges in the cut 
+however suppose that from the tree decomposition we 
+know that i is only connected to a subset of u say s which 
+we will call the entry set to u ideally because i does not 
+share any edges with members of ¯u u \ s we would 
+hope that an algorithm can take advantage of this structure 
+by checking only sets that are subsets of s ∪ i this 
+computational saving may be possible since xi −v c in the 
+update equation of does not depend on ¯u however we 
+cannot simply ignore ¯u as members of ¯u may still influence 
+the excesses of groups that include agent i through group 
+s specifically if there exists a group t ⊃ s such that 
+e t e s then even when e s ∪ i has non-negative 
+excess e t ∪ i may have negative excess in other words 
+the excess available at s may have been drained away due 
+to t this motivates the definition of the reserve of a group 
+definition the reserve of a coalition s relative to a 
+coalition u is the minimum excess over all coalitions between 
+s and u i e all t s ⊆ t ⊆ u we denote this value by 
+r s u we will refer to the group t that has the minimum 
+excess as arg r s u we will also call u the limiting set of 
+the reserve and s the base set of the reserve 
+our algorithm works by keeping track of the reserves of 
+all non-empty subsets that can be formed by the agents of a 
+node at each of the nodes of the tree decomposition starting 
+from the leaves of the tree and working towards the root 
+at each node i our algorithm computes the reserves of all 
+groups s ⊆ xi limited by the set of agents in the subtree 
+rooted at i ti except those in xi\s the agents in xi\s 
+are excluded to ensure that s is an entry set specifically 
+s is the entry set to ti \ xi ∪ s 
+to accomodate for negative literals we will need to make 
+two adjustments firstly the cut between an agent m and a 
+set s at node i now refers to the cut among agent m set s 
+and set ¬ xi \ s and its value must be computed 
+accordingly also when an agent m is introduced to a group at an 
+introduce node we will also need to consider the change in 
+the reserves of groups that do not include m due to possible 
+cut involving ¬m and the group 
+as an example of the reserve values we keep track of at a 
+tree node consider node i of the tree in figure at node 
+i we will keep track of the following 
+r 
+r 
+r 
+r 
+r 
+r 
+r 
+where the dots refer to the agents rooted under node m 
+for notational use we will use ri s to denote r s u at 
+node i where u is the set of agents in the subtree rooted at 
+node i excluding agents in xi \ s we sometimes refer to 
+these values as the r-values of a node the details of the 
+r-value computations are in algorithm 
+to determine if the payoff vector x is in the core during 
+the r-value computation at each node we can check if all of 
+the r-values are non-negative if this is so for all nodes in 
+the tree the payoff vector x is in the core the correctness 
+of the algorithm is due to the following proposition 
+proposition the payoff vector x is not in the core if 
+and only if the r-values at some node i for some group s is 
+negative 
+proof ⇐ if the reserve at some node i for some group 
+s is negative then there exists a coalition t for which 
+e t x t − v t hence x is not in the core 
+ ⇒ suppose x is not in the core then there exists some 
+group r 
+such that e r 
+ let xroot be the set of nodes 
+at the root consider any set s ∈ xroot rroot s will have 
+the base set of s and the limiting set of n \ xroot ∪ s 
+the union over all of these ranges includes all sets u for 
+which u ∩ xroot ∅ therefore if r 
+is not disjoint from 
+xroot the r-value for some group in the root is negative 
+if r 
+is disjoint from u consider the forest ti resulting 
+from removal of all tree nodes that include agents in xroot 
+ 
+algorithm subprocedures for core membership 
+leaf-node i 
+ ri xi ← e xi 
+introduce-node i 
+ j ← child of i 
+ m ← xi \ xj the introduced node 
+ for all s ⊆ xj s ∅ do 
+ c ← all hyperedges in the cut of m s and ¬ xi \ s 
+ ri s ∪ x ← rj s xm − v c 
+ c ← all hyperedges in the cut of ¬m s and ¬ xi \s 
+ ri s ← rj s − v c 
+ end for 
+ r m ← e m 
+forget-node i 
+ j ← child of i 
+ m ← xj \ xi the forgotten node 
+ for all s ⊆ xi s ∅ do 
+ ri s min rj s rj s ∪ m 
+ end for 
+join-node i 
+ j k ← left right child of i 
+ for all s ⊆ xi s ∅ do 
+ ri s ← rj s rk s − e s 
+ end for 
+by the running intersection property the sets of nodes in 
+the trees ti s are disjoint thus if the set r 
+ i si for 
+some si ∈ ti e r 
+ i e si implies some group 
+s 
+i has negative excess as well therefore we only need to 
+check the r-values of the nodes on the individual trees in the 
+forest 
+but for each tree in the forest we can apply the same 
+argument restricted to the agents in the tree in the base 
+case we have the leaf nodes of the original tree 
+decomposition say for agent i if r 
+ i then r i e i 
+therefore by induction if e r 
+ some reserve at some 
+node would be negative 
+we will next explain the intuition behind the correctness 
+of the computations for the r-values in the tree nodes a 
+detailed proof of correctness of these computations can be 
+found in the appendix under lemmas and 
+proposition the procedure in algorithm correctly 
+compute the r-values at each of the tree nodes 
+proof sketch we can perform a case analysis over 
+the four types of tree nodes in a nice tree decomposition 
+leaf nodes i the only reserve value to be computed is 
+ri xi which equals r xi xi and therefore it is just 
+the excess of group xi 
+forget nodes i with child j let m be the forgotten node 
+for any subset s ⊆ xi arg ri s must be chosen 
+between the groups of s and s ∪ m and hence we 
+choose between the lower of the two from the r-values 
+at node j 
+introduce nodes i with child j let m be the introduced 
+node for any subset t ⊆ xi that includes m let s 
+denote t \ m by the running intersection 
+property there are no rules that involve m and agents of 
+the subtree rooted at node i except those involving 
+m and agents in xi as both the base set and the 
+limiting set of the r-values of node j and node i 
+differ by m for any group v that lies between the 
+base set and the limiting set of node i the excess of 
+group v will differ by a constant amount from the 
+corresponding group v \ m at node j therefore 
+the set arg ri t equals the set arg rj s ∪ m and 
+ri t rj s xm − v cut where v cut is the value 
+of the rules in the cut between m and s for any 
+subset s ⊂ xi that does not include m we need to 
+consider the values of rules that include ¬m as a literal 
+in the pattern also when computing the reserve the 
+payoff xm will not contribute to group s therefore 
+together with the running intersection property as 
+argued above we can show that ri s rj s − v cut 
+join nodes i with left child j and right child k for any 
+given set s ⊆ xi consider the r-values of that set 
+at j and k if arg rj s or arg rk s includes agents 
+not in s then argrj s and argrk s will be 
+disjoint from each other due to the running intersection 
+property therefore we can decompose arg ri s into 
+three sets arg rj s \ s on the left s in the middle 
+and arg rk s \ s on the right the reserve rj s 
+will cover the excesses on the left and in the middle 
+whereas the reserve rk s will cover those on the right 
+and in the middle and so the excesses in the middle is 
+double-counted we adjust for the double-counting by 
+subtracting the excesses in the middle from the sum 
+of the two reserves rj s and rk s 
+finally note that each step in the computation of the 
+rvalues of each node i takes time at most exponential in the 
+size of xi hence the algorithm runs in time exponential only 
+in the treewidth of the graph 
+ algorithm for core non-emptiness 
+we can extend the algorithm for core-membership into 
+an algorithm for core-non-emptiness as described in 
+section whether the core is empty can be checked using 
+the optimization program based on the balancedness 
+condition unfortunately that program has an exponential 
+number of variables on the other hand the dual of the 
+program has only n variables and can be written as follows 
+minimize 
+x∈rn 
+n 
+i xi 
+subject to x s ≥ v s ∀s ⊆ n 
+ 
+by strong duality optimal value of is equal to 
+optimal value of the primal program described in section 
+ therefore by the bondereva-shapley theorem if the 
+optimal value of is greater than v n the core is empty 
+we can solve the dual program using the ellipsoid method 
+with core-membership as a separation oracle i e a 
+procedure for returning a constraint that is violated note that 
+a simple extension to the core-membership algorithm will 
+allow us to keep track of the set t for which e t 
+during the r-values computation and hence we can return the 
+inequality about t as the constraint violated therefore 
+core-non-emptiness can run in time polynomial in the 
+running time of core-membership which in turn runs in 
+ 
+time exponential only in the treewidth of the graph note 
+that when the core is not empty this program will return 
+an outcome in the core 
+ concluding remarks 
+we have developed a fully expressive representation scheme 
+for coalitional games of which the size depends on the 
+complexity of the interactions among the agents our focus 
+on general representation is in contrast to the approach 
+taken in we have also developed an efficient 
+algorithm for the computation of the shapley values for this 
+representation while core-membership for mc-nets is 
+conp-complete we have developed an algorithm for 
+coremembership that runs in time exponential only in the treewidth 
+of the agent graph we have also extended the algorithm 
+to solve core-non-emptiness other than the algorithm 
+for core-non-emptiness in under the restriction of 
+non-negative edge weights and that in for 
+superadditive games when the value of the grand coalition is given 
+we are not aware of any explicit description of algorithms 
+for core-related problems in the literature 
+the work in this paper is related to a number of areas 
+in computer science especially in artificial intelligence for 
+example the graphical interpretation of mc-nets is closely 
+related to markov random fields mrfs of the bayes nets 
+community they both address the issue of of conciseness 
+of representation by using the combinatorial structure of 
+weighted hypergraphs in fact kearns et al first apply 
+these idea to games theory by introducing a representation 
+scheme derived from bayes net to represent non-cooperative 
+games the representational issues faced in coalitional 
+games are closely related to the problem of expressing 
+valuations in combinatorial auctions the or-bid 
+language for example is strongly related to superadditivity 
+the question of the representation power of different 
+patterns is also related to boolean expression complexity 
+we believe that with a better understanding of the 
+relationships among these related areas we may be able to develop 
+more efficient representations and algorithms for coalitional 
+games 
+finally we would like to end with some ideas for 
+extending the work in this paper one direction to increase the 
+conciseness of mc-nets is to allow the definition of 
+equivalent classes of agents similar to the idea of extending bayes 
+nets to probabilistic relational models the concept of 
+symmetry is prevalent in games and the use of classes of agents 
+will allow us to capture symmetry naturally and concisely 
+this will also address the problem of unpleasing assymetric 
+representations of symmetric games in our representation 
+along the line of exploiting symmetry as the agents within 
+the same class are symmetric with respect to each other we 
+can extend the idea above by allowing functional description 
+of marginal contributions more concretely we can specify 
+the value of a rule as dependent on the number of agents 
+of each relevant class the use of functions will allow 
+concise description of marginal diminishing returns mdrs 
+without the use of functions the space needed to describe 
+mdrs among n agents in mc-nets is o n with the use 
+of functions the space required can be reduced to o 
+another idea to extend mc-nets is to augment the 
+semantics to allow constructs that specify certain rules cannot be 
+applied simultaneously this is useful in situations where a 
+certain agent represents a type of exhaustible resource and 
+therefore rules that depend on the presence of the agent 
+should not apply simultaneously for example if agent i in 
+the system stands for coal we can either use it as fuel for 
+a power plant or as input to a steel mill for making steel 
+but not for both at the same time currently to represent 
+such situations we have to specify rules to cancel out the 
+effects of applications of different rules the augmented 
+semantics can simplify the representation by specifying when 
+rules cannot be applied together 
+ acknowledgment 
+the authors would like to thank chris luhrs bob 
+mcgrew eugene nudelman and qixiang sun for fruitful 
+discussions and the anonymous reviewers for their helpful 
+comments on the paper 
+ references 
+ h l bodlaender treewidth algorithmic techniques 
+and results in proc nd symp on mathematical 
+foundation of copmuter science pages - 
+springer-verlag lncs 
+ v conitzer and t sandholm complexity of 
+determining nonemptiness of the core in proc th 
+int joint conf on artificial intelligence pages 
+ - 
+ v conitzer and t sandholm computing shapley 
+values manipulating value division schemes and 
+checking core membership in multi-issue domains in 
+proc th nat conf on artificial intelligence pages 
+ - 
+ x deng and c h papadimitriou on the complexity 
+of cooperative solution concepts math oper res 
+ - may 
+ y fujishima k leyton-brown and y shoham 
+taming the computational complexity of 
+combinatorial auctions optimal and approximate 
+approaches in proc th int joint conf on 
+artificial intelligence pages - 
+ m kearns m l littman and s singh graphical 
+models for game theory in proc th conf on 
+uncertainty in artificial intelligence pages - 
+ 
+ j kleinberg c h papadimitriou and p raghavan 
+on the value of private information in proc th 
+conf on theoretical aspects of rationality and 
+knowledge pages - 
+ c li and k sycara algoirthms for combinatorial 
+coalition formation and payoff division in an electronic 
+marketplace technical report robotics insititute 
+carnegie mellon university november 
+ a mas-colell m d whinston and j r green 
+microeconomic theory oxford university press new 
+york 
+ n nisan bidding and allocation in combinatorial 
+auctions in proc nd acm conf on electronic 
+commerce pages - 
+ m j osborne and a rubinstein a course in game 
+theory the mit press cambridge massachusetts 
+ 
+ i wegener the complexity of boolean functions 
+john wiley sons new york october 
+ 
+appendix 
+we will formally show the correctness of the r-value 
+computation in algorithm of introduce nodes and join nodes 
+lemma the procedure for computing the r-values of 
+introduce nodes in algorithm is correct 
+proof let node m be the newly introduced agent at i 
+let u denote the set of agents in the subtree rooted at i 
+by the running intersection property all interactions the 
+hyperedges between m and u must be in node i for all 
+s ⊆ xi m ∈ s let r denote u \ xi ∪ s and q denote 
+ r \ m 
+ri s r s r 
+ min 
+t s⊆t ⊆r 
+e t 
+ min 
+t s⊆t ⊆r 
+x t − v t 
+ min 
+t s⊆t ⊆r 
+x t \ m xm − v t \ m − v cut 
+ min 
+t s\ m ⊆t ⊆q 
+e t xm − v cut 
+ rj s xm − v cut 
+the argument for sets s ⊆ xi m ∈ s is symmetric except 
+xm will not contribute to the reserve due to the absence of 
+m 
+lemma the procedure for computing the r-values of 
+join nodes in algorithm is correct 
+proof consider any set s ⊆ xi let uj denote the 
+subtree rooted at the left child rj denote uj \ xj ∪ s 
+and qj denote uj \ xj let uk rk and qk be defined 
+analogously for the right child let r denote u \ xi ∪ s 
+ri s r s r 
+ min 
+t s⊆t ⊆r 
+x t − v t 
+ min 
+t s⊆t ⊆r 
+x s x t ∩ qj x t ∩ qk 
+− v s − v cut s t ∩ qj − v cut s t ∩ qk 
+ min 
+t s⊆t ⊆r 
+x t ∩ qj − v cut s t ∩ qj 
+ min 
+t s⊆t ⊆r 
+x t ∩ qk − v cut s t ∩ qk 
+ x s − v s 
+ min 
+t s⊆t ⊆r 
+x t ∩ qj x s − v cut s t ∩ qj − v s 
+ min 
+t s⊆t ⊆r 
+x t ∩ qk x s − v cut s t ∩ qk − v s 
+− x s − v s 
+ min 
+t s⊆t ⊆r 
+e t ∩ rj min 
+t s⊆t ⊆r 
+e t ∩ rk − e s 
+ min 
+t s⊆t ⊆rj 
+e t min 
+t s⊆t ⊆rk 
+e t − e s 
+ rj s rk s − e s 
+where is true as t ∩ qj and t ∩ qk are disjoint due 
+to the running intersection property of tree decomposition 
+and hence the minimum of the sum can be decomposed into 
+the sum of the minima 
+ 

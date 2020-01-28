@@ -1,0 +1,994 @@
+distributed task allocation in social networks 
+mathijs de weerdt 
+delft technical university 
+delft the netherlands 
+m m deweerdt tudelft nl 
+yingqian zhang 
+delft technical university 
+delft the netherlands 
+yingqian zhang tudelft nl 
+tomas klos 
+center for mathematics and 
+computer science cwi 
+amsterdam the netherlands 
+tomas klos cwi nl 
+abstract 
+this paper proposes a new variant of the task allocation 
+problem where the agents are connected in a social network 
+and tasks arrive at the agents distributed over the network 
+we show that the complexity of this problem remains 
+nphard moreover it is not approximable within some factor 
+we develop an algorithm based on the contract-net 
+protocol our algorithm is completely distributed and it assumes 
+that agents have only local knowledge about tasks and 
+resources we conduct a set of experiments to evaluate the 
+performance and scalability of the proposed algorithm in 
+terms of solution quality and computation time three 
+different types of networks namely small-world random and 
+scale-free networks are used to represent various social 
+relationships among agents in realistic applications the results 
+demonstrate that our algorithm works well and that it scales 
+well to large-scale applications 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent 
+systems 
+general terms 
+algorithms experimentation 
+ introduction 
+recent years have seen a lot of work on task and 
+resource allocation methods which can potentially be applied 
+to many real-world applications however some interesting 
+applications where relations between agents play a role 
+require a slightly more general model such situations appear 
+very frequently in real-world scenarios and recent 
+technological developments are bringing more of them within the 
+range of task allocation methods especially in business 
+applications preferential partner selection and interaction is 
+very common and this aspect becomes more important for 
+task allocation research to the extent that technological 
+developments need to be able to support it 
+for example the development of semantic web and grid 
+technologies leads to increased and renewed attention for 
+the potential of the web to support business processes 
+ as an example virtual organizations vos are 
+being re-invented in the context of the grid where they are 
+composed of a number of autonomous entities representing 
+different individuals departments and organizations each 
+of which has a range of problem-solving capabilities and 
+resources at its disposal p the question is how vos 
+are to be dynamically composed and re-composed from 
+individual agents when different tasks and subtasks need to be 
+performed this would be done by allocating them to 
+different agents who may each be capable of performing different 
+subsets of those tasks similarly supply chain formation 
+ scf is concerned with the possibly ad-hoc allocation of 
+services to providers in the supply chain in such a way that 
+overall profit is optimized 
+traditionally such allocation decisions have been 
+analyzed using transaction cost economics tce which 
+takes the transaction between consecutive stages of 
+development as its basic unit of analysis and considers the firm 
+and the market as alternative structural forms for 
+organizing transactions transaction cost economics has 
+traditionally built on analysis of comparative statics the central 
+problem of economic organization is considered to be the 
+adaptation of organizational forms to the characteristics of 
+transactions more recently tce s founding father ronald 
+coase acknowledged that this is too simplistic an approach 
+ p the analysis cannot be confined to what 
+happens within a single firm what we are dealing with 
+is a complex interrelated structure 
+in this paper we study the problem of task allocation 
+from the perspective of such a complex interrelated 
+structure in particular  the market cannot be considered as an 
+organizational form without considering specific partners to 
+interact with on the market specifically therefore we 
+consider agents to be connected to each other in a social 
+network furthermore this network is not fully connected 
+as informed by the business literature firms typically have 
+established working relations with limited numbers of 
+preferred partners these are the ones they consider when 
+new tasks arrive and they have to form supply chains to 
+allocate those tasks other than modeling the interrelated 
+ 
+ - - - - rps c ifaamas 
+structure between business partners the social network 
+introduced in this paper can also be used to represent other 
+types of connections or constraints among autonomous 
+entities that arise from other application domains 
+the next section gives a formal description of the task 
+allocation problem on social networks in section we prove 
+that the complexity of this problem remains np-hard we 
+then proceed to develop a distributed algorithm in section 
+and perform a series of experiments with this algorithm as 
+described in section section discusses related work and 
+section concludes 
+ problem description 
+we formulate the social task allocation problem in this 
+section there is a set a of agents a a am 
+agents need resources to complete tasks let r r rk 
+denote the collection of the resource types available to the 
+agents a each agent a ∈ a controls a fixed amount of 
+resources for each resource type in r which is defined by a 
+resource function rsc a × r → n moreover we assume 
+agents are connected by a social network 
+definition social network an agent social 
+network sn a ae is an undirected graph where vertices 
+a are agents and each edge ai aj ∈ ae indicates the 
+existence of a social connection between agents ai and aj 
+suppose a set of tasks t t t tn arrives at such 
+an agent social network each task t ∈ t is then defined by 
+a tuple u t rsc t loc t where u t is the utility gained 
+if task t is accomplished and the resource function rsc 
+t ×r → n specifies the amount of resources required for the 
+accomplishment of task t furthermore a location function 
+loc t → a defines the locations i e agents at which the 
+tasks arrive in the social network an agent a that is the 
+location of a task t i e loc t a is called the manager of 
+this task 
+each task t ∈ t needs some specific resources from the 
+agents in order to complete the task the exact assignment 
+of tasks to agents is defined by a task allocation 
+definition task allocation given a set of tasks 
+t t tn and a set of agents a a am 
+in a social network sn a task allocation is a mapping 
+φ t × a × r → n a valid task allocation in sn must 
+satisfy the following constrains 
+ a task allocation must be correct each agent a ∈ a 
+cannot use more than its available resources i e for 
+each r ∈ r 
+p 
+t∈t φ t a r ≤ rsc a r 
+ a task allocation must be complete for each task t ∈ 
+t either all allocated agents resources are sufficient 
+i e for each r ∈ r 
+p 
+a∈a φ t a r ≥ rsc t r or t is 
+not allocated i e φ t · · 
+ a task allocation must obey the social relationships 
+each task t ∈ t can only be allocated to agents that are 
+ direct neighbors of agent loc t in the social network 
+sn each such agent that can contribute to a task is 
+called a contractor 
+we write tφ to represent the tasks that are fully allocated 
+in φ the utility of φ is then the summation of the utilities of 
+each task in tφ i e uφ 
+p 
+t∈tφ 
+u t using this notation 
+we define the efficient task allocation below 
+definition efficient task allocation we say 
+a task allocation φ is efficient if it is valid and uφ is 
+maximized i e uφ max 
+p 
+t∈tφ 
+u t 
+we are now ready to define the task allocation problem 
+in social network that we study in this paper 
+definition social task allocation problem 
+given a set of agents a connected by a social network 
+sn a ae and a finite set of tasks t the social task 
+allocation problem or stap for short is the problem of 
+finding the efficient task allocation φ such that φ is valid 
+and the social welfare uφ is maximized 
+ complexity results 
+the traditional task allocation problem tap without 
+the condition of the social network sn is np-complete 
+and the complexity comes from the fact that we need to 
+evaluate the exponential number of subsets of the task set 
+although we may consider the tap as a special case of the 
+stap by assuming agents are fully connected we cannot 
+directly use the complexity results from the tap since we 
+study the stap in an arbitrary social network which as we 
+argued in the introduction should be partially connected 
+we now show that the tap with an arbitrary social 
+network is also np-complete even when the utility of each task 
+is and the quantity of all required and available resources 
+is 
+theorem given the social task allocation problem with 
+an arbitrary social network as defined in definition the 
+problem of deciding whether a task allocation φ with utility 
+more than k exists is np-complete 
+proof we first show that the problem is in np given 
+an instance of the problem and an integer k we can verify in 
+polynomial time whether an allocation φ is a valid allocation 
+and whether the utility of φ is greater than k 
+we now prove that the stap is np-hard by showing 
+that maximum independent set ≤p stap given 
+an undirected graph g v e and an integer k we 
+construct a network g v e which has an efficient task 
+allocation with k tasks of utility allocated if and only if g 
+has an independent set is of size k 
+av 
+av 
+ae 
+rsc ae 
+ e 
+rsc ae 
+ e 
+av 
+ae 
+av 
+ae 
+ae 
+rsc ae 
+ e e 
+rsc av 
+ 
+ v 
+rsc av 
+ 
+ v 
+t v e e t v e e 
+rsc ae 
+rsc av 
+ 
+ v 
+rsc av 
+ 
+ v 
+t v e e t v e e 
+e 
+e 
+e 
+e 
+v v 
+v v 
+figure the mis problem can be reduced to the 
+stap the left figure is an undirected graph g which 
+has the optimal solution v v or v v the right 
+figure is the constructed instance of the stap where the 
+optimal allocation is t t or t t 
+an instance of the following construction is shown in 
+figure for each node v ∈ v and each edge e ∈ e in the graph 
+g we create a vertex agent av and an edge agent ae in g 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+when v was incident to e in g we correspondingly add an 
+edge e in g between av and ae we assign each agent in g 
+one resource which is related to the node or the edge in the 
+graph g i e for each v ∈ v rsc av v here we write 
+rsc a and rsc t to represent the set of resources available 
+to required by a and t and for each e ∈ e rsc ae e 
+each vertex agent avi in g has a task ti that requires a 
+set of neighboring resources ti vi ∪ e e u vi ∈ e 
+there is no task on the edge agents in g we define utility 
+for each task and the quantity of all required and available 
+resources to be 
+taken an instance of the is problem suppose there is a 
+solution of size k i e a subset n ⊆ v such that no two 
+vertices in n are joined by an edge in e and n k 
+n specifies a set of vertex agents an in the corresponding 
+graph g given two agents a a ∈ an we now know that 
+there is no edge agent ae connected to both a and a thus 
+for each agent a ∈ an a assigns its task to the edge agents 
+which are connected to a all other vertex agents a ∈ an 
+are not able to assign their tasks since the required resources 
+of the edge agents are already used by the agents a ∈ an 
+the set of tasks of the agents an an k is thus the 
+maximum set of tasks that can be allocated the utility of 
+this allocation is k 
+similarly if there is a solution for the stap with the 
+utility value k and the allocated task set is n then for the 
+is problem there exists a maximum independent set n of 
+size k in g an example can be found in figure 
+we just proved that the stap is np-hard for an 
+arbitrary graph in our proof the complexity comes from the 
+introduction of a social network one may expect that the 
+complexity of this problem can be reduced for some networks 
+where the number of neighbors of the agents is bounded by 
+a fixed constant we now give a complexity result on this 
+class of networks as follows 
+theorem let the number of neighbors of each agent 
+in the social network sn be bounded by δ for δ ≥ 
+computing the efficient task allocation given such a network is 
+np-complete in addition it is not approximable within δε 
+for some ε 
+proof it has been shown in that the maximum 
+independent set problem in the case of the degree bounded by 
+δ for δ ≥ is np-complete and is not approximable within 
+δε 
+for some ε using the similar reduction from the 
+proof of theorem this result also holds for the stap 
+since our problem is as hard as mis as shown in 
+theorem it is not possible to give a worst case bound better 
+than δε 
+for any polynomial time algorithm unless p np 
+ algorithms 
+to deal with the problem of allocating tasks in a social 
+network we present a distributed algorithm we introduce 
+this algorithm by describing the protocol for the agents 
+after that we give the optimal centralized algorithm and an 
+upper bound algorithm which we use in section to 
+benchmark the quality of our distributed algorithm 
+ protocol for distributed task allocation 
+we can summarize the description of the task allocation 
+problem in social networks from section as follows we 
+algorithm greedy distributed allocation protocol 
+ gdap 
+each manager a calculates the efficiency e t for each of their 
+tasks t ∈ ta and then while ta ∅ 
+ each manager a selects the most efficient task t ∈ ta 
+such that for each task t ∈ ta e t ≤ e t 
+ each manager a requests help for t from all its 
+neighbors of a by informing these neighbors of the 
+efficiency e t and the required resources for t 
+ contractors receive and store all requests and then 
+offer all relevant resources to the manager for the task 
+with the highest efficiency 
+ the managers that have received sufficient offers 
+allocate their tasks and inform each contractor which 
+part of the offer is accepted when a task is 
+allocated or when a manager has received offers from all 
+neighbors but still cannot satisfy its task the task is 
+removed from the task list ta 
+ contractors update their used resources 
+have a social network of agents each agent has a set of 
+resources of different types at its disposal we also have a 
+set of tasks each task requires some resources has a fixed 
+benefit and is located at a certain agent this agent is called 
+a manager we only allow neighboring agents to help with a 
+task these agents are called contractors agents can fulfill 
+the role of manager as well as contractor the problem is 
+to find out which tasks to execute and which resources of 
+which contractors to use for these tasks 
+the idea of the protocol is as follows all manager agents 
+a ∈ a try to find neighboring contractors to help them with 
+their task s ta ti ∈ t loc ti a they start with 
+offering the task that is most efficient in terms of the ratio 
+between benefit and required resources out of all tasks 
+offered contractors select the task with the highest efficiency 
+and send a bid to the related manager a bid consists of all 
+the resources the agent is able to supply for this task if 
+sufficient resources have been offered the manager selects the 
+required resources and informs all contractors of its choice 
+the efficiency of a task is defined as follows 
+definition the efficiency e of a task t ∈ t is defined 
+by the utility of this task divided by the sum of all required 
+resources e t u t p 
+r∈r rsc t r 
+ 
+a more detailed description of this protocol can be found 
+in algorithm here it is also defined how to determine 
+when a task should not be offered anymore because it is 
+impossible to fulfill locally obviously a task is also not 
+offered anymore when it has been allocated this protocol 
+is such that when no two tasks have exactly the same 
+efficiency in every iteration at least one task is removed from 
+a task list 
+from this the computation and communication 
+property of the algorithm follows 
+proposition for a stap with n tasks and m agents 
+the run time of the distributed algorithm is o nm and the 
+number of communication messages is o n 
+m 
+ 
+even when some tasks have the same efficiency it is 
+straightforward to make this result work for example the 
+implementation can ensure that the contractors choose the 
+task with the lowest task-id 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+algorithm optimal social task allocation opt 
+repeat the following for each combination of tasks 
+ if the total reward for this combination is higher than 
+any previous combination test if this combination is 
+feasible as follows 
+ create a network flow problem for each resource type 
+r ∈ r separately as follows 
+ a create a source s and a sink s 
+ b for each agent a ∈ a create an agent node and 
+an edge from s to this node with capacity equal 
+to the amount of resources of type r agent a has 
+ c for each task t ∈ t create a task node and an 
+edge from this node to s with capacity equal to 
+the amount of resources of type r task t requires 
+ d for each agent a connect the agent node to all 
+task nodes of neighboring tasks i e t ∈ t ∈ t 
+ a loc t ∈ ae give this connection unlimited 
+capacity 
+ solve the maximum flow problem for the created flow 
+networks if the maximum flow in each network is 
+equal to the total required resources of that type the 
+current combination of tasks is feasible in that case 
+this is the current best combination of tasks 
+proof in the worst case in each iteration exactly one 
+task is removed from a task list so there are n iterations 
+in each iteration in the worst case i e a fully connected 
+network for each of the o n managers o m messages 
+are sent next the task with the highest efficiency can be 
+selected by each contractor in o n assigning an allocation 
+can be done in o m this leads to a total of o n m 
+operations for each iteration and thus o n 
+ nm operations 
+in total the number of messages sent is o n nm nm 
+nm o n 
+m 
+we establish the quality of this protocol experimentally 
+ in section preferably we compare the results to the 
+optimal solution 
+ optimal social task allocation 
+the optimal task allocation algorithm should deal with 
+the restrictions posed by the social network for this 
+npcomplete problem we used an exponential brute-force 
+algorithm to consider relevant combinations of tasks to execute 
+for each combination we use a maximum-flow algorithm to 
+check whether the resources are sufficient for the selected 
+subset of tasks the flow network describes which resources 
+can be used for which tasks depending on the social 
+network if the maximum flow is equal to the sum of all 
+resources required by the subset of tasks we know that a 
+feasible solution exists see algorithm clearly we cannot 
+expect this optimal algorithm to be able to find solutions 
+for larger problem sizes to establish the quality of our 
+protocol for large instances we use the following method to 
+determine an upper bound 
+ upper bound for social task allocation 
+given a social task allocation problem if the number of 
+resource types for every task t ∈ t is bounded by the 
+algorithm an upper bound for social task allocation 
+ ub 
+create a network flow problem with costs as follows 
+ create a source s and a sink s 
+ for each agent a ∈ a and each resource type ri ∈ r 
+create an agent-resource node ai and an edge from 
+s to this node with capacity equal to the amount of 
+resources of type r agent a has available and with costs 
+ 
+ for each task t ∈ t and each resource type ri ∈ r 
+create a task-resource node ti and an edge from this node 
+to s with capacity equal to the amount of resources of 
+type r task t requires and costs −e t 
+ for each resource type ri ∈ r and for each agent a 
+connect the agent-resource node ai to all task-resource 
+nodes ti for neighboring tasks t ∈ t ∈ t a loc t ∈ 
+ae or a loc t give this connection unlimited 
+capacity and zero costs 
+ create an edge directly from s to s with unlimited 
+capacity and zero costs 
+solve the minimum cost flow network problem for this 
+network the costs of the resulting network is an upper bound 
+for the social task allocation problem 
+problem is polynomially solvable by transforming it to a flow 
+network problem our method for efficiently calculating an 
+upper bound for stap makes use of this special case by 
+converting any given stap instance p into a new problem 
+p where each task only has one resource type 
+more specifically for every task t ∈ t with utility u t 
+we do the following let m be the number of resource types 
+ r rm required by t we then split t into a set of 
+m tasks t t tm where each task ti only has one 
+unique resource type of r rm and each task has a 
+fair share of the utility i e the efficiency of t from 
+definition times the amount of this resource type rsc ti ri 
+after polynomially performing this conversion for every task 
+in t the original problem p becomes the special case p 
+note that the set of valid allocations in p is only a subset of 
+the set of valid allocations in p because it is now possible 
+to partially allocate a task from this it is easy to see that 
+the solution of p gives an upper bound of the solution of 
+the original problem p 
+to compute the optimal solution for p we transform it 
+to a minimum cost flow problem we model the cost in 
+the flow network by the negation of the new task s utility a 
+polynomial-time implementation of a scaling minimum cost 
+flow algorithm is used for the computation the 
+resulting minimum cost flow represents a maximum allocation of 
+the tasks for p the detailed modeling is described in 
+algorithm in the next section we use this upper bound to 
+estimate the quality of the gdap for large-scale instances 
+ experiments 
+we implemented the greedy distributed allocation 
+protocol gdap the optimal allocation algorithm opt and 
+the upper bound algorithm ub in java and tested them 
+on a linux pc the purpose of these experiments is to study 
+the performance of the distributed algorithm in different 
+problem settings using different social networks the 
+perthe sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rewardrelativetooptimal 
+resource ratio 
+small-world - upper bound 
+random - upper bound 
+scale-free - upper bound 
+small-world - gdap 
+random - gdap 
+scale-free - gdap 
+figure the solution qualities of the gdap and 
+the upper bound depend on the resource ratio 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofagents 
+degree 
+small-world 
+random 
+scale-free 
+figure the histogram of the degrees 
+formance measurements are the solution quality and 
+computation time where the solution quality sq is computed 
+as follows when the number of tasks is small we compare 
+the output of the distributed algorithm with the optimal 
+solution i e sq gdap 
+op t 
+ but if it is not feasible to compute 
+the optimal solution we use the value returned by the upper 
+bound algorithm for evaluation i e sq gdap 
+ub 
+ 
+to see whether the latter is a good measure we also 
+compare the quality of the upper bound to the optimal solution 
+for smaller problems in the following we describe the 
+setup of all experiments and present the results 
+ experimental settings 
+we consider several experimental environments in all 
+environments the agents are connected by a social network in 
+the experiments three different networks are used to 
+simulate the social relationships among agents in potential 
+realworld problems 
+small-world networks are networks where most neighbors 
+of an agent are also connected to each other for the 
+experiments we use a method for generating random small-world 
+networks proposed by watts et al with a fixed rewiring 
+probability p 
+scale-free networks have the property that a couple of 
+nodes have many connections and many nodes have only 
+a small number of connections to generate these we use 
+the implementation in the jung library of the generator 
+proposed by barab´asi and albert 
+we also generate random networks as follows first we 
+connect each agent to another agent such that all agents are 
+connected next we randomly add connections until the 
+desired average degree has been reached 
+we now describe the different settings used in our 
+experiments with both small and large-scale problems 
+setting the number of agents is and the number of 
+tasks is the number of different resource types is 
+bounded by and the average number of resources 
+required by a task is consequently the total number 
+of resources required by the tasks is fixed however 
+the resources available to the agents are varied we 
+define the resource ratio to refer to the ratio between 
+the total number of available resources and the total 
+number of required resources resources are allocated 
+uniformly to the agents the average degrees of the 
+networks may also change in this setting the task 
+benefits are distributed normally around the number 
+of resources required 
+setting this setting is similar to setting but here we 
+let the benefits of the tasks vary dramatically- of 
+the tasks have around times higher benefit than the 
+other of the tasks 
+setting this setting is for large-scale problems the 
+ratio between the number of agents and the number of 
+tasks is set to and the number of agents varies 
+from to we also fix the resource ratio to 
+and the average degree to the number of different 
+resource types is and the average resource 
+requirement of a tasks is the task benefits are again 
+normally distributed 
+ experimental results 
+the experiments are done with the three different settings 
+in the three different networks mentioned before where each 
+recorded data is the average over random instances 
+ experiment 
+experimental setting is used for this set of experiments 
+we would like to see how the gdap behaves in the 
+different networks when the number of resources available to the 
+agents is changing we also study the behavior of our upper 
+bound algorithm for this experiment we fix the average 
+number of neighbors degree in each network type to six 
+in figure we see how the quality of both the upper 
+bound and the gdap algorithm depends on the resource 
+ratio remarkably for lower resource ratios our gdap is 
+much closer to the optimal allocation than the upper bound 
+when the resource ratio grows above the graphs of the 
+upper bound and the gdap converge meaning that both 
+are really close to the optimal solution this can be 
+explained by the fact that when plenty of resources are 
+available all tasks can be allocated without any conflicts 
+however when resources are very scarce the upper bound is 
+much too optimistic because it is based on the allocation of 
+sub-tasks per resource type and does not reason about how 
+many of the tasks can actually be allocated completely we 
+also notice from the graph that the solution quality of the 
+gdap on all three networks is quite high over when 
+the available resource is very limited it drops below 
+ with the increased ratio and goes up again once there are 
+plenty of resources available resource ratio clearly if 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rewardrelativetooptimal 
+degree 
+small-world - upper bound 
+random - upper bound 
+scale-free - upper bound 
+small-world - gdap 
+random - gdap 
+scale-free - gdap 
+figure the quality of the gdap and the upper 
+bound depend on the network degree 
+resources are really scarce only a few tasks can be 
+successfully allocated even by the optimal algorithm therefore 
+the gdap is able to give quite a good allocation 
+although the differences are minor it can also be seen 
+that the results for the small-world network are consistently 
+slightly better than those of random networks which in turn 
+outperform scale-free networks this can be understood by 
+looking at the distribution of the agents degree as shown 
+in figure in this experiment in the small-world network 
+almost every manager has a degree of six in random 
+networks the degree varies between one and about ten 
+however in the scale-free network most nodes have only three 
+or four connections and only a very few have up to twenty 
+connections as we will see in the next experiment having 
+more connections means getting better results 
+for the next experiment we fix the resource ratio to 
+and study the quality of both the upper bound and the 
+gdap algorithm related to the degree of the social 
+network the result can be found in figure in this figure 
+we can see that a high average degree also leads to 
+convergence of the upper bound and the gdap obviously when 
+managers have many connections it becomes easier to 
+allocate tasks an exception is similar to what we have seen in 
+figure that the solution of the gdap is also very good 
+if the connections are extremely limited degree due to 
+the fact that the number of possibly allocated tasks is very 
+small again we see that the upper bound is not that good 
+for problems where resources are hard to reach i e in social 
+networks with a low average degree 
+since the solution quality clearly depends on the resource 
+ratio as well as on the degree of the social network we study 
+the effect of changing both to see whether they influence 
+each other figure shows how the solution quality 
+depends on both the resource ratio and the network degree 
+this graph confirms the results that the gdap performs 
+better for problems with higher degree and higher resource 
+ratio however it is now also more clear that it performs 
+better for very low degree and resource availability for this 
+experiment with agents and tasks the worst 
+performance is met for instances with degree six and resource ratio 
+ to instances with degree twelve and resource ratio 
+but even for those instances the performance lies above 
+ 
+the consistent standard deviation of about over the 
+ problem instances is not displayed as error-bars in these 
+first graphs because it would obfuscate the interesting 
+correlations that can now be seen 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+relative reward 
+small-world 
+average degree 
+resource ratio 
+relative reward 
+figure the quality of the gdap depends on both 
+the resource ratio and the network degree 
+ experiment 
+to study the robustness of the gdap against different 
+problem settings we generate instances where the task 
+benefit distribution is different of the tasks gets a times 
+higher benefit as described in setting the effect of this 
+different distribution can be seen in figure these two 
+graphs show that the results for the skewed task benefit 
+distribution are slightly better on average both when 
+varying the resource ratio and when varying the average degree 
+of the network we argue that this can be explained by the 
+greedy nature of gdap which causes the tasks with high 
+efficiency to be allocated first and makes the algorithm 
+perform better in this heterogeneous setting 
+ experiment 
+the purpose of this final experiment is to test whether the 
+algorithm can be scaled to large problems like applications 
+running on the internet we therefore generate instances 
+where the number of agents varies from to and 
+simultaneously increase the number of tasks from to 
+ setting figure shows the run time for these instances 
+on a linux machine with an amd opteron ghz 
+processor these graphs confirm the theoretical analysis from 
+the previous section saying that both the upper bound and 
+the gdap are polynomial in fact the graphs show that 
+the gdap almost behaves linearly here we see that the 
+locality of the gdap really helps in reducing the 
+computation time also note that the gdap requires even less 
+computation time than the upper bound 
+the quality of the gdap for these large instances cannot 
+be compared to the optimal solution therefore in figure 
+the upper bound is used instead this result shows that 
+the gdap behaves stably and consistently well with the 
+increasing problem size it also shows once more that the 
+gdap performs better in a small-world network 
+ related work 
+task allocation in multiagent systems has been 
+investigated by many researchers in recent years with different 
+assumptions and emphases however most of the research 
+to date on task allocation does not consider social 
+connections among agents and studies the problem in a centralized 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rewardrelativetooptimal 
+resource ratio 
+skewed small-world 
+skewed random 
+skewed scale-free 
+uniform small-world 
+uniform random 
+uniform scale-free 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rewardrelativetooptimal 
+degree 
+skewed small-world 
+skewed random 
+skewed scale-free 
+uniform small-world 
+uniform random 
+uniform scale-free 
+figure the quality of the gdap algorithm for a 
+uniform and a skewed task benefit distribution 
+related to the resource ratio the first graph and the 
+network degree the second graph 
+setting for example kraus et al develop an auction 
+protocol that enables agents to form coalitions with time 
+constraints it assumes each agent knows the capabilities 
+of all others the proposed protocol is centralized where 
+one manager is responsible for allocating the tasks to all 
+coalitions manisterski at al discuss the possibilities of 
+achieving efficient allocations in both cooperative and 
+noncooperative settings they propose a centralized algorithm 
+to find the optimal solution in contrast to this work we 
+introduce also an efficient completely distributed protocol 
+that takes the social network into account 
+task allocation has also been studied in distributed 
+settings by for example shehory and kraus and by 
+lerman and shehory they propose distributed algorithms 
+with low communication complexity for forming coalitions 
+in large-scale multiagent systems however they do not 
+assume the existence of any agent network the work of 
+sander et al introduces computational geometry-based 
+algorithms for distributed task allocation in geographical 
+domains agents are then allowed to move and actively search 
+for tasks and the capability of agents to perform tasks is 
+homogeneous in order to apply their approach agents need 
+to have some knowledge about the geographical positions 
+of tasks and some other agents other work proposes 
+a location mechanism for open multiagent systems to 
+allocate tasks to unknown agents in this approach each agent 
+caches a list of agents they know the analysis of the 
+communication complexity of this method is based on lattice-like 
+graphs while we investigate how to efficiently solve task 
+allocation in a social network whose topology can be arbitrary 
+networks have been employed in the context of task 
+allocation in some other works as well for example to limit the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+time ms 
+agents 
+upper bound - small-world 
+upper bound - random 
+upper bound - scale-free 
+gdap - small-world 
+gdap - random 
+gdap - scale-free 
+figure the run time of the gdap algorithm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rewardrelativetoupperbound 
+agents 
+small-world 
+random 
+scale-free 
+figure the quality of the gdap algorithm 
+compared to the upper bound 
+interactions between agents and mediators mediators in 
+this context are agents who receive the task and have 
+connections to other agents they break up the task into subtasks 
+and negotiate with other agents to obtain commitments to 
+execute these subtasks their focus is on modeling the 
+decision process of just a single mediator another approach is 
+to partition the network into cliques of nodes representing 
+coalitions which the agents involved may use as a 
+coordination mechanism the focus of that work is distributed 
+coalition formation among agents but in our approach we 
+do not need agents to form groups before allocating tasks 
+easwaran and pitt study  complex tasks that require 
+ services for their accomplishment the problem concerns 
+the allocation of subtasks to service providers in a supply 
+chain another study of task allocation in supply chains 
+is where it is argued that the defining characteristic 
+of supply chain formation is hierarchical subtask 
+decomposition hsd hsd is implemented using task dependency 
+networks tdn with agents and goods as nodes and i o 
+relations between them as edges here the network is given 
+and the problem is to select a subgraph for which the 
+authors propose a market-based algorithm in particular a 
+series of auctions compared to these works our approach is 
+more general in the sense that we are able to model different 
+types of connections or constraints among agents for 
+different problem domains in addition to supply chain formation 
+finally social networks have been used in the context of 
+team formation previous work has shown how to learn 
+which relations are more beneficial in the long run and 
+adapt the social network accordingly we believe these 
+results can be transferred to the domain of task allocation as 
+well leaving this as a topic for further study 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ conclusions 
+in this paper we studied the task allocation problem in a 
+social network stap which can be seen as a new more 
+general variant of the tap we believe it has a great amount 
+of potential for realistic problems we provided complexity 
+results on computing the efficient solution for the stap as 
+well as a bound on possible approximation algorithms next 
+we presented a distributed protocol related to the 
+contractnet protocol we also introduced an exponential algorithm 
+to compute the optimal solution as well as a fast 
+upperbound algorithm finally we used the optimal solution and 
+the upper-bound for larger instances to conduct an 
+extensive set of experiments to assess the solution quality and 
+the computational efficiency of the proposed distributed 
+algorithm in different types of networks namely small-world 
+networks random networks and scale-free networks 
+the results presented in this paper show that the 
+distributed algorithm performs well in small-world scale-free 
+and random networks and for many different settings also 
+other experiments were done e g on grid networks and 
+these results held up over a wider range of scenarios 
+furthermore we showed that it scales well to large networks 
+both in terms of quality and of required computation time 
+the results also suggest that small-world networks are slightly 
+better suited for local task allocation because there are no 
+nodes with very few neighbors 
+there are many interesting extensions to our current work 
+in this paper we focus on the computational aspect in the 
+design of the distributed algorithm in our future work we 
+would also like to address some of the related issues in game 
+theory such as strategic agents and show desirable 
+properties of a distributed protocol in such a context 
+in the current algorithm we assume that agents can only 
+contact their neighbors to request resources which may 
+explain why our algorithm performs not as good in the 
+scalefree networks as in the small-world networks our future 
+work may allow agents to reallocate sub tasks we are 
+interested in seeing how such interactions will affect the 
+performance of task allocation in different social networks 
+a third interesting topic for further work is the addition 
+of reputation information among the agents this may help 
+to model changing business relations and incentivize agents 
+to follow the protocol 
+finally it would be interesting to study real-life instances 
+of the social task allocation problem and see how they 
+relate to the randomly generated networks of different types 
+studied in this paper 
+acknowledgments this work is supported by the 
+technology foundation stw applied science division of nwo 
+and the ministry of economic affairs 
+ references 
+ s abdallah and v lesser modeling task allocation 
+using a decision theoretic model in proc aamas 
+pages - acm 
+ n alon u feige a wigderson and d zuckerman 
+derandomized graph products computational 
+complexity - 
+ a -l barab´asi and r albert emergence of scaling in 
+random networks science - 
+ r h coase the nature of the firm economica ns 
+ - 
+ r h coase my evolution as an economist in 
+w breit and r w spencer editors lives of the 
+laureates pages - mit press 
+ a m easwaran and j pitt supply chain formation 
+in open market-based multi-agent systems 
+international j of computational intelligence and 
+applications - 
+ i foster n r jennings and c kesselman brain 
+meets brawn why grid and agents need each 
+other in proc aamas pages - washington 
+dc usa ieee computer society 
+ m e gaston and m desjardins agent-organized 
+networks for dynamic team formation in proc 
+aamas pages - new york ny usa 
+acm press 
+ a goldberg an efficient implementation of a scaling 
+minimum-cost flow algorithm j of algorithms 
+ - 
+ r gulati does familiarity breed trust the 
+implications of repeated ties for contractual choice 
+in alliances academy of management journal 
+ - 
+ t klos and b nooteboom agent-based 
+computational transaction cost economics 
+economic dynamics and control - - 
+ s kraus o shehory and g taase coalition 
+formation with uncertain heterogeneous information 
+in proc aamas pages - acm 
+ k lerman and o shehory coalition formation for 
+large-scale electronic markets in proc icmas pages 
+ - ieee computer society 
+ e manisterski e david s kraus and n jennings 
+forming efficient agent groups for completing 
+complex tasks in proc aamas pages - 
+acm 
+ j patel et al agent-based virtual organizations for 
+the grid multi-agent and grid systems 
+ - 
+ p v sander d peleshchuk and b j grosz a 
+scalable distributed algorithm for efficient task 
+allocation in proc aamas pages - new 
+york ny usa acm press 
+ o shehory a scalable agent location mechanism in 
+proc atal volume of lncs pages - 
+springer 
+ o shehory and s kraus methods for task 
+allocation via agent coalition formation artificial 
+intelligence - - 
+ r m sreenath and m p singh agent-based service 
+selection web semantics - 
+ p t toˇsi´c and g a agha maximal clique based 
+distributed coalition formation for task allocation 
+in large-scale multi-agent systems in proc mmas 
+volume of lnai pages - springer 
+ w e walsh and m p wellman modeling supply 
+chain formation in multiagent systems in proc 
+amec ii volume of lnai pages - 
+springer 
+ d j watts and s h strogatz collective dynamics of 
+ small world networks nature - 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

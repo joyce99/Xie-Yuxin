@@ -1,0 +1,860 @@
+dynamics based control 
+with an application to area-sweeping problems 
+zinovi rabinovich 
+engineering and computer 
+science 
+hebrew university of 
+jerusalem 
+jerusalem israel 
+nomad cs huji ac il 
+jeffrey s rosenschein 
+engineering and computer 
+science 
+hebrew university of 
+jerusalem 
+jerusalem israel 
+jeff cs huji ac il 
+gal a kaminka 
+the maverick group 
+department of computer 
+science 
+bar ilan university israel 
+galk cs biu ac il 
+abstract 
+in this paper we introduce dynamics based control dbc an 
+approach to planning and control of an agent in stochastic 
+environments unlike existing approaches which seek to optimize 
+expected rewards e g in partially observable markov decision 
+problems pomdps dbc optimizes system behavior towards 
+specified system dynamics we show that a recently developed planning 
+and control approach extended markov tracking emt is an 
+instantiation of dbc emt employs greedy action selection to 
+provide an efficient control algorithm in markovian environments we 
+exploit this efficiency in a set of experiments that applied 
+multitarget emt to a class of area-sweeping problems searching for 
+moving targets we show that such problems can be naturally 
+defined and efficiently solved using the dbc framework and its emt 
+instantiation 
+categories and subject descriptors 
+i problem solving control methods and search 
+control theory i robotics i distributed artificial 
+intelligence intelligent agents 
+general terms 
+algorithms theory 
+ introduction 
+planning and control constitutes a central research area in 
+multiagent systems and artificial intelligence in recent years partially 
+observable markov decision processes pomdps have 
+become a popular formal basis for planning in stochastic 
+environments in this framework the planning and control problem is often 
+addressed by imposing a reward function and computing a policy 
+ of choosing actions that is optimal in the sense that it will result 
+in the highest expected utility while theoretically attractive the 
+complexity of optimally solving a pomdp is prohibitive 
+we take an alternative view of planning in stochastic 
+environments we do not use a state-based reward function but instead 
+optimize over a different criterion a transition-based specification 
+of the desired system dynamics the idea here is to view 
+planexecution as a process that compels a stochastic system to change 
+and a plan as a dynamic process that shapes that change according 
+to desired criteria we call this general planning framework 
+dynamics based control dbc 
+in dbc the goal of a planning or control process becomes to 
+ensure that the system will change in accordance with specific 
+ potentially stochastic target dynamics as actual system behavior 
+may deviate from that which is specified by target dynamics due 
+to the stochastic nature of the system planning in such 
+environments needs to be continual in a manner similar to classical 
+closed-loop controllers here optimality is measured in terms 
+of probability of deviation magnitudes 
+in this paper we present the structure of dynamics based 
+control we show that the recently developed extended markov 
+tracking emt approach is subsumed by dbc with emt 
+employing greedy action selection which is a specific 
+parameterization among the options possible within dbc emt is an efficient 
+instantiation of dbc 
+to evaluate dbc we carried out a set of experiments applying 
+multi-target emt to the tag game this is a variant on the 
+area sweeping problem where an agent is trying to tag a moving 
+target quarry whose position is not known with certainty 
+experimental data demonstrates that even with a simple model of the 
+environment and a simple design of target dynamics high success 
+rates can be produced both in catching the quarry and in surprising 
+the quarry as expressed by the observed entropy of the controlled 
+agent s position 
+the paper is organized as follows in section we motivate dbc 
+using area-sweeping problems and discuss related work section 
+introduces the dynamics based control dbc structure and its 
+specialization to markovian environments this is followed by a 
+review of the extended markov tracking emt approach as a 
+dbc-structured control regimen in section that section also 
+discusses the limitations of emt-based control relative to the 
+general dbc framework experimental settings and results are then 
+presented in section section provides a short discussion of 
+the overall approach and section gives some concluding remarks 
+and directions for future work 
+ 
+ - - - - rps c ifaamas 
+ motivation and related work 
+many real-life scenarios naturally have a stochastic target 
+dynamics specification especially those domains where there exists 
+no ultimate goal but rather system behavior with specific 
+properties that has to be continually supported for example security 
+guards perform persistent sweeps of an area to detect any sign of 
+intrusion cunning thieves will attempt to track these sweeps and 
+time their operation to key points of the guards motion it is thus 
+advisable to make the guards motion dynamics appear irregular 
+and random 
+recent work by paruchuri et al has addressed such 
+randomization in the context of single-agent and distributed pomdps the 
+goal in that work was to generate policies that provide a measure of 
+action-selection randomization while maintaining rewards within 
+some acceptable levels our focus differs from this work in that 
+dbc does not optimize expected rewards-indeed we do not 
+consider rewards at all-but instead maintains desired dynamics 
+ including but not limited to randomization 
+the game of tag is another example of the applicability of the 
+approach it was introduced in the work by pineau et al there 
+are two agents that can move about an area which is divided into a 
+grid the grid may have blocked cells holes into which no agent 
+can move one agent the hunter seeks to move into a cell 
+occupied by the other the quarry such that they are co-located this is 
+a successful tag the quarry seeks to avoid the hunter agent and 
+is always aware of the hunter s position but does not know how the 
+hunter will behave which opens up the possibility for a hunter to 
+surprise the prey the hunter knows the quarry s probabilistic law 
+of motion but does not know its current location tag is an instance 
+of a family of area-sweeping pursuit-evasion problems 
+in the hunter modeled the problem using a pomdp a 
+reward function was defined to reflect the desire to tag the quarry 
+and an action policy was computed to optimize the reward 
+collected over time due to the intractable complexity of determining 
+the optimal policy the action policy computed in that paper was 
+essentially an approximation 
+in this paper instead of formulating a reward function we use 
+emt to solve the problem by directly specifying the target 
+dynamics in fact any search problem with randomized motion the 
+socalled class of area sweeping problems can be described through 
+specification of such target system dynamics dynamics based 
+control provides a natural approach to solving these problems 
+ dynamics based control 
+the specification of dynamics based control dbc can be 
+broken into three interacting levels environment design level user 
+level and agent level 
+ environment design level is concerned with the formal 
+specification and modeling of the environment for 
+example this level would specify the laws of physics within the 
+system and set its parameters such as the gravitation 
+constant 
+ user level in turn relies on the environment model produced 
+by environment design to specify the target system 
+dynamics it wishes to observe the user level also specifies the 
+estimation or learning procedure for system dynamics and the 
+measure of deviation in the museum guard scenario above 
+these would correspond to a stochastic sweep schedule and a 
+measure of relative surprise between the specified and actual 
+sweeping 
+ agent level in turn combines the environment model from 
+the environment design level the dynamics estimation 
+procedure the deviation measure and the target dynamics 
+specification from user level to produce a sequence of actions 
+that create system dynamics as close as possible to the 
+targeted specification 
+as we are interested in the continual development of a stochastic 
+system such as happens in classical control theory and 
+continual planning as well as in our example of museum sweeps 
+the question becomes how the agent level is to treat the 
+deviation measurements over time to this end we use a probability 
+threshold-that is we would like the agent level to maximize the 
+probability that the deviation measure will remain below a certain 
+threshold 
+specific action selection then depends on system formalization 
+one possibility would be to create a mixture of available system 
+trends much like that which happens in behavior-based robotic 
+architectures the other alternative would be to rely on the 
+estimation procedure provided by the user level-to utilize the 
+environment design level model of the environment to choose actions 
+so as to manipulate the dynamics estimator into believing that a 
+certain dynamics has been achieved notice that this manipulation is 
+not direct but via the environment thus for strong enough 
+estimator algorithms successful manipulation would mean a successful 
+simulation of the specified target dynamics i e beyond discerning 
+via the available sensory input 
+dbc levels can also have a back-flow of information see 
+figure for instance the agent level could provide data about 
+target dynamics feasibility allowing the user level to modify the 
+requirement perhaps focusing on attainable features of system 
+behavior data would also be available about the system response to 
+different actions performed combined with a dynamics estimator 
+defined by the user level this can provide an important tool for the 
+environment model calibration at the environment design level 
+userenv design agent 
+model 
+ideal dynamics 
+estimator 
+estimator 
+dynamics feasibility 
+system response data 
+figure data flow of the dbc framework 
+extending upon the idea of actor-critic algorithms dbc 
+data flow can provide a good basis for the design of a learning 
+algorithm for example the user level can operate as an exploratory 
+device for a learning algorithm inferring an ideal dynamics target 
+from the environment model at hand that would expose and verify 
+most critical features of system behavior in this case feasibility 
+and system response data from the agent level would provide key 
+information for an environment model update in fact the 
+combination of feasibility and response data can provide a basis for the 
+application of strong learning algorithms such as em 
+ dbc for markovian environments 
+for a partially observable markovian environment dbc can 
+be specified in a more rigorous manner notice how dbc discards 
+rewards and replaces it by another optimality criterion structural 
+differences are summarized in table 
+ environment design level is to specify a tuple 
+ s a t o ω s where 
+- s is the set of all possible environment states 
+- s is the initial state of the environment which can also 
+be viewed as a probability distribution over s 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+- a is the set of all possible actions applicable in the 
+environment 
+- t is the environment s probabilistic transition function 
+t s ×a → π s that is t s a s is the 
+probability that the environment will move from state s to state 
+s under action a 
+- o is the set of all possible observations this is what 
+the sensor input would look like for an outside observer 
+- ω is the observation probability function 
+ω s × a × s → π o 
+that is ω o s a s is the probability that one will 
+observe o given that the environment has moved from 
+state s to state s under action a 
+ user level in the case of markovian environment operates 
+on the set of system dynamics described by a family of 
+conditional probabilities f τ s × a → π s thus 
+specification of target dynamics can be expressed by q ∈ f 
+and the learning or tracking algorithm can be represented as 
+a function l o× a×o 
+→ f that is it maps sequences 
+of observations and actions performed so far into an estimate 
+τ ∈ f of system dynamics 
+there are many possible variations available at the user level 
+to define divergence between system dynamics several of 
+them are 
+- trace distance or l distance between two 
+distributions p and q defined by 
+d p · q · 
+ 
+ x 
+ p x − q x 
+- fidelity measure of distance 
+f p · q · 
+x 
+p x q x 
+- kullback-leibler divergence 
+dkl p · q · 
+x 
+p x log 
+p x 
+q x 
+notice that the latter two are not actually metrics over the 
+space of possible distributions but nevertheless have 
+meaningful and important interpretations for instance 
+kullbackleibler divergence is an important tool of information 
+theory that allows one to measure the price of encoding an 
+information source governed by q while assuming that it is 
+governed by p 
+the user level also defines the threshold of dynamics 
+deviation probability θ 
+ agent level is then faced with a problem of selecting a 
+control signal function a 
+to satisfy a minimization problem as 
+follows 
+a 
+ arg min 
+a 
+pr d τa q θ 
+where d τa q is a random variable describing deviation of 
+the dynamics estimate τa created by l under control signal 
+a from the ideal dynamics q implicit in this minimization 
+problem is that l is manipulated via the environment based 
+on the environment model produced by the environment 
+design level 
+ dbc view of the state space 
+it is important to note the complementary view that dbc and 
+pomdps take on the state space of the environment pomdps 
+regard state as a stationary snap-shot of the environment 
+whatever attributes of state sequencing one seeks are reached through 
+properties of the control process in this case reward accumulation 
+this can be viewed as if the sequencing of states and the attributes 
+of that sequencing are only introduced by and for the controlling 
+mechanism-the pomdp policy 
+dbc concentrates on the underlying principle of state 
+sequencing the system dynamics dbc s target dynamics specification can 
+use the environment s state space as a means to describe discern 
+and preserve changes that occur within the system as a result 
+dbc has a greater ability to express state sequencing properties 
+which are grounded in the environment model and its state space 
+definition 
+for example consider the task of moving through rough terrain 
+towards a goal and reaching it as fast as possible pomdps would 
+encode terrain as state space points while speed would be ensured 
+by negative reward for every step taken without reaching the 
+goalaccumulating higher reward can be reached only by faster motion 
+alternatively the state space could directly include the notion of 
+speed for pomdps this would mean that the same concept is 
+encoded twice in some sense directly in the state space and 
+indirectly within reward accumulation now even if the reward 
+function would encode more and finer details of the properties of 
+motion the pomdp solution will have to search in a much larger 
+space of policies while still being guided by the implicit concept 
+of the reward accumulation procedure 
+on the other hand the tactical target expression of variations and 
+correlations between position and speed of motion is now grounded 
+in the state space representation in this situation any further 
+constraints e g smoothness of motion speed limits in different 
+locations or speed reductions during sharp turns are explicitly and 
+uniformly expressed by the tactical target and can result in faster 
+and more effective action selection by a dbc algorithm 
+ emt-based control as a dbc 
+recently a control algorithm was introduced called emt-based 
+control which instantiates the dbc framework although it 
+provides an approximate greedy solution in the dbc sense initial 
+experiments using emt-based control have been encouraging 
+ emt-based control is based on the markovian environment 
+definition as in the case with pomdps but its user and agent 
+levels are of the markovian dbc type of optimality 
+ user level of emt-based control defines a limited-case 
+target system dynamics independent of action 
+qemt s → π s 
+it then utilizes the kullback-leibler divergence measure to 
+compose a momentary system dynamics estimator-the 
+extended markov tracking emt algorithm the algorithm 
+keeps a system dynamics estimate τt 
+emt that is capable of 
+explaining recent change in an auxiliary bayesian system 
+state estimator from pt− to pt and updates it conservatively 
+using kullback-leibler divergence since τt 
+emt and pt− t 
+are respectively the conditional and marginal probabilities 
+over the system s state space explanation simply means 
+that 
+pt s 
+s 
+τt 
+emt s s pt− s 
+and the dynamics estimate update is performed by solving a 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table structure of pomdp vs dynamics-based control in markovian environment 
+level 
+approach 
+mdp markovian dbc 
+environment 
+ s a t o ω where 
+s - set of states 
+a - set of actions 
+design 
+t s × a → π s - transition 
+o - observation set 
+ω s × a × s → π o 
+user 
+r s × a × s → r q s × a → π s 
+f π 
+ → r l o ot → τ 
+r - reward function q - ideal dynamics 
+f - reward remodeling l - dynamics estimator 
+θ - threshold 
+agent π 
+ arg max 
+π 
+e γt 
+rt π 
+ arg min 
+π 
+prob d τ q θ 
+minimization problem 
+τt 
+emt h pt pt− τt− 
+emt 
+ arg min 
+τ 
+dkl τ × pt− τt− 
+emt × pt− 
+s t 
+pt s 
+s 
+ τ × pt− s s 
+pt− s 
+s 
+ τ × pt− s s 
+ agent level in emt-based control is suboptimal with 
+respect to dbc though it remains within the dbc 
+framework performing greedy action selection based on 
+prediction of emt s reaction the prediction is based on the 
+environment model provided by the environment design level 
+so that if we denote by ta the environment s transition 
+function limited to action a and pt− is the auxiliary bayesian 
+system state estimator then the emt-based control choice is 
+described by 
+a 
+ arg min 
+a∈a 
+dkl h ta × pt pt τt 
+emt qemt × pt− 
+note that this follows the markovian dbc framework precisely 
+the rewarding optimality of pomdps is discarded and in its place 
+a dynamics estimator emt in this case is manipulated via action 
+effects on the environment to produce an estimate close to the 
+specified target system dynamics yet as we mentioned naive 
+emtbased control is suboptimal in the dbc sense and has several 
+additional limitations that do not exist in the general dbc framework 
+ discussed in section 
+ multi-target emt 
+at times there may exist several behavioral preferences for 
+example in the case of museum guards some art items are more 
+heavily guarded requiring that the guards stay more often in their 
+close vicinity on the other hand no corner of the museum is to 
+be left unchecked which demands constant motion successful 
+museum security would demand that the guards adhere to and 
+balance both of these behaviors for emt-based control this would 
+mean facing several tactical targets qk k 
+k and the question 
+becomes how to merge and balance them a balancing mechanism 
+can be applied to resolve this issue 
+note that emt-based control while selecting an action creates 
+a preference vector over the set of actions based on their predicted 
+performance with respect to a given target if these preference 
+vectors are normalized they can be combined into a single unified 
+preference this requires replacement of standard emt-based action 
+selection by the algorithm below 
+ given 
+- a set of target dynamics qk k 
+k 
+- vector of weights w k 
+ select action as follows 
+- for each action a ∈ a predict the future state 
+distribution ¯pa 
+t ta pt 
+- for each action compute 
+da h ¯pa 
+t pt pdt 
+- for each a ∈ a and qk tactical target denote 
+v a k dkl da qk pt 
+ 
+let vk a 
+zk 
+v a k where zk 
+a∈a 
+v a k is 
+a normalization factor 
+- select a 
+ arg min 
+a 
+k 
+k w k vk a 
+the weights vector w w wk allows the additional 
+tuning of importance among target dynamics without the need 
+to redesign the targets themselves this balancing method is also 
+seamlessly integrated into the emt-based control flow of 
+operation 
+ emt-based control limitations 
+emt-based control is a sub-optimal in the dbc sense 
+representative of the dbc structure it limits the user by forcing emt to 
+be its dynamic tracking algorithm and replaces agent optimization 
+by greedy action selection this kind of combination however is 
+common for on-line algorithms although further development of 
+emt-based controllers is necessary evidence so far suggests that 
+even the simplest form of the algorithm possesses a great deal of 
+power and displays trends that are optimal in the dbc sense of the 
+word 
+there are two further emt-specific limitations to emt-based 
+control that are evident at this point both already have partial 
+solutions and are subjects of ongoing research 
+the first limitation is the problem of negative preference in the 
+pomdp framework for example this is captured simply through 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the appearance of values with different signs within the reward 
+structure for emt-based control however negative preference 
+means that one would like to avoid a certain distribution over 
+system development sequences emt-based control however 
+concentrates on getting as close as possible to a distribution avoidance is 
+thus unnatural in native emt-based control 
+the second limitation comes from the fact that standard 
+environment modeling can create pure sensory actions-actions that do 
+not change the state of the world and differ only in the way 
+observations are received and the quality of observations received since 
+the world state does not change emt-based control would not be 
+able to differentiate between different sensory actions 
+notice that both of these limitations of emt-based control are 
+absent from the general dbc framework since it may have a 
+tracking algorithm capable of considering pure sensory actions and 
+unlike kullback-leibler divergence a distribution deviation measure 
+that is capable of dealing with negative preference 
+ emt playing tag 
+the game of tag was first introduced in it is a single agent 
+problem of capturing a quarry and belongs to the class of area 
+sweeping problems an example domain is shown in figure 
+ 
+ 
+ 
+ 
+ 
+ 
+ q a 
+ 
+figure tag domain an agent a attempts to seek and 
+capture a quarry q 
+the game of tag extremely limits the agent s perception so that 
+the agent is able to detect the quarry only if they are co-located in 
+the same cell of the grid world in the classical version of the game 
+co-location leads to a special observation and the  tag action can 
+be performed we slightly modify this setting the moment that 
+both agents occupy the same cell the game ends as a result both 
+the agent and its quarry have the same motion capability which 
+allows them to move in four directions north south east and 
+west these form a formal space of actions within a markovian 
+environment 
+the state space of the formal markovian environment is described 
+by the cross-product of the agent and quarry s positions for 
+figure it would be s s s × s s 
+the effects of an action taken by the agent are deterministic but 
+the environment in general has a stochastic response due to the 
+motion of the quarry with probability q 
+ 
+it stays put and with 
+probability − q it moves to an adjacent cell further away from the 
+ 
+in our experiments this was taken to be q 
+agent so for the instance shown in figure and q 
+p q s q s a s 
+p q s q s a s 
+p q s q s a s 
+p q s q s a s 
+although the evasive behavior of the quarry is known to the 
+agent the quarry s position is not the only sensory information 
+available to the agent is its own location 
+we use emt and directly specify the target dynamics for the 
+game of tag we can easily formulate three major trends catching 
+the quarry staying mobile and stalking the quarry this results in 
+the following three target dynamics 
+tcatch at si qt sj at sa ∝ 
+ si sj 
+ otherwise 
+tmobile at si qt so at sj ∝ 
+ si sj 
+ otherwise 
+tstalk at si qt so at sj ∝ 
+dist si so 
+note that none of the above targets are directly achievable for 
+instance if qt s and at s there is no action that can move 
+the agent to at s as required by the tcatch target dynamics 
+we ran several experiments to evaluate emt performance in the 
+tag game three configurations of the domain shown in figure 
+were used each posing a different challenge to the agent due to 
+partial observability in each setting a set of runs was performed 
+with a time limit of steps in every run the initial position of 
+both the agent and its quarry was selected at random this means 
+that as far as the agent was concerned the quarry s initial position 
+was uniformly distributed over the entire domain cell space 
+we also used two variations of the environment observability 
+function in the first version observability function mapped all 
+joint positions of hunter and quarry into the position of the hunter as 
+an observation in the second only those joint positions in which 
+hunter and quarry occupied different locations were mapped into 
+the hunter s location the second version in fact utilized and 
+expressed the fact that once hunter and quarry occupy the same cell 
+the game ends 
+the results of these experiments are shown in table 
+balancing the catch move and stalk target dynamics described in 
+the previous section by the weight vector emt 
+produced stable performance in all three domains 
+although direct comparisons are difficult to make the emt 
+performance displayed notable efficiency vis- a-vis the pomdp 
+approach in spite of a simple and inefficient matlab implementation 
+of the emt algorithm the decision time for any given step 
+averaged significantly below second in all experiments for the 
+irregular open arena domain which proved to be the most difficult 
+experiment runs bounded by steps each a total of steps 
+were completed in slightly under hours that is over × 
+online steps took an order of magnitude less time than the offline 
+computation of pomdp policy in the significance of this 
+differential is made even more prominent by the fact that should the 
+environment model parameters change the online nature of emt 
+would allow it to maintain its performance time while the pomdp 
+policy would need to be recomputed requiring yet again a large 
+overhead of computation 
+we also tested the behavior cell frequency entropy empirical 
+measures from trial data as figure and figure show 
+empir the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+a 
+q 
+q a 
+ 
+ 
+ 
+ 
+ 
+a 
+q 
+figure these configurations of the tag game space were used a multiple dead-end b irregular open arena c circular corridor 
+table performance of the emt-based solution in three tag 
+game domains and two observability models i omniposition 
+quarry ii quarry is not at hunter s position 
+model domain capture e steps time step 
+i 
+dead-ends msec 
+arena msec 
+circle msec 
+ii 
+dead-ends msec 
+arena msec 
+circle msec 
+ical entropy grows with the length of interaction for runs where 
+the quarry was not captured immediately the entropy reaches 
+between and 
+for different runs and scenarios as the agent 
+actively seeks the quarry the entropy never reaches its maximum 
+one characteristic of the entropy graph for the open arena 
+scenario particularly caught our attention in the case of the 
+omniposition quarry observation model near the maximum limit of trial 
+length steps entropy suddenly dropped further analysis of 
+the data showed that under certain circumstances a fluctuating 
+behavior occurs in which the agent faces equally viable versions of 
+quarry-following behavior since the emt algorithm has greedy 
+action selection and the state space does not encode any form of 
+commitment not even speed or acceleration the agent is locked 
+within a small portion of cells it is essentially attempting to 
+simultaneously follow several courses of action all of which are 
+consistent with the target dynamics this behavior did not occur in our 
+second observation model since it significantly reduced the set of 
+eligible courses of action-essentially contributing to tie-breaking 
+among them 
+ discussion 
+the design of the emt solution for the tag game exposes the 
+core difference in approach to planning and control between emt 
+or dbc on the one hand and the more familiar pomdp approach 
+on the other pomdp defines a reward structure to optimize and 
+influences system dynamics indirectly through that optimization 
+emt discards any reward scheme and instead measures and 
+influences system dynamics directly 
+ 
+entropy was calculated using log base equal to the number of 
+possible locations within the domain this properly scales entropy 
+expression into the range for all domains 
+thus for the tag game we did not search for a reward function 
+that would encode and express our preference over the agent s 
+behavior but rather directly set three heuristic behavior preferences 
+as the basis for target dynamics to be maintained experimental 
+data shows that these targets need not be directly achievable via the 
+agent s actions however the ratio between emt performance and 
+achievability of target dynamics remains to be explored 
+the tag game experiment data also revealed the different 
+emphasis dbc and pomdps place on the formulation of an environment 
+state space pomdps rely entirely on the mechanism of reward 
+accumulation maximization i e formation of the action selection 
+procedure to achieve necessary state sequencing dbc on the 
+other hand has two sources of sequencing specification through 
+the properties of an action selection procedure and through direct 
+specification within the target dynamics the importance of the 
+second source was underlined by the tag game experiment data 
+in which the greedy emt algorithm applied to a pomdp-type 
+state space specification failed since target description over such a 
+state space was incapable of encoding the necessary behavior 
+tendencies e g tie-breaking and commitment to directed motion 
+the structural differences between dbc and emt in 
+particular and pomdps prohibits direct performance comparison and 
+places them on complementary tracks each within a suitable niche 
+for instance pomdps could be seen as a much more natural 
+formulation of economic sequential decision-making problems while 
+emt is a better fit for continual demand for stochastic change as 
+happens in many robotic or embodied-agent problems 
+the complementary properties of pomdps and emt can be 
+further exploited there is recent interest in using pomdps in hybrid 
+solutions in which the pomdps can be used together with 
+other control approaches to provide results not easily achievable 
+with either approach by itself dbc can be an effective partner in 
+such a hybrid solution for instance pomdps have prohibitively 
+large off-line time requirements for policy computation but can 
+be readily used in simpler settings to expose beneficial behavioral 
+trends this can serve as a form of target dynamics that are provided 
+to emt in a larger domain for on-line operation 
+ conclusions and future work 
+in this paper we have presented a novel perspective on the 
+process of planning and control in stochastic environments in the form 
+of the dynamics based control dbc framework dbc 
+formulates the task of planning as support of a specified target system 
+dynamics which describes the necessary properties of change within 
+the environment optimality of dbc plans of action are measured 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+dead−ends 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+arena 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+circle 
+figure observation model i omniposition quarry entropy development with length of tag game for the three experiment 
+scenarios a multiple dead-end b irregular open arena c circular corridor 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+dead−ends 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+arena 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+steps 
+entropy 
+circle 
+figure observation model ii quarry not observed at hunter s position entropy development with length of tag game for the 
+three experiment scenarios a multiple dead-end b irregular open arena c circular corridor 
+with respect to the deviation of actual system dynamics from the 
+target dynamics 
+we show that a recently developed technique of extended markov 
+tracking emt is an instantiation of dbc in fact emt can 
+be seen as a specific case of dbc parameterization which employs 
+a greedy action selection procedure 
+since emt exhibits the key features of the general dbc 
+framework as well as polynomial time complexity we used the 
+multitarget version of emt to demonstrate that the class of area 
+sweeping problems naturally lends itself to dynamics-based 
+descriptions as instantiated by our experiments in the tag game 
+domain 
+as enumerated in section emt has a number of 
+limitations such as difficulty in dealing with negative dynamic 
+preference this prevents direct application of emt to such problems 
+as rendezvous-evasion games e g however dbc in 
+general has no such limitations and readily enables the formulation 
+of evasion games in future work we intend to proceed with the 
+development of dynamics-based controllers for these problems 
+ acknowledgment 
+the work of the first two authors was partially supported by 
+israel science foundation grant and the third author was 
+partially supported by a grant from israel s ministry of science and 
+technology 
+ references 
+ r c arkin behavior-based robotics mit press 
+ j a bilmes a gentle tutorial of the em algorithm and its 
+application to parameter estimation for gaussian mixture and 
+hidden markov models technical report tr- - 
+department of electrical engeineering and computer 
+science university of california at berkeley 
+ t m cover and j a thomas elements of information 
+theory wiley 
+ m e desjardins e h durfee c l ortiz and m j 
+wolverton a survey of research in distributed continual 
+planning ai magazine - 
+ v r konda and j n tsitsiklis actor-critic algorithms 
+siam journal on control and optimization 
+ - 
+ w s lim a rendezvous-evasion game on discrete locations 
+with joint randomization advances in applied probability 
+ - december 
+ m l littman t l dean and l p kaelbling on the 
+complexity of solving markov decision problems in 
+proceedings of the th annual conference on uncertainty 
+in artificial intelligence uai- pages - 
+ o madani s hanks and a condon on the undecidability 
+of probabilistic planning and related stochastic optimization 
+problems artificial intelligence journal - - 
+july 
+ r m neal and g e hinton a view of the em algorithm 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+that justifies incremental sparse and other variants in m i 
+jordan editor learning in graphical models pages 
+ - kluwer academic publishers 
+ p paruchuri m tambe f ordonez and s kraus security 
+in multiagent systems by policy randomization in 
+proceeding of aamas 
+ j pineau g gordon and s thrun point-based value 
+iteration an anytime algorithm for pomdps in international 
+joint conference on artificial intelligence ijcai pages 
+ - august 
+ m l puterman markov decision processes wiley series in 
+probability and mathematical statistics applied probability 
+and statistics section wiley-interscience publication new 
+york 
+ z rabinovich and j s rosenschein extended markov 
+tracking with an application to control in the workshop on 
+agent tracking modeling other agents from observations 
+at the third international joint conference on autonomous 
+agents and multiagent systems pages - new-york 
+july 
+ z rabinovich and j s rosenschein multiagent 
+coordination by extended markov tracking in the fourth 
+international joint conference on autonomous agents and 
+multiagent systems pages - utrecht the 
+netherlands july 
+ z rabinovich and j s rosenschein on the response of 
+emt-based control to interacting targets and models in the 
+fifth international joint conference on autonomous agents 
+and multiagent systems pages - hakodate japan 
+may 
+ r f stengel optimal control and estimation dover 
+publications 
+ m tambe e bowring h jung g kaminka 
+r maheswaran j marecki j modi r nair j pearce 
+p paruchuri d pynadath p scerri n schurr and 
+p varakantham conflicts in teamwork hybrids to the 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

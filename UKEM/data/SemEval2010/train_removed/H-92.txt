@@ -1,0 +1,876 @@
+improving web search ranking by incorporating 
+user behavior information 
+eugene agichtein 
+microsoft research 
+eugeneag microsoft com 
+eric brill 
+microsoft research 
+brill microsoft com 
+susan dumais 
+microsoft research 
+sdumais microsoft com 
+abstract 
+we show that incorporating user behavior data can significantly 
+improve ordering of top results in real web search setting we 
+examine alternatives for incorporating feedback into the ranking 
+process and explore the contributions of user feedback compared 
+to other common web search features we report results of a large 
+scale evaluation over queries and million user 
+interactions with a popular web search engine we show that 
+incorporating implicit feedback can augment other features 
+improving the accuracy of a competitive web search ranking 
+algorithms by as much as relative to the original 
+performance 
+categories and subject descriptors 
+h information search and retrieval - relevance feedback 
+search process h online information services - web-based 
+services 
+general terms 
+algorithms measurement experimentation 
+ introduction 
+millions of users interact with search engines daily they issue 
+queries follow some of the links in the results click on ads spend 
+time on pages reformulate their queries and perform other 
+actions these interactions can serve as a valuable source of 
+information for tuning and improving web search result ranking 
+and can compliment more costly explicit judgments 
+implicit relevance feedback for ranking and personalization has 
+become an active area of research recent work by joachims and 
+others exploring implicit feedback in controlled environments 
+have shown the value of incorporating implicit feedback into the 
+ranking process our motivation for this work is to understand 
+how implicit feedback can be used in a large-scale operational 
+environment to improve retrieval how does it compare to and 
+compliment evidence from page content anchor text or link-based 
+features such as inlinks or pagerank while it is intuitive that 
+user interactions with the web search engine should reveal at least 
+some information that could be used for ranking estimating user 
+preferences in real web search settings is a challenging problem 
+since real user interactions tend to be more noisy than 
+commonly assumed in the controlled settings of previous studies 
+our paper explores whether implicit feedback can be helpful in 
+realistic environments where user feedback can be noisy or 
+adversarial and a web search engine already uses hundreds of 
+features and is heavily tuned to this end we explore different 
+approaches for ranking web search results using real user behavior 
+obtained as part of normal interactions with the web search 
+engine 
+the specific contributions of this paper include 
+ analysis of alternatives for incorporating user behavior 
+into web search ranking section 
+ an application of a robust implicit feedback model 
+derived from mining millions of user interactions with a 
+major web search engine section 
+ a large scale evaluation over real user queries and search 
+results showing significant improvements derived from 
+incorporating user feedback section 
+we summarize our findings and discuss extensions to the current 
+work in section which concludes the paper 
+ background and related work 
+ranking search results is a fundamental problem in information 
+retrieval most common approaches primarily focus on similarity 
+of query and a page as well as the overall page quality 
+however with increasing popularity of search engines implicit 
+feedback i e the actions users take when interacting with the 
+search engine can be used to improve the rankings 
+implicit relevance measures have been studied by several research 
+groups an overview of implicit measures is compiled in kelly and 
+teevan this research while developing valuable insights 
+into implicit relevance measures was not applied to improve the 
+ranking of web search results in realistic settings 
+closely related to our work joachims collected implicit 
+measures in place of explicit measures introducing a technique 
+based entirely on clickthrough data to learn ranking functions fox 
+et al explored the relationship between implicit and explicit 
+measures in web search and developed bayesian models to 
+correlate implicit measures and explicit relevance judgments for 
+both individual queries and search sessions this work considered 
+a wide range of user behaviors e g dwell time scroll time 
+reformulation patterns in addition to the popular clickthrough 
+behavior however the modeling effort was aimed at predicting 
+explicit relevance judgments from implicit user actions and not 
+specifically at learning ranking functions other studies of user 
+behavior in web search include pharo and järvelin but were 
+not directly applied to improve ranking 
+more recently joachims et al presented an empirical 
+evaluation of interpreting clickthrough evidence by performing 
+eye tracking studies and correlating predictions of their strategies 
+with explicit ratings the authors showed that it is possible to 
+accurately interpret clickthroughs in a controlled laboratory 
+setting unfortunately the extent to which previous research 
+applies to real-world web search is unclear at the same time 
+while recent work e g on using clickthrough information 
+for improving web search ranking is promising it captures only 
+one aspect of the user interactions with web search engines 
+we build on existing research to develop robust user behavior 
+interpretation techniques for the real web search setting instead of 
+treating each user as a reliable expert we aggregate information 
+from multiple unreliable user search session traces as we 
+describe in the next two sections 
+ incorporating implicit 
+feedback 
+we consider two complementary approaches to ranking with 
+implicit feedback treating implicit feedback as independent 
+evidence for ranking results and integrating implicit feedback 
+features directly into the ranking algorithm we describe the two 
+general ranking approaches next the specific implicit feedback 
+features are described in section and the algorithms for 
+interpreting and incorporating implicit feedback are described in 
+section 
+ implicit feedback as independent 
+evidence 
+the general approach is to re-rank the results obtained by a web 
+search engine according to observed clickthrough and other user 
+interactions for the query in previous search sessions each result 
+is assigned a score according to expected relevance user 
+satisfaction based on previous interactions resulting in some 
+preference ordering based on user interactions alone 
+while there has been significant work on merging multiple 
+rankings we adapt a simple and robust approach of ignoring the 
+original rankers scores and instead simply merge the rank orders 
+the main reason for ignoring the original scores is that since the 
+feature spaces and learning algorithms are different the scores are 
+not directly comparable and re-normalization tends to remove the 
+benefit of incorporating classifier scores 
+we experimented with a variety of merging functions on the 
+development set of queries and using a set of interactions from a 
+different time period from final evaluation sets we found that a 
+simple rank merging heuristic combination works well and is 
+robust to variations in score values from original rankers for a 
+given query q the implicit score isd is computed for each result d 
+from available user interaction features resulting in the implicit 
+rank id for each result we compute a merged score sm d for d by 
+combining the ranks obtained from implicit feedback id with the 
+original rank of d od 
+ 
+ 
+ 
+ 
+ 
+¢ 
+£ 
+ 
+ 
+ 
+ 
+ 
+otherwise 
+o 
+dforexistsfeedbackimplicitif 
+oi 
+w 
+woids 
+d 
+dd 
+i 
+iddm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+where the weight wi is a heuristically tuned scaling factor 
+representing the relative importance of the implicit feedback 
+the query results are ordered in by decreasing values of sm to 
+produce the final ranking one special case of this model arises 
+when setting wi to a very large value effectively forcing clicked 
+results to be ranked higher than un-clicked results - an intuitive 
+and effective heuristic that we will use as a baseline applying 
+more sophisticated classifier and ranker combination algorithms 
+may result in additional improvements and is a promising 
+direction for future work 
+the approach above assumes that there are no interactions 
+between the underlying features producing the original web search 
+ranking and the implicit feedback features we now relax this 
+assumption by integrating implicit feedback features directly into 
+the ranking process 
+ ranking with implicit feedback features 
+modern web search engines rank results based on a large number 
+of features including content-based features i e how closely a 
+query matches the text or title or anchor text of the document and 
+query-independent page quality features e g pagerank of the 
+document or the domain in most cases automatic or 
+semiautomatic methods are developed for tuning the specific ranking 
+function that combines these feature values 
+hence a natural approach is to incorporate implicit feedback 
+features directly as features for the ranking algorithm during 
+training or tuning the ranker can be tuned as before but with 
+additional features at runtime the search engine would fetch the 
+implicit feedback features associated with each query-result url 
+pair this model requires a ranking algorithm to be robust to 
+missing values more than of queries to web search engines 
+are unique with no previous implicit feedback available we now 
+describe such a ranker that we used to learn over the combined 
+feature sets including implicit feedback 
+ learning to rank web search results 
+a key aspect of our approach is exploiting recent advances in 
+machine learning namely trainable ranking algorithms for web 
+search and information retrieval e g and classical results 
+reviewed in in our setting explicit human relevance 
+judgments labels are available for a set of web search queries 
+and results hence an attractive choice to use is a supervised 
+machine learning technique to learn a ranking function that best 
+predicts relevance judgments 
+ranknet is one such algorithm it is a neural net tuning algorithm 
+that optimizes feature weights to best match explicitly provided 
+pairwise user preferences while the specific training algorithms 
+used by ranknet are beyond the scope of this paper it is 
+described in detail in and includes extensive evaluation and 
+comparison with other ranking methods an attractive feature of 
+ranknet is both train- and run-time efficiency - runtime ranking 
+can be quickly computed and can scale to the web and training 
+can be done over thousands of queries and associated judged 
+results 
+we use a -layer implementation of ranknet in order to model 
+non-linear relationships between features furthermore ranknet 
+can learn with many differentiable cost functions and hence can 
+automatically learn a ranking function from human-provided 
+labels an attractive alternative to heuristic feature combination 
+techniques hence we will also use ranknet as a generic ranker 
+to explore the contribution of implicit feedback for different 
+ranking alternatives 
+ implicit user feedback model 
+our goal is to accurately interpret noisy user feedback obtained as 
+by tracing user interactions with the search engine interpreting 
+implicit feedback in real web search setting is not an easy task 
+we characterize this problem in detail in where we motivate 
+and evaluate a wide variety of models of implicit user activities 
+the general approach is to represent user actions for each search 
+result as a vector of features and then train a ranker on these 
+features to discover feature values indicative of relevant and 
+nonrelevant search results we first briefly summarize our features 
+and model and the learning approach section in order to 
+provide sufficient information to replicate our ranking methods 
+and the subsequent experiments 
+ representing user actions as features 
+we model observed web search behaviors as a combination of a 
+ background component i e query- and relevance-independent 
+noise in user behavior including positional biases with result 
+interactions and a relevance component i e query-specific 
+behavior indicative of relevance of a result to a query we design 
+our features to take advantage of aggregated user behavior the 
+feature set is comprised of directly observed features computed 
+directly from observations for each query as well as 
+queryspecific derived features computed as the deviation from the 
+overall query-independent distribution of values for the 
+corresponding directly observed feature values 
+the features used to represent user interactions with web search 
+results are summarized in table this information was 
+obtained via opt-in client-side instrumentation from users of a 
+major web search engine 
+we include the traditional implicit feedback features such as 
+clickthrough counts for the results as well as our novel derived 
+features such as the deviation of the observed clickthrough number 
+for a given query-url pair from the expected number of clicks on 
+a result in the given position we also model the browsing 
+behavior after a result was clicked - e g the average page dwell 
+time for a given query-url pair as well as its deviation from the 
+expected average dwell time furthermore the feature set was 
+designed to provide essential information about the user 
+experience to make feedback interpretation robust for example 
+web search users can often determine whether a result is relevant 
+by looking at the result title url and summary - in many cases 
+looking at the original document is not necessary to model this 
+aspect of user experience we include features such as overlap in 
+words in title and words in query titleoverlap and the fraction 
+of words shared by the query and the result summary 
+clickthrough features 
+position position of the url in current ranking 
+clickfrequency number of clicks for this query url pair 
+clickprobability probability of a click for this query and url 
+clickdeviation deviation from expected click probability 
+isnextclicked if clicked on next position otherwise 
+ispreviousclicked if clicked on previous position otherwise 
+isclickabove if there is a click above otherwise 
+isclickbelow if there is click below otherwise 
+browsing features 
+timeonpage page dwell time 
+cumulativetimeonpage 
+cumulative time for all subsequent pages after 
+search 
+timeondomain cumulative dwell time for this domain 
+timeonshorturl cumulative time on url prefix no parameters 
+isfollowedlink if followed link to result otherwise 
+isexacturlmatch if aggressive normalization used otherwise 
+isredirected if initial url same as final url otherwise 
+ispathfromsearch if only followed links after query otherwise 
+clicksfromsearch number of hops to reach page from query 
+averagedwelltime average time on page for this query 
+dwelltimedeviation deviation from average dwell time on page 
+cumulativedeviation deviation from average cumulative dwell time 
+domaindeviation deviation from average dwell time on domain 
+query-text features 
+titleoverlap words shared between query and title 
+summaryoverlap words shared between query and snippet 
+queryurloverlap words shared between query and url 
+querydomainoverlap words shared between query and url domain 
+querylength number of tokens in query 
+querynextoverlap fraction of words shared with next query 
+table some features used to represent post-search 
+navigation history for a given query and search result url 
+having described our feature set we briefly review our general 
+method for deriving a user behavior model 
+ deriving a user feedback model 
+to learn to interpret the observed user behavior we correlate user 
+actions i e the features in table representing the actions 
+with the explicit user judgments for a set of training queries we 
+find all the instances in our session logs where these queries were 
+submitted to the search engine and aggregate the user behavior 
+features for all search sessions involving these queries 
+each observed query-url pair is represented by the features in 
+table with values averaged over all search sessions and 
+assigned one of six possible relevance labels ranging from 
+perfect to bad as assigned by explicit relevance judgments 
+these labeled feature vectors are used as input to the ranknet 
+training algorithm section which produces a trained user 
+behavior model this approach is particularly attractive as it does 
+not require heuristics beyond feature engineering the resulting 
+user behavior model is used to help rank web search 
+resultseither directly or in combination with other features as described 
+below 
+ experimental setup 
+the ultimate goal of incorporating implicit feedback into ranking 
+is to improve the relevance of the returned web search results 
+hence we compare the ranking methods over a large set of judged 
+queries with explicit relevance labels provided by human judges 
+in order for the evaluation to be realistic we obtained a random 
+sample of queries from web search logs of a major search engine 
+with associated results and traces for user actions we describe 
+this dataset in detail next our metrics are described in section 
+that we use to evaluate the ranking alternatives listed in section 
+ in the experiments of section 
+ datasets 
+we compared our ranking methods over a random sample of 
+queries from the search engine query logs the queries were 
+drawn from the logs uniformly at random by token without 
+replacement resulting in a query sample representative of the 
+overall query distribution on average results were explicitly 
+labeled by human judges using a six point scale ranging from 
+perfect down to bad overall there were over results 
+with explicit relevance judgments in order to compute various 
+statistics documents with label good or better will be 
+considered relevant and with lower labels to be non-relevant 
+note that the experiments were performed over the results already 
+highly ranked by a web search engine which corresponds to a 
+typical user experience which is limited to the small number of the 
+highly ranked results for a typical web search query 
+the user interactions were collected over a period of weeks 
+using voluntary opt-in information in total over million 
+unique queries were instrumented resulting in over million 
+individual interactions with the search engine the data consisted 
+of user interactions with the web search engine e g clicking on a 
+result link going back to search results etc performed after a 
+query was submitted these actions were aggregated across users 
+and search sessions and converted to features in table 
+to create the training validation and test query sets we created 
+three different random splits of training validation and 
+ test queries the splits were done randomly by query so that 
+there was no overlap in training validation and test queries 
+ evaluation metrics 
+we evaluate the ranking algorithms over a range of accepted 
+information retrieval metrics namely precision at k p k 
+normalized discounted cumulative gain ndcg and mean 
+average precision map each metric focuses on a deferent 
+aspect of system performance as we describe below 
+ precision at k as the most intuitive metric p k reports the 
+fraction of documents ranked in the top k results that are 
+labeled as relevant in our setting we require a relevant 
+document to be labeled good or higher the position of 
+relevant documents within the top k is irrelevant and hence 
+this metric measure overall user satisfaction with the top k 
+results 
+ ndcg at k ndcg is a retrieval measure devised specifically 
+for web search evaluation for a given query q the ranked 
+results are examined from the top ranked down and the ndcg 
+computed as 
+ 
+ 
+ − 
+k 
+j 
+jr 
+qq jmn 
+ 
+ 
+ log 
+where mq is a normalization constant calculated so that a 
+perfect ordering would obtain ndcg of and each r j is an 
+integer relevance label bad and perfect of result 
+returned at position j note that unlabeled and bad documents 
+do not contribute to the sum but will reduce ndcg for the 
+query pushing down the relevant labeled documents reducing 
+their contributions ndcg is well suited to web search 
+evaluation as it rewards relevant documents in the top ranked 
+results more heavily than those ranked lower 
+ map average precision for each query is defined as the mean 
+of the precision at k values computed after each relevant 
+document was retrieved the final map value is defined as the 
+mean of average precisions of all queries in the test set this 
+metric is the most commonly used single-value summary of a 
+run over a set of queries 
+ ranking methods compared 
+recall that our goal is to quantify the effectiveness of implicit 
+behavior for real web search one dimension is to compare the 
+utility of implicit feedback with other information available to a 
+web search engine specifically we compare effectiveness of 
+implicit user behaviors with content-based matching static page 
+quality features and combinations of all features 
+ bm f as a strong web search baseline we used the bm f 
+scoring which was used in one of the best performing systems 
+in the trec web track bm f and its variants 
+have been extensively described and evaluated in ir literature 
+and hence serve as a strong reproducible baseline the bm f 
+variant we used for our experiments computes separate match 
+scores for each field for a result document e g body text 
+title and anchor text and incorporates query-independent 
+linkbased information e g pagerank clickdistance and url 
+depth the scoring function and field-specific tuning is 
+described in detail in note that bm f does not directly 
+consider explicit or implicit feedback for tuning 
+ rn the ranking produced by a neural net ranker ranknet 
+described in section that learns to rank web search results 
+by incorporating bm f and a large number of additional static 
+and dynamic features describing each search result this system 
+automatically learns weights for all features including the 
+bm f score for a document based on explicit human labels 
+for a large set of queries a system incorporating an 
+implementation of ranknet is currently in use by a major 
+search engine and can be considered representative of the state 
+of the art in web search 
+ bm f-rerankct the ranking produced by incorporating 
+clickthrough statistics to reorder web search results ranked by 
+bm f above clickthrough is a particularly important special 
+case of implicit feedback and has been shown to correlate with 
+result relevance this is a special case of the ranking method in 
+section with the weight wi set to and the ranking id 
+is simply the number of clicks on the result corresponding to d 
+in effect this ranking brings to the top all returned web search 
+results with at least one click and orders them in decreasing 
+order by number of clicks the relative ranking of the 
+remainder of results is unchanged and they are inserted below 
+all clicked results this method serves as our baseline implicit 
+feedback reranking method 
+bm f-rerankall the ranking produced by reordering the 
+bm f results using all user behavior features section 
+this method learns a model of user preferences by correlating 
+feature values with explicit relevance labels using the ranknet 
+neural net algorithm section at runtime for a given 
+query the implicit score ir is computed for each result r with 
+available user interaction features and the implicit ranking is 
+produced the merged ranking is computed as described in 
+section based on the experiments over the development set 
+we fix the value of wi to the effect of the wi parameter for 
+this ranker turned out to be negligible 
+ bm f all ranking derived by training the ranknet 
+ section learner over the features set of the bm f score 
+as well as all implicit feedback features section we used 
+the -layer implementation of ranknet trained on the 
+queries and labels in the training and validation sets 
+ rn all ranking derived by training the -layer ranknet 
+ranking algorithm section over the union of all content 
+dynamic and implicit feedback features i e all of the features 
+described above as well as all of the new implicit feedback 
+features we introduced 
+the ranking methods above span the range of the information used 
+for ranking from not using the implicit or explicit feedback at all 
+ i e bm f to a modern web search engine using hundreds of 
+features and tuned on explicit judgments rn as we will show 
+next incorporating user behavior into these ranking systems 
+dramatically improves the relevance of the returned documents 
+ experimental results 
+implicit feedback for web search ranking can be exploited in a 
+number of ways we compare alternative methods of exploiting 
+implicit feedback both by re-ranking the top results i e the 
+bm f-rerankct and bm f-rerankall methods that reorder 
+bm f results as well as by integrating the implicit features 
+directly into the ranking process i e the rn all and 
+bm f all methods which learn to rank results over the implicit 
+feedback and other features we compare our methods over strong 
+baselines bm f and rn over the ndcg precision at k and 
+map measures defined in section the results were averaged 
+over three random splits of the overall dataset each split 
+contained training validation and test queries all 
+query sets disjoint we first present the results over all test 
+queries i e including queries for which there are no implicit 
+measures so we use the original web rankings we then drill 
+down to examine the effects on reranking for the attempted 
+queries in more detail analyzing where implicit feedback proved 
+most beneficial 
+we first experimented with different methods of re-ranking the 
+output of the bm f search results figures and report 
+ndcg and precision for bm f as well as for the strategies 
+reranking results with user feedback section incorporating 
+all user feedback either in reranking framework or as features to 
+the learner directly results in significant improvements using 
+two-tailed t-test with p over both the original bm f 
+ranking as well as over reranking with clickthrough alone the 
+improvement is consistent across the top results and largest for 
+the top result ndcg at for bm f all is compared to 
+ of the original results and precision at similarly increases 
+from to based on these results we will use the direct 
+feature combination i e bm f all ranker for subsequent 
+comparisons involving implicit feedback 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ k 
+ndcg 
+bm 
+bm -rerank-ct 
+bm -rerank-all 
+bm all 
+figure ndcg at k for bm f bm f-rerankct 
+bm f-rerank-all and bm f all for varying k 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+k 
+precision 
+bm 
+bm -rerank-ct 
+bm -rerank-all 
+bm all 
+figure precision at k for bm f bm f-rerankct 
+bm f-rerank-all and bm f all for varying k 
+interestingly using clickthrough alone while giving significant 
+benefit over the original bm f ranking is not as effective as 
+considering the full set of features in table while we analyze 
+user behavior and most effective component features in a 
+separate paper it is worthwhile to give a concrete example of 
+the kind of noise inherent in real user feedback in web search 
+setting 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+result position 
+relativeclickfrequency 
+ptr 
+ptr 
+ptr 
+figure relative clickthrough frequency for queries with 
+varying position of top relevant result ptr 
+if users considered only the relevance of a result to their query 
+they would click on the topmost relevant results unfortunately as 
+joachims and others have shown presentation also influences 
+which results users click on quite dramatically users often click 
+on results above the relevant one presumably because the short 
+summaries do not provide enough information to make accurate 
+relevance assessments and they have learned that on average 
+topranked items are relevant figure shows relative clickthrough 
+frequencies for queries with known relevant items at positions 
+other than the first position the position of the top relevant result 
+ ptr ranges from - in the figure for example for queries 
+with first relevant result at position ptr there are more 
+clicks on the non-relevant results in higher ranked positions than 
+on the first relevant result at position as we will see learning 
+over a richer behavior feature set results in substantial accuracy 
+improvement over clickthrough alone 
+we now consider incorporating user behavior into a much richer 
+feature set rn section used by a major web search engine 
+rn incorporates bm f link-based features and hundreds of 
+other features figure reports ndcg at k and figure 
+reports precision at k interestingly while the original rn 
+rankings are significantly more accurate than bm f alone 
+incorporating implicit feedback features bm f all results in 
+ranking that significantly outperforms the original rn rankings in 
+other words implicit feedback incorporates sufficient information 
+to replace the hundreds of other features available to the ranknet 
+learner trained on the rn feature set 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ k 
+ndcg 
+rn 
+rn all 
+bm 
+bm all 
+figure ndcg at k for bm f bm f all rn and 
+rn all for varying k 
+furthermore enriching the rn features with implicit feedback set 
+exhibits significant gain on all measures allowing rn all to 
+outperform all other methods this demonstrates the 
+complementary nature of implicit feedback with other features 
+available to a state of the art web search engine 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+k 
+precision 
+rn 
+rn all 
+bm 
+bm all 
+figure precision at k for bm f bm f all rn and 
+rn all for varying k 
+we summarize the performance of the different ranking methods 
+in table we report the mean average precision map score 
+for each system while not intuitive to interpret map allows 
+quantitative comparison on a single metric the gains marked with 
+ are significant at p level using two tailed t-test 
+map gain p gain 
+bm f - 
+ bm f-rerank-ct 
+bm f-rerankimplicit 
+bm f implicit 
+rn - 
+ rn all 
+table mean average precision map for all strategies 
+so far we reported results averaged across all queries in the test 
+set unfortunately less than half had sufficient interactions to 
+attempt reranking out of the queries in test between 
+and depending on the train-test split had sufficient 
+interaction information to make predictions i e there was at least 
+ search session in which at least result url was clicked on by 
+the user this is not surprising web search is heavy-tailed and 
+there are many unique queries we now consider the performance 
+on the queries for which user interactions were available figure 
+ reports ndcg for the subset of the test queries with the 
+implicit feedback features the gains at top are dramatic the 
+ndcg at of bm f all increases from to a 
+relative gain achieving performance comparable to rn all 
+operating over a much richer feature set 
+ 
+ 
+ 
+ 
+ 
+ k 
+ndcg 
+rn rn all 
+bm bm all 
+figure ndcg at k for bm f bm f all rn and 
+rn all on test queries with user interactions 
+similarly gains on precision at top are substantial figure 
+and are likely to be apparent to web search users when implicit 
+feedback is available the bm f all system returns relevant 
+document at top almost of the time compared of the 
+time when implicit feedback is not considered by the original 
+bm f system 
+ 
+ 
+ 
+ 
+ 
+ 
+ k 
+precision 
+rn 
+rn all 
+bm 
+bm all 
+figure precision at k ndcg at k for bm f 
+bm f all rn and rn all on test queries with user 
+interactions 
+we summarize the results on the map measure for attempted 
+queries in table map improvements are both substantial and 
+significant with improvements over the bm f ranker most 
+pronounced 
+method map gain p gain 
+rn 
+rn all 
+bm f 
+bm f all 
+table mean average precision map on attempted 
+queries for best performing methods 
+we now analyze the cases where implicit feedback was shown 
+most helpful figure reports the map improvements over the 
+baseline bm f run for each query with map under note 
+that most of the improvement is for poorly performing queries 
+ i e map interestingly incorporating user behavior 
+information degrades accuracy for queries with high original map 
+score one possible explanation is that these easy queries tend 
+to be navigational i e having a single highly-ranked most 
+appropriate answer and user interactions with lower-ranked 
+results may indicate divergent information needs that are better 
+served by the less popular results with correspondingly poor 
+overall relevance ratings 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+frequency average gain 
+figure gain of bm f all over original bm f ranking 
+to summarize our experimental results incorporating implicit 
+feedback in real web search setting resulted in significant 
+improvements over the original rankings using both bm f and 
+rn baselines our rich set of implicit features such as time on 
+page and deviations from the average behavior provides 
+advantages over using clickthrough alone as an indicator of 
+interest furthermore incorporating implicit feedback features 
+directly into the learned ranking function is more effective than 
+using implicit feedback for reranking the improvements observed 
+over large test sets of queries total between and 
+with implicit feedback available are both substantial and 
+statistically significant 
+ conclusions and future work 
+in this paper we explored the utility of incorporating noisy implicit 
+feedback obtained in a real web search setting to improve web 
+search ranking we performed a large-scale evaluation over 
+queries and more than million user interactions with a major 
+search engine establishing the utility of incorporating noisy 
+implicit feedback to improve web search relevance 
+we compared two alternatives of incorporating implicit feedback 
+into the search process namely reranking with implicit feedback 
+and incorporating implicit feedback features directly into the 
+trained ranking function our experiments showed significant 
+improvement over methods that do not consider implicit feedback 
+the gains are particularly dramatic for the top k result in the 
+final ranking with precision improvements as high as and 
+the gains are substantial for all values of k our experiments 
+showed that implicit user feedback can further improve web 
+search performance when incorporated directly with popular 
+content- and link-based features 
+interestingly implicit feedback is particularly valuable for queries 
+with poor original ranking of results e g map lower than 
+one promising direction for future work is to apply recent research 
+on automatically predicting query difficulty and only attempt to 
+incorporate implicit feedback for the difficult queries as 
+another research direction we are exploring methods for extending 
+our predictions to the previously unseen queries e g query 
+clustering which should further improve the web search 
+experience of users 
+acknowledgments 
+we thank chris burges and matt richardson for an 
+implementation of ranknet for our experiments we also thank 
+robert ragno for his valuable suggestions and many discussions 
+ references 
+ e agichtein e brill s dumais and r ragno learning 
+user interaction models for predicting web search result 
+preferences in proceedings of the acm conference on 
+research and development on information retrieval sigir 
+ 
+ j allan hard track overview in trec high 
+accuracy retrieval from documents 
+ r baeza-yates and b ribeiro-neto modern information 
+retrieval addison-wesley 
+ s brin and l page the anatomy of a large-scale 
+hypertextual web search engine in proceedings of www 
+ 
+ c j c burges t shaked e renshaw a lazier m deeds 
+n hamilton g hullender learning to rank using gradient 
+descent in proceedings of the international conference on 
+machine learning 
+ d m chickering the winmine toolkit microsoft technical 
+report msr-tr- - 
+ m claypool d brown p lee and m waseda inferring 
+user interest ieee internet computing 
+ s fox k karnawat m mydland s t dumais and t 
+white evaluating implicit measures to improve the search 
+experience in acm transactions on information systems 
+ 
+ j goecks and j shavlick learning users interests by 
+unobtrusively observing their normal behavior in 
+proceedings of the ijcai workshop on machine learning for 
+information filtering 
+ k jarvelin and j kekalainen ir evaluation methods for 
+retrieving highly relevant documents in proceedings of the 
+acm conference on research and development on 
+information retrieval sigir 
+ t joachims optimizing search engines using clickthrough 
+data in proceedings of the acm conference on knowledge 
+discovery and datamining sigkdd 
+ t joachims l granka b pang h hembrooke and g gay 
+accurately interpreting clickthrough data as implicit 
+feedback proceedings of the acm conference on research 
+and development on information retrieval sigir 
+ t joachims making large-scale svm learning practical 
+advances in kernel methods in support vector learning 
+mit press 
+ d kelly and j teevan implicit feedback for inferring user 
+preference a bibliography in sigir forum 
+ j konstan b miller d maltz j herlocker l gordon and 
+j riedl grouplens applying collaborative filtering to 
+usenet news in communications of acm 
+ m morita and y shinoda information filtering based on 
+user behavior analysis and best match text retrieval 
+proceedings of the acm conference on research and 
+development on information retrieval sigir 
+ d oard and j kim implicit feedback for recommender 
+systems in proceedings of the aaai workshop on 
+recommender systems 
+ d oard and j kim modeling information content using 
+observable behavior in proceedings of the th annual 
+meeting of the american society for information science and 
+technology 
+ n pharo n and k järvelin the sst method a tool for 
+analyzing web information search processes in information 
+processing management 
+ p pirolli the use of proximal information scent to forage 
+for distal content on the world wide web in working with 
+technology in mind brunswikian resources for cognitive 
+science and engineering oxford university press 
+ f radlinski and t joachims query chains learning to 
+rank from implicit feedback in proceedings of the acm 
+conference on knowledge discovery and data mining 
+ sigkdd 
+ f radlinski and t joachims evaluating the robustness of 
+learning from implicit feedback in proceedings of the icml 
+workshop on learning in web search 
+ s e robertson h zaragoza and m taylor simple bm 
+extension to multiple weighted fields in proceedings of the 
+conference on information and knowledge management 
+ cikm 
+ g salton m mcgill introduction to modern information 
+retrieval mcgraw-hill 
+ e m voorhees d harman overview of trec 
+ g r xue h j zeng z chen y yu w y ma w s xi 
+and w g fan optimizing web search using web 
+clickthrough data in proceedings of the conference on 
+information and knowledge management cikm 
+ h zaragoza n craswell m taylor s saria and s 
+robertson microsoft cambridge at trec web and hard 
+tracks in proceedings of trec 

@@ -1,0 +1,981 @@
+aborting tasks in bdi agents 
+john thangarajah james harland 
+rmit university 
+melbourne australia 
+ johthan jah  cs rmit edu au 
+david morley neil yorke-smith 
+artificial intelligence center sri international 
+menlo park ca u s a 
+ morley nysmith  ai sri com 
+abstract 
+intelligent agents that are intended to work in dynamic 
+environments must be able to gracefully handle unsuccessful tasks and 
+plans in addition such agents should be able to make rational 
+decisions about an appropriate course of action which may include 
+aborting a task or plan either as a result of the agent s own 
+deliberations or potentially at the request of another agent in this paper 
+we investigate the incorporation of aborts into a bdi-style 
+architecture we discuss some conditions under which aborting a task or 
+plan is appropriate and how to determine the consequences of such 
+a decision we augment each plan with an optional abort-method 
+analogous to the failure method found in some agent programming 
+languages we provide an operational semantics for the execution 
+cycle in the presence of aborts in the abstract agent language can 
+which enables us to specify a bdi-based execution model without 
+limiting our attention to a particular agent system such as jack 
+jadex jason or spark a key technical challenge we address is 
+the presence of parallel execution threads and of sub-tasks which 
+require the agent to ensure that the abort methods for each plan are 
+carried out in an appropriate sequence 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-intelligent agents 
+general terms 
+design reliability theory 
+ introduction 
+intelligent agents generally work in complex dynamic 
+environments such as air traffic control or robot navigation in which the 
+success of any particular action or plan cannot be guaranteed 
+accordingly dealing with failure is fundamental to agent 
+programming and is an important element of agent characteristics such as 
+robustness flexibility and persistence 
+in agent architectures inspired by the belief-desire-intention bdi 
+model these properties are often characterized by the 
+interactions between beliefs goals and plans 
+in general an agent 
+that wishes to achieve a particular set of tasks will pursue a 
+number of plans concurrently when failures occur the choice of plans 
+will be reviewed this may involve seeking alternative plans for a 
+particular task re-scheduling tasks to better comply with resource 
+constraints dropping some tasks or some other decision that will 
+increase the likelihood of success failures can occur for 
+a number of reasons and it is often not possible to predict these 
+in advance either because of the complexity of the system or 
+because changes in the environment invalidate some earlier decisions 
+given this need for deliberation about failed tasks or plans failure 
+deliberation is commonly built into the agent s execution cycle 
+besides dealing with failure an important capability of an 
+intelligent agent is to be able to abort a particular task or plan this 
+decision may be due to an internal deliberation such as the agent 
+believing the task can no longer be achieved or that some 
+conflicting task now has a higher priority or due to an external factor 
+ such as another agent altering a commitment or a change in the 
+environment 
+aborting a task or plan is distinct from its failure failure 
+reflects an inability to perform and does not negate the need to 
+perform - for example a reasonable response to failure may be to try 
+again in contrast aborting says nothing about the ability to 
+perform it merely eliminates the need failure propagates from the 
+bottom up whereas aborting propagates from the top down the 
+potential for concurrently executing sub-plans introduces different 
+complexities for aborting and failure for aborting it means that 
+multiple concurrent sub-plans may need to be aborted as the abort 
+is propagated down for failure it means that parallel-sibling plans 
+may need to be aborted as the failure is propagated up 
+there has been a considerable amount of work on plan failures 
+ such as detecting and resolving resource conflicts and 
+most agent systems incorporate some notion of failure handling 
+however there has been relatively little work on the development 
+of abort techniques beyond simple dropping of currently intended 
+plans and tasks which does not deal with the clean-up required 
+as one consequence most agent systems are quite limited in their 
+treatment of the situation where one branch of a parallel construct 
+ 
+one can consider both tasks to be performed and goals to achieve 
+a certain state of the world a task can be considered a goal of 
+achieving the state of the task having been performed and a goal 
+can be considered a task of bringing about that state of the world 
+we adopt the latter view and use task to also refer to goals 
+ 
+ - - - - rps c ifaamas 
+fails common approaches include either letting the other branch 
+run to completion unhindered or dropping it completely 
+in this paper we discuss in detail the incorporation of abort 
+cleanup methods into the agent execution cycle providing a unified 
+approach to failure and abort a key feature of our procedure-based 
+approach is that we allow each plan to execute some particular code 
+on a failure and on an abort this allows a plan to attempt to ensure 
+a stable known state and possibly to recover some resources and 
+otherwise clean up before exiting accordingly a central 
+technical challenge is to manage the orderly execution of the appropriate 
+clean-up code we show how aborts can be smoothly introduced 
+into a bdi-style architecture and for the first time we give an 
+operational semantics for aborting in the abstract agent language can 
+ this allows us to specify an appropriate level of detail for 
+the execution model without focusing on the specific constructs of 
+any one agent system such as jack jadex jason or 
+spark our focus is on a single agent complementary to 
+related work that considers exception handling for single- and 
+multiagent systems e g 
+this paper is organized as follows in section we give an 
+example of the consequences of aborting a task and in section we 
+discuss some circumstances under which aborts should occur and 
+the appropriate representation and invocation procedures in 
+section we show how we can use can to formally specify the 
+behaviour of an aborted plan section discusses related work and 
+in section we present our conclusions and future work 
+ motivating example 
+alice is a knowledge worker assisted by a learning personal 
+assistive agent such as calo alice plans to attend the ijcai 
+conference later in the year and her calo agent adopts the task of 
+support meeting submission sms to assist her calo s plan for 
+an sms task in the case of a conference submission consists of the 
+following sub-tasks 
+ allocate a paper number apn to be used for administrative 
+purposes in the company 
+ track writing abstract twa keep track of alice s progress 
+in preparing an abstract 
+ apply for clearance afc for publication from alice s 
+manager based on the abstract and conference details 
+ track writing paper twp keep track of alice s progress in 
+writing the paper 
+ handle paper submission hps follow company internal 
+procedures for submitting a paper to a conference 
+these steps must be performed in order with the exception of steps 
+ afc and twp which may be performed in parallel 
+similarly calo can perform the task apply for clearance afc 
+by a plan consisting of 
+ send clearance request scr to alice s manager 
+ wait for response wfr from the manager 
+ confirm that the response was positive and fail otherwise 
+now suppose that a change in circumstances causes alice to 
+reconsider her travel plans while she is writing the paper alice 
+will no longer be able to attend ijcai she therefore instructs her 
+calo agent to abort the sms task aborting the task implies 
+aborting both the sms plan and the afc subplan aborting the 
+first plan requires calo to notify the paper number registry that 
+the allocated paper number is obsolete which it can achieve by 
+the cancel paper number cpn task 
+aborting the second plan 
+requires calo to notify alice s manager that alice no longer 
+requires clearance for publication which calo can achieve by 
+invoking the cancel clearance request ccr task 
+we note a number of important observations from the 
+example first the decision to abort a particular course of action can 
+come from the internal deliberations of the agent such as 
+reasoning about priorities in a conflict over resources or from external 
+sources such as another agent cancelling a commitment as in this 
+example in this paper we only touch on the problem of 
+determining whether a task or plan should be aborted instead concentrating 
+on determining the appropriate actions once this decision is made 
+hence our objective is to determine how to incorporate aborting 
+mechanisms into the standard execution cycle rather than determine 
+what should be aborted and when 
+second once the decision is made to abort the attempt to submit 
+a paper there are some actions the agent should take such as 
+cancelling the clearance request in other words aborting a task is not 
+simply a matter of dropping the task and associated active plans 
+there are some clean up actions that may need to be done this 
+is similar to the case for failure in that there may also be actions 
+to take when a task or plan fails in both cases note that it is not 
+simply a matter of the agent undo-ing its actions to date indeed 
+this may be neither possible since the agent acts in a situated world 
+and its actions change world state nor desirable depending on the 
+semantics of the task rather cleaning up involves compensation 
+via forward recovery actions 
+third there is a distinction between aborting a task and aborting 
+a plan in the former case it is clear that all plans being executed 
+to perform the task should be aborted in the latter case it may 
+be that there are better alternatives to the current plan and one of 
+these should be attempted hence plan aborting or failure does not 
+necessarily lead to task aborting or failure 
+fourth given that tasks may contain sub-tasks which may 
+contain further sub-tasks it is necessary for a parent task to wait until 
+its children have finished their abort methods this is the source 
+of one of the technical challenges that we address determining the 
+precise sequence of actions once a parent task or plan is aborted 
+ aborting tasks and plans 
+as we have alluded to failure and aborting are related concepts 
+they both cause the execution of existing plans to cease and 
+consequentially the agent to reflect over its current tasks and intentions 
+failure and aborting however differ in the way they arise in the 
+case of failure the trigger to cease execution of a task or plan comes 
+from below that is the failure of sub-tasks or lower-level plans in 
+the case of aborting the trigger comes from above that is the tasks 
+and the parent plans that initiated a plan 
+in bdi-style systems such as jack and spark an agent s 
+domain knowledge includes a pre-defined plan library of plan clauses 
+each plan clause has a plan body which is a program i e 
+combination of primitive actions sub-tasks etc that can be executed 
+in response to a task or other event should the plan clause s context 
+condition be satisfied the agent selects and executes instances of 
+plan clauses to perform its tasks there can be more than one 
+applicable plan clause and in the event that one fails another applicable 
+one may be attempted plans may have sub-tasks that must succeed 
+ 
+calo needs only drop the twa and twp tasks to abort them 
+for the sake of simplicity we suppose no explicit clean up of its 
+internal state is necessary 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+for the plan to succeed in such systems a plan failure occurs if 
+one of the actions or sub-tasks within the plan fails 
+the agent s action upon plan failure depends on its nature for 
+example the agent may declare the task to have failed if one plan 
+has been tried and resulted in failure or it may retry alternate plans 
+and declare indeed must declare task failure only if all possible 
+alternate plans to perform the task have been tried and resulted in 
+failure observe that while task failure can follow from plan failure 
+or a sequence of plan failures plan failure need not lead to task 
+failure provided the agent can successfully complete an alternate 
+plan moreover task failure can also arise separately from plan 
+failure if the agent decides to abort the task 
+our approach associates an abort-method with each plan this 
+enables the programmer to specify dedicated compensation actions 
+according to how the agent is attempting to perform the task note 
+that our abort-methods can be arbitrary programs and so can invoke 
+tasks that may be performed dynamically in the usual bdi fashion 
+i e the clean-up is not limited to executing a predetermined set 
+of actions the question remains which abort-method should be 
+invoked and in what manner given the complexity of agent action 
+spaces it is not possible nor desirable to enumerate a static set of 
+rules rather the agent will invoke its abort-methods dynamically 
+according to the state of execution and its own internal events 
+an alternative to attaching an abort-method to each plan is to 
+attach such methods to each atomic action we choose the former 
+because action-level abort-methods would incur a greater 
+overhead plans are meant to be designed as single cohesive units 
+and are the unit of deliberation in bdi systems and the 
+cleanup methods for failure in current systems are attached to plans 
+in order to understand how the agent s abort processing should 
+function we consider three situations where it is sensible for an 
+agent to consider aborting some of its tasks and plans 
+ when a task succeeds or fails because of an external factor 
+other than the agent itself the plan currently executed to 
+perform the task should be aborted for example suppose 
+company policy changes so that employees of alice s seniority 
+automatically have clearance for publishing papers since 
+alice now has clearance for publishing her paper calo can 
+abort the plan for apply for clearance in doing so it must 
+invoke the abort-method in this case thus performing cancel 
+clearance request 
+ when two or more sub-programs are executed in parallel if 
+one fails then the others should be aborted given that the 
+failure of one branch leads to the failure of the overall task for 
+example suppose that part-way through writing the paper 
+alice realizes that there is a fatal flaw in her results and so 
+notifies calo that she will not be able to complete the paper 
+by the deadline the failure of the track writing paper task 
+should cause the apply for clearance task being executed in 
+parallel to be aborted 
+ when an execution event alters the importance of an existing 
+task or intention the agent should deliberate over whether the 
+existing plan s should continue for example suppose that 
+alice tasks calo with a new high-priority task to purchase 
+a replacement laptop but that alice lacks enough funds to 
+both purchase the laptop and to attend ijcai reasoning over 
+resource requirements will cause the agent to realize 
+ 
+if there is any difference between how to abort a task that is 
+externally performed versus how to abort one that is now known to 
+be impossible the abort-method can detect the circumstances and 
+handle the situation as appropriate 
+that it cannot successfully complete both tasks given that 
+the new task has greater importance a rational agent will 
+evaluate its best course of action and may decide to 
+abortor at least suspend - the existing task of submitting a paper 
+and intentions derived from it 
+the operational semantics we provide in section for aborting 
+tasks and plans captures the first two situations above the third 
+situation involves deliberating over the importance of a task which 
+depends on various factors such as task priority although this 
+deliberation is beyond the scope of this paper it is a complementary 
+topic of our future work 
+note that the above situations apply to achievement goals for 
+which the task is completed when a particular state of the world is 
+brought about e g ensure we have clearance different forms of 
+reasoning apply to other goal types such as maintenance goals 
+ where the goal is satisfied by maintaining a state of the world 
+for some period of time e g maintain in cash 
+abort method representation 
+the intent of aborting a task or plan is that the task or plan and all 
+its children cease to execute and that appropriate clean-up methods 
+are performed as required in contrast to offline planning systems 
+bdi agents are situated they perform online deliberation and their 
+actions change the state of the world as a result the effects of 
+many actions cannot be simply undone moreover the undo 
+process may cause adverse effects therefore the clean-up methods 
+that we specify are forward recovery procedures that attempt to 
+ensure a stable state and that also may if possible recover resources 
+the common plan representation in bdi-style systems such as 
+jack and spark includes a failure-method which is the 
+designated clean-up method invoked when the plan fails to this we 
+add the abort-method which is invoked if the plan is to be aborted 
+in our example the abort-method for the plan for support meeting 
+submission consists of invoking the sub-task cancel paper 
+number the abort-method need not explicitly abort apply for 
+clearance because the agent will invoke the abort-method for the 
+subtask appropriately as we outline below 
+the assumption here is that like the failure-method the 
+programmer of the agent system has the opportunity to specify a 
+sensible abort-method that takes into consideration the point in the plan 
+at which the abort is to be executed for any plan the abort-method 
+is optional if no abort-method is specified the agent takes no 
+specific action for this plan however the agent s default behavioural 
+rules still apply for example whether to retry an alternate plan for 
+the parent task 
+note that an explicit representation of the clean-up methods for 
+tasks is not required since tasks are performed by executing some 
+plan or plans hence aborting a task means aborting the current 
+plan that is executed to perform that task as we next describe 
+abort method invocation 
+we now informally lay out the agent s action upon aborting plans 
+and tasks when a plan p is aborted 
+ abort each sub-task that is an active child of p an active 
+child is one that was triggered by p and is currently in 
+execution 
+ when there are no more active children invoke the abort 
+method of plan p 
+ indicate a plan failure to tp the parent task of p we note 
+here that if the parent task tp is not to be aborted then the 
+agent may choose another applicable plan to satisfy tp 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+when a task or sub-task t is aborted 
+ abort the current active plan to satisfy t if any 
+ when there are no more active child processes drop the task 
+the agent thus no longer pursues t 
+ note here that when the current active plan for performing t 
+is aborted no other applicable plans to perform t should be 
+tried as it is the task that is to be aborted 
+in order to prevent infinitely cascading clean-up efforts we 
+assume that abort-methods will never be aborted nor fail in reality 
+however an abort-method may fail in this case lacking a more 
+sophisticated handling mechanism the agent simply stops 
+executing the failed abort-method with no further deliberation the 
+assumption we make is thus not a reflection of the full complexity 
+of reality but one that is pragmatic in terms of the agent 
+execution cycle the approach to failure-handling of makes the same 
+assumption in systems such as spark the programmer can 
+specify an alternative behaviour for a failed failure- or abort-method by 
+means of meta-level procedures we also assume that failure- and 
+abort-methods terminate in finite time 
+ operational semantics 
+we provide the semantics for the task and plan failure and 
+aborting processes outlined above we use the can language initially 
+defined in and later extended as canplan in to include 
+a planning component and then as canplan in to improve 
+the goal adoption and dropping mechanisms the extensions also 
+simplified the semantics in the earlier work we use some of these 
+simplifications for providing a brief summary of the can language 
+in section following a presentation of the operational 
+semantics of our approach in section in section we provide a 
+worked example to clarify the semantics that we present 
+ can language 
+can is a high-level agent language in a spirit similar to that 
+of agentspeak and kinny s ψ both of which attempt 
+to extract the essence of a class of implemented bdi agent 
+systems can provides an explicit goal construct that captures both 
+the declarative and procedural aspects of a goal goals are 
+persistent in can in that when a plan fails another applicable plan is 
+attempted this equates to the default failure handling mechanism 
+typically found in implemented bdi systems such as jack 
+in practical systems tasks are typically translated into events that 
+trigger the execution of some plans this is also true in the can 
+language but in order to maintain the persistence of goals a goal 
+construct is introduced this is denoted by goal 
+` 
+φs p φf 
+´ 
+ where 
+φs is the success condition that determines when the goal is 
+considered achieved φf is a fail condition under which it is considered 
+the goal is no longer achievable or relevant and p is a program for 
+achieving the goal which will be aborted once φs or φf become 
+true 
+an agent s behavior is specified by a plan library denoted by π 
+that consists of a collection of plan clauses of the form e c ← p 
+where e is an event c is a context condition a logical formula 
+over the agent s beliefs that must be true in order for the plan to be 
+applicable 
+and p is the plan body the plan body is a program 
+that is defined recursively as follows 
+p act b −b φ e p p p p goal 
+` 
+φs p φf 
+´ 
+ p p ψ p ψn pn nil 
+ 
+an omitted c is equivalent to true 
+δ ψiθ piθ e ψi ← pi ∈ π ∧ θ mgu e e 
+b e −→ b δ 
+event 
+ψi pi ∈ δ b ψi 
+b δ −→ b pi δ \ ψi pi 
+select 
+b p −→ 
+b p p −→ b p 
+fail 
+b p −→ b p 
+b p p −→ b p p 
+sequence 
+b p −→ b p 
+b p p −→ b p p 
+parallel 
+b p −→ b p 
+b p p −→ b p p 
+parallel 
+figure operational rules of can 
+where p pn are themselves programs act is a primitive 
+action that is not further specified and b and −b are operations 
+to add and delete beliefs the belief base contains ground belief 
+atoms in the form of first-order relations but could be orthogonally 
+extended to other logics it is assumed that well-defined operations 
+are provided to check whether a condition follows from a belief set 
+ b c to add a belief to a belief set b ∪ b and to delete 
+a belief from a belief set b \ b φ is a test for condition φ 
+and e 
+is an event 
+that is posted from within the program the 
+compound constructs are sequencing p p parallel execution 
+ p p and goals goal 
+` 
+φs p φf 
+´ 
+ 
+the above defines the user language in addition a set of 
+auxiliary compound forms are used internally when assigning 
+semantics to constructs nil is the basic terminating program when an 
+event matches a set of plan clauses these are collected into a set of 
+guarded alternatives c p cn pn the other auxiliary 
+compound form is a choice operator dual to sequencing p p 
+executes p and then executes p only if p failed 
+a summary of the operational semantics for can in line with 
+ and following some of the simplifications of is as follows 
+a basic configuration s b g γ consists of the current belief 
+base b of the agent the current set of goals g being pursued i e 
+set of formulae and the current program p being executed i e 
+the current intention 
+a transition s −→ s specifies that executing s for a single 
+step yields configuration s s −→ 
+sn is the usual reflexive 
+transitive closure of −→ sn is the result of one or more 
+singlestep transitions a derivation rule 
+s −→ sr 
+s −→ sr consists of a possibly 
+empty set of premises which are transitions together with some 
+auxiliary conditions numerator and a single transition conclusion 
+derivable from these premises denominator 
+figure gives some of the operational rules the event rule 
+handles task events by collecting all relevant plan clauses for the 
+event in question for each plan clause e ψi ← pi if there 
+is a most general unifier θ mgu e e of e and the event in 
+ 
+where it is obvious that e is an event we will sometimes exclude 
+the exclamation mark for readability 
+ 
+typically an achievement goal 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+b φs 
+b goal 
+` 
+φs p φf 
+´ 
+−→ b true 
+gs 
+b φf 
+b goal 
+` 
+φs p φf 
+´ 
+−→ b fail 
+gf 
+p goal 
+` 
+φs p φf 
+´ 
+p p £ p b φs ∨ φf 
+b p −→ b goal 
+` 
+φs p £ p φf 
+´ gi 
+p p £ p b φs ∨ φf b p −→ b p 
+b goal 
+` 
+φs p φf 
+´ 
+−→ b goal 
+` 
+φs p £ p φf 
+´ gs 
+p p £ p b φs ∨ φf p ∈ true fail 
+b goal 
+` 
+φs p φf 
+´ 
+−→ b goal 
+` 
+φs p £ p φf 
+´ gr 
+figure rules for goals in can 
+question then the rule constructs a guarded alternative ψiθ piθ 
+the select rule then selects one applicable plan body from a set 
+of remaining relevant alternatives program p δ states that 
+program p should be tried first falling back to the remaining 
+alternatives δ \ p if necessary this rule and the fail rule together 
+are used for failure handling if the current program pi from a plan 
+clause for a task fails rule fail is applied first and then if possible 
+rule select will choose another applicable alternative for the task 
+if one exists rule sequence handles sequencing of programs in 
+the usual way rules parallel and parallel define the possible 
+interleaving when executing two programs in parallel 
+figure gives simplified rules for dealing with goals in line with 
+those presented in the first rule states that a goal succeeds 
+when φs become true the second rule states that a goal fails when 
+φf become true the third rule gi initializes the execution of a 
+goal-program by updating the goal base and setting the program in 
+the goal to p £ p the first p is to be executed and the second p is 
+used to keep track of the original program for the goal the fourth 
+rule gs executes a single step of the goal-program the final rule 
+gr restarts the original program encoded as p of pair p £ p 
+whenever the current program is finished but the desired and still 
+possible goal has not yet been achieved 
+ aborting intentions and handling failure 
+we next introduce the ability to specify handler programs in the 
+form of failure- and abort-methods that deal with the clean-up 
+required when a given program respectively fails or is aborted we do 
+not associate failure- and abort- methods with plan clauses or with 
+tasks events but rather we introduce a new program construct that 
+specifies failure- and abort- methods for an arbitrary program the 
+fab p pf pa construct executes the program p should p fail 
+it executes the failure handling program pf should p need to be 
+aborted it executes the abort handling program pa thus to add 
+failure- and abort- methods pf and pa to a plan clause e c ← p 
+we write e c ← fab p pf pa 
+with the introduction of the ability to abort programs we 
+modify the parallel construct to allow the failure of one branch to abort 
+the other we must take into consideration the possible existence of 
+abort-methods in the aborted branch similarly with the goal 
+construct we can no longer completely abandon the program the goal 
+contains as soon as the success or failure condition holds we must 
+now take into consideration the existence of any abort-methods 
+applicable to the program 
+we provide the semantics of an augmented agent language 
+containing the fab construct by defining a source transformation 
+similar to macro-expansion that maps a plan library containing the 
+fab p pf pa construct into almost standard can the one 
+non-standard extension to can is a wait-until-condition construct 
+we explain this simple modification of the parallel construct below 
+when we come to translation of the goal construct first we 
+describe the general nature of the source transformation which proves 
+to be quite simple for most of the language constructs and then we 
+concentrate on the three more complex cases the fab parallel and 
+goal constructs 
+a key issue is that the fab constructs may be nested either 
+directly or indirectly let us call each instantiation of the construct at 
+execution time a possible abort point pap where these constructs 
+are nested it is important that before the failure- or abort-method 
+of a parent pap is executed the failure- or abort-methods programs 
+of the children paps are executed first as described earlier in 
+section the need to coordinate the execution of the abort-methods 
+of nested paps requires that there be some way to identify the 
+parents and children of a particular pap we achieve this as part of the 
+source transformation by explicitly keeping track of the context of 
+execution as an extra parameter on the events and an extra variable 
+within each plan body 
+the source transformation replaces each plan clause of the form 
+e c ← p with a plan clause e v c ← μv p where v is a free 
+variable not previously present in the plan clause this variable is 
+used to keep track of the context of execution 
+the value of the context variable is a list of identifiers where 
+each new pap is represented by prepending a new identifier to the 
+context for example if the identifiers are integers the context 
+of one pap may be represented by a list and the context 
+introduced by a new pap may be represented by we 
+will refer to paps by the context rather than by the new identifier 
+added e g by not this enables us to equate the 
+ancestor relationship between paps with the list suffix relationship 
+on the relevant contexts i e v is an ancestor of v if and only if v 
+is a suffix of v 
+for most can constructs the context variable is unused or passed 
+unchanged 
+μv act act 
+μv b b 
+μv −b −b 
+μv nil nil 
+μv e e v 
+μv p p μv p μv p 
+μv p p μv p μv p 
+μv ψ p ψn pn ψ μv p ψn μv pn 
+it remains to specify the transformation μv · in three cases the 
+fab parallel and goal constructs these are more complex in 
+that the transformed source needs to create a new pap identifier 
+dynamically for use as a new context within the construct and to 
+keep track of when the pap is active i e currently in execution 
+by adding and removing beliefs about the context 
+let us introduce the primitive action prependid v v that 
+creates a new pap identifier and prepends it to list v giving list v we 
+also introduce the following predicates 
+ a v - the pap v is currently active 
+ abort v - the pap v should be aborted after aborting all 
+of its descendants 
+ 
+an alternative would be to use meta-level predicates that reflect 
+the current state of the intention structure 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ f v - the program of pap v has failed 
+ ancestorof v v ≡ v v ∨ ancestorof v tail v 
+ the pap v is an ancestor of pap v 
+ nac v ≡ ¬∃v a v ∧ ancestorof v v ∧ v v - v 
+has no active children 
+ sa v ≡ ∃v abort v ∧ ancestorof v v - we should 
+abort v i e abort is true of v or some ancestor however 
+we need to wait until no children of v are active 
+ san v ≡ sa v ∧ nac v - we should abort v now if we 
+should abort v and v has no active children 
+first let us consider the case of the fab construct the idea is 
+that whenever a new pap occurs the prependid v v action is 
+used to create a new pap identifier list v from the existing list v 
+we then add the belief that v is the active context i e a v and 
+start processing the program within the pap using v instead of v 
+as the context we need to make sure that we retract the belief that 
+v is active at the end i e −a v 
+we use the goal construct to allow us to drop the execution of 
+a program within a pap v when it is necessary to abort while 
+executing the program p we know that we need to drop p and 
+invoke its abort-method if some ancestor of p has been told to abort 
+this is represented by the predicate sa v being true however we 
+need to make sure that we do this only after every child pap has had 
+the chance to invoke its abort-method and all these abort-methods 
+have completed if we drop the program too soon then execution of 
+the abort-methods of the children will also be dropped therefore 
+the condition we actually use in the goal construct to test when to 
+drop the program is san v this condition relies on the fact that 
+as the children paps complete they remove the relevant a facts 
+our use of the goal construct is for its ability to drop the 
+execution of a program when conditions are met to leave aside the 
+repeat execution until a condition is met aspect we must ensure that 
+the success or failure condition of the construct is satisfied once 
+the execution of the program succeeds or fails we make sure of 
+this by retracting the fact a v on success and asserting the fact 
+f v on failure and by having the appropriate success and failure 
+conditions on the goal hence if the goal construct fails then 
+the program either was aborted or it failed we invoke the relevant 
+failure- or abort- method retract the a v fact and then fail 
+putting all this together we formally define μv fab p pa pf 
+to be the following where v is a new variable distinct from any 
+other in the agent s plan library 
+prependid v v a v 
+goal ¬a v μv p −a v f v san v ∨ f v 
+ sa v μv pa μv pf −a v false 
+second we must transform the parallel operator to ensure that 
+the failure of one branch safely aborts the other here we construct 
+two new contexts v and v from the existing context v if one 
+branch fails it must abort the other branch at the end if either 
+branch was aborted then we must fail 
+let v and v be new variables distinct from any other in the 
+agent s plan library we define μv p p to be 
+prependid v v prependid v v a v a v 
+ goal ¬a v μv p −a v f v san v ∨ f v 
+ abort v −a v 
+goal ¬a v μv p −a v f v san v ∨ f v 
+ abort v −a v 
+ ¬abort v ∧ ¬abort v 
+finally we need to modify occurrences of the goal construct in 
+two ways first to make sure that the abort handling methods are 
+not bypassed when the success or failure conditions are satisfied 
+and second to trigger the aborting of the contained program when 
+either the success or failure conditions are satisfied 
+to transform the goal construct we need to extend standard can 
+with a wait-until-condition construct the construct φ p does not 
+execute p until φ becomes true we augment the can language 
+with the following rules for the guard operator   
+b φ 
+b g φ p −→ b g p 
+ true 
+b φ 
+b g φ p −→ b g φ p 
+ false 
+in order to specify μv goal 
+` 
+φs p φf 
+´ 
+ we generate a new pap 
+and execute the program within the goal construct in this new 
+context we must ensure that belief a v is removed whether the goal 
+succeeds or fails we shift the success and failure condition of the 
+goal construct into a parallel branch using the wait-until-condition 
+construct and modify the goal to use the should abort now 
+condition san v as the success condition the waiting branch will 
+trigger the abort of the program should either the success or failure 
+condition be met to avoid any problems with terminating the wait 
+condition we also end the wait if the pap is no longer active 
+let v be a new variable distinct from any other in the agent s 
+plan library we define μv goal 
+` 
+φs p φf 
+´ 
+ to be 
+prependid v v a v 
+ goal san v μv p false −a v φs 
+φs ∨ φf ∨ ¬a v abort v 
+the program p will be repeatedly executed until san v 
+becomes true there are two ways this can occur first if either the 
+success condition φs or the failure condition φf becomes true then 
+the second branch of the parallel construct executes this causes 
+abort v to become true and after the descendant paps 
+abortmethods are executed san v becomes true in this case p is 
+now dropped the a v is removed and the entire construct 
+succeeds or fails based on φs the second way for san v to become 
+true is if v or one of its ancestors is aborted in this case once the 
+descendant paps abort-methods are executed san v becomes 
+true p is dropped the a v belief is removed allowing the 
+second parallel branch to execute vacuously instructing v to abort 
+and the first parallel branch fails assuming φs is false 
+ worked example 
+let us look at translation of the ijcai submission example of 
+section we will express tasks by events for example the task 
+allocate a paper number we express as the event apn let the 
+output of the apply for clearance task be y or n indicating the 
+approval or not of alice s manager respectively then we have 
+ at least the following two plan clauses in can for the support 
+meeting submission and apply for clearance tasks respectively 
+sms m isconf m ← 
+fab apn twa afc twp hps cpn cpn 
+afc true ← fab scr wfr r r y nil ccr 
+note that support meeting submission has a parameter m the 
+meeting of interest ijcai in our example while apply for 
+clearance has no parameters 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+let us look first at the translation of the second plan clause for 
+afc since it is the simpler of the two let v and v denote 
+new variables then we have as the translated plan clause 
+afc v true ← 
+prependid v v a v 
+goal ¬a v 
+ scr v wfr r v r y −a v f v 
+san v ∨ f v 
+ sa v ccr v nil −a v false 
+we can see that an extra context parameter has been added to 
+each task and that the old plan body now appears inside a goal 
+construct should the old plan body succeed belief a v is 
+retracted causing the goal to succeed if the old plan body fails or if 
+the task is to be aborted the goal construct fails this is followed 
+by the execution of ccr in the case of an abort the retraction of 
+a v and failure 
+the translation of the first plan clause for sms is more 
+complex because of the parallel construct that introduces nested paps 
+sms m v isconf m ← 
+prependid v v a v 
+goal ¬a v 
+ apn v 
+ twa v 
+prependid v v prependid v v a v a v 
+ goal ¬a v 
+ afc v −a v f v 
+san v ∨ f v 
+ abort v −a v 
+goal ¬a v 
+ twp v −a v f v 
+san v ∨ f v 
+ abort v −a v 
+ 
+ ¬abort v ∧ ¬abort v 
+ hps v 
+−a v 
+ f v 
+san v ∨ f v 
+ sa v cpn v cpn v −a v false 
+here we can see that if the task twp v fails then f v 
+will be asserted failing the goal construct that contains it and 
+leading to abort v being asserted if the wfr r v task 
+in the expansion of afc v is still executing and has no 
+active child paps then sa v and sa v will be true however 
+only san v and not san v will be true this set of 
+conditions will cause the goal construct in the first plan clause to fail 
+dropping execution of wfr r v the task ccr v will 
+be executed once this task completes belief a v is retracted 
+causing san v to become true leading to the first goal construct 
+of the second plan clause to fail 
+while the translated plan clauses appear complicated observe 
+that the translation from the initial plan clauses is entirely 
+automated according to the rules set out in section the translated 
+plan clauses with the semantics of can augmented by our 
+waituntil-condition construct thus specify the operation of the agent to 
+handle both failure and aborting for the example 
+ related work 
+plan failure is handled in the extended version of agentspeak 
+found in the jason system failure clean-up plans are 
+triggered from goal deletion events − g such plans similar to our 
+failure methods are designed for the agent to effect state changes 
+ act to undo its earlier actions prior to possibly attempting 
+another plan to achieve the failed goal g 
+given jason s constructs for dropping a goal with an indication 
+of whether or not to try an alternate plan for it h¨ubner et al 
+provide an informal description of how a jason agent modifies its 
+intention structure when a goal failure event occurs in a goal deletion 
+plan the programmer can specify any undo actions and whether 
+to attempt the goal again if no goal deletion plan is provided 
+jason s default behaviour is to not reattempt the goal failure 
+handling is applied only to plans triggered by addition of an 
+achievement or test goal in particular goal deletion events are not posted 
+for failure of a goal deletion plan further the informal semantics 
+of do not consider parallel sub-goals i e the can construct 
+since such execution is not part of jason s language 
+the implementation of h¨ubner et al requires jason s internal 
+actions a requirement for implementing our approach is a 
+reflective capability in the bdi agent implementation suitable 
+implementations of the bdi formalism are jack jadex and 
+spark all three allow meta level methods that are cued by 
+meta events such as goal adoption or plan failure and offer 
+introspective capabilities over goal and intention states 
+such meta level facilities are also required by the approach of 
+unruh et al who define goal-based semantic compensation for 
+an agent failure-handling goals are invoked according to 
+failurehandling strategy rules by a dedicated agent failure handling 
+component fhc that tracks task execution these goals are 
+specified by the agent programmer and attached to tasks much like 
+our fab p pf pa construct associates failure and abort 
+methods with a plan p note however that in contrast to both and 
+our semantics attach the failure-handling knowledge at the 
+goal not plan level their failure-handling goals may consist of 
+stabilization goals that perform localized immediate clean-up to 
+restore the agent s state to a known stable state and 
+compensation goals that perform undo actions compensation goals are 
+triggered on aborting a goal and so not necessarily on goal failure 
+ i e if the fhc directs the agent to retry the failed goal and the 
+retry is successful 
+the fhc approach is defined at the goal level in order to 
+facilitate abstract specification of failure-handling knowledge the fhc 
+decides when to address a failure and what to do i e what 
+failurehandling goals to invoke separating this knowledge from the how 
+of implementing corrective actions i e what plan to execute to 
+meet the adopted failure-handling goal this contrasts with 
+simplistic plan-level failure handling in which the what and how are 
+intermingled in domain task knowledge while our approach is 
+defined at the plan level our extended bdi semantics provides for 
+the separation of execution and failure handling further the fhc 
+explicitly maintains data structures to track agent execution we 
+leverage the existing execution structures and self-reflective ability 
+of a bdi agent to accomplish both aborting and failure handling 
+without additional overhead fhc s failure-handling strategy rules 
+ e g whether to retry a failed goal are replaced by instructions 
+in our pf and pa plans together with meta-level default failure 
+handlers according to the agent s nature e g blindly committed 
+the fhc approach is independent of the architecture of the agent 
+itself in contrast to our work that is dedicated to the bdi 
+formalism although not tied to any one agent system thus no formal 
+semantics are developed in the fhc s operation is given as 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+a state-based protocol this approach together with state 
+checkpointing is used for multi-agent systems in the resulting 
+architecture embeds their failure handling approach within a pair 
+processing architecture for agent crash recovery 
+other work on multi-agent exception handling includes aoex s 
+distributed exception handling agents and the similar sentinels 
+of in both cases failure-handling logic and knowledge are 
+decoupled from the agents by contrast while separating exception 
+handling from domain-specific knowledge unruh et al s fhc and 
+our approach both retain failure-handling logic within an agent 
+ conclusion and future work 
+the tasks and plans of an agent may not successfully reach 
+completion either by the choice of the agent to abort them perhaps at 
+the request of another agent to do so or by unbidden factors that 
+lead to failure in this paper we have presented a procedure-based 
+approach that incorporates aborting tasks and plans into the 
+deliberation cycle of a bdi-style agent thus providing a unified approach 
+to failure and abort our primary contribution is an analysis of the 
+requirements on the operation of the agent for aborting tasks and 
+plans and a corresponding operational semantics for aborting in 
+the abstract agent language can 
+we are planning to implement an instance of our approach in the 
+spark agent system in particular the work of this paper will 
+be the basis for spark s abort handling mechanism we are also 
+developing an analysis tool for our extended version of can as a 
+basis for experimentation 
+an intelligent agent will not only gracefully handle unsuccessful 
+tasks and plans but also will deliberate over its cognitive attitudes 
+to decide its next course of action we have assumed the default 
+behaviour of a bdi-style agent according to its nature for instance 
+to retry alternatives to a failed plan until one succeeds or until no 
+alternative plans remain in which case to fail the task future 
+work is to place our approach in service of more dynamic agent 
+reasoning such as the introspection that an agent capable of 
+reasoning over task interaction effects and resource requirements can 
+accomplish 
+related to this is determining the cost of aborting a task or plan 
+and using this as an input to the deliberation process this would 
+in particular influence the commitment the agent has towards a 
+particular task the higher the cost the greater the commitment 
+our assumption that abort-methods do not fail as discussed above 
+is a pragmatic one however this is an issue worthy of further 
+exploration either to develop weaker assumptions that are also 
+practical or to analyze conditions under which our assumption is 
+realistic a further item of interest is extending our approach to failure 
+and abort to maintenance goals for such goals a different 
+operational semantics for abort is necessary than for achievement goals 
+to match the difference in semantics of the goals themselves 
+acknowledgements 
+we thank lin padgham and the anonymous reviewers for their comments 
+the first author acknowledges the support of the australian research 
+council and agent oriented software under grant lp the work of the 
+two authors at sri international was supported by the defense advanced 
+research projects agency darpa under contract no nbchd 
+any opinions findings and conclusions or recommendations expressed in 
+this material are those of the authors and do not necessarily reflect the view 
+of darpa or the department of interior-national business center 
+ references 
+ l braubach a pokahr d moldt and w lamersdorf goal 
+representation for bdi agent systems in proc of second intl 
+workshop on programming multi-agent systems promas 
+ p busetta r r¨onnquist a hodgson and a lucas jack 
+intelligent agents - components for intelligent agents in java 
+agentlink news issue 
+ m g chessell c vines d butler c m ferreira and 
+p henderson extending the concept of transaction compensation 
+ibm systems journal 
+ m dastani m b van riemsdijk and j -j c meyer goal types in 
+agent programming in proc of aamas 
+ s entwisle s loke s krishnaswamy and e kendall aoex an 
+agent-based exception handling framework for building reliable 
+distributed open software systems in proc of seventh joint conf on 
+knowledge-based software engineering 
+ j f h¨ubner r h bordini and m wooldridge programming 
+declarative goals using plan patterns in proc of th intl workshop 
+on declarative agent languages and technologies 
+ d kinny the psi calculus an algebraic agent language in proc of 
+atal 
+ m klein j a rodr´ıguez-aguilar and c dellarocas using 
+domain-independent exception handling services to enable robust 
+open multi-agent systems the case of agent death autonomous 
+agents and multi-agent systems - - 
+ d morley and k myers the spark agent framework in proc of 
+aamas 
+ d morley k l myers and n yorke-smith continuous refinement 
+of agent resource estimates in proc of aamas 
+ k myers p berry j blythe k conley m gervasio 
+d mcguinness d morley a pfeffer m pollack and m tambe 
+an intelligent personal assistant for task and time management ai 
+magazine to appear 
+ k l myers and n yorke-smith a cognitive framework for 
+delegation to an assistive user agent in proc of aaai fall 
+symposium on mixed-initiative problem-solving assistants 
+ l padgham and m winikoff developing intelligent agent systems 
+a practical guide john wiley and sons 
+ a pokahr l braubach and w lamersdorf jadex a bdi reasoning 
+engine in r bordini m dastani j dix and a e f seghrouchni 
+editors multi-agent programming springer 
+ a s rao agentspeak l bdi agents speak out in a logical 
+computable language in proc of seventh european workshop on 
+modelling autonomous agents in a multi-agent world 
+ a s rao and m p georgeff an abstract architecture for rational 
+agents in proc of kr 
+ s sardi˜na l de silva and l padgham hierarchical planning in 
+bdi agent programming languages a formal approach in proc of 
+aamas 
+ s sardina and l padgham goals in the context of bdi plan failure 
+and planning in proc of aamas 
+ j thangarajah l padgham and m winikoff detecting and 
+exploiting positive goal interaction in intelligent agents in proc of 
+aamas 
+ j thangarajah m winikoff l padgham and k fischer avoiding 
+resource conflicts in intelligent agents in proc of ecai- 
+ a unruh j bailey and k ramamohanarao a framework for 
+goal-based semantic compensation in agent systems in proc of first 
+intl workshop on safety and security in multi-agent systems 
+ a unruh h harjadi j bailey and k ramamohanarao 
+semantic-compensation-based recovery management in multi-agent 
+systems in proc of second ieee symposium on multi-agent 
+security and survivability ieee mas s 
+ m winikoff l padgham j harland and j thangarajah 
+declarative and procedural goals in intelligent agent systems in 
+proc of kr 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

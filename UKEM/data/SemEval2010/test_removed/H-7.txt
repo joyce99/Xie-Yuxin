@@ -1,0 +1,921 @@
+efficient bayesian hierarchical user modeling for 
+recommendation systems 
+yi zhang jonathan koren 
+school of engineering 
+university of california santa cruz 
+santa cruz ca usa 
+ yiz jonathan  soe ucsc edu 
+abstract 
+a content-based personalized recommendation system learns 
+user specific profiles from user feedback so that it can deliver 
+information tailored to each individual user s interest a 
+system serving millions of users can learn a better user profile 
+for a new user or a user with little feedback by borrowing 
+information from other users through the use of a bayesian 
+hierarchical model learning the model parameters to 
+optimize the joint data likelihood from millions of users is very 
+computationally expensive the commonly used em 
+algorithm converges very slowly due to the sparseness of the data 
+in ir applications this paper proposes a new fast learning 
+technique to learn a large number of individual user 
+profiles the efficacy and efficiency of the proposed algorithm 
+are justified by theory and demonstrated on actual user data 
+from netflix and movielens 
+categories and subject descriptors 
+b information search and retrieval information 
+filtering 
+general terms 
+algorithms 
+ introduction 
+personalization is the future of the web and it has achieved 
+great success in industrial applications for example online 
+stores such as amazon and netflix provide customized 
+recommendations for additional products or services based on a 
+user s history recent offerings such as my msn my yahoo 
+my google and google news have attracted much attention 
+due to their potential ability to infer a user s interests from 
+his her history 
+one major personalization topic studied in the 
+information retrieval community is content-based personal 
+recommendation systems 
+ these systems learn user-specific 
+profiles from user feedback so that they can recommend 
+information tailored to each individual user s interest without 
+requiring the user to make an explicit query learning the 
+user profiles is the core problem for these systems 
+a user profile is usually a classifier that can identify whether 
+a document is relevant to the user or not or a regression 
+model that tells how relevant a document is to the user one 
+major challenge of building a recommendation or 
+personalization system is that the profile learned for a particular user 
+is usually of low quality when the amount of data from that 
+particular user is small this is known as the cold start 
+problem this means that any new user must endure poor 
+initial performance until sufficient feedback from that user 
+is provided to learn a reliable user profile 
+there has been much research on improving 
+classification accuracy when the amount of labeled training data is 
+small the semi-supervised learning approach combines 
+unlabeled and labeled data together to achieve this goal 
+another approach is using domain knowledge researchers 
+have modified different learning algorithms such as 
+na¨ıvebayes logistic regression and svms to integrate 
+domain knowledge into a text classifier the third approach 
+is borrowing training data from other resources the 
+effectiveness of these different approaches is mixed due to 
+how well the underlying model assumption fits the data 
+one well-received approach to improve recommendation 
+system performance for a particular user is borrowing 
+information from other users through a bayesian hierarchical 
+modeling approach several researchers have demonstrated 
+that this approach effectively trades off between shared and 
+user-specific information thus alleviating poor initial 
+performance for each user 
+in order to learn a bayesian hierarchical model the 
+system usually tries to find the most likely model parameters 
+for the given data a mature recommendation system 
+usually works for millions of users it is well known that 
+learning the optimal parameters of a bayesian hierarchical model 
+is computationally expensive when there are thousands or 
+millions of users the em algorithm is a commonly used 
+technique for parameter learning due to its simplicity and 
+convergence guarantee however a content based 
+recommendation system often handles documents in a very high 
+dimensional space in which each document is represented 
+by a very sparse vector with careful analysis of the em 
+algorithm in this scenario section we find that the em 
+tering or item-based collaborative filtering in this paper 
+the words filtering and recommendation are used 
+interchangeably 
+algorithm converges very slowly due to the sparseness of 
+the input variables we also find that updating the model 
+parameter at each em iteration is also expensive with 
+computational complexity of o mk where m is the number 
+of users and k is the number of dimensions 
+this paper modifies the standard em algorithm to create 
+an improved learning algorithm which we call the modified 
+em algorithm the basic idea is that instead of 
+calculating the numerical solution for all the user profile parameters 
+we derive the analytical solution of the parameters for some 
+feature dimensions and at the m step use the analytical 
+solution instead of the numerical solution estimated at e step 
+for those parameters this greatly reduces the computation 
+at a single em iteration and also has the benefit of 
+increasing the convergence speed of the learning algorithm the 
+proposed technique is not only well supported by theory 
+but also by experimental results 
+the organization of the remaining parts of this paper is as 
+follows section describes the bayesian hierarchical linear 
+regression modeling framework used for content-based 
+recommendations section describes how to learn the model 
+parameters using the standard em algorithm along with 
+using the new technique proposed in this paper the 
+experimental setting and results used to validate the proposed 
+learning technique are reported in sections and 
+section summarizes and offers concluding remarks 
+ related work 
+providing personalized recommendations to users has been 
+identified as a very important problem in the ir community 
+since the s the approaches that have been used to 
+solve this problem can be roughly classified into two major 
+categories content based filtering versus collaborative 
+filtering content-based filtering studies the scenario where 
+a recommendation system monitors a document stream and 
+pushes documents that match a user profile to the 
+corresponding user the user may read the delivered documents 
+and provide explicit relevance feedback which the filtering 
+system then uses to update the user s profile using relevance 
+feedback retrieval models e g boolean models vector space 
+models traditional probabilistic models inference 
+networks and language models or machine learning 
+algorithms e g support vector machines svm k nearest 
+neighbors k-nn clustering neural networks logistic 
+regression or winnow collaborative filtering 
+goes beyond merely using document content to recommend 
+items to a user by leveraging information from other users 
+with similar tastes and preferences in the past 
+memorybased heuristics and model based approaches have been used 
+in collaborative filtering task 
+this paper contributes to the content-based 
+recommendation research by improving the efficiency and effectiveness 
+of bayesian hierarchical linear models which have a strong 
+theoretical basis and good empirical performance on 
+recommendation tasks this paper does not intend to 
+compare content-based filtering with collaborative filtering 
+or claim which one is a better we think each complements 
+the other and that content-based filtering is extremely 
+useful for handling new documents items with little or no user 
+feedback similar to some other researchers we 
+found that a recommendation system will be more effective 
+when both techniques are combined however this is 
+beyond the scope of this paper and thus not discussed here 
+ bayesian hierarchical linear 
+regression 
+assume there are m users in the system the task of 
+the system is to recommend documents that are relevant to 
+each user for each user the system learns a user model 
+from the user s history in the rest of this paper we will 
+use the following notations to represent the variables in the 
+system 
+m m the index for each individual user m is 
+the total number of users 
+wm the user model parameter associated with user m wm 
+is a k dimensional vector 
+j jm the index for a set of data for user m jm 
+is the number of training data for user m 
+dm xm j ym j a set of data associated with user m 
+xm j is a k dimensional vector that represents the mth 
+user s jth training document 
+ym j is a scalar that 
+represents the label of document xm j 
+k k the dimensional index of input variable x 
+the bayesian hierarchical modeling approach has been 
+widely used in real-world information retrieval applications 
+generalized bayesian hierarchical linear models one of the 
+simplest bayesian hierarchical models are commonly used 
+and have achieved good performance on collaborative 
+filtering and content-based adaptive filtering tasks 
+figure shows the graphical representation of a bayesian 
+hierarchical model in this graph each user model is 
+represented by a random vector wm we assume a user model 
+is sampled randomly from a prior distribution p w φ the 
+system can predict the user label y of a document x given 
+an estimation of wm or wm s distribution using a function 
+y f x w the model is called generalized bayesian 
+hierarchical linear model when y f wt 
+x is any generalized 
+linear model such as logistic regression svm and linear 
+regression to reliably estimate the user model wm the 
+system can borrow information from other users through the 
+prior φ µ σ 
+now we look at one commonly used model where y 
+wt 
+x where ∼ n σ 
+ is a random noise 
+assume that each user model wm is an independent draw 
+from a population distribution p w φ which is governed by 
+some unknown hyperparameter φ let the prior distribution 
+of user model w be a gaussian distribution with parameter 
+φ µ σ which is the commonly used prior for linear 
+models µ µ µ µk is a k dimensional vector that 
+represents the mean of the gaussian distribution and σ is 
+the covariance matrix of the gaussian usually a normal 
+distribution n ai and an inverse wishart distribution 
+p σ ∝ σ − 
+ 
+b 
+exp − 
+ 
+ctr σ− 
+ are used as hyperprior to 
+model the prior distribution of µ and σ respectively i is 
+the k dimensional identity matrix and a b and c are real 
+numbers 
+with these settings we have the following model for the 
+system 
+ µ and σ are sampled from n ai and iwν ai 
+respectively 
+ 
+the first dimension of x is a dummy variable that always 
+equals to 
+figure illustration of dependencies of variables 
+in the hierarchical model the rating y for a 
+document x is conditioned on the document and the 
+user model wm associated with the user m users 
+share information about their models through the 
+prior φ µ σ 
+ for each user m wm is sampled randomly from a 
+normal distribution wm ∼ n µ σ 
+ 
+ for each item xm j ym j is sampled randomly from a 
+normal distribution ym j ∼ n wt 
+mxm j σ 
+ 
+let θ φ w w wm represent the parameters of 
+this system that needs to be estimated the joint 
+likelihood for all the variables in the probabilistic model which 
+includes the data and the parameters is 
+p d θ p φ 
+m 
+p wm φ 
+j 
+p ym j xm j wm 
+for simplicity we assume a b c and σ are provided to 
+the system 
+ model parameter learning 
+if the prior φ is known finding the optimal wm is 
+straightforward it is a simple linear regression therefore we will 
+focus on estimating φ the maximum a priori solution of φ 
+is given by 
+φmap arg max 
+φ 
+p φ d 
+ arg max 
+φ 
+p φ d 
+p d 
+ 
+ arg max 
+φ 
+p d φ p φ 
+ arg max 
+φ w 
+p d w φ p w φ p φ dw 
+finding the optimal solution for the above problem is 
+challenging since we need to integrate over all w w w wm 
+which are unobserved hidden variables 
+ em algorithm for bayesian hierarchical 
+linear models 
+in equation φ is the parameter needs to be estimated 
+and the result depends on unobserved latent variables w 
+this kind of optimization problem is usually solved by the 
+em algorithm 
+applying em to the above problem the set of user models 
+w are the unobservable hidden variables and we have 
+q 
+w 
+p w µ σ 
+ dm log p µ σ 
+ w d dw 
+based on the derivation of the em formulas presented in 
+ we have the following expectation-maximization steps 
+for finding the optimal hyperparameters for space 
+considerations we omit the derivation in this paper since it is not 
+the focus of our work 
+e step for each user m estimate the user model 
+distribution p wm dm φ n wm ¯wm σ 
+m based on the 
+current estimation of the prior φ µ σ 
+ 
+¯wm σ 
+ − 
+ 
+sxx m 
+σ 
+ − 
+ 
+sxy m 
+σ 
+ σ 
+ − 
+µ 
+σ 
+m σ 
+ − 
+ 
+sxx m 
+σ 
+ − 
+ 
+where sxx m 
+j 
+xm jxt 
+m j sxy m 
+j 
+xm jym j 
+m step optimize the prior φ µ σ 
+ based on the 
+estimation from the last e step 
+µ 
+ 
+m m 
+¯wm 
+σ 
+ 
+ 
+m m 
+σ 
+m ¯wm − µ ¯wm − µ t 
+ 
+many machine learning driven ir systems use a point 
+estimate of the parameters at different stages in the system 
+however we are estimating the posterior distribution of the 
+variables at the e step this avoids overfitting wm to a 
+particular user s data which may be small and noisy a 
+detailed discussion about this subject appears in 
+ new algorithm modified em 
+although the em algorithm is widely studied and used in 
+machine learning applications using the above em process 
+to solve bayesian hierarchical linear models in large-scale 
+information retrieval systems is still too computationally 
+expensive in this section we describe why the learning rate of 
+the em algorithm is slow in our application and introduce 
+a new technique to make the learning of the bayesian 
+hierarchical linear model scalable the derivation of the new 
+learning algorithm will be based on the em algorithm 
+described in the previous section 
+first the covariance matrices σ 
+ σ 
+m are usually too large 
+to be computationally feasible for simplicity and as a 
+common practice in ir we do not model the correlation between 
+features thus we approximate these matrices with k 
+dimensional diagonal matrices in the rest of the paper we use 
+these symbols to represent their diagonal approximations 
+σ 
+ 
+ 
+ 
+ 
+ 
+σ 
+ 
+ σ 
+ 
+ 
+ σ 
+k 
+ 
+ 
+ 
+ 
+σ 
+m 
+ 
+ 
+ 
+ 
+σ 
+m 
+ σ 
+m 
+ 
+ σ 
+m k 
+ 
+ 
+ 
+ 
+secondly and most importantly the input space is very 
+sparse and there are many dimensions that are not related 
+to a particular user in a real ir application for example 
+let us consider a movie recommendation system with the 
+input variable x representing a particular movie for the jth 
+movie that the user m has seen let xm j k if the director 
+of the movie is jean-pierre jeunet indexed by k here 
+we assume that whether or not that this director directed 
+a specific movie is represented by the kth dimension if 
+the user m has never seen a movie directed by jean-pierre 
+jeunet then the corresponding dimension is always zero 
+ xm j k for all j 
+one major drawback of the em algorithm is that the 
+importance of a feature µk may be greatly dominated by users 
+who have never encountered this feature i e j xm j k 
+at the m step equation assume that out of 
+million users have viewed the movie directed by jean-pierre 
+jeunet and that the viewers have rated all of his movies as 
+excellent intuitively he is a good director and the weight 
+for him µk should be high before the em iteration the 
+initial value of µ is usually set to since the other 
+users have not seen this movie their corresponding weights 
+ w k w k wm k w k for that director would be 
+very small initially thus the corresponding weight of the 
+director in the prior µk at the first m step would be very 
+low and the variance σm k will be large equations and 
+ it is undesirable that users who have never seen any 
+movie produced by the director influence the importance of 
+the director so much this makes the convergence of the 
+standard em algorithm very slow 
+now let s look at whether we can improve the learning 
+speed of the algorithm without a loss of generality let 
+us assume that the kth dimension of the input variable x 
+is not related to a particular user m by which we mean 
+xm j k for all j jm it is straightforward to prove 
+that the kth row and kth column of sxx m are completely 
+filled with zeros and that the kth dimension of sxy m is 
+zeroed as well thus the corresponding kth dimension of the 
+user model s mean ¯wm should be equal to that of the prior 
+¯wm k µk with the corresponding covariance of σm k σk 
+at the m step the standard em algorithm uses the 
+numerical solution of the distribution p wm dm φ estimated 
+at e step equation and equation however the 
+numerical solutions are very unreliable for ¯wm k and σm k when 
+the kth dimension is not related to the mth user a better 
+approach is using the analytical solutions ¯wm k µk and 
+σm k σk for the unrelated m k pairs along with the 
+numerical solution estimated at e step for the other m k 
+pairs thus we get the following new em-like algorithm 
+modified e step for each user m estimate the user model 
+distribution p wm dm φ n wm ¯wm σ 
+m based 
+on the current estimation of σ µ σ 
+ 
+¯wm σ 
+ − 
+ 
+sxx m 
+σ − 
+ 
+sxy m 
+σ σ 
+ − 
+µ 
+σ 
+m k σ 
+k − 
+ 
+sxx m k 
+σ − 
+ 
+where sxx m k 
+j 
+x 
+m j k and sxy m k 
+j 
+xm j kym j 
+modified m step optimize the prior φ µ σ 
+ based 
+on the estimation from the last e step for related 
+userfeature pairs the m step implicitly uses the analytical 
+solution for unrelated user-feature pairs 
+µk 
+ 
+mk 
+m related 
+¯wm k 
+σ 
+k 
+ 
+mk 
+m related 
+σ 
+m k 
+ ¯wm k − µk ¯wm k − µk t 
+ 
+where mk is the number of users that are related to 
+feature k 
+we only estimate the diagonal of σ 
+m and σ since we are 
+using the diagonal approximation of the covariance 
+matrices to estimate ¯wm we only need to calculate the 
+numerical solutions for dimensions that are related to user m to 
+estimate σ 
+k and µk we only sum over users that are related 
+to the kth feature 
+there are two major benefits of the new algorithm first 
+because only the related m k pairs are needed at the 
+modified m step the computational complexity in a single em 
+iteration is much smaller when the data is sparse and many 
+of m k pairs are unrelated second the parameters 
+estimated at the modified m step equations - are 
+more accurate than the standard m step described in 
+section because the exact analytical solutions ¯wm k µk 
+and σm k σk for the unrelated m k pairs were used in 
+the new algorithm instead of an approximate solution as in 
+the standard algorithm 
+ experimental methodology 
+ evaluation data set 
+to evaluate the proposed technique we used the following 
+three major data sets table 
+movielens data this data set was created by combining 
+the relevance judgments from the movielens data 
+set with documents from the internet movie database 
+ imdb movielens allows users to rank how much 
+he she enjoyed a specific movie on a scale from to 
+ this likeability rating was used as a 
+measurement of how relevant the document representing the 
+corresponding movie is to the user we considered 
+documents with likeability scores of or as 
+relevant and documents with a score of to as 
+irrelevant to the user movielens provided relevance 
+judgments on documents from separate 
+users on average each user rated movies of 
+these were judged to be relevant the average 
+score for a document was documents 
+representing each movie were constructed from the portion of 
+the imdb database that is available for public 
+download based on this database we created one 
+document per movie that contained the relevant 
+information about it e g directors actors etc 
+table data set statistics on reuters the 
+number of rating for a simulated user is the number of 
+documents relevant to the corresponding topic 
+data users docs ratings per user 
+movielens 
+netflix-all 
+netflix- 
+reuters-c 
+reuters-e 
+reuters-g 
+reuters-m 
+netflix data this data set was constructed by combining 
+documents about movies crawled from the web with 
+a set of actual movie rental customer relevance 
+judgments from netflix netflix publicly provides the 
+relevance judgments of anonymous customers 
+there are around million rating on a scale of 
+to for documents similar to movielens we 
+considered documents with likeability scores of or 
+as relevant 
+this number was reduced to customers through 
+random sampling the average customer on the 
+reduced data set provided judgments with being 
+deemed relevant the average score for documents is 
+ 
+reuters data this is the reuters corpus volume it 
+covers reuters english language news stories 
+from august to august only the 
+first news were used in our experiments the 
+reuters corpus comes with a topic hierarchy each 
+document is assigned to one of several locations on 
+the hierarchical tree the first level of the tree 
+contains four topics denoted as c e m and g for the 
+experiments in this paper the tree was cut at level to 
+create four smaller trees each of which corresponds to 
+one smaller data set reuters-e reuters-c 
+reutersm and reuters-g for each small data set we created 
+several profiles one profile for each node in a sub-tree 
+to simulate multiple users each with a related yet 
+separate definition of relevance all the user profiles 
+on a sub-tree are supposed to share the same prior 
+model distribution since this corpus explicitly 
+indicates only the relevant documents for a topic user all 
+other documents are considered irrelevant 
+ evaluation 
+we designed the experiments to answer the following three 
+questions 
+ do we need to take the effort to use a bayesian 
+approach and learn a prior from other users 
+ does the new algorithm work better than the standard 
+em algorithm for learning the bayesian hierarchical 
+linear model 
+ can the new algorithm quickly learn many user 
+models 
+to answer the first question we compared the bayesian 
+hierarchical models with commonly used norm- regularized 
+linear regression models in fact the commonly used 
+approach is equivalent to the model learned at the end of the 
+first em iteration to answer the second question we 
+compared the proposed new algorithm with the standard em 
+algorithm to see whether the new learning algorithm is 
+better to answer the third question we tested the efficiency of 
+the new algorithm on the entire netflix data set where about 
+half a million user models need to be learned together 
+for the movielens and netflix data sets algorithm 
+effectiveness was measured by mean square error while on the 
+reuters data set classification error was used because it was 
+more informative we first evaluated the performance on 
+each individual user and then estimated the macro average 
+over all users statistical tests t-tests were carried out to 
+see whether the results are significant 
+for the experiments on the movielens and netflix data 
+sets we used a random sample of of each user for 
+training and the rest for testing on reuters data set because 
+there are too many relevant documents for each topic in the 
+corpus we used a random sample of of each topic for 
+training and of the remaining documents for testing 
+for all runs we set a b c σ manually 
+ experimental results 
+figure figure and figure show that on all data 
+sets the bayesian hierarchical modeling approach has a 
+statistical significant improvement over the regularized linear 
+regression model which is equivalent to the bayesian 
+hierarchical models learned at the first iteration further analysis 
+shows a negative correlation between the number of training 
+data for a user and the improvement the system gets this 
+suggests that the borrowing information from other users 
+has more significant improvements for users with less 
+training data which is as expected however the strength of the 
+correlation differs over data sets and the amount of 
+training data is not the only characteristics that will influence 
+the final performance 
+figure and figure show that the proposed new 
+algorithm works better than the standard em algorithm on 
+the netflix and movielens data sets this is not 
+surprising since the number of related feature-users pairs is much 
+smaller than the number of unrelated feature-user pairs on 
+these two data sets and thus the proposed new algorithm 
+is expected to work better 
+figure shows that the two algorithms work similarly 
+on the reuters-e data set the accuracy of the new 
+algorithm is similar to that of the standard em algorithm 
+at each iteration the general patterns are very similar on 
+other reuters subsets further analysis shows that only 
+ of the user-feature pairs are unrelated on this data set 
+since the number of unrelated user-feature pairs is not 
+extremely large the sparseness is not a serious problem on 
+the reuters data set thus the two learning algorithms 
+perform similarly the results suggest that only on a corpus 
+where the number of unrelated user-feature pairs is much 
+larger than the number of related pairs such as on the 
+netflix data set the proposed technique will get a significant 
+improvement over standard em however the experiments 
+also show that when the assumption does not hold the new 
+algorithm does not hurt performance 
+although the proposed technique is faster than standard 
+figure performance on a netflix subset with users the new algorithm is statistical significantly 
+better than em algorithm at iterations - norm- regularized linear models are equivalent to the 
+bayesian hierarchical models learned at the first iteration and are statistical significantly worse than the 
+bayesian hierarchical models 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+meansquareerror 
+new algorithm 
+traditional em 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+classificationerror 
+new algorithm 
+traditional em 
+figure performance on a movielens subset with users the new algorithm is statistical significantly 
+better than em algorithm at iteration to evaluated with mean square error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+meansquareerror 
+new algorithm 
+traditional em 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+classificationerror 
+new algorithm 
+traditional em 
+figure performance on a reuters-e subset with profiles performances on reuters-c reuters-m 
+reuters-g are similar 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+meansquareerror 
+new algorithm 
+traditional em 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+iterations 
+classificationerror 
+new algorithm 
+traditional em 
+em can it really learn millions of user models quickly 
+our results show that the modified em algorithm converges 
+quickly and - modified em iterations would result in 
+a reliable estimation we evaluated the algorithm on the 
+whole netflix data set users features and 
+ million ratings running on a single cpu pc gb 
+memory p ghz the system finished one modified em 
+iteration in about hours this demonstrates that the proposed 
+technique can efficiently handle large-scale system like 
+netflix 
+ conclusion 
+content-based user profile learning is an important 
+problem and is the key to providing personal recommendations 
+to a user especially for recommending new items with a 
+small number of ratings the bayesian hierarchical 
+modeling approach is becoming an important user profile learning 
+approach due to its theoretically justified ability to help one 
+user through information transfer from the other users by 
+way of hyperpriors 
+this paper examined the weakness of the popular em 
+based learning approach for bayesian hierarchical linear 
+models and proposed a better learning technique called modified 
+em we showed that the new technique is theoretically more 
+computationally efficient than the standard em algorithm 
+evaluation on the movielens and netflix data sets 
+demonstrated the effectiveness of the new technique when the data 
+is sparse by which we mean the ratio of related user-feature 
+pairs to unrelated pairs is small evaluation on the reuters 
+data set showed that the new technique performed similar to 
+the standard em algorithm when the sparseness condition 
+does not hold in general it is better to use the new 
+algorithm since it is as simple as standard em the performance 
+is either better or similar to em and the computation 
+complexity is lower at each iteration it is worth mentioning that 
+even if the original problem space is not sparse sparseness 
+can be created artificially when a recommendation system 
+uses user-specific feature selection techniques to reduce the 
+noise and user model complexity the proposed technique 
+can also be adapted to improve the learning in such a 
+scenario we also demonstrated that the proposed technique 
+can learn half a million user profiles from million ratings 
+in a few hours with a single cpu 
+the research is important because scalability is a major 
+concern for researchers when using the bayesian hierarchical 
+linear modeling approach to build a practical large scale 
+system even though the literature have demonstrated the 
+effectiveness of the models in many applications our work 
+is one major step on the road to make bayesian hierarchical 
+linear models more practical the proposed new technique 
+can be easily adapted to run on a cluster of machines and 
+thus further speed up the learning process to handle a larger 
+scale system with hundreds of millions of users 
+the research has much potential to benefit people using 
+em algorithm on many other ir problems as well as 
+machine learning problems em algorithm is a commonly used 
+machine learning technique it is used to find model 
+parameters in many ir problems where the training data is very 
+sparse although we are focusing on the bayesian 
+hierarchical linear models for recommendation and filtering the 
+new idea of using analytical solution instead of numerical 
+solution for unrelated user-feature pairs at the m step could 
+be adapted to many other problems 
+ acknowledgments 
+we thank wei xu david lewis and anonymous 
+reviewers for valuable feedback on the work described in this 
+paper part of the work was supported by yahoo google the 
+petascale data storage institute and the institute for 
+scalable scientific data management any opinions findings 
+conclusions or recommendations expressed in this material 
+are those of the authors and do not necessarily reflect those 
+of the sponsors 
+ references 
+ c basu h hirsh and w cohen recommendation 
+as classification using social and content-based 
+information in recommendation in proceedings of the 
+fifteenth national conference on artificial 
+intelligence 
+ j s breese d heckerman and c kadie empirical 
+analysis of predictive algorithms for collaborative 
+filtering technical report microsoft research one 
+microsoft way redmond wa 
+ j callan document filtering with inference networks 
+in proceedings of the nineteenth annual international 
+acm sigir conference on research and 
+development in information retrieval pages - 
+ 
+ n cancedda n cesa-bianchi a conconi 
+c gentile c goutte t graepel y li j m 
+renders j s taylor and a vinokourov kernel 
+method for document filtering in the eleventh text 
+retrieval conference trec national institute of 
+standards and technology special publication 
+ - 
+ c chelba and a acero adaptation of maximum 
+entropy capitalizer little data can help a lot in 
+d lin and d wu editors proceedings of emnlp 
+ pages - barcelona spain july 
+association for computational linguistics 
+ b croft and j lafferty editors language modeling 
+for information retrieval kluwer 
+ a dayanik d d lewis d madigan v menkov 
+and a genkin constructing informative prior 
+distributions from domain knowledge in text 
+classification in sigir proceedings of the th 
+annual international acm sigir conference on 
+research and development in information retrieval 
+pages - new york ny usa acm 
+press 
+ j delgado and n ishii memory-based 
+weightedmajority prediction for recommender 
+systems in acm sigir workshop on 
+recommender systems 
+ grouplens movielens 
+http www grouplens org taxonomy term 
+ d heckerman a tutorial on learning with bayesian 
+networks in m jordan editor learning in graphical 
+models kluwer academic 
+ j l herlocker j a konstan a borchers and 
+j riedl an algorithmic framework for performing 
+collaborative filtering in sigir proceedings of 
+the nd annual international acm sigir conference 
+on research and development in information retrieval 
+pages - new york ny usa acm 
+press 
+ t hofmann and j puzicha latent class models for 
+collaborative filtering in ijcai proceedings of 
+the sixteenth international joint conference on 
+artificial intelligence pages - san francisco 
+ca usa morgan kaufmann publishers inc 
+ i m d imdb internet movie database 
+http www imdb com interfaces 
+ r jin j y chai and l si an automatic weighting 
+scheme for collaborative filtering in sigir 
+proceedings of the th annual international acm 
+sigir conference on research and development in 
+information retrieval pages - new york ny 
+usa acm press 
+ j a konstan b n miller d maltz j l herlocker 
+l r gordon and j riedl grouplens applying 
+collaborative filtering to usenet news 
+communications of the acm - 
+ d lewis applying support vector machines to the 
+trec- batch filtering and routing tasks in 
+proceedings of the eleventh text retrieval conference 
+ trec- 
+ b liu x li w s lee and p yu text 
+classification by labeling words in proceedings of the 
+nineteenth national conference on artificial 
+intelligence aaai- july - 
+ p melville r j mooney and r nagarajan 
+content-boosted collaborative filtering for improved 
+recommendations in proceedings of the eighteenth 
+national conference on artificial intelligence 
+ aaai- edmonton canada 
+ netflix netflix prize http www netflixprize com 
+ visited on nov 
+ s robertson and k sparck-jones relevance 
+weighting of search terms in journal of the american 
+society for information science volume pages 
+ - 
+ j wang a p de vries and m j t reinders 
+unifying user-based and item-based collaborative 
+filtering approaches by similarity fusion in sigir 
+proceedings of the th annual international acm 
+sigir conference on research and development in 
+information retrieval pages - new york ny 
+usa acm press 
+ x wu and r k srihari incorporating prior 
+knowledge with weighted margin support vector 
+machines in proc acm knowledge discovery data 
+mining conf acm sigkdd aug 
+ y yang s yoo j zhang and b kisiel robustness 
+of adaptive filtering methods in a cross-benchmark 
+evaluation in proceedings of the th annual 
+international acm sigir conference on research 
+and development in information retrieval 
+ k yu v tresp and a schwaighofer learning 
+gaussian processes from multiple tasks in icml 
+proceedings of the nd international conference on 
+machine learning pages - new york ny 
+usa acm press 
+ k yu v tresp and s yu a nonparametric 
+hierarchical bayesian framework for information 
+filtering in sigir proceedings of the th annual 
+international acm sigir conference on research and 
+development in information retrieval pages - 
+acm press 
+ x zhu semi-supervised learning literature survey 
+technical report university of wisconsin - madison 
+december 
+ p zigoris and y zhang bayesian adaptive user 
+profiling with explicit implicit feedback in 
+conference on information and knowledge 
+mangement 

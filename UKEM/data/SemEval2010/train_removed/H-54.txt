@@ -1,0 +1,964 @@
+knowledge-intensive conceptual retrieval and passage 
+extraction of biomedical literature 
+wei zhou clement yu 
+department of computer science 
+university of illinois at chicago 
+wzhou  uic edu 
+yu cs uic edu 
+neil smalheiser vetle torvik 
+department of psychiatry and 
+psychiatric institute mc 
+university of illinois at chicago 
+ neils vtorvik  uic edu 
+jie hong 
+division of epidemiology and 
+biostatistics school of public health 
+university of illinois at chicago 
+jhong  uic edu 
+abstract 
+this paper presents a study of incorporating domain-specific 
+knowledge i e information about concepts and relationships 
+between concepts in a certain domain in an information retrieval 
+ ir system to improve its effectiveness in retrieving biomedical 
+literature the effects of different types of domain-specific 
+knowledge in performance contribution are examined based on 
+the trec platform we show that appropriate use of 
+domainspecific knowledge in a proposed conceptual retrieval model 
+yields about improvement over the best reported result in 
+passage retrieval in the genomics track of trec 
+categories and subject descriptors 
+h information storage and retrieval information search 
+and retrieval - retrieval models query formulation information 
+filtering h information storage and retrieval content 
+analysis and indexing - thesauruses 
+general terms 
+algorithms performance experimentation 
+ introduction 
+biologists search for literature on a daily basis for most 
+biologists pubmed an online service of u s national library of 
+medicine nlm is the most commonly used tool for searching 
+the biomedical literature pubmed allows for keyword search by 
+using boolean operators for example if one desires documents on 
+the use of the drug propanolol in the disease hypertension a 
+typical pubmed query might be propanolol and hypertension 
+which will return all the documents having the two keywords 
+keyword search in pubmed is effective if the query is well-crafted 
+by the users using their expertise however information needs of 
+biologists in some cases are expressed as complex questions 
+ which pubmed is not designed to handle while nlm does 
+maintain an experimental tool for free-text queries it is still 
+based on pubmed keyword search 
+the genomics track of the text retrieval conference 
+ trec provides a common platform to assess the methods and 
+techniques proposed by various groups for biomedical information 
+retrieval the queries were collected from real biologists and they 
+are expressed as complex questions such as how do mutations in 
+the huntingtin gene affect huntington s disease the document 
+collection contains highwire full-text documents in 
+html format systems from participating groups are expected to 
+find relevant passages within the full-text documents a passage is 
+defined as any span of text that does not include the html 
+paragraph tag i e p or p 
+we approached the problem by utilizing domain-specific 
+knowledge in a conceptual retrieval model domain-specific 
+knowledge in this paper refers to information about concepts and 
+relationships between concepts in a certain domain we assume 
+that appropriate use of domain-specific knowledge might improve 
+the effectiveness of retrieval for example given a query what is 
+the role of gene prnp in the mad cow disease expanding the 
+gene symbol prnp with its synonyms prp prpsc and 
+prion protein more relevant documents might be retrieved 
+pubmed and many other biomedical systems also 
+make use of domain-specific knowledge to improve retrieval 
+effectiveness 
+intuitively retrieval on the level of concepts should outperform 
+bag-of-words approaches since the semantic relationships 
+among words in a concept are utilized in some recent studies 
+ positive results have been reported for this hypothesis in 
+this paper concepts are entry terms of the ontology medical 
+subject headings mesh a controlled vocabulary maintained by 
+nlm for indexing biomedical literature or gene symbols in the 
+entrez gene database also from nlm a concept could be a word 
+such as the gene symbol prnp or a phrase such as mad cow 
+diseases in the conceptual retrieval model presented in this 
+paper the similarity between a query and a document is measured 
+on both concept and word levels 
+this paper makes two contributions 
+ we propose a conceptual approach to utilize domain-specific 
+knowledge in an ir system to improve its effectiveness in 
+retrieving biomedical literature based on this approach our 
+system achieved significant improvement over the best 
+reported result in passage retrieval in the genomics track of 
+trec 
+ we examine the effects of utilizing concepts and of different 
+types of domain-specific knowledge in performance 
+contribution 
+this paper is organized as follows problem statement is given in 
+the next section the techniques are introduced in section in 
+section we present the experimental results related works are 
+given in section and finally we conclude the paper in section 
+ problem statement 
+we describe the queries document collection and the system 
+output in this section 
+the query set used in the genomics track of trec consists 
+of questions collected from real biologists as described in 
+these questions all have the following general format 
+biological object m 
+relationship 
+←⎯⎯⎯⎯→ biological process n 
+where a biological object might be a gene protein or gene 
+mutation and a biological process can be a physiological process 
+or disease a question might involve multiple biological objects 
+ m and multiple biological processes n these questions were 
+derived from four templates table 
+table query templates and examples in the genomics track 
+of trec 
+template example 
+what is the role of gene in 
+disease 
+what is the role of drd in 
+alcoholism 
+what effect does gene have 
+on biological process 
+what effect does the insulin 
+receptor gene have on 
+tumorigenesis 
+how do genes interact in 
+organ function 
+how do hmg and hmgb 
+interact in hepatitis 
+how does a mutation in 
+gene influence biological 
+process 
+how does a mutation in ret 
+influence thyroid function 
+features of the queries they are different from the typical 
+web queries and the pubmed queries both of which usually 
+consist of to keywords they are generated from structural 
+templates which can be used by a system to identify the query 
+components the biological object or process 
+the document collection contains highwire full-text 
+documents in html format 
+the output of the system is a list of passages ranked according to 
+their similarities with the query a passage is defined as any span 
+of text that does not include the html paragraph tag i e p or 
+ p a passage could be a part of a sentence a sentence a set of 
+consecutive sentences or a paragraph i e the whole span of text 
+that are inside of p and p html tags 
+this is a passage-level information retrieval problem with the 
+attempt to put biologists in contexts where relevant information is 
+provided 
+ techniques and methods 
+we approached the problem by first retrieving the top-k most 
+relevant paragraphs then extracting passages from these 
+paragraphs and finally ranking the passages in this process we 
+employed several techniques and methods which will be 
+introduced in this section first we give two definitions 
+definition a concept is a entry term in the mesh 
+ontology or a gene symbol in the entrez gene database this 
+definition of concept can be generalized to include other 
+biomedical dictionary terms 
+definition a semantic type is a category defined in the 
+semantic network of the unified medical language system 
+ umls the current release of the umls semantic network 
+contains semantic types such as disease or syndrome each 
+entry term in the mesh ontology is assigned one or more semantic 
+types each gene symbol in the entrez gene database maps to the 
+semantic type gene or genome in addition these semantic 
+types are linked by relationships for example antibiotic 
+prevents disease or syndrome these relationships among 
+semantic types represent general biomedical knowledge we 
+utilized these semantic types and their relationships to identify 
+related concepts 
+the rest of this section is organized as follows in section we 
+explain how the concepts are identified within a query in section 
+ we specify five different types of domain-specific knowledge 
+and introduce how they are compiled in section we present 
+our conceptual ir model finally our strategy for passage 
+extraction is described in section 
+ identifying concepts within a query 
+a concept defined in definition is a gene symbol or a mesh 
+term we make use of the query templates to identify gene 
+symbols for example the query how do hmg and hmgb 
+interact in hepatitis is derived from the template how do genes 
+interact in organ function in this case hmg and hmgb 
+will be identified as gene symbols in cases where the query 
+templates are not provided programs for recognition of gene 
+symbols within texts are needed 
+we use the query translation functionality of pubmed to extract 
+mesh terms in a query this is done by submitting the whole 
+query to pubmed which will then return a file in which the mesh 
+terms in the query are labeled in table three mesh terms 
+within the query what is the role of gene prnp in the mad cow 
+disease are found in the pubmed translation encephalopathy 
+bovine spongiform for mad cow disease genes for gene 
+and role for role 
+table the pubmed translation of the query what is the 
+role of gene prnp in the mad cow disease 
+term pubmed translation 
+mad cow 
+disease 
+ bovine spongiform encephalopathy text word 
+or encephalopathy bovine spongiform mesh 
+terms or mad cow disease text word 
+gene 
+ genes tiab not medline sb or 
+ genes mesh terms or gene text word 
+role role mesh terms or role text word 
+ compiling domain-specific knowledge 
+in this paper domain-specific knowledge refers to information 
+about concepts and their relationships in a certain domain we 
+used five types of domain-specific knowledge in the domain of 
+genomics 
+type synonyms terms listed in the thesauruses that refer to 
+the same meaning 
+type hypernyms more generic terms one level only 
+type hyponyms more specific terms one level only 
+type lexical variants different forms of the same concept 
+such as abbreviations they are commonly used in the 
+literature but might not be listed in the thesauruses 
+type implicitly related concepts terms that are semantically 
+related and also co-occur more frequently than being 
+independent in the biomedical texts 
+knowledge of type - is retrieved from the following two 
+thesauruses mesh a controlled vocabulary maintained by 
+nlm for indexing biomedical literature the version of 
+mesh contains information about concepts these 
+concepts are organized in a tree hierarchy entrez gene one of 
+the most widely used searchable databases of genes the current 
+version of entrez gene contains information about million 
+genes it does not have a hierarchy only synonyms are retrieved 
+from entrez gene the compiling of type - knowledge is 
+introduced in section and respectively 
+ lexical variants 
+lexical variants of gene symbols 
+new gene symbols and their lexical variants are regularly 
+introduced into the biomedical literature however many 
+reference databases such as umls and entrez gene may not be 
+able to keep track of all this kind of variants for example for the 
+gene symbol nf-kappa b at least different lexical variants can 
+be found in the biomedical literature nf-kappab nfkappab 
+ nfkappa b nf-kb and nfkb three of which are not in the 
+current umls and two not in the entrez gene have shown 
+that expanding gene symbols with their lexical variants improved 
+the retrieval effectiveness of their biomedical ir systems in our 
+system we employed the following two strategies to retrieve 
+lexical variants of gene symbols 
+strategy i this strategy is to automatically generate lexical 
+variants according to a set of manually crafted heuristics 
+for example given a gene symbol pla a variant plaii is 
+generated according to the heuristic that roman numerals and 
+arabic numerals are convertible when naming gene symbols 
+another variant pla is also generated since a hyphen or a 
+space could be inserted at the transition between alphabetic and 
+numerical characters in a gene symbol 
+strategy ii this strategy is to retrieve lexical variants from an 
+abbreviation database adam is an abbreviation database 
+which covers frequently used abbreviations and their definitions 
+ or long-forms within medline the authoritative repository of 
+citations from the biomedical literature maintained by the nlm 
+given a query how does nucleoside diphosphate kinase nm 
+contribute to tumor progression we first identify the 
+abbreviation nm and its long-form nucleoside diphosphate 
+kinase using the abbreviation identification program from 
+searching the long-form nucleoside diphosphate kinase in 
+adam other abbreviations such as ndpk or ndk are 
+retrieved these abbreviations are considered as the lexical 
+variants of nm 
+lexical variants of mesh concepts 
+adam is used to obtain the lexical variants of mesh concepts as 
+well all the abbreviations of a mesh concept in adam are 
+considered as lexical variants to each other in addition those 
+long-forms that share the same abbreviation with the mesh 
+concept and are different by an edit distance of or are also 
+considered as its lexical variants as an example human 
+papilloma viruses and human papillomaviruses have the same 
+abbreviation hpv in adam and their edit distance is thus 
+they are considered as lexical variants to each other the edit 
+distance between two strings is measured by the minimum number 
+of insertions deletions and substitutions of a single character 
+required to transform one string into the other 
+ implicitly related concepts 
+motivation in some cases there are few documents in the 
+literature that directly answer a given query in this situation those 
+documents that implicitly answer their questions or provide 
+supporting information would be very helpful for example there 
+are few documents in pubmed that directly answer the query 
+ what is the role of the genes hnf and coup-tf i in the 
+suppression in the function of the liver however there exist 
+some documents about the role of hnf and coup-tf i in 
+regulating hepatitis b virus transcription it is very likely that the 
+biologists would be interested in these documents because 
+ hepatitis b virus is known as a virus that could cause serious 
+damage to the function of liver in the given example hepatitis b 
+virus is not a synonym hypernym hyponym nor a lexical variant 
+of any of the query concepts but it is semantically related to the 
+query concepts according to the umls semantic network we 
+call this type of concepts implicitly related concepts of the 
+query this notion is similar to the b-term used in for 
+relating two disjoint literatures for biomedical hypothesis 
+generation the difference is that we utilize the semantic 
+relationships among query concepts to exclusively focus on 
+concepts of certain semantic types 
+a query q in format of section can be represented by 
+q a c 
+where a is the set of biological objects and c is the set of 
+biological processes those concepts that are semantically related 
+to both a and c according to the umls semantic network are 
+considered as the implicitly related concepts of the query in the 
+above example a hnf coup-tf i c function of 
+liver and hepatitis b virus is one of the implicitly related 
+concepts 
+we make use of the medline database to extract the implicitly 
+related concepts the version of medline database 
+contains citations i e abstracts titles and etc of over million 
+biomedical articles each document in medline is manually 
+indexed by a list of mesh terms to describe the topics covered by 
+that document implicitly related concepts are extracted and 
+ranked in the following steps 
+step let list a be the set of mesh terms that are used for 
+indexing those medline citations having a and semantically 
+related to a according to the umls semantic network similarly 
+list c is created for c concepts in b list a ∩ list c are 
+considered as implicitly related concepts of the query 
+step for each concept b∈b compute the association between 
+b and a using the mutual information measure 
+p 
+ log 
+p p 
+b a 
+i b a 
+b a 
+ 
+where p x n n n is the number of medline citations having x 
+and n is the size of medline a large value for i b a means 
+that b and a co-occur much more often than being independent 
+i b c is computed similarly 
+step let r b i b a i b c for b∈ b given b b ∈ b 
+we say r b ≤ r b if i b a ≤ i b a and i b c ≤ i b c 
+then the association between b and the query q is measured by 
+ and 
+ 
+ and 
+x x b r x r b 
+score b q 
+x x b r b r x 
+∈ ≤ 
+ 
+∈ ≤ 
+ 
+the numerator in formula is the number of the concepts in b 
+that are associated with both a and c equally with or less than b 
+the denominator is the number of the concepts in b that are 
+associated with both a and c equally with or more than b figure 
+ shows the top implicitly related concepts for the sample 
+query 
+figure top implicitly related concepts for the query 
+ how do interactions between hnf and coup-tf suppress 
+liver function 
+in figure the top implicitly related concepts are all highly 
+associated with liver hepatocytes are liver cells 
+hepatoblastoma is a malignant liver neoplasm occurring in 
+young children the vast majority of gluconeogenesis takes 
+place in the liver and hepatitis b virus is a virus that could 
+cause serious damage to the function of liver 
+the top-k ranked concepts in b are used for query expansion if 
+i b a ≥ i b c then b is considered as an implicit related 
+concept of a a document having b but not a will receive a partial 
+weight of a the expansion is similar for c when i b a i b c 
+ conceptual ir model 
+we now discuss our conceptual ir model we first give the basic 
+conceptual ir model in section then we explain how the 
+domain-specific knowledge is incorporated in the model using 
+query expansion in section a pseudo-feedback strategy is 
+introduced in section in section we give a strategy to 
+improve the ranking by avoiding incorrect match of abbreviations 
+ basic model 
+given a query q and a document d our model measures two 
+similarities concept similarity and word similarity 
+ 
+concept word 
+sim q d sim q d sim q d 
+concept similarity 
+two vectors are derived from a query q 
+ 
+ 
+ 
+ 
+ 
+ 
+m 
+n 
+q v v 
+v c c c 
+v c c c 
+ 
+ 
+ 
+where v is a vector of concepts describing the biological object s 
+and v is a vector of concepts describing the biological process es 
+given a vector of concepts v let s v be the set of concepts in v 
+the weight of vi is then measured by 
+ max log and i i v 
+v 
+n 
+w v s v s v n 
+n 
+ ⊆ 
+where v is a vector that contains a subset of concepts in vi and nv is 
+the number of documents having all the concepts in v 
+the concept similarity between q and d is then computed by 
+ 
+ 
+ i i 
+concept i 
+w vsim q d α 
+ 
+ ×∑ 
+where αi is a parameter to indicate the completeness of vi that 
+document d has covered αi is measured by 
+and i 
+i 
+i 
+c 
+c d c v 
+c 
+c v 
+idf 
+idf 
+α 
+∈ ∈ 
+∈ 
+ 
+∑ 
+∑ 
+ 
+where idfc is the inverse document frequency of concept c 
+an example suppose we have a query how does nurr- delete 
+t cells before they migrate to the spleen or lymph nodes and how 
+does this impact autoimmunity after identifying the concepts in 
+the query we have 
+ 
+ 
+ nurr- 
+ t cells spleen autoimmunity lymph nodes 
+v 
+v 
+ 
+ 
+suppose that some document frequencies of different 
+combinations of concepts are as follows 
+ df nurr- 
+ df t cells spleen autoimmunity lymph nodes 
+ df t cells spleen autoimmunity 
+ df spleen autoimmunity lymph nodes 
+ df t cells autoimmunity lymph nodes 
+ df t cells spleen lymph nodes 
+the weight of vi is then computed by note that there does not exist 
+a document having all the concepts in v 
+ 
+ 
+ log 
+ log 
+w v n 
+w v n 
+ 
+ 
+ 
+now suppose a document d contains concepts  nurr- t cells 
+ spleen and lymph nodes but not  autoimmunity then the value 
+of parameter αi is computed as follows 
+ 
+ 
+ 
+ t cells spleen lymph nodes 
+ t cells spleen lymph nodes autoimmunity 
+idf idf idf 
+idf idf idf idf 
+α 
+α 
+ 
+ 
+word similarity 
+the similarity between q and d on the word level is computed 
+using okapi 
+ 
+log 
+ word w q 
+n n k tf 
+sim q d 
+n k tf∈ 
+− 
+ 
+ 
+∑ 
+where n is the size of the document collection n is the number of 
+documents containing w k k × -b b × dl avdl and k 
+c 
+function 
+of liver 
+implicitly related concepts b 
+hepatocytes 
+hepatoblastoma 
+gluconeogenesis 
+hepatitis b virus 
+hnf and 
+coup-tf i 
+a 
+b are constants dl is the document length of d and avdl is the 
+average document length tf is the term frequency of w within d 
+the model 
+given two documents d and d we say sim q d sim q d or 
+d will be ranked higher than d with respect to the same query q 
+if either 
+ 
+concept concept 
+sim q d sim q d or 
+ and 
+concept concept word word 
+sim q d sim q d sim q d sim q d 
+this conceptual ir model emphasizes the similarity on the concept 
+level a similar model but applied to non-biomedical domain has 
+been given in 
+ incorporating domain-specific knowledge 
+given a concept c a vector u is derived by incorporating its 
+domain-specific knowledge 
+ u c u u u 
+where u is a vector of its synonyms hyponyms and lexical 
+variants u is a vector of its hypernyms and u is a vector of its 
+implicitly related concepts an occurrence of any term in u will 
+be counted as an occurrence of c idfc in formula is updated as 
+ 
+logc 
+c u 
+n 
+d 
+idf 
+ c ud is the set of documents having c or any term in u the 
+weight that a document d receives from u is given by 
+max and tw t u t d∈ ∈ 
+where wt β cidf× the weighting factor β is an empirical tuning 
+parameter determined as 
+ β if t is the original concept its synonym its hyponym or 
+its lexical variant 
+ β if t is a hypernym 
+ β × k-i k if t is an implicitly related concept k is 
+the number of selected top ranked implicitly related concepts 
+ see section i is the position of t in the ranking of 
+implicitly related concepts 
+ pseudo-feedback 
+pseudo-feedback is a technique commonly used to improve 
+retrieval performance by adding new terms into the original query 
+we used a modified pseudo-feedback strategy described in 
+step let c be the set of concepts in the top ranked 
+documents for each concept c in c compute the similarity 
+between c and the query q the computation of sim q c can be 
+found in 
+step the top-k ranked concepts by sim q c are selected 
+step associate each selected concept c with the concept cq in 
+q that has the same semantic type as c and is most related to 
+c among all the concepts in q the association between c and cq 
+is computed by 
+p 
+ log 
+p p 
+q 
+q 
+q 
+c c 
+i c c 
+c c 
+ 
+where p x n n n is the number of documents having x and n is 
+the size of the document collection a document having c but not 
+cq receives a weight given by × k-i k qcidf× where i is the 
+position of c in the ranking of step 
+ avoid incorrect match of abbreviations 
+some gene symbols are very short and thus ambiguous for 
+example the gene symbol apc could be the abbreviation for 
+many non-gene long-forms such as air pollution control 
+aerobic plate count or argon plasma coagulation this step is 
+to avoid incorrect match of abbreviations in the top ranked 
+documents 
+given an abbreviation x with the long-form l in the query we 
+scan the top-k ranked k documents and when a document 
+is found with x we compare l with all the long-forms of x in that 
+document if none of these long-forms is equal or close to l i e 
+the edit distance between l and the long-form of x in that 
+document is or then the concept similarity of x is subtracted 
+ passage extraction 
+the goal of passage extraction is to highlight the most relevant 
+fragments of text in paragraphs a passage is defined as any span 
+of text that does not include the html paragraph tag i e p or 
+ p a passage could be a part of a sentence a sentence a set of 
+consecutive sentences or a paragraph i e the whole span of text 
+that are inside of p and p html tags it is also possible to 
+have more than one relevant passage in a single paragraph our 
+strategy for passage extraction assumes that the optimal passage s 
+in a paragraph should have all the query concepts that the whole 
+paragraph has also they should have higher density of query 
+concepts than other fragments of text in the paragraph 
+suppose we have a query q and a paragraph p represented by a 
+sequence of sentences np s s s let c be the set of concepts in 
+q that occur in p and s φ 
+step for each sequence of consecutive sentences i i js s s ≤ 
+i ≤ j ≤ n let s s i i js s s ∪ if i i js s s satisfies that 
+ every query concept in c occurs in i i js s s and 
+ there does not exist k such that i k j and every query 
+concept in c occurs in i i ks s s or k k js s s 
+condition requires i i js s s having all the query concepts in p 
+and condition requires i i js s s be the minimal 
+step let min i i jl j i s s s s − ∈ for every 
+ i i js s s in s let i i js s s s s − if j - i l this step is to 
+remove those sequences of sentences in s that have lower density 
+of query concepts 
+step for every two sequences of consecutive 
+sentences and i i j i i js s s s s s s s ∈ ∈ if 
+ 
+ 
+ and 
+ 
+i i j j 
+i j 
+≤ ≤ 
+≤ 
+ 
+then do 
+repeat this step until for every two sequences of consecutive 
+sentences in s condition does not apply this step is to merge 
+those sequences of sentences in s that are adjacent or overlapped 
+finally the remaining sequences of sentences in s are returned as 
+the optimal passages in the paragraph p with respect to the query 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+i i j 
+i i j 
+i i j 
+s s s s s 
+s s s s s 
+s s s s s 
+ 
+ 
+ 
+ ∪ 
+ − 
+ − 
+ experimental results 
+the evaluation of our techniques and the experimental results are 
+given in this section we first describe the datasets and evaluation 
+metrics used in our experiments and then present the results 
+ data sets and evaluation metrics 
+our experiments were performed on the platform of the genomics 
+track of trec the document collection contains 
+full-text documents from highwire biomedical journals the set 
+of queries consists of queries collected from real biologists 
+the performance is measured on three different levels passage 
+aspect and document to provide better insight on how the 
+question is answered from different perspectives passage map 
+as described in this is a character-based precision calculated 
+as follows at each relevant retrieved passage precision will be 
+computed as the fraction of characters overlapping with the gold 
+standard passages divided by the total number of characters 
+included in all nominated passages from this system for the topic 
+up until that point similar to regular map relevant passages that 
+were not retrieved will be added into the calculation as well with 
+precision set to for relevant passages not retrieved then the 
+mean of these average precisions over all topics will be calculated 
+to compute the mean average passage precision aspect map a 
+question could be addressed from different aspects for example 
+the question what is the role of gene prnp in the mad cow 
+disease could be answered from aspects like diagnosis 
+neurologic manifestations or prions genetics this measure 
+indicates how comprehensive the question is answered document 
+map this is the standard ir measure the precision is measured 
+at every point where a relevant document is obtained and then 
+averaged over all relevant documents to obtain the average 
+precision for a given query for a set of queries the mean of the 
+average precision for all queries is the map of that ir system 
+the output of the system is a list of passages ranked according to 
+their similarities with the query the performances on the three 
+levels are then calculated based on the ranking of the passages 
+ results 
+the wilcoxon signed-rank test was employed to determine the 
+statistical significance of the results in the tables of the following 
+sections statistically significant improvements at the level 
+are marked with an asterisk 
+ conceptual ir model vs term-based model 
+the initial baseline was established using word similarity only 
+computed by the okapi formula another run based on our 
+basic conceptual ir model was performed without using query 
+expansion pseudo-feedback or abbreviation correction the 
+experimental result is shown in table our basic conceptual 
+ir model significantly outperforms the okapi on all three levels 
+which suggests that although it requires additional efforts to 
+identify concepts retrieval on the concept level can achieve 
+substantial improvements over purely term-based retrieval model 
+ contribution of different types of knowledge 
+a series of experiments were performed to examine how each type 
+of domain-specific knowledge contributes to the retrieval 
+performance a new baseline was established using the basic 
+conceptual ir model without incorporating any type of 
+domainspecific knowledge then five runs were conducted by adding 
+each individual type of domain-specific knowledge we also 
+conducted a run by adding all types of domain-specific knowledge 
+results of these experiments are shown in table 
+we found that any available type of domain-specific 
+knowledge improved the performance in passage retrieval the 
+biggest improvement comes from the lexical variants which is 
+consistent with the result reported in this result also indicates 
+that biologists are likely to use different variants of the same 
+concept according to their own writing preferences and these 
+variants might not be collected in the existing biomedical 
+thesauruses it also suggests that the biomedical ir systems can 
+benefit from the domain-specific knowledge extracted from the 
+literature by text mining systems 
+synonyms provided the second biggest improvement 
+hypernyms hyponyms and implicitly related concepts provided 
+similar degrees of improvement the overall performance is an 
+accumulative result of adding different types of domain-specific 
+knowledge and it is better than any individual addition it is clearly 
+shown that the performance is significantly improved on 
+passage level on aspect level and on document 
+level when the domain-specific knowledge is appropriately 
+incorporated although it is not explicitly shown in table 
+different types of domain-specific knowledge affect different 
+subsets of queries more specifically each of these types with the 
+exception of the lexical variants which affects a large number of 
+queries affects only a few queries but for those affected queries 
+their improvement is significant as a consequence the 
+accumulative improvement is very significant 
+ pseudo-feedback and abbreviation correction 
+using the baseline all in table as a new baseline the 
+contribution of abbreviation correction and pseudo-feedback is 
+given in table there is little improvement by avoiding 
+incorrect matching of abbreviations the pseudo-feedback 
+contributed about improvement in passage retrieval 
+ performance compared with best-reported results 
+we compared our result with the results reported in the genomics 
+track of trec on the conditions that systems are 
+automatic systems and passages are extracted from paragraphs 
+the performance of our system relative to the best reported results 
+is shown in table in trec some systems returned the 
+whole paragraphs as passages as a consequence excellent 
+retrieval results were obtained on document and aspect levels at 
+the expense of performance on the passage level we do not 
+include the results of such systems here 
+table performance compared with best-reported results 
+passage map aspect map document map 
+best reported results 
+our results 
+improvement 
+the best reported results in the first row of table on three 
+levels passage aspect and document are from different systems 
+our result is from a single run on passage retrieval in which it is 
+better than the best reported result by in passage retrieval 
+and at the same time better in aspect retrieval and 
+better in document retrieval since the average precision of each 
+individual query was not reported we can not apply the wilcoxon 
+signed-rank test to calculate the significance of difference between 
+our performance and the best reported result 
+table basic conceptual ir model vs term-based model 
+run passage aspect document 
+map imprvd qs map imprvd qs map imprvd qs 
+okapi n a n a n a 
+basic conceptual ir model 
+table contribution of different types of domain-specific knowledge 
+run passage aspect document 
+map imprvd qs map imprvd qs map imprvd qs 
+baseline 
+ basic conceptual ir model 
+ n a n a n a 
+baseline synonyms 
+baseline hypernyms - 
+baseline hyponyms - 
+baseline variants 
+baseline related - 
+baseline all 
+table contribution of abbreviation correction and pseudo-feedback 
+run passage aspect document 
+map imprvd qs map imprvd qs map imprvd qs 
+baseline all n a n a n a 
+baseline all abbr - - 
+baseline all abbr pf 
+a separate experiment has been done using a second testbed the 
+ad-hoc task of trec genomics to evaluate our 
+knowledge-intensive conceptual ir model for document retrieval 
+of biomedical literature the overall performance in terms of map 
+is which is about above the best reported result 
+ notice that the performance was only measured on the 
+document level for the ad-hoc task of trec genomics 
+ related works 
+many studies used manually-crafted thesauruses or knowledge 
+databases created by text mining systems to improve retrieval 
+effectiveness based on either word-statistical retrieval systems or 
+conceptual retrieval systems 
+ assessed query expansion using the umls 
+metathesaurus based on a word-statistical retrieval system 
+used definitions and different types of thesaurus relationships for 
+query expansion and a deteriorated performance was reported 
+expanded queries with phrases and umls concepts determined by 
+the metamap a program which maps biomedical text to umls 
+concepts and no significant improvement was shown we used 
+mesh entrez gene and other non-thesaurus knowledge resources 
+such as an abbreviation database for query expansion a critical 
+difference between our work and those in is that our 
+retrieval model is based on concepts not on individual words 
+the genomics track in trec provides a common platform to 
+evaluate methods and techniques proposed by various groups for 
+biomedical information retrieval as summarized in 
+many groups utilized domain-specific knowledge to improve 
+retrieval effectiveness among these groups assessed both 
+thesaurus-based knowledge such as gene information and non 
+thesaurus-based knowledge such as lexical variants of gene 
+symbols for query expansion they have shown that query 
+expansion with acronyms and lexical variants of gene symbols 
+produced the biggest improvement whereas the query expansion 
+with gene information from gene databases deteriorated the 
+performance used a similar approach for generating lexical 
+variants of gene symbols and reported significant improvements 
+our system utilized more types of domain-specific knowledge 
+including hyponyms hypernyms and implicitly related concepts 
+in addition under the conceptual retrieval framework we 
+examined more comprehensively the effects of different types of 
+domain-specific knowledge in performance contribution 
+ utilized wordnet a database of english words and 
+their lexical relationships developed by princeton university for 
+query expansion in the non-biomedical domain in their studies 
+queries were expanded using the lexical semantic relations such as 
+synonyms hypernyms or hyponyms little benefit has been 
+shown in this has been due to ambiguity of the query terms 
+which have different meanings in different contexts when these 
+synonyms having multiple meanings are added to the query 
+substantial irrelevant documents are retrieved in the biomedical 
+domain this kind of ambiguity of query terms is relatively less 
+frequent because although the abbreviations are highly 
+ambiguous general biomedical concepts usually have only one 
+meaning in the thesaurus such as umls whereas a term in 
+wordnet usually have multiple meanings represented as synsets 
+in wordnet besides we have implemented a post-ranking step 
+to reduce the number of incorrect matches of abbreviations which 
+will hopefully decrease the negative impact caused by the 
+abbreviation ambiguity besides we have implemented a 
+postranking step to reduce the number of incorrect matches of 
+abbreviations which will hopefully decrease the negative impact 
+caused by the abbreviation ambiguity the retrieval model in 
+emphasized the similarity between a query and a document on the 
+phrase level assuming that phrases are more important than 
+individual words when retrieving documents although the 
+assumption is similar our conceptual model is based on the 
+biomedical concepts not phrases 
+ presented a good study of the role of knowledge in the 
+document retrieval of clinical medicine they have shown that 
+appropriate use of semantic knowledge in a conceptual retrieval 
+framework can yield substantial improvements although the 
+retrieval model is similar we made a study in the domain of 
+genomics in which the problem structure and task knowledge is 
+not as well-defined as in the domain of clinical medicine 
+also our similarity function is very different from that in 
+in summary our approach differs from previous works in four 
+important ways first we present a case study of conceptual 
+retrieval in the domain of genomics where many knowledge 
+resources can be used to improve the performance of biomedical 
+ir systems second we have studied more types of 
+domainspecific knowledge than previous researchers and carried out more 
+comprehensive experiments to look into the effects of different 
+types of domain-specific knowledge in performance contribution 
+third although some of the techniques seem similar to previously 
+published ones they are actually quite different in details for 
+example in our pseudo-feedback process we require that the unit 
+of feedback is a concept and the concept has to be of the same 
+semantic type as a query concept this is to ensure that our 
+conceptual model of retrieval can be applied as another example 
+the way in which implicitly related concepts are extracted in this 
+paper is significantly different from that given in finally our 
+conceptual ir model is actually based on complex concepts 
+because some biomedical meanings such as biological processes 
+are represented by multiple simple concepts 
+ conclusion 
+this paper proposed a conceptual approach to utilize 
+domainspecific knowledge in an ir system to improve its effectiveness in 
+retrieving biomedical literature we specified five different types 
+of domain-specific knowledge i e synonyms hyponyms 
+hypernyms lexical variants and implicitly related concepts and 
+examined their effects in performance contribution we also 
+evaluated other two techniques pseudo-feedback and abbreviation 
+correction experimental results have shown that appropriate use 
+of domain-specific knowledge in a conceptual ir model yields 
+significant improvements in passage retrieval over the best 
+known results in our future work we will explore the use of other 
+existing knowledge resources such as umls and the wikipedia 
+and evaluate techniques such as disambiguation of gene symbols 
+for improving retrieval effectiveness the application of our 
+conceptual ir model in other domains such as clinical medicine 
+will be investigated 
+ acknowledgments 
+insightful discussion 
+ references 
+ aronson a r rindflesch t c query expansion using the 
+umls metathesaurus proc amia annu fall symp 
+ - 
+ baeza-yates r ribeiro-neto b modern information 
+retrieval addison-wesley - 
+ buttcher s clarke c l a cormack g v domain-specific 
+synonym expansion and validation for biomedical 
+information retrieval multitext experiments for trec 
+ trec 
+ chang j t schutze h altman r b creating an online 
+dictionary of abbreviations from medline journal of the 
+american medical informatics association 
+ church k w hanks p word association norms mutual 
+information and lexicography computational linguistics 
+ c 
+ fontelo p liu f ackerman m askmedline a free-text 
+natural language query tool for medline pubmed bmc 
+med inform decis mak mar 
+ fukuda k tamura a tsunoda t takagi t toward 
+information extraction identifying protein names from 
+biological papers pac symp biocomput - 
+ hersh w r and etc trec genomics track overview 
+trec 
+ hersh w r and etc trec genomics track overview 
+in trec 
+ hersh w r and etc trec genomics track overview 
+in trec 
+ hersh w r price s donohoe l assessing thesaurus-based 
+query expansion using the umls metathesaurus proc amia 
+symp - 
+ levenshtein v binary codes capable of correcting deletions 
+insertions and reversals soviet physics - doklady 
+ - 
+ lin j demner-fushman d the role of knowledge in 
+conceptual retrieval a study in the domain of clinical 
+medicine sigir - 
+ lindberg d humphreys b and mccray a the unified 
+medical language system methods of information in 
+medicine - 
+ liu s liu f yu c and meng w y an effective 
+approach to document retrieval via utilizing wordnet and 
+recognizing phrases sigir - 
+ proux d rechenmann f julliard l pillet v v jacq b 
+detecting gene symbols and names in biological texts a 
+first step toward pertinent information extraction genome 
+inform ser workshop genome inform - 
+ robertson s e walker s okapi keenbow at trec- nist 
+special publication - trec 
+ sackett d l and etc evidence-based medicine how to 
+practice and teach ebm churchill livingstone second 
+edition 
+ swanson d r smalheiser n r an interactive system for 
+finding complemen-tary literatures a stimulus to scientific 
+discovery artificial intelligence - 
+ voorhees e query expansion using lexical-semantic 
+relations sigir - 
+ zhong m huang x j concept-based biomedical text 
+retrieval sigir - 
+ zhou w torvik v i smalheiser n r adam another 
+database of abbreviations in medline bioinformatics 
+ - 

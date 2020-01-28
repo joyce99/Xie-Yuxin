@@ -1,0 +1,1242 @@
+edge indexing in a grid for highly dynamic virtual 
+environments 
+beomjoo seo 
+bseo usc edu 
+roger zimmermann 
+rzimmerm imsc usc edu 
+computer science department 
+university of southern california 
+los angeles ca 
+abstract 
+newly emerging game-based application systems such as second 
+life 
+provide d virtual environments where multiple users 
+interact with each other in real-time they are filled with autonomous 
+mutable virtual content which is continuously augmented by the 
+users to make the systems highly scalable and dynamically 
+extensible they are usually built on a client-server based grid subspace 
+division where the virtual worlds are partitioned into manageable 
+sub-worlds in each sub-world the user continuously receives 
+relevant geometry updates of moving objects from remotely 
+connected servers and renders them according to her viewpoint rather 
+than retrieving them from a local storage medium 
+in such systems the determination of the set of objects that are 
+visible from a user s viewpoint is one of the primary factors that 
+affect server throughput and scalability specifically performing 
+real-time visibility tests in extremely dynamic virtual environments 
+is a very challenging task as millions of objects and sub-millions of 
+active users are moving and interacting we recognize that the 
+described challenges are closely related to a spatial database problem 
+and hence we map the moving geometry objects in the virtual space 
+to a set of multi-dimensional objects in a spatial database while 
+modeling each avatar both as a spatial object and a moving query 
+unfortunately existing spatial indexing methods are unsuitable for 
+this kind of new environments 
+the main goal of this paper is to present an efficient spatial 
+index structure that minimizes unexpected object popping and 
+supports highly scalable real-time visibility determination we then 
+uncover many useful properties of this structure and compare the 
+index structure with various spatial indexing methods in terms of 
+query quality system throughput and resource utilization we 
+expect our approach to lay the groundwork for next-generation 
+virtual frameworks that may merge into existing web-based services 
+in the near future 
+categories and subject descriptors c computer - 
+communication networks distributed systems - client server 
+distributed applications distributed databases i computer 
+graphics three-dimensional graphics and realism - virtual reality 
+general terms algorithms design performance 
+ introduction 
+recently massively multiplayer online games mmogs have 
+been studied as a framework for next-generation virtual 
+environments many mmog applications however still limit themselves 
+to a traditional design approach where their d scene complexity 
+is carefully controlled in advance to meet real-time rendering 
+constraints at the client console side 
+to enable a virtual landscape in next-generation environments 
+that is seamless endless and limitless marshall et al identified 
+four new requirements 
+ dynamic extensibility a system allows 
+the addition or the change of components at run time 
+scalability although the number of concurrent users increases the 
+system continues to function effectively interactibility and 
+interoperability in this paper we mainly focus on the first two 
+requirements 
+dynamic extensibility allows regular game-users to deploy their 
+own created content this is a powerful concept but unfortunately 
+user-created content tends to create imbalances among the 
+existing scene complexity causing system-wide performance problems 
+full support for dynamic extensibility will thus continue to be one 
+of the biggest challenges for game developers 
+another important requirement is scalability although mmog 
+developers proclaim that their systems can support hundreds of 
+thousands of concurrent users it usually does not mean that all 
+the users can interact with each other in the same world by 
+carefully partitioning the world into multiple sub-worlds or replicating 
+worlds at geographically dispersed locations massive numbers of 
+concurrent users can be supported typically the maximum 
+number of users in the same world managed by a single server or a 
+server-cluster is limited to several thousands assuming a rather 
+stationary world 
+second life is the first successfully deployed mmog 
+system that meets both requirements to mitigate the dynamics of the 
+game world where a large number of autonomous objects are 
+continuously moving it partitions the space in a grid-like manner and 
+ 
+originally these requirements were specified for their dedicated 
+platform but we acknowledge that these requirements are also 
+valid for new virtual environments 
+ 
+avatar 
+object poppingautonomous entities 
+ a at time t b at time t δ 
+figure object popping occurred as a user moves forward 
+ screenshots from second life where δ seconds 
+employs a client server based d object streaming model in 
+this model a server continuously transmits both update events and 
+geometry data to every connected user as a result this 
+extensible gaming environment has accelerated the deployment of 
+usercreated content and provides users with unlimited freedom to 
+pursue a navigational experience in its space 
+one of the main operations in mmog applications that stream 
+ d objects is to accurately calculate all objects that are visible to 
+a user the traditional visibility determination approach however 
+has an object popping problem for example a house outside a 
+user s visible range is not drawn at time t illustrated in figure a 
+as the user moves forward the house will suddenly appear at time 
+ t δ as shown in figure b if δ is small or the house is 
+large enough to collide with the user it will disrupt the user s 
+navigational experience 
+the visibility calculation for each user not only needs to be 
+accurate but also fast this challenge is illustrated by the fact that the 
+maximum number of concurrent users per server of second life is 
+still an order of magnitude smaller than for stationary worlds 
+to address these challenges we propose a method that identifies 
+the most relevant visible objects from a given geometry database 
+ view model and then put forth a fast indexing method that 
+computes the visible objects for each user spatial indexing our two 
+novel methods represent the main contributions of this work 
+the organization of this paper is as follows section presents 
+related work section describes our new view method in 
+section we present assumptions on our target application and 
+introduce a new spatial indexing method designed to support real-time 
+visibility computations we also discuss its optimization issues 
+section reports on the quantitative analysis and section presents 
+preliminary results of our simulation based experiments finally 
+we conclude and address future research directions in section 
+ related work 
+visibility determination has been widely explored in the field of 
+ d graphics various local rendering algorithms have been 
+proposed to eliminate unnecessary objects before rendering or at any 
+stage in the rendering pipeline view-frustum culling back-face 
+culling and occlusion culling are some of the well-known 
+visibility culling techniques however these algorithms assume that 
+all the candidate visible objects have been stored locally 
+if the target objects are stored on remote servers the clients 
+receive the geometry items that are necessary for rendering from the 
+server databases teller et al described a geometry data scheduling 
+algorithm that maximizes the quality of the frame rate over time in 
+remote walkthroughs of complex d scenes from a user s 
+navigational path funkhouser et al showed that multi-resolutional 
+representation such as levels of detail lod can be used to 
+improve rendering frame rates and memory utilization during 
+interactive visualization however these online optimization 
+algorithms fail to address performance issue at the server in highly 
+crowded environments on the other hand our visibility 
+computation model a representative of this category is based on different 
+assumptions on the data representation of virtual entities 
+in the graphics area there has been little work on supporting 
+real-time visibility computations for a massive number of moving 
+objects and users here we recognize that such graphics related 
+issues have a very close similarity to spatial database problems 
+recently a number of publications have addressed the 
+scalability issue on how to support massive numbers of objects and queries 
+in highly dynamic environments to support frequent updates two 
+partitioning policies have been studied in depth r-tree based 
+spatial indexing and grid-based spatial indexing the r-tree 
+is a well-known spatial index structure that allows overlapping 
+between the regions in different branches which are represented by 
+minimum bounding rectangles mbr the grid-based 
+partitioning model is a special case of fixed partitioning recently it has 
+been re-discovered since it can be efficient in highly dynamic 
+environments 
+many studies have reported that the r-tree and its variants r 
+ 
+tree r 
+-tree suffer from unacceptable performance degradation in 
+a highly dynamic environment primarily due to the computational 
+complexity of the split algorithm a bottom-up 
+update strategy proposed for r-trees optimizes update 
+operations of the index while maintaining a top down query processing 
+mechanism instead of traversing a tree from the root node for 
+frequent update requests top-down approach it directly accesses the 
+leaf node of the object to be updated via an object hash table 
+q-index is one of the earlier work that re-discovers 
+the usefulness of grid-based space partitioning for emerging 
+moving object environments in contrast to traditional spatial indexing 
+methods that construct an index on the moving objects it builds an 
+index on the continuous range queries assuming that the queries 
+move infrequently while the objects move freely the basic idea 
+of the q rtree is to separate indexing structures for 
+quasistationary objects and moving objects fast-moving objects are 
+indexed in a quadtree and quasi-stationary objects are stored in an 
+r 
+-tree sina was proposed to provide efficient query 
+evaluations for any combination of stationary moving objects and 
+stationary moving queries specifically this approach only detects 
+newly discovered positive or no longer relevant negative object 
+updates efficiently unlike other spatial indexing methods that 
+focus on reducing the query evaluation cost hu et al proposed 
+a general framework that minimizes the communication cost for 
+location updates by maintaining a rectangular area called a safe 
+region around moving objects as long as any object resides in this 
+region all the query results are guaranteed to be valid in the 
+system if objects move out of their region location update requests 
+should be delivered to the database server and the affected queries 
+are re-evaluated on the fly our indexing method is very similar 
+to the above approaches the major difference is that we are more 
+concentrating on real-time visibility determination while others 
+assume loose timing constraints 
+ object-initiated view model 
+in this section we illustrate how the object popping problem can be 
+associated with a typical view decision model we then propose our 
+own model and finally we discuss its strengths and limitations to 
+begin with we define the terminologies commonly used throughout 
+this paper 
+entities in a virtual space can be categorized into three types 
+ 
+based on their role - autonomous entities spectator entities and 
+avatars the term autonomous entity refers to an ordinary moving 
+or stationary geometric object that can be visible to other entities 
+the spectator entity corresponds to a player s viewpoint but is 
+invisible to other entities it has no shape and is represented only 
+by a point location it is designed to allow a game participant to 
+see from a third-person viewpoint it functions similar to a 
+camera control in the d graphics field it also has a higher degree of 
+mobility than other entities the avatar represents a normal game 
+user who can freely navigate in the space and interact with other 
+entities it possesses both features its own viewpoint and 
+visibility for the remainder we use the term object entity to refer to an 
+autonomous entity or an avatar while we use user entity to denote 
+an avatar or a spectator entity 
+the visible range of an entity refers to the spatial extent within 
+which any other entity can recognize its existence it is based on 
+the assumptions that there always exists an optimal visible distance 
+between a user and an object at any given time and every user 
+possesses equal visibility thus the user and the object only when 
+their current distance is smaller than or equal to the optimal can 
+see each other to specify the visible range much literature in the 
+graphics area uses a circular area of interest aoi whose 
+center is the location of an entity its omnidirectional nature 
+allows rapid directional changes without any display disruptions at 
+the periphery of the viewable area however we employ a 
+squareshaped aoi at the expense of accuracy because the square-shaped 
+spatial extension is very simple and efficient to be indexed in a grid 
+partitioned world 
+the traditional view model which we call user-initiated view 
+model assumes that a user entity has an aoi while an object entity 
+does not as the user navigates she continuously searches for all 
+the entities within her aoi due to its simple design and its low 
+indexing overhead many location based services lbss and game 
+applications use this model 
+however the user-initiated model has a serious object popping 
+problem during navigation recall as shown in figure that the 
+house that will have appeared at time t δ does not appear at 
+time t because the user cannot recognize objects that are outside of 
+her aoi at time t in fact it turned out that the side length of her 
+aoi was smaller than the optimal distance between the user and the 
+house at the time t therefore there is no other way but to increase 
+the visible range of the user in this model to make such an 
+experience unlikely a large aoi however may lead to a significant 
+system degradation 
+to overcome the object popping problem we propose a new 
+view model which we call object-initiated view model all object 
+entities have their own aoi centered at their current location while 
+all spectator entities have no aoi every user entity recognizes the 
+objects whose aois cover its point location 
+the main strengths of the new model are that it has no object 
+popping problem as long as the underlying system can manage the 
+optimal visible range of all object entities correctly and that the 
+content creators can produce an enriched expressiveness of various 
+behavioral and temporal changes a huge object may have a 
+farther visible range than a small one an object has a broader visible 
+range during day-time than at night even during the night the 
+visible range of an object that owns a light source will have a much 
+wider visible area than a non-illuminated object if an object is 
+located inside a building its visible range would be constrained by 
+the surrounding structure 
+one of the potential arguments against the object-initiated view 
+is that indexing of the spatial extension of an object is too complex 
+to be practical compared with the user-initiated view we agree 
+e 
+e 
+a 
+s 
+client s 
+client a 
+sub-world 
+server 
+figure target system in a × grid partition 
+that existing spatial indexing methods are inefficient in 
+supporting our view model to refute this argument we propose a novel 
+spatial indexing solution detailed in section our spatial 
+indexing solution offers a very promising performance even with a large 
+number of mobile entities and visibility calculations in real-time 
+for the rest of the paper our design scope is limited to a d space 
+although our application is targeted for d environments 
+ 
+note that our view model is not intended to rival a sophisticated 
+visibility decision algorithm such as visibility culling but to 
+efficiently filter out unnecessary entities that do not contribute to the 
+final image in section we evaluate both models through 
+quantitatively measures such as the degree of expressiveness and the 
+quality of the two view models and we discuss simulation results 
+ design of edge indexing 
+in section we introduce our target application model next 
+section presents an abstraction of our node and edge structures 
+whose detailed indexing and cell evaluation methods are explained 
+later in sections and several optimization issues for edge 
+indexing follow in section 
+ target application 
+our target application assumes both d object streaming and 
+sub-world hosting the sub-world hosting is a collaborative 
+virtual environment where every server hosts one sub-world thus 
+constructing a single world second life is the classic example 
+of such an approach 
+a virtual space is partitioned into equal-sized sub-worlds the 
+sample sub-world separated with bold-dashed lines in figure 
+contains four virtual entities two autonomous entities e e 
+one spectator entity s and one avatar a as mentioned in 
+section all object entities e e a have their own square-shaped 
+aoi two user entities s a are associated with individual client 
+machines client s and client a in the figure the spatial 
+condition that the point location of s resides inside the aoi of e can 
+be symbolized as s p ∈ e r 
+every sub-world is managed by its dedicated server machine 
+each server indexes all the entities delivers any new events i e 
+a new user enters into the sub-world or an object moves from one 
+place to another to clients and resolves any inconsistencies among 
+the entities for efficient management of moving entities a server 
+further divides its sub-world into smaller partitions called grid 
+cells figure shows the × grid enclosed by the dashed lines 
+instead of indexing the object entities with a user entity structure 
+our system indexes their visible regions on the grid cells retrieval 
+of the indexed objects for a given user includes the search and 
+de 
+a better indexing method for a d space is work in progress 
+ 
+tokens it e it e it a it s tokens at e dt e at e dt e at a dt a it s 
+ a node indexing b edge indexing 
+ c edge indexing with row-wise cell 
+evaluation 
+figure illustration of different data structures for node indexing and edge indexing for the sample space in figure there are 
+three object entities e e a and two user entities s a in the world 
+livery of the indices stored on the cell it is located in this retrieval 
+process is interchangeably called a user or query evaluation 
+our application only considers the efficient indexing of virtual 
+entities and the search for the most relevant entities - that is how 
+many entities per sub-world are indexed and how quickly index 
+updates are recognized and retrieved efficient delivery of retrieved 
+real geometry data is out of the scope of this paper 
+ abstraction 
+we define a token as an abstraction of a virtual entity that 
+satisfies a specific spatial relationship with a given cell in our 
+application we use three types of tokens 
+inclusion token it indicates that its entity overlaps with or is 
+covered by the given cell 
+appearance token at denotes that its entity is an it for the 
+given cell but not for the previously adjacent cell 
+disappearance token dt is the opposite of at meaning that 
+while its entity does not satisfy the it relationship with the 
+given cell it does so with the previously adjacent cell 
+we also define two data structures for storing and retrieving the 
+tokens a node and an edge a node is a data structure that stores 
+its of a cell thus the node for cell i is defined as a set of it 
+entities and formally expressed as ni o o r∩i r ∅ where 
+r is either an aoi or a cell region an edge is another data structure 
+for two adjacent cells that stores their ats or dts if the edge 
+only stores the at entities it is termed an appearance edge ae 
+otherwise if it stores dts it is termed a disappearance edge de 
+the ae for two adjacent cells i and j is defined as a set of ats and 
+expressed as 
+e i j nj − ni ∩ nj 
+where ni and nj are the node structures for the cells i and j the 
+de for two adjacent cells i j is defined as a set of dts satisfying 
+e− i j ni − ni ∩ nj 
+in a d map depending on the adjacency relationship between 
+two neighboring cells edges are further classified as either 
+rowwise if two neighbors are adjacent horizontally er 
+ or 
+columnwise if they are adjacent vertically ec 
+ consequently edges are 
+of four different types according to their token type and adjacency 
+er 
+ i j er 
+− i j ec 
+ i j and ec 
+− i j 
+ node indexing 
+grid partitioning is a popular space subdivision method that has 
+recently gained popularity for indexing moving entities in highly 
+dynamic virtual environments to highlight the 
+difference to our newly proposed method we term all existing grid 
+partitioning-based indexing methods node indexing node 
+indexing partitions the space into equi-sized subspaces grid cells 
+indexes entities on each cell and searches for entities that satisfy a 
+spatial condition with a given query 
+in many lbs applications node indexing maintains a node 
+structure per cell and stores an index of entities whose spatial extent is 
+a point location for a given range query a search is performed 
+from the node structures of the cells whose region intersects with 
+the spatial extent of the range query due to the use of a simple 
+point geometry for entities this allows for lightweight index 
+updates much of the existing work falls into this category 
+however if the spatial extent of an entity is a complex geometry 
+such as rectangle node indexing will suffer from significant system 
+degradation due to expensive update overhead for example a 
+single movement of an entity whose spatial extent overlaps with 
+grid cells requires token deletions and token insertions in 
+the worst case one of the popular node indexing methods query 
+indexing has been reported to have such performance degradation 
+during the update of rectangle-shaped range queries 
+for the sample space shown in figure the concept of node 
+indexing is illustrated in figure a every cell stores it entities 
+that intersect with its region query processing for the spectator 
+s means to search the node structure whose cell region intersects 
+with s in figure a e is indexed on the same cell thus being 
+delivered to the client s after the query evaluation 
+ edge indexing 
+our new indexing method edge indexing is designed to 
+provide an efficient indexing method for the specific spatial extension 
+ square of the entities in a grid its features are an edge 
+structure and periodic entity update and cell evaluation 
+ idea 
+edge structure 
+the main characteristic of our approach is that it maintains edge 
+structures instead of using node structures with this approach 
+redundant its between two adjacent cells ni ∩nj are eliminated 
+in a d m × m grid map each cell i is surrounded by four 
+neighboring cells i− i i− m i m except for the 
+ 
+outermost cells and eight different edge structures if the first two 
+neighbor cells are horizontally adjacent to i and the last two cells 
+ i−m i m are vertically nearby the eight edge structures are 
+ec 
+ i−m i ec 
+− i−m i er 
+ i− i er 
+− i− i er 
+ i i 
+ er 
+− i i ec 
+ i i m and ec 
+− i i m 
+figure b illustrates how edge structures are constructed from 
+node structures using equations and inversely the cell 
+evaluation process with edge indexing derives node structures from the 
+edge structures if any node structure and all the edge structures are 
+known a priori we can derive all the node structures as defined by 
+lemma the proof of lemma is trivial as it is easily induced 
+from equations and 
+lemma nj a set of its of a given cell j can be derived 
+from a set of its of its neighbor cell i ni and its edges e i j − 
+e− i j 
+nj ni e i j − e− i j 
+row-wise and column-wise edge structures however capture 
+some redundant information thus na¨ıve edge indexing stores 
+more tokens than node indexing - the total number of edge tokens 
+shown in figure b is ats dts it for node 
+indexing in figure a the number is to reduce such redundancy 
+a subsequent two-step algorithm can be applied to the original edge 
+indexing 
+periodic entity update and cell evaluation 
+many objects are continuously moving and hence index structures 
+must be regularly updated generally this is done through a 
+twostep algorithm that works as follows the algorithm begins 
+by updating all the corresponding indices of newly moved entities 
+ the entity update step and then computes the node structures of 
+every cell the cell evaluation step after one cell evaluation the 
+indexed user entities are retrieved and the computed node structure 
+is delivered for every client that is associated with a user after all 
+the cells are evaluated the algorithm starts over 
+the two-step algorithm can also be used for our edge indexing 
+by updating the edge structures of the entities that moved during 
+the previous time period and by applying lemma during the cell 
+evaluations in addition to this adaptability the lemma also reveals 
+another important property of cell evaluations either row edges or 
+column edges are enough to obtain all the node structures 
+let us assume that the system maintains the row-wise edges 
+the leftmost node structures are assumed to be obtained in 
+advance once we know the node structure of the leftmost cell per 
+row we can compute that of its right-hand cell from the leftmost 
+node structure and the row-wise edges we repeat this computation 
+until we reach the rightmost cell hence without any column-wise 
+edges we can obtain all the node structures successfully as a 
+result we reduce the complexity of the index construction and update 
+by a factor of two 
+figure c illustrates the concept of our row-wise edge indexing 
+method the total number of tokens is reduced to ats 
+dts it the detailed analysis of its indexing complexity is 
+presented in section 
+ another example 
+figure illustrates how to construct edge structures from two 
+nearby cells in the figure two row-wise adjacent cells and 
+have two row-wise edge transitions between them e e− 
+two point entities p p and two polygonal entities r r 
+as shown in the figure n indexes p r r and n 
+maintains the indices of p r e is obtained from 
+equation n − n ∩ n p similarly e− n − 
+cell cell 
+e p 
+e p r 
+p p 
+r 
+r 
+figure example of edge indexing of two point entities 
+ p p and two polygonal entities r r between two 
+row-wise adjacent cells 
+ n ∩ n p r if we know n e and e− 
+we can compute n according to lemma n n e − 
+e− p r 
+the above calculation also corresponds to our intuition p r 
+r overlap with cell while p r overlap with cell when 
+transiting from cell to the algorithm will recognize that p r 
+disappear and p is newly appearing while the spatial condition of 
+r is unchanged thus we can insert p r in the disappearance 
+edge set and insert p in the appearance edge set 
+obviously edge indexing is inefficient for indexing a point 
+geometry node indexing has one it per point entity and requires 
+one token removal and one insertion upon any location movement 
+edge indexing however requires one at and one dt per point 
+entity and two token removals and two insertions during the update 
+in the worst case in such a situation we take advantage of using 
+both according to the spatial property of entity extension in 
+summary as shown in figure c our edge indexing method uses edge 
+structures for the aoi enabled entities a e e while it uses 
+node structures for the point entity s 
+ optimization issues 
+in this section we describe several optimization techniques for 
+edge indexing which reduces the algorithm complexity 
+significantly 
+ single-table approach update 
+typically there exist two practical policies for a region update 
+full update simply removes every token of the previous entity 
+region and re-inserts newly updated tokens into newly 
+positioned areas 
+incremental update only removes the tokens whose spatial 
+relationship with the cells changed upon an update and inserts 
+them into new edge structures that satisfy the new spatial 
+conditions 
+ two-table approach separating moving 
+entities from stationary entities 
+so far we have not addressed any side-effect of token removals 
+during the update operation let us assume that an edge index is 
+realized with a hash table inserting a token is implemented by 
+inserting it at the head of the corresponding hash bucket hence the 
+processing time becomes constant however the token removal 
+time depends on the expected number of tokens per hash bucket 
+therefore the hash implementation may suffer from a significant 
+system penalty when used with a huge number of populated 
+entities 
+two-table edge indexing is designed to make the token removal 
+overhead constant first we split a single edge structure that 
+indexes both stationary and moving entities into two separate edge 
+ 
+table summary of notations for virtual entities and their 
+properties 
+symbol meaning 
+u set of populated object entities 
+o set of moving object entities o ⊆ u 
+uq set of populated user entities 
+q set of moving user entities q ⊆ uq 
+a set of avatars a a a ∈ u ∩ uq 
+i p location of entity i where i ∈ u ∪ uq 
+i r aoi of entity i where i ∈ u ∪ uq 
+mi side length of entity i where i ∈ u ∪ uq it is 
+represented by the number of cell units 
+m average side length of the aoi of entities 
+v ar mi variance of random variable mi 
+v maximum reachable distance it is represented by 
+the number of cell units 
+structures if an entity is not moving its tokens will be placed in a 
+stationary edge structure otherwise it will be placed with a 
+moving edge 
+second all moving edge structures are periodically reconstructed 
+after the reconstruction all grid cells are evaluated to compute 
+their visible sets once all the cells are evaluated the moving 
+edges are destroyed and the reconstruction step follows as a result 
+search operations on the moving edge structures are no longer 
+necessary and the system becomes insensitive to any underlying 
+distribution pattern and moving speed of the entities a singly linked list 
+implementation is used for the moving edge structure 
+ analysis 
+we analyze three indexing schemes quantitatively node indexing 
+edge indexing and two-table edge indexing in terms of memory 
+utilization and processing time in this analysis we assume that 
+node and edge structures are implemented with hash tables 
+for hash table manipulations we assume three memory-access 
+functions token insertion token removal and token scan their 
+processing costs are denoted by ta td and ts respectively a 
+token scan operation reads the tokens in a hash bucket sequentially it 
+is extensively used during cell evaluations ts and td are a function 
+of the number of tokens in the bucket while ta is constant 
+for the purpose of analysis we define two random variables 
+one variable denoted by mo represents the side length of the aoi 
+of an entity o the side lengths are uniformly distributed in the 
+range of mmin mmax the average value of mo is denoted by 
+m the second random variable v denotes the x-directional or 
+ydirectional maximum distance of a moving entity during a time 
+interval the simulated movement of an entity during the given time 
+is also uniformly distributed in the range of v for a simple 
+calculation both random variables are expressed as the number of 
+cell units 
+table summarizes the symbolic notations and their meaning 
+ memory requirements 
+let the token size be denoted by s node indexing uses s · uq 
+memory units for user entities and s · 
+èo∈u mo 
+≈ s m 
+ 
+ m v ar mo u units for object entities single-table 
+edge indexing consumes s · uq storage units for the user entities 
+and s · 
+èo∈u mo ≈ s m u for the object entities 
+two-table edge indexing occupies s · uq units for the users and 
+s 
+èi∈o mi 
+èj∈ u−o mj ≈ s m u units 
+for the objects table summarizes these results in our target 
+aptable memory requirements of different indexing methods 
+indexing method user entities object entities 
+node indexing s · uq s m 
+ v ar mo u 
+single-table edge s · uq s m u 
+two-table edge s · uq s m u 
+plication our edge indexing methods consume approximately m 
+ 
+times less memory space than node indexing 
+different grid cell partitioning with edge methods will lead to 
+different memory requirements for example here are two grids 
+a m × m grid and a m × m grid the memory requirement 
+for the user entities is unchanged because it depends only on the 
+total number of user entities the memory requirements for the 
+object entities are approximately s m u in the m × m 
+grid case and s m u for the m × m grid thus a 
+four times larger cell size will lead to an approximately two times 
+smaller number of tokens 
+ processing cost 
+in this section we focus on the cost analysis of update operations 
+and cell evaluations for a fair comparison of the different methods 
+we only analyze the run-time complexity of moving objects and 
+moving users 
+ update cost 
+we assume that a set of moving objects o and a set of moving 
+users q are known in advance 
+similar to edge indexing node indexing has two update 
+policies full update and incremental update full update implemented 
+in q-index and sina removes all the old tokens from 
+the old cell node structures and inserts all the new tokens into the 
+new cell nodes the incremental update policy implemented by no 
+existing work removes and inserts all the tokens whose spatial 
+condition changed during a period in this analysis we only consider 
+incremental node indexing 
+to analyze the update cost of node indexing we introduce the 
+maximum reachable distance v where the next location of a 
+moving entity whose previous location was at cell is uniformly 
+distributed over the ±v ±v grid cell space as illustrated in 
+figure we also assume that the given maximum reachable distance 
+is less than any side length of the aoi of the objects in the 
+system that is v mo where o ∈ o as seen in figure the 
+next location may fall into three categories areas a b and the 
+center cell area if an object resides in the same cell there 
+will be no update if the object moves into the area a there will 
+be i j mo − ij token insertions and removals where 
+ ≤ i j ≤ v otherwise there will be k mo token insertions 
+and removals where ≤ k ≤ v thus the expected 
+processing time of an object update for node indexing is the summation of 
+three different movement types 
+t 
+node 
+per update o 
+ · a · b 
+ v 
+· ta td 
+ 
+v v v mo − v mo 
+ v 
+· ta td 
+and the expected processing time of any object for node indexing 
+is obtained by 
+t 
+node 
+per update 
+èo∈o v mo 
+t node 
+per update o 
+ o 
+ 
+v v v m − v m 
+ v 
+· ta td 
+ 
+ 
+table update time cost for any single update event where v mq mo and q ∈ q 
+indexing method queries × ta td seconds objects × ta td seconds 
+node indexing with incremental update q o · v v v m −v m 
+ v 
+single-table edge indexing with full update q o · m 
+single-table edge indexing with incremental update q o · v m v v 
+ v 
+two-table edge indexing q · ta 
+ta td 
+ o · m ta 
+ta td 
+maximum reachable distance v 
+ 
+i 
+j 
+ i j 
+a a 
+aa 
+b 
+b 
+b 
+b 
+figure illustration of next cell location cell i j of a moving 
+entity whose initial location was at cell 
+the expected time of any single entity update for edge indexing 
+with full update is 
+t 
+edgefull 
+per update 
+ 
+èo∈o t 
+edgefull 
+per update 
+ o 
+ o 
+ m ta td 
+the analysis of the expected time of any single entity update for 
+edge indexing with incremental update becomes complicated 
+because the time cost depends both on the side length of the entity 
+aoi and on the moving speed roughly speaking its worst-case 
+processing cost is the same as tedgefull 
+per update 
+ due to space 
+limitations we only show the analysis result of the expected processing 
+time when v of any object o ∈ o is smaller than mo 
+tedgeincremental 
+per update 
+ 
+èo∈o v mo 
+tedgeincremental 
+per update 
+ o 
+ o 
+ 
+v m v v 
+ v 
+· ta td 
+ 
+v m v v 
+ v · m 
+· tedgefull 
+per update 
+ 
+all update complexities are summarized in table in this 
+table it is evident that while the update cost of the worst-case edge 
+indexing single-table edge indexing with full update policy 
+depends only on m that of the best-case node indexing node 
+indexing with incremental update policy is still proportional to two 
+variables v and m for a smaller value of v v the update cost 
+of node indexing slightly outperforms that of edge indexing i e 
+ m 
+ 
+vs m however as v increases the performance 
+gain is then immediately reversed i e m 
+ 
+versus m 
+where v 
+another interesting result is that two-table edge indexing 
+depends only on the token insertion cost ta typically td is slightly 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+maximum reachable distance v 
+ ofaffectedtokens 
+two−table edge indexing 
+incremental edge indexing 
+full edge indexing 
+incremental node indexing 
+figure simulation results of update complexity of 
+different indexing methods the update complexity the expected 
+number of token removals and insertions per object update is 
+drawn as a function of maximum reachable distance v the 
+average side length of object aois is of the side length of 
+a given -d map 
+greater than ta because td requires at least one token lookup 
+operation after the lookup td executes the reverse operation of ta 
+thus td may well be expressed as ta tlookup and can be 
+simplified as ta e 
+ ·b 
+·ts where e is the size of the edge structure 
+and b is the number of its hash buckets from this observation we 
+can infer that full update of single-table edge indexing takes at least 
+twice as long as the update for two-table edge indexing 
+figure shows that full update of edge indexing when the 
+maximum reachable distance is less than the side length of any moving 
+entities takes constant time to update the corresponding edge 
+structures which mainly depends on the side length of the given aoi 
+in this figure we assume that the average side length of the aoi is 
+ or the node indexing method however depends not 
+only on the side length but also on the reachable distance thus the 
+entity update in node indexing is much heavier than the full update 
+for edge indexing 
+as expected these simulation results validate a common belief 
+that in less dynamic environments incremental updates reduce the 
+amount of token insertions and removals noticeably while in 
+extremely dynamic environments the reduction ratio becomes 
+negligible 
+ cell evaluation cost 
+node indexing scans all entities and then collects the user 
+entities indexed on every cell node therefore it would take q ×ts to 
+scan all user entities if every node stores m 
+ m v ar mo o 
+m 
+object entities on average the expected completion time of one cell 
+evaluation will then be 
+èo∈o 
+ m 
+ m v ar mo o 
+m · ts if 
+every cell has at most one user entity the expected completion time 
+of all cell evaluations will be q · m 
+ m v ar mo o 
+m · ts 
+the runtime complexity of the single-table cell evaluation can 
+ 
+table summary of cell evaluation cost 
+indexing method expected elapsed time 
+node indexing ts · q · m 
+ m v ar mo o 
+m 
+single-table edge ts · q o · m 
+two-table edge ts td · q o · m 
+be simplified as ts · o · m in this analysis we do not 
+consider any data delivery overhead after a cell evaluation note that 
+in single-table edge indexing we need to scan all the tokens for cell 
+evaluations two-table edge indexing executes in td to remove the 
+evaluated tokens after a cell evaluation unlike the td operation 
+the td operation is much lighter because it does not require any 
+lookup operation 
+table shows the expected complexities of different cell 
+evaluation scenarios if previously computed result sets are re-used 
+during the next evaluation round the expected elapsed time of node 
+indexing will be bound by the total number of cell evaluations i e 
+ts m 
+ m v ar mo o however in the worst case 
+the cell evaluation of node indexing is still m 
+ 
+times longer than 
+that of any edge indexing method 
+ putting it together periodic monitoring cost 
+as we saw in section edge indexing methods outperform 
+node indexing in terms of updates and cell evaluations in this 
+section we focus on evaluating the performance difference between 
+single-table edge indexing and two-table edge indexing 
+the total elapsed time of full update based single-table edge 
+indexing for a given set of moving entities is the summation of the 
+elapsed time of updates and cell evaluations 
+ ta td ts · q o m 
+similarly the total elapsed time of two-table edge indexing is as 
+follows 
+ ta td ts · q o m 
+from equation and we conclude that two-table edge 
+indexing even though it represents a minor optimization of single-table 
+edge indexing by replacing unpredictable td with predictable td 
+achieves a significant performance improvement first of all td 
+is very predictable and a more lightweight procedure than td all 
+the data structure manipulation overheads such as ta ts and td 
+can be easily profiled and all become constant in addition 
+twotable indexing is guaranteed to outperform single-table full update 
+edge indexing another novelty of the two-table approach is that it 
+is highly resilient to the underlying data distribution regardless of 
+whether it is highly skewed or uniform 
+equation also reveals the minimum time interval that satisfies 
+the given input parameters ta ts td q o and m while ta 
+ts and td are system-specific parameters o q and m are all 
+application-specific the latter can be configured by the former 
+and any given real-time constraint t thus the system throughput 
+- how many moving objects and users are supported by the given 
+system - is obtained from equation 
+maximum system throughput 
+ q o m 
+t 
+ts ta td 
+ 
+for example if a given sub-world is only filled with moving 
+avatars a q o whose average side length is of the 
+map side length then ts td takes microseconds per token 
+evaluation and ta takes microseconds and the system will 
+handle about avatars per second every avatar can navigate 
+in the sub-world freely and the same number of remotely connected 
+clients receive the latest update events continuously 
+ evaluation 
+this section presents two simulation setups and their performance 
+results section examines whether our new view approach is 
+superior to existing view models in spite of its higher indexing 
+complexity section discusses the degree of practicality and 
+scalability of our indexing method that is designed for our new view 
+model 
+ justificationofobject-initiatedview model 
+ evaluation metrics 
+to quantify the quality of the retrieved results of query 
+processing we use two widely known evaluation metrics precision p 
+and recall r that estimate the degree of accuracy and 
+comprehensiveness of a given result set p is the ratio of relevant 
+retrieved items to all retrieved items a lower value of p implies that 
+the query result set contains a large number of unnecessary objects 
+that do not have to be delivered to a client a higher p value means 
+a higher network traffic load than required r is the ratio of 
+relevant retrieved items to all relevant items a lower r value means 
+that more objects that should be recognized are ignored from the 
+r measure we can quantitatively estimate the occurrence of object 
+popping 
+in addition to the p and r metrics we use a standardized 
+singlevalued query evaluation metric that combines p and r called 
+emeasure the e-measure is defined as 
+e − 
+ β 
+ pr 
+β p r 
+where β is the relative importance of p or r if β is equal to p 
+and r are equally important if β is less than p becomes more 
+important otherwise r will affect the e-measure significantly 
+a lower e-measure value implies that the tested view model has a 
+higher quality the best e-measure value is zero where the best 
+values for p and r are both ones 
+ simulation setup 
+we tested four query processing schemes which use either a 
+user-initiated or an object-initiated view model 
+ user-initiated visibility computation 
+- rq-op region query - object point 
+ object-oriented visibility computation 
+- pq-or point query - object region 
+- rq-or region query - object region 
+- acq-or approximate cell query - object region 
+rq-op is the typical computation scheme that collects all 
+objects whose location is inside a user defined aoi pq-or 
+collects a set of objects whose aoi intersects with a given user point 
+formally o q p ∈ o r rq-or an imaginary computation 
+scheme is the combination of rq-op and pq-or where the aoi 
+of an object intersects with that of a user o o r ∩ q r ∅ 
+lastly acq-or an approximate visibility computation model is 
+a special scheme designed for grid-based space partitioning which 
+is our choice of cell evaluation methodology for edge indexing if a 
+virtual space is partitioned into tiled cells and a user point belongs 
+to one of the cells the acq-or searches the objects whose aoi 
+ 
+table p and r computations of different visibility 
+determination schemes 
+scheme p r 
+rq-op o o p ∈q r∧q p ∈o r 
+ o o p ∈q r 
+ o o p ∈q r∧q p ∈o r 
+ o q p ∈o r 
+pq-or o q p ∈o r 
+ o q p ∈o r 
+ o q p ∈o r 
+ o q p ∈o r 
+ 
+rq-or o q p ∈o r 
+ o q r∩o r ∅ 
+ o q p ∈o r 
+ o q p ∈o r 
+ 
+acq-or o q p ∈o r 
+ o c r∩o r ∅ q p ∈c r 
+ o q p ∈o r 
+ o q p ∈o r 
+ 
+would intersect with the region of the corresponding grid cell of 
+course it exhibits similar properties as rq-or while the result set 
+of its query is not a subset of the rq-or query result it identifies 
+any object o satisfying the condition c r ∩ o r ∅ where the cell 
+c satisfies q p ∈ c r as well 
+our simulation program populated k object entities and k 
+user entities in a d unit space × the populated 
+entities are uniformly located in the unit space the side length of their 
+aoi is also uniformly assigned in the range of 
+meaning to of the side length of the unit space the program 
+performs intersection tests between all user and all object entities 
+exhaustively and computes the p r and e-measure values shown 
+in table 
+ experimental results 
+distribution of p and r measure figure shows the 
+distribution of p and r for rq-op we can observe that p and r 
+are roughly inversely proportional to each other when varying a 
+user aoi range a smaller side length leads to higher accuracy but 
+lower comprehensiveness for example of the side length of 
+a user aoi detects all objects whose side length of the aoi is at 
+least thus every object retrieved by rq-op is guaranteed to 
+be all rendered at the client but rq-op cannot detect the objects 
+outside the aoi of the user thus suffering from too many missing 
+objects that should be rendered similarly the user whose aoi is 
+wider than any other aoi cannot miss any objects that should be 
+rendered but detects too many unnecessary objects to remove 
+any object popping problem the side length of any aoi should be 
+greater than or equal to the maximum visible distance of any object 
+in the system which may incur significant system degradation 
+e-measure distribution figure reveals two trends first 
+the precision values of rq-op lie in between those of acq-or 
+ × grid and rq-or second the tendency curve of the 
+precision-to-e-measure plot of rq-or shows resemblance to that 
+of acq-or it looks as if the two curves lie on the same 
+imaginary curve which conveys that acq-or inherits the properties of 
+rq-or 
+effect of different grid size figure shows the statistical 
+difference of e-measure values of seven different grid partitioning 
+schemes using acq-or and one rq-op model we use a 
+boxand-whisker plot to show both median values and the variances 
+of e-measure distributions and the outliers of each scheme we 
+also draw the median value of the rq-op e-measures green line 
+for comparison purposes while the acq-or schemes have some 
+outliers their e-measure values are heavily concentrated around 
+the median values thus they are less sensitive to object aoi as 
+expected fine-grained grid partitioning showed a smaller e-measure 
+value the rq-op scheme showed a wider variance of its quality 
+than other schemes which is largely attributable to different user 
+side lengths as the r measure becomes more important the query 
+quality of acq-or is improved more evidently than that of 
+rqop from figure the × grid scheme had a better e-measure 
+table measured elapsed time seconds of k moving 
+objects and k moving users in a slowly moving environment 
+ v 
+indexing update time evaluation time total 
+single-tablef ull 
+ 
+single-tableincr 
+ 
+two-table 
+table measured elapsed time seconds of k moving 
+objects and k moving users in a highly dynamic environment 
+ v 
+indexing update time evaluation time total 
+single-tablef ull 
+ 
+single-tableincr 
+ 
+two-table 
+value in a prioritized environment than in an equal-prioritized 
+environment as a result we can roughly anticipate that at least the 
+ × grid cell partitioning retrieves a higher quality of visible sets 
+than the rq-op 
+ evaluation of edge indexing 
+in this section we present the preliminary results of the 
+simulations that examine the applicability of our edge indexing 
+implementation to estimate the degree of real-time support of our 
+indexing method we used the total elapsed time of updating all moving 
+entities and computing visible sets for every cell we also 
+experimented with different grid partitioning policies and compared them 
+with exhaustive search solutions 
+ simulation setup 
+we implemented edge indexing algorithms in c and ran the 
+experiments on a -bit mhz itanium processor with gbs of 
+memory we implemented a generalized hash table mechanism to 
+store node and edge structures 
+ experimental results 
+periodic monitoring cost tables and show the 
+performance numbers of different edge indexing methods by varying v 
+the moving speed of entities was also uniformly assigned between 
+ and v in a slowly moving environment table the incremental 
+edge indexing method outperforms full update edge indexing due 
+to reduced index updates the two-table approach surpasses the 
+performance of single-table schemes mainly due to the lack of token 
+lookup during an update however the two-table method showed 
+a slightly higher evaluation time than the two single-table methods 
+because of its sequential token removal 
+table exemplified the elapsed time of index updates and cell 
+evaluations in a highly dynamic environment where slowly 
+moving and dynamically moving objects co-exist compared with the 
+results shown in table the two-table approach produced similar 
+performance numbers regardless of the underlying moving 
+environments however the performance gain obtained by the incremental 
+policy of the single-table is decreased compared with that in the 
+slowly moving environment 
+effect of different grid size how many object updates and 
+cell evaluations can be supported in a given time period is an 
+important performance metric to quantify system throughput in this 
+section we evaluate the performance results of three different 
+visibility computation models two computation-driven exhaustive 
+search methods and one two-table edge indexing method with 
+different grid sizes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall r 
+precision p range query 
+ range query 
+ range query 
+ range query 
+ range query 
+ range query 
+ range query 
+ range query 
+ range query 
+ range query 
+optimality 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision p 
+e−measure 
+optimality 
+rq−op 
+rq−or 
+acq−or x grid cells 
+ x x x x x x kx k rq−op 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+e−measure 
+visibility test scheme 
+median of rq−op 
+figure distribution of p and r 
+measured by rq-op 
+figure e-measure value as a function of 
+precision value p when β 
+figure e-measure value as a function of 
+acq-qr grid partitioning scheme when 
+β 
+ k k k 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ of object updates k queries 
+totalelapsedtime seconds 
+population size k visible range − mobility 
+exhaustive search intersection test 
+exhaustive search euclidean distance measure 
+ x two−table edge indexing 
+ x two−table edge indexing 
+ x two−table edge indexing 
+figure total elapsed time of different indexing schemes 
+exhaustive search methods do not maintain any intermediate 
+results they simply compute whether a given user point is inside 
+a given object aoi they can tolerate unpredictable behavior of 
+object movement in spite of their simple design and 
+extensibility they suffer from lengthy computational delays to complete the 
+visibility determination figure reveals the performance 
+difference between the exhaustive solutions and the two-table methods 
+a difference of up to two orders of magnitude 
+as shown in section the total elapsed time of object updates 
+and cell evaluations is linear with respect to the average side length 
+of object aoi because the side length is represented by cell units 
+an increase in the number of cells increases the side lengths 
+proportionally figure illustrates that the measured simulation results 
+roughly match the expected performance gain computed from the 
+analysis 
+ conclusion and future work 
+to support dynamic extensibility and scalability in highly dynamic 
+environments we proposed a new view paradigm the object-initiated 
+view model and its efficient indexing method edge indexing 
+compared with the traditional view model our new view model promises 
+to eliminate any object popping problem that can easily be observed 
+in existing virtual environments at the expense of increased 
+indexing complexity our edge indexing model however can overcome 
+such higher indexing complexity by indexing spatial extensions at 
+edge-level not at node-level in a grid partitioned sub-world and 
+was validated through quantitative analyses and simulations 
+however for now our edge indexing still retains a higher 
+complexity even in a two-dimensional domain currently we are 
+developing another edge indexing method to make the indexing 
+complexity constant once indexing complexity becomes constant we 
+plan to index d spatial extensions and multi-resolutional 
+geometry data we expect that our edge indexing can contribute to 
+successful deployment of next-generation gaming environments 
+ references 
+ d marshall d delaney s mcloone and t ward challeges in modern 
+distributed interactive application design tech rep department of 
+computer science national university of ireland maynooth maynooth col 
+kildare ireland 
+ kuan-ta chen polly huang chun-ying huang and chin-laung lei game 
+traffic analysis an mmorpg perspective in nossdav pp 
+ - acm press 
+ jaecheol kim jaeyoung choi dukhyun chang taekyoung kwon and 
+yanghee choi traffic charateristics of a massively multiplayer online role 
+playing game and its implications in netgames oct 
+ philip rosedale and cory ondrejka enabling player-created online worlds 
+with grid computing and streaming gamastutra magazine 
+http www gamasutra com resource guide rosedale shtml 
+september 
+ eyal teler and dani lischinski streaming of complex d scenes for remote 
+walkthroughs comput graph forum vol no 
+ gerd hesina and dieter schmalstieg a network architecture for remote 
+rendering in second international workshop on distributed interactive 
+simulation and real-time applications 
+ thomas a funkhouser and carlo h sequin adaptive display algorithm for 
+interactive frame rates during visualization of complex virtual environments 
+in siggraph new york ny usa pp - acm press 
+ jussi myllymaki and james kaufman high-performance spatial indexing for 
+location-based services in www new york ny usa pp 
+ - acm press 
+ m lee w hsu c jensen b cui and k teo supporting frequent updates 
+in r-trees a bottom-up approach in vldb pages - 
+ mohamed f mokbel xiaopeing xiong and walid g aref sina scalable 
+incremental processing of continuous queries in spatio-temporal databases in 
+acm sigmod pp - acm press 
+ dmitri v kalashnikov sunil prabhakar and susanne e hambrusch main 
+memory evaluation of monitoring queries over moving objects distrib 
+parallel databases vol no pp - 
+ haibo hu jianliang xu and dik lun lee a generic framework for 
+monitoring continuous spatial queries over moving objects in sigmod 
+conference 
+ s prabhakar y xia d kalashnikov w aref and s hambrusch query 
+indexing and velocity constrained indexing scalable techniques for 
+continuous queries on moving objects ieee transactions on computers vol 
+ no pp - oct 
+ yuni xia and sunil prabhakar q rtree efficient indexing for moving object 
+databases in dasfaa washington dc usa p ieee 
+computer society 
+ c j van rijsbergen information retrieval nd edition dept of computer 
+science university of glasgow 
+ 

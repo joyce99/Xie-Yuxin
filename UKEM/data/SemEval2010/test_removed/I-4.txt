@@ -1,0 +1,989 @@
+meta-level coordination for solving negotiation chains in 
+semi-cooperative multi-agent systems 
+xiaoqin zhang 
+computer and information science department 
+university of massachusetts at dartmouth 
+x zhang umassd edu 
+victor lesser 
+computer science department 
+university of massachusetts at amherst 
+lesser cs umass edu 
+abstract 
+a negotiation chain is formed when multiple related negotiations 
+are spread over multiple agents in order to appropriately order 
+and structure the negotiations occurring in the chain so as to 
+optimize the expected utility we present an extension to a 
+singleagent concurrent negotiation framework this work is aimed at 
+semi-cooperative multi-agent systems where each agent has its 
+own goals and works to maximize its local utility however the 
+performance of each individual agent is tightly related to other agent s 
+cooperation and the system s overall performance we introduce 
+a pre-negotiation phase that allows agents to transfer meta-level 
+information using this information the agent can build a more 
+accurate model of the negotiation in terms of modeling the 
+relationship of flexibility and success probability this more accurate 
+model helps the agent in choosing a better negotiation solution in 
+the global negotiation chain context the agent can also use this 
+information to allocate appropriate time for each negotiation hence 
+to find a good ordering of all related negotiations the 
+experimental data shows that these mechanisms improve the agents and the 
+system s overall performance significantly 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent systems 
+general terms 
+algorithms performance experimentation 
+ introduction 
+sophisticated negotiation for task and resource allocation is 
+crucial for the next generation of multi-agent systems mas 
+applications groups of agents need to efficiently negotiate over multiple 
+related issues concurrently in a complex distributed setting where 
+there are deadlines by which the negotiations must be completed 
+this is an important research area where there has been very little 
+work done 
+this work is aimed at semi-cooperative multi-agent systems 
+where each agent has its own goals and works to maximize its 
+local utility however the performance of each individual agent is 
+tightly related to other agent s cooperation and the system s overall 
+performance there is no single global goal in such systems 
+either because each agent represents a different organization user or 
+because it is difficult impossible to design one single global goal 
+this issue arises due to multiple concurrent tasks resource 
+constrains and uncertainties and thus no agent has sufficient 
+knowledge or computational resources to determine what is best for the 
+whole system an example of such a system would be a virtual 
+organization i e a supply chain dynamically formed in an 
+electronic marketplace such as the one developed by the conoise 
+project to accomplish tasks continuously arriving in the virtual 
+organization cooperation and sub-task relocation are needed and 
+preferred there is no single global goal since each agent may be 
+involved in multiple virtual organizations meanwhile the 
+performance of each individual agent is tightly related to other agents 
+cooperation and the virtual organization s overall performance the 
+negotiation in such systems is not a zero-sum game a deal that 
+increases both agents utilities can be found through efficient 
+negotiation additionally there are multiple encounters among agents 
+since new tasks are arriving all the time in such negotiations price 
+may or may not be important since it can be fixed resulting from a 
+long-term contract other factors like quality and delivery time are 
+important too reputation mechanisms in the system makes 
+cheating not attractive from a long term viewpoint due to multiple 
+encounters among agents in such systems agents are self-interested 
+because they primarily focus on their own goals but they are also 
+semi-cooperative meaning they are willing to be truthful and 
+collaborate with other agents to find solutions that are beneficial to all 
+participants including itself though it won t voluntarily scarify its 
+own utility in exchange of others benefits 
+another major difference between this work and other work on 
+negotiation is that negotiation here is not viewed as a stand-alone 
+process rather it is one part of the agent s activity which is tightly 
+interleaved with the planning scheduling and executing of the agent s 
+activities which also may relate to other negotiations based on 
+this recognition this work on negotiation is concerned more about 
+the meta-level decision-making process in negotiation rather than 
+the basic protocols or languages the goal of this research is to 
+develop a set of macro-strategies that allow the agents to effectively 
+manage multiple related negotiations including but not limited to 
+the following issues how much time should be spent on each 
+negotiation how much flexibility see formal definition in formula 
+should be allocated for each negotiation and in what order should 
+ 
+ - - - - rps c ifaamas 
+the negotiations be performed these macro-strategies are different 
+from those micro-strategies that direct the individual negotiation 
+thread such as whether the agent should concede and how much 
+the agent should concede etc 
+in this paper we extend a multi-linked negotiation model 
+from a single-agent perspective to a multi-agent perspective so that 
+a group of agents involved in chains of interrelated negotiations can 
+find nearly-optimal macro negotiation strategies for pursuing their 
+negotiations the remainder of this paper is structured in the 
+following manner section describes the basic negotiation process 
+and briefly reviews a single agent s model of multi-linked 
+negotiation section introduces a complex supply-chain scenario 
+section details how to solve those problems arising in the negotiation 
+chain section reports on the experimental work section 
+discusses related work and section presents conclusions and areas 
+of future work 
+ background on multi-linked 
+negotiation 
+in this work the negotiation process between any pair of agents 
+is based on an extended version of the contract net the 
+initiator agent announces the proposal including multiple features the 
+responding agent evaluates it and responds with either a yes no 
+answer or a counter proposal with some features modified this 
+process can go back and forth until an agreement is reached or the 
+agents decide to stop if an agreement is reached and one agent 
+cannot fulfill the commitment it needs to pay the other party a 
+decommitment penalty as specified in the commitment a negotiation 
+starts with a proposal which announces that a task t needs to be 
+performed includes the following attributes 
+ earliest start time est the earliest start time of task t task 
+t cannot be started before time est 
+ deadline dl the latest finish time of the task the task needs 
+to be finished before the deadline dl 
+ minimum quality requirement minq the task needs to be 
+finished with a quality achievement no less than minq 
+ regular reward r if the task is finished as the contract 
+requested the contractor agent will get reward r 
+ early finish reward rate e if the contractor agent can finish 
+the task earlier than dl it will get the extra early finish reward 
+proportional to this rate 
+ decommitment penalty rate p if the contractor agent 
+cannot perform the task as it promised in the contract or if the 
+contractee agent needs to cancel the contract after it has been 
+confirmed it also needs to pay a decommitment penalty p r 
+to the other agent 
+the above attributes are also called attribute-in-negotiation which 
+are the features of the subject issue to be negotiated and they are 
+domain-dependent another type of attribute 
+is the 
+attribute-ofnegotiation which describes the negotiation process itself and is 
+domain-independent such as 
+ 
+these attributes are similar to those used in project management 
+however the multi-linked negotiation problem cannot be 
+reduced to a project management problem or a scheduling 
+problem the multi-linked negotiation problem has two dimensions 
+the negotiations and the subjects of negotiations the negotiations 
+are interrelated and the subjects are interrelated the attributes of 
+negotiations and the attributes of the subjects are interrelated as 
+well this two-dimensional complexity of interrelationships 
+distinguishes it from the classic project management problem or 
+scheduling problem where all tasks to be scheduled are local tasks and no 
+negotiation is needed 
+ negotiation duration δ v the maximum time allowed for 
+negotiation v to complete either reaching an agreed upon 
+proposal success or no agreement failure 
+ negotiation start time α v the start time of negotiation v 
+α v is an attribute that needs to be decided by the agent 
+ negotiation deadline v negotiation v needs to be 
+finished before this deadline v the negotiation is no longer 
+valid after time v which is the same as a failure outcome 
+of this negotiation 
+ success probability ps v the probability that v is 
+successful it depends on a set of attributes including both 
+attributes-in-negotiation i e reward flexibility etc and 
+attributes-of-negotiation i e negotiation start time 
+negotiation deadline etc 
+an agent involved in multiple related negotiation processes needs 
+to reason on how to manage these negotiations in terms of ordering 
+them and choosing the appropriate values for features this is the 
+multi-linked negotiation problem 
+definition a multi-linked negotiation problem is 
+defined as an undirected graph more specifically a forest as a set 
+of rooted trees m v e where v v is a finite set 
+of negotiations and e u v is a set of binary relations on 
+v u v ∈ e denotes that negotiation u and negotiation v are 
+directly-linked the relationships among the negotiations are 
+described by a forest a set of rooted trees ti there is a relation 
+operator associated with every non-leaf negotiation v denoted as 
+ρ v which describes the relationship between negotiation v and 
+its children this relation operator has two possible values and 
+and or the and relationship associated with a negotiation v 
+means the successful accomplishment of the commitment on v 
+requires all its children nodes have successful accomplishments the 
+or relationship associated with a negotiation v means the 
+successful accomplishment of the commitment on v requires at least 
+one child node have successful accomplishment where the 
+multiple children nodes represent alternatives to accomplish the same 
+goal 
+multi-linked negotiation problem is a local optimization 
+problem to solve a multi-linked negotiation problem is to find a 
+negotiation solution φ ϕ with optimized expected utility eu φ ϕ 
+which is defined as 
+eu φ ϕ 
+ n 
+x 
+i 
+p χi ϕ r χi ϕ − c χi φ ϕ 
+a negotiation ordering φ defines a partial order of all 
+negotiation issues a feature assignment ϕ is a mapping function 
+that assigns a value to each attribute that needs to be decided in 
+the negotiation a negotiation outcome χ for a set of negotiations 
+ vj j n specifies the result for each negotiation either 
+success or failure there are a total of n 
+different outcomes for n 
+negotiations chii i n 
+ p χi ϕ denotes the 
+probability of the outcome χi given the feature assignment ϕ which 
+is calculated based on the success probability of each negotiation 
+r χi ϕ denotes the agent s utility increase given the outcome χi 
+and the feature assignment ϕ and c χi φ ϕ is the sum of the 
+decommitment penalties of those negotiations which are successful 
+but need to be abandoned because the failure of other directly 
+related negotiations these directly related negotiations are performed 
+concurrently with this negotiation or after this negotiation 
+according to the negotiation ordering φ 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+computer 
+producer 
+cpu 
+other tasks 
+distribution 
+center 
+memory 
+producer 
+transporter 
+deliver hardware 
+order memory 
+other tasks 
+other tasks 
+order chips 
+pc 
+manufacturer 
+order 
+store 
+order memory 
+other tasks 
+purchase memory 
+customer 
+deliver computer 
+hardware 
+computer 
+order purchase 
+figure a complex negotiation chain scenario 
+a heuristic search algorithm has been developed to solve 
+the single agent s multi-linked negotiation problem that produces 
+nearly-optimal solutions this algorithm is used as the core of the 
+decision-making for each individual agent in the negotiation chain 
+scenario in the rest of the paper we present our work on how to 
+improve the local solution of a single agent in the global negotiation 
+chain context 
+ negotiation chain problem 
+negotiation chain problem occurs in a multi-agent system where 
+each agent represents an individual a company or an organization 
+and there is no absolute authority in the system each agent has 
+its own utility function for defining the implications of achieving 
+its goals the agent is designed to optimize its expected utility 
+given its limited information computational and communication 
+resources dynamic tasks arrive to individual agents most tasks 
+requiring the coordination of multiple agents each agent has the 
+scheduling and planning ability to manage its local activities some 
+of these activities are related to other agents activities negotiation 
+is used to coordinate the scheduling of these mutual related 
+activities the negotiation is tightly connected with the agent s local 
+scheduling planning processes and is also related to other 
+negotiations an agent may be involved in multiple related negotiations 
+with multiple other agents and each of the other agents may be 
+involved in related negotiations with others too 
+figure describes a complex negotiation chain scenario the 
+store the pc manufacturer the memory producer and the 
+distribution center are all involved in multi-linked negotiation 
+problems figure shows a distributed model of part of the negotiation 
+chain described in figure each agent has a local optimization 
+problem - the multi-linked negotiation problem represented as an 
+and-or tree which can be solved using the model and procedures 
+described in section however the local optimal solution may 
+not be optimal in the global context given the local model is neither 
+complete or accurate the dash line in figure represents the 
+connection of these local optimization problem though the common 
+negotiation subject 
+negotiation chain problem o is a group of tightly-coupled local 
+optimization problems 
+o o o on oi denotes the local optimization problem 
+ multi-linked negotiation problem of agent ai 
+agent ai s local optimal solution slo 
+i maximizes the expected 
+local utility based on an incomplete information and assumptions 
+about other agents local strategies - we defined such incomplete 
+information and imperfect assumptions of agent i as ii 
+uexp 
+i slo 
+i ii ≥ uexp 
+i sx 
+i ii for all x lo 
+however the combination of these local optimal solutions slo 
+i 
+ slo 
+ slo 
+ slo 
+n can be sub-optimal to a set of better local 
+optimal solutions sblo 
+i sblo 
+ sblo 
+ sblo 
+n if the global 
+utility can be improved without any agent s local utility being 
+decreased by using sblo 
+i in other words slo 
+i is dominated by 
+ sblo 
+i slo 
+i ≺ sblo 
+i iff 
+ui slo 
+ slo 
+ slo 
+n ≤ ui sblo 
+ sblo 
+ sblo 
+n for 
+i n and 
+pn 
+i ui slo 
+ slo 
+ slo 
+n 
+pn 
+i ui sblo 
+ sblo 
+ sblo 
+n 
+there are multiple sets of better local optimal solutions sblo 
+i 
+ sblo 
+i sblom 
+i some of them may be dominated by others 
+a set of better local optimal solutions s 
+blog 
+i that is not 
+dominated by any others is called best local optimal if a set of best 
+local optimal solutions s 
+blog 
+i dominates all others s 
+blog 
+i is 
+called globally local optimal however sometimes the globally 
+local optimal set does not exist instead there exist multiple sets 
+of best local optimal solutions even if the globally local optimal 
+solution does exist in theory finding it may not be realistic given 
+the agents are making decision concurrently to construct the 
+perfect local information and assumptions about other agents ii in 
+this dynamic environment is a very difficult and sometimes even 
+impossible task 
+the goal of this work is to improve each agent s local model 
+about other agents ii through meta-level coordination as ii 
+become more accurate the agent s local optimal solution to its local 
+multi-linked negotiation problem become a better local optimal 
+solution in the context of the global negotiation chain problem we 
+are not arguing that this statement is a universal valid statement 
+that holds in all situations but our experimental work shows that 
+the sum of the agents utilities in the system has been improved by 
+ on average when meta-level coordination is used to improve 
+each agent s local model ii in this work we focus on improving 
+the agent s local model through two directions one direction is 
+to build a better function to describe the relationship between the 
+success probability of the negotiation and the flexibility allocated 
+to the negotiation the other direction is to find how to allocate 
+time more efficiently for each negotiation in the negotiation chain 
+context 
+ new mechanism - meta-level 
+coordination 
+in order for an agent to get a better local model about other 
+agents in the negotiation chain context we introduce a pre-negotiation 
+phase into the local negotiation process during the pre-negotiation 
+phase agents communicate with other agents who have tasks 
+contracting relationships with them they transfer meta-level 
+information before they decide on how and when to do the negotiations 
+each agent tells other agents what types of tasks it will ask them 
+to perform and the probability distributions of some parameters of 
+those tasks i e the earliest start times and the deadlines etc when 
+these probability distributions are not available directly agents can 
+learn such information from their past experience in our 
+experiment described later such distributed information is learned rather 
+than being directly told by other agents specifically each agent 
+provides the following information to other related agents 
+ whether additional negotiation is needed in order to make a 
+decision on the contracting task if so how many more 
+negotiations are needed negcount represents the total number 
+of additional negotiations needed for a task including 
+additional negotiations needed for its subtasks that happen among 
+other agents in a negotiation chain situation this 
+information is being propagated and updated through the chain until 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+e order hardware f deliver computer h get memory i deliver hardware i deliver hardware 
+f deliver computer 
+g get cpu 
+e get hardware 
+and 
+transporterdistribution center 
+a purchase computer b purchase memory 
+c order computer d order memory 
+store agent pc manufacturer 
+and 
+c order computer 
+figure distributed model of negotiation chains 
+every agent has accurate information let subneg t be a 
+set of subtasks of task t that require additional negotiations 
+then we have 
+negcount t subneg t 
+x 
+t∈subneg t 
+ negcount t 
+ 
+for example in the scenario described in figure for the 
+distribution center task order hardware consists of three 
+subtasks that need additional negotiations with other agents 
+order chips order memory and deliver hardware 
+however no further negotiations are needed for other agents to 
+make decision on these subtasks hence the negcount for 
+these subtasks are the following information is sent to the 
+pc manufacturer by the distribution center 
+negcount order hardware 
+for the pc manufacturer task order computer contains two 
+subtasks that requires additional negotiations deliver 
+computer and order hardware when the pc manufacturer 
+receives the message from the distribution center it updates 
+its local information 
+negcount order computer 
+negcount deliver computer 
+negcount order hardware 
+and sends the updated information to the store agent 
+ whether there are other tasks competing with this task and 
+what is the likelihood of conflict conflict means that given 
+all constrains the agent cannot accomplish all tasks on time 
+it needs to reject some tasks the likelihood of conflict pcij 
+between a task of type i and another task of type j is 
+calculated based on the statistical model of each task s parameters 
+including earliest start time est deadline dl task 
+duration dur and slack time sl using a formula pcij 
+p dli − estj ≤ duri durj ∧ dlj − esti ≤ duri durj 
+when there are more than two types of tasks the likelihood 
+of no conflict between task i and the rest of the tasks is 
+calculated as pnoconflict i 
+qn 
+j j i − pcij 
+for example the memory producer tells the distribution center 
+about the task order memory its local decision does not involve 
+additional negotiation with other agents negcount 
+however there is another task from the store agent that competes with 
+this task thus the likelihood of no conflict is pnoconflict 
+ on the other hand the cpu producer tells the distribution 
+center about the task order chips its local decision does not 
+involve additional negotiation with other agents and there are no 
+other tasks competing with this task pnoconflict given 
+the current environment setting based on the above information 
+the distribution center knows that task order memory needs more 
+flexibility than task order chips in order to be successful in 
+negotiation meanwhile the distribution center would tell the pc 
+manufacturer that task order hardware involves further 
+negotiation with other agents negcount and that its local decision 
+depends on other agents decisions this piece of information helps 
+the pc manufacturer allocate appropriate flexibility for task order 
+hardware in negotiation in this work we introduce a short period 
+and 
+produce computer 
+get software 
+install software 
+deliver computer 
+memory producerhardware producer transporter 
+consumer agent 
+order computer 
+order memory 
+order hardware 
+order hardware 
+process−time 
+distribution center pc manufacturer 
+order chips 
+deliver hardwareget parts 
+process−time 
+enables 
+enables 
+process−time 
+process−time 
+and and 
+enables 
+process−time 
+and 
+enables 
+process−time 
+process−time 
+figure task structures of pc manufacturer and 
+distribution center 
+for agents to learn the characteristics of those incoming tasks 
+including est dl dur and sl which are used to calculate pcij and 
+pnoconflict for the meta-level coordination during system 
+performance agents are continually monitoring these characteristics 
+an updated message will be send to related agents when there is 
+significant change of the meta-level information 
+next we will describe how the agent uses the meta-level 
+information transferred during the pre-negotiation phase this 
+information will be used to improve the agent s local model more 
+specifically they are used in the agent s local decision-making process 
+by affecting the values of some features especially we will be 
+concerned with two features that have strong implications for the 
+agent s macro strategy for the multi-linked negotiations and hence 
+also affect the performance of a negotiation chain significantly the 
+first is the amount of flexibility specified in the negotiation 
+parameter the second feature we will explore is the time allocated for 
+the negotiation process to complete the time allocated for each 
+negotiation affects the possible ordering of those negotiations and 
+it also affects the negotiation outcome details are discussed in the 
+following sections 
+ flexibility and success probability 
+agents not only need to deal with complex negotiation problems 
+they also need to handle their own local scheduling and planning 
+process that are interleaved with the negotiation process figure 
+ shows the local task structures of the pc manufacturer and the 
+distribution center some of these tasks can be performed locally 
+by the pc manufacturer such as get software and install software 
+while other tasks non-local tasks such as order hardware and 
+deliver computer need to be performed by other agents the pc 
+manufacturer needs to negotiate with the distribution center and 
+the transporter about whether they can perform these tasks and if 
+so when and how they will perform them 
+when the pc manufacturer negotiates with other agents about 
+the non-local task it needs to have the other agents arrangement 
+fit into its local schedule since the pc manufacturer is dealing 
+with multiple non-local tasks simultaneously it also needs to 
+ensure the commitments on these non-local tasks are consistent with 
+each other for example the deadline of task order hardware 
+cannot be later than the start time of task deliver computer figure 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+order hardware 
+deliver computer 
+ 
+process time 
+process time 
+ 
+ 
+process time 
+get software 
+install software 
+ 
+process time 
+order computer starts at time and finishes by 
+figure a sample local schedule of the pc manufacturer 
+shows a sample local schedule of the pc manufacturer according 
+to this schedule as long as task order hardware is performed 
+during time and task deliver computer is performed during 
+time there exists a feasible schedule for all tasks and task 
+order computer can be finished by time which is the 
+deadline promised to the customer these time ranges allocated for 
+task order hardware and task deliver computer are called 
+consistent ranges the negotiations on these tasks can be performed 
+independently within these ranges without worrying about conflict 
+notice that each task should be allocated with a time range that is 
+large enough to accommodate the estimated task process time the 
+larger the range is the more likely the negotiation will succeed 
+because it is easier for the other agent to find a local schedule for this 
+task then the question is how big should this time range be we 
+defined a quantitative measure called flexibility 
+given a task t suppose the allocated time range for t is est dl 
+est is the earliest start time and dl stands for the deadline 
+flexibility t 
+dl − est − process time t 
+process time t 
+ 
+flexibility is an important attribute because it directly affects the 
+possible outcome of the negotiation the success probability of a 
+negotiation can be described as a function of the flexibility in this 
+work we adopt the following formula for the success probability 
+function based on the flexibility of the negotiation issue 
+ps v pbs v π arctan f v c 
+this function describes a phenomenon where initially the 
+likelihood of a successful negotiation increases significantly as the 
+flexibility grows and then levels off afterward which mirrors our 
+experience from previous experiments pbs is the basic success 
+probability of this negotiation v when the flexibility f v is very large 
+c is a parameter used to adjust the relationship different 
+function patterns can result from different parameter values as shown 
+in figure this function describes the agent s assumption about 
+how the other agent involved in this negotiation would response to 
+this particular negotiation request when it has flexibility f v this 
+function is part of the agent s local model about other agents to 
+improve the accuracy of this function and make it closer to the 
+reality the agent adjusts these two values according to the meta-level 
+information transferred during pre-negotiation phase the values 
+of c depends on whether there is further negotiation involved and 
+whether there are other tasks competing with this task for common 
+resources if so more flexibility is needed for this issue and hence 
+c should be assigned a smaller value in our implementation the 
+following procedure is used to calculate c based on the meta-level 
+information negcount and pnoconflict 
+if pnoconflict no other competing task 
+c clarge − negcount 
+else competing task exists 
+c csmall 
+this procedure works as follows when there is no other competing 
+figure different success probability functions 
+task c depends on the number of additional negotiations needed 
+the more additional negotiations that are needed the smaller value 
+c has hence more flexibility will be assigned to this issue to 
+ensure the negotiation success if no more negotiation is needed c is 
+assigned to a large number clarge meaning that less flexibility is 
+needed for this issue when there are other competing tasks c is 
+assigned to a small number csmall meaning that more flexibility 
+is needed for this issue in our experimental work we have clarge 
+as and csmall as these values are selected according to our 
+experience however a more practical approach is to have agents 
+learn and dynamically adjust these values this is also part of our 
+future work 
+pbs is calculated based on pnoconflict f v the flexibility of v 
+in previous negotiation and c using the reverse format of equation 
+ 
+pbs v min pnoconflict v π arctan f v c 
+for example based on the scenario described above the agents 
+have the following values for c and pbs based on the meta-level 
+information transferred 
+ pc manufacturer order hardware pbs c 
+ distribution center order chips pbs c 
+ store agent order memory pbs c 
+figure shows the different patterns of the success probability 
+function given different parameter values based on such patterns 
+the store agent would allocate more flexibility to the task order 
+memory to increase the likelihood of success in negotiation in the 
+agent s further negotiation process formula with different 
+parameter values is used in reasoning on how much flexibility should be 
+allocated to a certain issue 
+the pre-negotiation communication occurs before negotiation 
+but not before every negotiation session agents only need to 
+communicate when the environment changes for example new types 
+of tasks are generated the characteristics of tasks changes the 
+negotiation partner changes etc if no major change happens the 
+agent can just use the current knowledge from previous 
+communications the communication and computation overhead of this 
+prenegotiation mechanism is very small given the simple information 
+collection procedure and the short message to be transferred we 
+will discuss the effect of this mechanism in section 
+ negotiation duration and deadline 
+in the agent s local model there are two attributes that describe 
+how soon the agent expects the other agent would reply to the 
+negotiation v negotiation duration δ v and negotiation deadline v 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table examples of negotiations δ v negotiation duration 
+s p success probability 
+index task-name δ v reward s p penalty 
+ order hardware 
+ order chips 
+ order memory 
+ deliver hardware 
+ these two important attributes that affect the negotiation 
+solution part of the negotiation solution is a negotiation ordering φ 
+which specifies in what order the multiple negotiations should be 
+performed in order to control the negotiation process every 
+negotiation should be finished before its negotiation deadline and the 
+negotiation duration is the time allocated for this negotiation if a 
+negotiation cannot be finished during the allocated time the agent 
+has to stop this negotiation and consider it as a failure the 
+decision about the negotiation order depends on the success probability 
+reward and decommitment penalty of each negotiation a good 
+negotiation order should reduce the risk of decommitment and hence 
+reduce the decommitment penalty a search algorithm has been 
+developed to find such negotiation order described in 
+for example table shows some of the negotiations for the 
+distribution center and their related attributes given enough time 
+ negotiation deadline is greater than the best negotiation order is 
+ → → → the most uncertain negotiation deliver 
+hardware is performed first the negotiation with highest penalty 
+ order hardware is performed after all related negotiations 
+ and have been completed so as to reduce the risk of 
+decommitment if the negotiation deadline is less than and greater than 
+the following negotiation order is preferred → which 
+means negotiation can be performed in parallel and needs 
+to be performed after them if the negotiation deadline is less than 
+ then all negotiations have to be performed in parallel because 
+there is no time for sequencing negotiations 
+in the original model for single agent the negotiation 
+deadline v is assumed to be given by the agent who initiates the 
+contract the negotiation duration δ v is an estimation of how long 
+the negotiation takes based on experience however the situation 
+is not that simple in a negotiation chain problem considering the 
+following scenario when the customer posts a contract for task 
+purchase computer it could require the store agent to reply by 
+time time can be considered as the negotiation deadline 
+for purchase computer when the store agent negotiates with the 
+pc manufacturer about order computer what negotiation 
+deadline should it specify how long the negotiation on order 
+computer takes depends on how the pc manufacturer handles its local 
+multiple negotiations whether it replies to the store agent first or 
+waits until all other related negotiations have been settled 
+however the ordering of negotiations depends on the negotiation 
+deadline on order computer which should be provided by the store 
+agent the negotiation deadline of order computer for the pc 
+manufacturer is actually decided based on the negotiation duration 
+of order computer for the store agent how much time the store 
+agent would like to spend on the negotiation order computer is its 
+duration and also determines the negotiation deadline for the pc 
+manufacturer 
+now the question arises how should an agent decide how much 
+time it should spend on each negotiation which actually affects the 
+other agents negotiation decisions the original model does not 
+handle this question since it assumes the negotiation duration δ v 
+is known here we propose three different approaches to handle 
+this issue 
+ same-deadline policy use the same negotiation deadline for 
+all related negotiations which means allocate all available 
+time to all negotiations 
+δ v total available time 
+for example if the negotiation deadline for purchase 
+computer is the store agent will tell the pc manufacturer to 
+reply by for order computer ignoring the 
+communication delay this strategy allows every negotiation to have 
+the largest possible duration however it also eliminates the 
+possibility of performing negotiations in sequence - all 
+negotiations need to be performed in parallel because the total 
+available time is the same as the duration of each negotiation 
+ meta-info-deadline policy allocate time for each 
+negotiation according to the meta-level information transferred in 
+the pre-negotiation phase a more complicated negotiation 
+which involves further negotiations should be allocated 
+additional time for example the pc manufacturer allocates 
+a duration of for the negotiation order hardware and a 
+duration of for deliver computer the reason is that the 
+negotiation with the distribution center about order hardware 
+is more complicated because it involves further negotiations 
+between the distribution center and other agents in our 
+implementation we use the following procedure to decide the 
+negotiation duration δ v 
+if negcount v more additional 
+negotiation needed 
+δ v negcount v − basic neg cycle 
+else if negcount v one or two 
+additional negotiations needed 
+δ v basic neg cycle 
+else no additional negotiation 
+δ v basic neg cycle 
+basic neg cycle represents the minimum time needed for a 
+negotiation cycle proposal-think-reply which is in our 
+system setting including communication delay one 
+additional time unit is allocated for the simplest negotiation 
+because it allows the agent to perform a more complicated 
+reasoning process in thinking again the structure of this 
+procedure is selected according to experience and it can be learned 
+and adjusted by agents dynamically 
+ evenly-divided-deadline policy evenly divide the available 
+time among the n related negotiations 
+δ v total available time n 
+for example if the current time is and the negotiation 
+deadline for order computer is given two other related 
+negotiations order hardware and deliver computer each 
+negotiation is allocated with a duration of 
+intuitively we feel the strategy may not be a good one because 
+performing all negotiations in parallel would increase the risk of 
+decommitment and hence also decommitment penalties however 
+it is not very clear how strategy and perform and we will 
+discuss some experimental results in section 
+ experiments 
+to verify and evaluate the mechanisms presented for the 
+negotiation chain problem we implemented the scenario described in 
+figure new tasks were randomly generated with 
+decommitment penalty rate p ∈ early finish reward rate e ∈ 
+and deadline dl ∈ this range allows different flexibilities 
+available for those sub-contracted tasks and arrived at the store 
+agent periodically we performed two sets of experiments to study 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table parameter values without with meta-level 
+information 
+fixed-flex meta-info-flex 
+negotiation pbs pbs c 
+order computer 
+order memory 
+order hardware 
+deliver computer 
+deliver hardware 
+order chips 
+order memory 
+figure different flexibility policies 
+how the success probability functions and negotiation deadlines 
+affect the negotiation outcome the agents utilities and the system s 
+overall utility in this experiment agents need to make decision on 
+negotiation ordering and feature assignment for multiple attributes 
+including earliest start time deadline promised finish time and 
+those attributes-of-negotiation to focus on the study of flexibility 
+in this experiment the regular rewards for each type of tasks are 
+fixed and not under negotiation here we only describe how agents 
+handle the negotiation duration and negotiation deadlines because 
+they are the attributes affected by the pre-negotiation phase all 
+other attributes involved in negotiation are handled according to 
+how they affect the feasibility of local schedule time-related 
+attributes and how they affect the negotiation success probability 
+ time and cost related attributes and how they affect the expect 
+utility a search algorithm and a set of partial order 
+scheduling algorithms are used to handle these attributes 
+we tried two different flexibility policies 
+ fixed-flexibility policy the agent uses a fixed value as the 
+success probability ps v pbs v according to its local 
+knowledge and estimation 
+ meta-info-flexibility policy the agent uses the function ps v 
+pbs v π arctan f v c to model the 
+success probability it also adjusts those parameters pbs v and 
+c according to the meta-level information obtained in 
+prenegotiation phase as described in section table shows 
+the values of those parameters for some negotiations 
+figure shows the results of this experiment this set of 
+experiments includes system runs and each run is for simulating 
+time units in the first time units agents are learning about 
+the task characteristics which will be used to calculate the conflict 
+probabilities pcij at time agents perform meta-level 
+information communication and in the next time units agents use 
+the meta-level information in their local reasoning process the 
+data was collected over the time units after the pre-negotiation 
+figure different negotiation deadline policies 
+phase 
+ one purchase computer task is generated every time 
+units and two purchase memory tasks are generated every time 
+units the deadline for task purchase computer is randomly 
+generated in the range of the deadline for task purchase 
+memory is in the range of the decommitment penalty rate is 
+randomly generated in the range of this setting creates 
+multiple concurrent negotiation chain situations there is one long 
+chain 
+customer - store - pc manufacturer - distribution center - 
+producers - transporter 
+and two short chains 
+customer - store - memory producer 
+this demonstrates that this mechanism is capable of handling 
+multiple concurrent negotiation chains 
+all agents perform better in this example gain more utility 
+when they are using the meta-level information to adjust their local 
+control through the parameters in the success probability function 
+ meta-info-flex policy especially for those agents in the middle of 
+the negotiation chain such as the pc manufacturer and the 
+distribution center the flexibility policy makes a significant difference 
+when the agent has a better understanding of the global negotiation 
+scenario it is able to allocate more flexibility for those tasks that 
+involve complicated negotiations and resource contentions 
+therefore the success probability increases and fewer tasks are rejected 
+or canceled of the tasks have been successfully negotiated 
+over when using meta-level information compared to when 
+no pre-negotiation is used resulting in both the agent and the 
+system achieving better performance 
+in the second set of experiments studies we compare three 
+negotiation deadline policies described in section when using 
+the meta-info flexibility policy described above the initial result 
+shows that the same-deadline policy and the meta-info-deadline 
+policy perform almost the same when the amount of system 
+workload level is moderate tasks can be accommodated given sufficient 
+flexibility in this situation with either of the policies most 
+negotiations are successful and there are few decommitment 
+occurrences so the ordering of negotiations does not make too much 
+difference therefore in this second set of experiments we increase 
+the number of new tasks generated to raise the average workload 
+in the system one purchase computer task is generated every 
+ time units three purchase memory tasks are generated every 
+ 
+we only measure the utility collected after the learning phase 
+because that the learning phase is relatively short comparing to the 
+evaluation phase also during the learning phase no meta-level 
+information is used so some of the policies are invalid 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ time units and one task deliver gift directly from the 
+customer to the transporter is generated every time units this 
+setup generates a higher level of system workload which results 
+in some tasks not being completed no matter what negotiation 
+ordering is used in this situation we found the meta-info-deadline 
+policy performs much better than same-deadline policy see 
+figure when an agent uses the same-deadline policy all 
+negotiations have to be performed in parallel in the case that one 
+negotiation fails all related tasks have to be canceled and the agent 
+needs to pay multiple decommitment penalties when the agent 
+uses the meta-info-deadline policy complicated negotiations are 
+allocated more time and correspondingly simpler negotiations are 
+allocated less time this also has the effect of allowing some 
+negotiations to be performed in sequence the consequence of 
+sequencing negotiation is that if there is failure an agent can simply 
+cancel the other related negotiations that have not been started in 
+this way the agent does not have to pay decommitment penalty for 
+those canceled negotiations because no commitment has been 
+established yet the evenly-divided-deadline policy performs much 
+worse than the meta-info-deadline policy in the 
+evenly-divideddeadline policy the agent allocates negotiation time evenly among 
+the related negotiations hence the complicated negotiation does not 
+get enough time to complete 
+the above experiment results show that the meta-level 
+information transferred among agents during the pre-negotiation phase is 
+critical in building a more accurate model of the negotiation 
+problem the reasoning process based on this more accurate model 
+produces an efficient negotiation solution which improves the agent s 
+and the system s overall utility significantly this conclusion holds 
+for those environments where the system is facing moderate heavy 
+load and tasks have relatively tight time deadline our experiment 
+setup is to produce such environment the efficient negotiation is 
+especially important in such environments 
+ related work 
+fatima wooldridge and jennings studied the multiple issues 
+in negotiation in terms of the agenda and negotiation procedure 
+however this work is limited since it only involves a single agent s 
+perspective without any understanding that the agent may be part 
+of a negotiation chain mailler and lesser have presented an 
+approach to a distributed resource allocation problem where the 
+negotiation chain scenario occurs it models the negotiation problem as 
+a distributed constraint optimization problem dcop and a 
+cooperative mediation mechanism is used to centralize relevant portions 
+of the dcop in our work the negotiation involves more 
+complicated issues such as reward penalty and utility also we adopt a 
+distribution approach where no centralized control is needed a 
+mediator-based partial centralized approach has been applied to the 
+coordination and scheduling of complex task network which is 
+different from our work since the system is a complete cooperative 
+system and individual utility of single agent is not concerned at all 
+a combinatorial auction could be another approach to 
+solving the negotiation chain problem however in a combinatorial 
+auction the agent does not reason about the ordering of 
+negotiations this would lead to a problem similar to those we discussed 
+when the same-deadline policy is used 
+ conclusion and future work 
+in this paper we have solved negotiation chain problems by 
+extending our multi-linked negotiation model from the perspective of 
+a single agent to multiple agents instead of solving the negotiation 
+chain problem in a centralized approach we adopt a distributed 
+approach where each agent has an extended local model and 
+decisionmaking process we have introduced a pre-negotiation phase that 
+allows agents to transfer meta-level information on related 
+negotiation issues using this information the agent can build a more 
+accurate model of the negotiation in terms of modeling the 
+relationship of flexibility and success probability this more accurate 
+model helps the agent in choosing the appropriate negotiation 
+solution the experimental data shows that these mechanisms improve 
+the agent s and the system s overall performance significantly in 
+future extension of this work we would like to develop 
+mechanisms to verify how reliable the agents are we also recognize 
+that the current approach of applying the meta-level information 
+is mainly heuristic so we would like to develop a learning 
+mechanism that enables the agent to learn how to use such information to 
+adjust its local model from previous experience to further verify 
+this distributed approach we would like to develop a centralized 
+approach so we can evaluate how good the solution from this 
+distributed approach is compared to the optimal solution found by the 
+centralized approach 
+ references 
+ s s fatima m wooldridge and n r jennings optimal 
+negotiation strategies for agents with incomplete information in 
+revised papers from the th international workshop on intelligent 
+agents viii pages - springer-verlag 
+ l hunsberger and b j grosz a combinatorial auction for 
+collaborative planning in proceedings of the fourth international 
+conference on multi-agent systems icmas- 
+ n r jennings p faratin t j norman p o brien b odgers and 
+j l alty implementing a business process management system 
+using adept a real-world case study int journal of applied 
+artificial intelligence 
+ r mailler and v lesser a cooperative mediation-based protocol 
+for dynamic distributed resource allocation ieee transaction on 
+systems man and cybernetics part c special issue on 
+game-theoretic analysis and stochastic simulation of negotiation 
+agents 
+ t j norman a preece s chalmers n r jennings m luck v d 
+dang t d nguyen v deora j shao a gray and n fiddian 
+agent-based formation of virtual organisations int j knowledge 
+based systems - - 
+ t sandholm and v lesser issues in automated negotiation and 
+electronic commerce extending the contract net framework in 
+proceedings of the first international conference on multi-agent 
+systems icmas pages - 
+ j shen x zhang and v lesser degree of local cooperation and 
+its implication on global utility proceedings of third international 
+joint conference on autonomous agents and multiagent systems 
+ aamas july 
+ m sims h mostafa b horling h zhang v lesser and 
+d corkill lateral and hierarchical partial centralization for 
+distributed coordination and scheduling of complex hierarchical 
+task networks aaai spring symposium on distributed plan 
+and schedule management 
+ w walsh m wellman and f ygge combinatorial auctions for 
+supply chain formation in second acm conference on electronic 
+commerce 
+ x zhang v lesser and s abdallah efficient management of 
+multi-linked negotiation based on a formalized model autonomous 
+agents and multiagent systems - 
+ x zhang v lesser and t wagner integrative negotiation among 
+agents situated in organizations ieee transactions on system man 
+and cybernetics part c special issue on game-theoretic analysis 
+and stochastic simulation of negotiation agents - 
+january 
+ q zheng and x zhang automatic formation and analysis of 
+multi-agent virtual organization journal of the brazilian computer 
+society special issue on agents organizations - july 
+ 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

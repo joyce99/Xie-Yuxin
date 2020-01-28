@@ -1,0 +1,1228 @@
+betting on permutations 
+yiling chen 
+yahoo research 
+ w th st th floor 
+new york ny 
+lance fortnow 
+department of computer science 
+university of chicago 
+chicago il 
+evdokia nikolova 
+ 
+cs ai laboratory 
+massachusetts institute of technology 
+cambridge ma 
+david m pennock 
+yahoo research 
+ w th st th floor 
+new york ny 
+abstract 
+we consider a permutation betting scenario where people 
+wager on the final ordering of n candidates for example 
+the outcome of a horse race we examine the auctioneer 
+problem of risklessly matching up wagers or equivalently 
+finding arbitrage opportunities among the proposed wagers 
+requiring bidders to explicitly list the orderings that they d 
+like to bet on is both unnatural and intractable because the 
+number of orderings is n and the number of subsets of 
+orderings is n 
+ we propose two expressive betting languages 
+that seem natural for bidders and examine the 
+computational complexity of the auctioneer problem in each case 
+subset betting allows traders to bet either that a candidate 
+will end up ranked among some subset of positions in the 
+final ordering for example horse a will finish in positions 
+ or - or that a position will be taken by some 
+subset of candidates for example horse a b or d will finish 
+in position for subset betting we show that the 
+auctioneer problem can be solved in polynomial time if orders 
+are divisible pair betting allows traders to bet on whether 
+one candidate will end up ranked higher than another 
+candidate for example horse a will beat horse b we prove 
+that the auctioneer problem becomes np-hard for pair 
+betting we identify a sufficient condition for the existence of a 
+pair betting match that can be verified in polynomial time 
+we also show that a natural greedy algorithm gives a poor 
+approximation for indivisible orders 
+categories and subject descriptors 
+j computer applications social and behavioral 
+sciences-economics 
+general terms 
+economics theory 
+ introduction 
+buying or selling a financial security in effect is a wager 
+on the security s value for example buying a stock is a bet 
+that the stock s value is greater than its current price each 
+trader evaluates his expected profit to decide the quantity 
+to buy or sell according to his own information and 
+subjective probability assessment the collective interaction of 
+all bets leads to an equilibrium that reflects an aggregation 
+of all the traders information and beliefs in practice this 
+aggregate market assessment of the security s value is often 
+more accurate than other forecasts relying on experts polls 
+or statistical inference 
+consider buying a security at price fifty-two cents that 
+pays if and only if a democrat wins the us 
+presidential election the transaction is a commitment to accept 
+a fifty-two cent loss if a democrat does not win in return 
+for a forty-eight cent profit if a democrat does win in this 
+case of an event-contingent security the price-the market s 
+value of the security-corresponds directly to the estimated 
+probability of the event 
+almost all existing financial and betting exchanges pair up 
+bilateral trading partners for example one trader willing 
+to accept an x dollar loss if a democrat does not win in 
+return for a y dollar profit if a democrat wins is matched 
+up with a second trader willing to accept the opposite 
+however in many scenarios even if no bilateral agreements 
+exist among traders multilateral agreements may be 
+possible for example if one trader bets that the democratic 
+candidate will receive more votes than the republican 
+candidate a second trader bets that the republican candidate 
+will receive more votes than the libertarian candidate and a 
+third trader bets that the libertarian candidate will receive 
+more votes than the democratic candidate then 
+depending on the odds they each offer there may be a three-way 
+agreeable match even though no two-way matches exist 
+we propose an exchange where traders have considerable 
+flexibility to naturally and succinctly express their wagers 
+ 
+and examine the computational complexity of the 
+auctioneer s resulting matching problem of identifying bilateral and 
+multilateral agreements in particular we focus on a setting 
+where traders bet on the outcome of a competition among 
+n candidates for example suppose that there are n 
+candidates in an election or n horses in a race etc and thus 
+n possible orderings of candidates after the final vote tally 
+traders may like to bet on arbitrary properties of the final 
+ordering for example candidate d will win candidate d 
+will finish in either first place or last place candidate d 
+will defeat candidate r candidates d and r will both 
+defeat candidate l etc the goal of the exchange is to search 
+among all the offers to find two or more that together form 
+an agreeable match as we shall see the matching 
+problem can be set up as a linear or integer program depending 
+on whether orders are divisible or indivisible respectively 
+attempting to reduce the problem to a bilateral matching 
+problem by explicitly creating n securities one for each 
+possible final ordering is both cumbersome for the traders and 
+computationally infeasible even for modest sized n 
+moreover traders attention would be spread among n 
+independent choices making the likelihood of two traders converging 
+at the same time and place seem remote 
+there is a tradeoff between the expressiveness of the 
+bidding language and the computational complexity of the 
+matching problem we want to offer traders the most expressive 
+bidding language possible while maintaining computational 
+feasibility we explore two bidding languages that seem 
+natural from a trader perspective subset betting described in 
+section allows traders to bet on which positions in the 
+ranking a candidate will fall for example candidate d will 
+finish in position - or symetrically traders can 
+also bet on which candidates will fall in a particular 
+position in section we derive a polynomial-time algorithm 
+for matching divisible subset bets the key to the result 
+is showing that the exponentially big linear program has a 
+corresponding separation problem that reduces to maximum 
+weighted bipartite matching and consequently we can solve 
+it in time polynomial in the number of orders 
+pair betting described in section allows traders to 
+bet on the final ranking of any two candidates for example 
+candidate d will defeat candidate r in section we show 
+that optimal matching of divisible or indivisible pair bets 
+is np-hard via a reduction from the unweighted minimum 
+feedback arc set problem we also provide a 
+polynomiallyverifiable sufficient condition for the existence of a 
+pairbetting match and show that a greedy algorithm offers poor 
+approximation for indivisible pair bets 
+ background and related work 
+we consider permutation betting or betting on the 
+outcome of a competition among n candidates the final 
+outcome or state s ∈ s is an ordinal ranking of the n candidates 
+for example the candidates could be horses in a race and 
+the outcome the list of horses in increasing order of their 
+finishing times the state space s contains all n mutually 
+exclusive and exhaustive permutations of candidates 
+in a typical horse race people bet on properties of the 
+outcome like horse a will win horse a will show or 
+finish in either first or second place or horses a and b will 
+finish in first and second place respectively in practice 
+at the racetrack each of these different types of bets are 
+processed in separate pools or groups in other words all 
+the win bets are processed together and all the show 
+bets are processed together but the two types of bets do 
+not mix this separation can hurt liquidity and information 
+aggregation for example even though horse a is heavily 
+favored to win that may not directly boost the horse s odds 
+to show 
+instead we describe a central exchange where all bets 
+on the outcome are processed together thus aggregating 
+liquidity and ensuring that informational inference happens 
+automatically 
+ideally we d like to allow traders to bet on any property 
+of the final ordering they like stated in exactly the language 
+they prefer in practice allowing too flexible a language 
+creates a computational burden for the auctioneer attempting 
+to match willing traders we explore the tradeoff between 
+the expressiveness of the bidding language and the 
+computational complexity of the matching problem 
+we consider a framework where people propose to buy 
+securities that pay if and only if some property of the 
+final ordering is true traders state the price they are 
+willing to pay per share and the number of shares they would 
+like to purchase sell orders may not be explicitly needed 
+since buying the negation of an event is equivalent to selling 
+the event a divisible order permits the trader to receive 
+fewer shares than requested as long as the price constraint 
+is met an indivisible order is an all-or-nothing order the 
+description of bets in terms of prices and shares is without 
+loss of generality we can also allow bets to be described in 
+terms of odds payoff vectors or any of the diverse array of 
+approaches practiced in financial and gambling circles 
+in principle we can do everything we want by explicitly 
+offering n securities one for every state s ∈ s or in fact 
+any set of n linearly independent securities this is the 
+so-called complete arrow-debreu securities market for 
+our setting in practice traders do not want to deal with 
+low-level specification of complete orderings people think 
+more naturally in terms of high-level properties of 
+orderings moreover operating n securities is infeasible in 
+practice from a computational point of view as n grows 
+a very simple bidding language might allow traders to bet 
+only on who wins the competition as is done in the win 
+pool at racetracks the corresponding matching problem is 
+polynomial however the language is not very expressive a 
+trader who believes that a will defeat b but that neither 
+will win outright cannot usefully impart his information to 
+the market the price space of the market reveals the 
+collective estimates of win probabilities but nothing else our 
+goal is to find languages that are as expressive and intuitive 
+as possible and reveal as much information as possible while 
+maintaining computational feasibility 
+our work is in direct analogy to work by fortnow et 
+al whereas we explore permutation combinatorics 
+fortnow et al explore boolean combinatorics the authors 
+consider a state space of the n 
+possible outcomes of n binary 
+variables traders express bets in boolean logic the 
+authors show that divisible matching is co-np-complete and 
+indivisible matching is σp 
+ -complete 
+hanson describes a market scoring rule mechanism 
+which can allow betting on combinatorial number of 
+outcomes the market starts with a joint probability 
+distribution across all outcomes it works like a sequential version 
+of a scoring rule any trader can change the probability 
+distribution as long as he agrees to pay the most recent trader 
+ 
+according to the scoring rule the market maker pays the 
+last trader hence he bears risk and may incur loss 
+market scoring rule mechanisms have a nice property that the 
+worst-case loss of the market maker is bounded however 
+the computational aspects on how to operate the 
+mechanism have not been fully explored our mechanisms have 
+an auctioneer who does not bear any risk and only matches 
+orders 
+research on bidding languages and winner determination 
+in combinatorial auctions considers similar 
+computational challenges in finding an allocation of items to 
+bidders that maximizes the auctioneer s revenue 
+combinatorial auctions allow bidders to place distinct values on 
+bundles of goods rather than just on individual goods 
+uncertainty and risk are typically not considered and the 
+central auctioneer problem is to maximize social welfare our 
+mechanisms allow traders to construct bets for an event with 
+n outcomes uncertainty and risk are considered and the 
+auctioneer problem is to explore arbitrage opportunities and 
+risklessly match up wagers 
+ permutation betting 
+in this section we define the matching and optimal 
+matching problems that an auctioneer needs to solve in a general 
+permutation betting market we then illustrate the 
+problem definitions in the context of the subset-betting and 
+pairbetting markets 
+ securities orders and matching problems 
+consider an event with n competing candidates where 
+the outcome state is a ranking of the n candidates the 
+bidding language of a market offering securities in the 
+future outcomes determines the type and number of 
+securities available and directly affects what information can be 
+aggregated about the outcome a fully expressive bidding 
+language can capture any possible information that traders 
+may have about the final ranking a less expressive language 
+limits the type of information that can be aggregated though 
+it may enable a more efficient solution to the matching 
+problem for any bidding language and number of securities in 
+a permutation betting market we can succinctly represent 
+the problem of the auctioneer to risklessly match offers as 
+follows 
+consider an index set of bets or orders o which traders 
+submit to the auctioneer each order i ∈ o is a triple 
+ bi qi φi where bi denotes how much the trader is willing 
+to pay for a unit share of security φi and qi is the number 
+of shares of the security he wants to purchase at price bi 
+naturally bi ∈ since a unit of the security pays off at 
+most when the event is realized since order i is defined 
+for a single security φi we will omit the security variable 
+whenever it is clear from the context 
+the auctioneer can accept or reject each order or in a 
+divisible world accept a fraction of the order let xi be the 
+fraction of order i ∈ o accepted in the indivisible version 
+of the market xi or while in the divisible version 
+xi ∈ further let ii s be the indicator variable for 
+whether order i is winning in state s that is ii s if the 
+order is paid back in state s and ii s otherwise 
+there are two possible problems that the auctioneer may 
+want to solve the simpler one is to find a subset of orders 
+that can be matched risk-free namely a subset of orders 
+which accepted together give a nonnegative profit to the 
+auctioneer in every possible outcome we call this problem 
+the existence of a match or sometimes simply the matching 
+problem the more complex problem is for the auctioneer to 
+find the optimal match with respect to some criterion such 
+as profit trading volume etc 
+definition existence of match indivisible orders 
+given a set of orders o does there exist a set of xi ∈ 
+ i ∈ o with at least one xi such that 
+i 
+ bi − ii s qixi ≥ ∀s ∈ s 
+similarly we can define the existence of a match with 
+divisible orders 
+definition existence of match divisible orders 
+given a set of orders o does there exist a set of xi ∈ 
+i ∈ o with at least one xi such that 
+i 
+ bi − ii s qixi ≥ ∀s ∈ s 
+the existence of a match is a decision problem it only 
+returns whether trade can occur at no risk to the 
+auctioneer in addition to the risk-free requirement the auctioneer 
+can optimize some criterion in determining the orders to 
+accept some reasonable objectives include maximizing the 
+total trading volume in the market or the worst-case profit 
+of the auctioneer the following optimal matching problems 
+are defined for an auctioneer who maximizes his worst-case 
+profit 
+definition optimal match indivisible orders 
+given a set of orders o choose xi ∈ such that the 
+following mixed integer programming problem achieves its 
+optimality 
+max 
+xi c 
+c 
+s t i bi − ii s qixi ≥ c ∀s ∈ s 
+xi ∈ ∀i ∈ o 
+definition optimal match divisible orders 
+given a set of orders o choose xi ∈ such that the 
+following linear programming problem achieves its optimality 
+max 
+xi c 
+c 
+s t i bi − ii s qixi ≥ c ∀s ∈ s 
+ ≤ xi ≤ ∀i ∈ o 
+the variable c is the worst-case profit for the auctioneer 
+note that strictly speaking the optimal matching problems 
+do not require to solve the optimization problems and 
+ because only the optimal set of orders are needed the 
+optimal worst-case profit may remain unknown 
+ subset betting 
+a subset betting market allows two different types of bets 
+traders can bet on a subset of positions a candidate may end 
+up at or they can bet on a subset of candidates that will 
+occupy a particular position a security α φ where φ is 
+a subset of positions pays off if candidate α stands at a 
+position that is an element of φ and it pays otherwise 
+for example security α pays when candidate α 
+ 
+is ranked second or fourth similarly a security ψ j where 
+ψ is a subset of candidates pays off if any of the 
+candidates in the set ψ ranks at position j for instance security 
+ α γ pays off when either candidate α or candidate 
+γ is ranked second 
+the auctioneer in a subset betting market faces a 
+nontrivial matching problem that is to determine which orders 
+to accept among all submitted orders i ∈ o note that 
+although there are only n candidates and n possible positions 
+the number of available securities to bet on is exponential 
+since a trader may bet on any of the n 
+subsets of 
+candidates or positions with this it is not immediately clear 
+whether one can even find a trading partner or a match for 
+trade to occur or that the auctioneer can solve the 
+matching problem in polynomial time in the next section we will 
+show that somewhat surprisingly there is an elegant 
+polynomial solution to both the matching and optimal matching 
+problems based on classic combinatorial problems 
+when an order is accepted the corresponding trader pays 
+the submitted order price bi to the auctioneer and the 
+auctioneer pays the winning orders per share after the 
+outcome is revealed the auctioneer has to carefully choose 
+which orders and what fractions of them to accept so as 
+to be guaranteed a nonnegative profit in any future state 
+the following example illustrates the matching problem for 
+indivisible orders in the subset-betting market 
+example suppose n objects α β and γ compete 
+for positions and in a competition the auctioneer 
+receives the following orders buy share α at 
+price buy share β at price buy 
+ share γ at price and buy share β 
+at price there are possible states of ordering αβγ 
+αγβ βαγ βγα γαβ and γβα the corresponding 
+statedependent profit of the auctioneer for each order can be 
+calculated as the following vectors 
+c − − 
+c − − − − 
+c − − − − 
+c − − 
+ columns correspond to the future states for indivisible 
+orders the auctioneer can either accept orders and 
+and obtain profit vector 
+c 
+or accept orders and and has profit across state 
+c 
+ pair betting 
+a pair betting market allows traders to bet on whether 
+one candidate will rank higher than another candidate in an 
+outcome which is a permutation of n candidates a security 
+α β pays off if candidate α is ranked higher than 
+candidate β and otherwise there are a total of n n − 
+different securities offered in the market each corresponding 
+to an ordered pair of candidates 
+traders place orders of the form buy qi shares of α β 
+at price per share no greater than bi bi in general should 
+be between and again the order can be either indivisible 
+or divisible and the auctioneer needs to decide what fraction 
+xi of each order to accept so as not to incur any loss with 
+a 
+b 
+c 
+d 
+e 
+f 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure every cycle has negative worst-case profit 
+of − for the cycles of length or less for the 
+cycles of length however accepting all edges in 
+full gives a positive worst-case profit of 
+xi ∈ for indivisible and xi ∈ for divisible orders 
+the same definitions for existence of a match and optimal 
+match from section apply 
+the orders in the pair-betting market have a natural 
+interpretation as a graph where the candidates are nodes in 
+the graph and each order which ranks a pair of candidates 
+α β is represented by a directed edge e α β with price 
+be and weight qe with this interpretation it is tempting 
+to assume that a necessary condition for a match is to have 
+a cycle in the graph with a nonnegative worst-case profit 
+assuming qe for all e this is a cycle c with a total of 
+ c edges such that the worst-case profit for the auctioneer 
+is 
+e∈c 
+be − c − ≥ 
+since in the worst-case state the auctioneer needs to pay 
+ to every order in the cycle except one however the 
+example in figure shows that this is not the case we 
+may have a set of orders in which every single cycle has a 
+negative worst-case profit and yet there is a positive 
+worstcase match overall the edge labels in the figure are the 
+prices be both the optimal divisible and indivisible solution 
+in this case accept all orders in full xe 
+ complexity of subset betting 
+the matching problems of the auctioneer in any 
+permutation market including the subset betting market have n 
+constraints brute-force methods would take exponential 
+time to solve however given the special form of the 
+securities in the subset betting market we can show that the 
+matching problems for divisible orders can be solved in 
+polynomial time 
+theorem the existence of a match and the optimal 
+match problems with divisible orders in a subset betting 
+market can both be solved in polynomial time 
+ 
+proof consider the linear programming problem for 
+finding an optimal match this linear program has o 
+variables one variable xi for each order i and the profit 
+variable c it also has exponentially many constraints however 
+we can solve the program in time polynomial in the 
+number of orders o by using the ellipsoid algorithm as long 
+as we can efficiently solve its corresponding separation 
+problem in polynomial time the separation problem for 
+a linear program takes as input a vector of variable values 
+and returns if the vector is feasible or otherwise it returns 
+a violated constraint 
+for given values of the variables a violated constraint in 
+eq asks whether there is a state or permutation s in 
+which the profit is less than c and can be rewritten as 
+i 
+ii s qixi 
+i 
+biqixi − c ∀s ∈ s 
+thus it suffices to show how to find efficiently a state s 
+satisfying the above inequality or verify that the opposite 
+inequality holds for all states s 
+we will show that the separation problem can be reduced 
+to the maximum weighted bipartite matching 
+problem 
+the left hand side in eq is the total money that the 
+auctioneer needs to pay back to the winning traders in state 
+s the first term on the right hand side is the total money 
+collected by the auctioneer and it is fixed for a given 
+solution vector of xi s and c a weighted bipartite graph can 
+be constructed between the set of candidates and the set of 
+positions for every order of the form α φ there are edges 
+from candidate node α to every position node in φ for 
+orders of the form ψ j there are edges from each candidate in 
+ψ to position j for each order i we put weight qixi on each 
+of these edges all multi-edges with the same end points 
+are then replaced with a single edge that carries the total 
+weight of the multi-edge every state s then corresponds 
+to a perfect matching in the bipartite graph in addition 
+the auctioneer pays out to the winners the sum of all edge 
+weights in the perfect matching since every candidate can 
+only stand in one position and every position is taken by 
+one candidate thus the auctioneer s worst-cast state and 
+payment are the solution to the maximum weighted 
+bipartite matching problem which has known polynomial-time 
+algorithms hence the separation problem can be 
+solved in polynomial time 
+naturally if the optimal solution to gives a worst-case 
+profit of c 
+ there exists a matching thus the matching 
+problem can be solved in polynomial time also 
+ complexity of pair betting 
+in this section we show that a slight change of the 
+bidding language may bring about a dramatic change in the 
+complexity of the optimal matching problem of the 
+auctioneer in particular we show that finding the optimal match in 
+the pair betting market is np-hard for both divisible and 
+indivisible orders we then identify a polynomially-verifiable 
+sufficient condition for deciding the existence of a match 
+the hardness results are surprising especially in light of 
+the observation that a pair betting market has a seemingly 
+more restrictive bidding language which only offers n n− 
+ 
+the notion of perfect matching in a bipartite graph which 
+we use only in this proof should not be confused with the 
+notion of matching bets which we use throughout the paper 
+securities in contrast the subset betting market enables 
+traders to bet on an exponential number of securities and 
+yet had a polynomial time solution for finding the optimal 
+match our hope is that the comparison of the complexities 
+of the subset and pair betting markets would offer insight 
+into what makes a bidding language expressive while at the 
+same time enabling an efficient matching solution 
+in all analysis that follows we assume that traders submit 
+unit orders in pair betting markets that is qi a set 
+of orders o received by the auctioneer in a pair betting 
+market with unit orders can be represented by a directed 
+graph g v e where the vertex set v contains candidates 
+that traders bet on an edge e ∈ e denoted α β be 
+represents an order to buy share of the security α β 
+at price be all edges have equal weight of 
+we adopt the following notations throughout the paper 
+ g v e original equally weighted directed graph for 
+the set of unit orders o 
+ be price of the order for edge e 
+ g 
+ v 
+ e 
+ a weighted directed graph of accepted 
+orders for optimal matching where edge weight xe is the 
+quantity of order e accepted by the auctioneer xe 
+for indivisible orders and xe ≤ for divisible 
+orders 
+ h v e a generic weighted directed graph of accepted 
+orders 
+ k h solution to the unweighted minimum feedback 
+arc set problem on graph h k h is the minimum 
+number of edges to remove so that h becomes acyclic 
+ l h solution to the weighted minimum feedback arc 
+set problem on graph h l h is the minimum total 
+weights for the set of edges which when removed leave 
+h acyclic 
+ c h worst-case profit of the auctioneer if he accepts 
+all orders in graph h 
+ a sufficiently small positive real number where 
+not stated e for a graph h v e in other 
+cases the value is determined in context 
+a feedback arc set of a directed graph is a set of edges 
+which when removed from the graph leave a directed acyclic 
+graph dag unweighted minimum feedback arc set 
+problem is to find a feedback arc set with the minimum 
+cardinality while weighted minimum feedback arc set problem 
+seeks to find a feedback arc set with the minimum total edge 
+weight both unweighted and weighted minimum feedback 
+arc set problems have been shown to be np-complete 
+we will use this result in our complexity analysis on pair 
+betting markets 
+ optimal indivisible matching 
+the auctioneer s optimal indivisible matching problem is 
+introduced in definition of section assuming unit 
+orders and considering the order graph g v e we restate 
+the auctioneer s optimal matching problem in a pair 
+betting market as picking a subset of edges to accept such that 
+ 
+worst-case profit is maximized in the following optimization 
+problem 
+max 
+xe c 
+c 
+s t e be − ie s xe ≥ c ∀s ∈ s 
+xe ∈ ∀e ∈ e 
+without lose of generality we assume that there are no 
+multi-edges in the order graph g 
+we show that the optimal matching problem for 
+indivisible orders is np-hard via a reduction from the unweighted 
+minimum feedback arc set problem the latter takes as 
+input a directed graph and asks what is the minimum number 
+of edges to delete from the graph so as to be left with a dag 
+our hardness proof is based on the following lemmas 
+lemma suppose the auctioneer accepts all edges in an 
+equally weighted directed graph h v e with edge price be 
+ − and edge weight xe then the worst-case profit 
+is equal to k h − e where k h is the solution to the 
+unweighted minimum feedback arc problem on h 
+proof if the order of an edge gets payoff at the end 
+of the market we call the edge a winning edge otherwise it 
+is called a losing edge for any state s all winning edges 
+necessarily form a dag conversely for every dag there 
+is a state in which the dag edges are winners though the 
+remaining edges in g are not necessarily losers 
+suppose that in state s there are ws winning edges and 
+ls e − ws losing edges then ls is the cardinality of a 
+feedback arc set that consists of all losing edges in state s 
+the edges that remain after deleting the minimum feedback 
+arc set form the maximum dag for the graph h consider 
+the state smax in which all edges of the maximum dag are 
+winners this gives the maximum number of winning edges 
+wmax all other edges are necessarily losers in the state 
+smax since any edge which is not in the max dag must 
+form a cycle together with some of the dag edges the 
+number of losing edges in state smax is the cardinality of the 
+minimum feedback arc set of h that is e − wmax k h 
+the profit of the auctioneer in a state s is 
+profit s 
+e∈e 
+be − w 
+ − e − w 
+≥ − e − wmax 
+where equality holds when s smax thus the worst-case 
+profit is achieved at state smax 
+profit smax e − wmax − e k h − e 
+consider the graph of accepted orders for optimal 
+matching g 
+ v 
+ e 
+ which consists of the optimal subset of 
+edges e 
+to be accepted by the auctioneer that is edges 
+with xe in the solution of the optimization problem 
+we have the following lemma 
+lemma if the edge prices are be − then the 
+optimal indivisible solution graph g 
+has the same unweighted 
+minimum feedback arc set size as the graph of all orders g 
+that is k g 
+ k g furthermore g 
+is the smallest such 
+subgraph of g i e it is the subgraph of g with the 
+smallest number of edges that has the same size of unweighted 
+minimum feedback arc set as g 
+proof g 
+is a subgraph of g hence the minimum 
+number of edges to break cycles in g 
+is no more than that in 
+g namely k g 
+ ≤ k g 
+suppose k g 
+ k g since both k g 
+ and k g are 
+integers for any 
+ e 
+we have that k g 
+ − e 
+ 
+k g − e hence by lemma the auctioneer has a higher 
+worst-case profit by accepting g than accepting g 
+ which 
+contradicts the optimality of g 
+ finally the worst-case 
+profit k g − e 
+ is maximized when e 
+ is minimized 
+hence g 
+is the smallest subgraph of g such that k g 
+ 
+k g 
+the above two lemmas prove that the maximum 
+worstcase profit in the optimal indivisible matching is directly 
+related to the size of the minimum feedback arc set thus 
+computing each automatically gives the other hence 
+computing the maximum worst-case profit in the indivisible pair 
+betting problem is np-hard 
+theorem computing the maximum worst-case profit 
+in indivisible pair betting is np-hard 
+proof by lemma the maximum worst-case profit 
+which is the optimum to the mixed integer programming 
+problem is k g − e 
+ where e 
+ is the number of 
+accepted edges since k g is integer and e 
+ ≤ e 
+solving will automatically give us the cardinality of the 
+minimum feedback arc set of g k g because the minimum 
+feedback arc set problem is np-complete computing the 
+maximum worst-case profit is np-hard 
+theorem states that solving the optimization problem 
+is hard because even if the optimal set of orders are 
+provided computing the optimal worst-case profit from 
+accepting those orders is np-hard however it does not imply 
+whether the optimal matching problem i e finding the 
+optimal set of orders to accept is np-hard it is possible to 
+be able to determine which edges in a graph participating in 
+the optimal match yet unable to compute the 
+corresponding worst-case profit next we prove that the indivisible 
+optimal matching problem is actually np-hard we will use 
+the following short fact repeatedly 
+lemma edge removal lemma given a weighted 
+graph h v e removing a single edge e with weight xe from 
+the graph decreases the weighted minimum feedback arc set 
+solution l h by no more than xe and reduces the unweighted 
+minimum feedback arc set solution k h by no more than 
+proof suppose the weighted minimum feedback arc set 
+for the graph h − e is f then f ∪ e is a feedback arc 
+set for h and has total edge weight l h− e xe because 
+l h is the solution to the weighted minimum feedback arc 
+set problem on h we have l h ≤ l h − e xe implying 
+that l h − e ≥ l h − xe 
+similarly suppose the unweighted minimum feedback arc 
+set for the graph h − e is f then f ∪ e is a feedback 
+arc set for h and has set cardinality k h− e because 
+k h is the solution to the unweighted minimum feedback 
+arc set problem on h we have k h ≤ k h − e 
+giving that k h − e ≥ k h − 
+theorem finding the optimal match in indivisible pair 
+betting is np-hard 
+ 
+proof we reduce from the unweighted minimum 
+feedback arc set problem again although with a slightly more 
+complex polynomial transformation involving multiple calls 
+to the optimal match oracle consider an instance graph g 
+of the minimum feedback arc set problem we are interested 
+in computing k g the size of the minimum feedback arc 
+set of g 
+suppose we have an oracle which solves the optimal 
+matching problem denote by optimal match g the output of 
+the optimal matching oracle on graph g with prices be 
+ − on all its edges by lemma on input g the oracle 
+optimal match returns the subgraph of g with the 
+smallest number of edges that has the same size of minimum 
+feedback arc set as g 
+the following procedure finds k g by using polynomially 
+many calls to the optimal match oracle on a sequence of 
+subgraphs of g 
+set g g 
+iterations 
+while g has nonempty edge set 
+reset g optimal match g 
+if g has nonempty edge set 
+increment iterations by 
+reset g by removing any edge e 
+end if 
+end while 
+return iterations 
+this procedure removes edges from the original graph g 
+layer by layer until the graph is empty while at the same 
+time computing the minimum feedback arc set size k g of 
+the original graph as the number of iterations in each 
+iteration we start with a graph g and replace it with the 
+smallest subgraph g that has the same k g at this 
+stage removing an additional edge e necessarily results in 
+k g − e k g − because k g − e k g by the 
+optimality of g and k g − e ≥ k g − by the 
+edgeremoval lemma therefore in each iteration the cardinality 
+of the minimum feedback arc set gets reduced exactly by 
+hence the number of iterations is equal to k g 
+note that this procedure gives a polynomial 
+transformation from the optimal matching problem to the unweighted 
+minimum feedback arc set problem which calls the optimal 
+matching oracle exactly k g ≤ e times where e is the 
+number of edges of g hence the optimal matching problem 
+is np-hard 
+ optimal divisible matching 
+when orders are divisible the auctioneer s optimal 
+matching problem is described in definition of section 
+assuming unit orders and considering the order graph g v e 
+we restate the auctioneer s optimal matching problem for 
+divisible orders as choosing quantity of orders to accept 
+xe ∈ such that worst-case profit is maximized in the 
+following linear programming problem 
+max 
+xe c 
+c 
+s t e be − ie s xe ≥ c ∀s ∈ s 
+xe ∈ ∀e ∈ e 
+we still assume that there are no multi-edges in the order 
+graph g 
+when orders are divisible the auctioneer can be better 
+off by accepting partial orders example shows a situation 
+when accepting partial orders generates higher worst-case 
+profit than the optimal indivisible solution 
+example we show that the linear program 
+sometimes has a non-integer optimal solution 
+a 
+b 
+c 
+d 
+e 
+f 
+b 
+b 
+b 
+b 
+b 
+b 
+b 
+b 
+b 
+figure an order graph letters on edges 
+represent order prices 
+consider the graph in figure there are a total of five 
+cycles in the graph three four-edge cycles abcd abef 
+cdef and two six-edge cycles abcdef and abefcd 
+suppose each edge has price b such that b − and 
+ b − namely b ∈ for example b with 
+this the optimal indivisible solution consists of at most one 
+four-edge cycle with worst case profit b− on the other 
+hand taking 
+ 
+fraction of each of the three four-edge cycles 
+would yield higher worst-case profit of 
+ 
+ b − 
+despite the potential profit increase for accepting divisible 
+orders the auctioneer s optimal matching problem remains 
+to be np-hard for divisible orders which is presented below 
+via several lemmas and theorems 
+lemma suppose the auctioneer accept orders described 
+by a weighted directed graph h v e with edge weight xe to 
+be the quantity accepted for edge order e the worst-case 
+profit for the auctioneer is 
+c h 
+e∈e 
+ be − xe l h 
+proof for any state s the winning edges form a dag 
+thus the worst-case profit for the auctioneer achieves at 
+the state s when the total quantity of losing orders is 
+minimized the minimum total quantity of losing orders is the 
+solution to weighted minimal feedback arc set problem on 
+h that is l h 
+consider the graph of accepted orders for optimal divisible 
+matching g 
+ v 
+ e 
+ which consists of the optimal subset 
+of edges e 
+to be accepted by the auctioneer with edge 
+weight xe getting from the optimal solution of the linear 
+program we have the following lemmas 
+ 
+lemma l g 
+ ≤ k g 
+ ≤ k g 
+proof l g 
+ is the solution of the weighted minimum 
+feedback arc set problem on g 
+ while k g 
+ is the solution 
+of the unweighted minimum feedback arc set problem on 
+g 
+ when all edge weights in g 
+are l g 
+ k g 
+ 
+when xe s are less than l g 
+ can be less than or equal 
+to k g 
+ since g 
+is a subgraph of g but possibly with 
+different edge weights k g 
+ ≤ k g hence we have the 
+above relation 
+lemma there exists some such that when all edge 
+prices be s are − l g 
+ k g 
+proof from lemma l g 
+ ≤ k g we know that the 
+auctioneer s worst-case profit when accepting g 
+is 
+c g 
+ 
+e∈e 
+ be − xe l g 
+ l g 
+ − 
+e∈e 
+xe 
+when he accepts the original order graph g in full his 
+worstcase profit is 
+c g 
+e∈e 
+ be − k g k g − e 
+suppose l g 
+ k g if e − e∈e xe it means 
+that g 
+is g hence l g 
+ k g regardless of which 
+contradicts with the assumption l g 
+ k g if e − 
+e∈e xe then when 
+ 
+k g − l g 
+ 
+ e − e∈e xe 
+ 
+c g is strictly greater than c g 
+ contradicting with the 
+optimality of c g 
+ because xe s are less than l g 
+ 
+k g is impossible thus l g 
+ k g 
+theorem finding the optimal worst-case profit in 
+divisible pair betting is np-hard 
+proof given the optimal set of partial orders to accept 
+for g when edge weights are − if we can calculate 
+the optimal worst-case profit by lemma we can solve the 
+unweighted minimum feedback arc set problem on g which 
+is np-hard hence finding the optimal worst-case profit is 
+np-hard 
+theorem states that solving the linear program is 
+np-hard similarly to the indivisible case we still need to 
+prove that just finding the optimal divisible match is hard 
+as opposed to being able to compute the optimal 
+worstcase profit since in the divisible case the edges do not 
+necessarily have unit weights the proof in theorem does 
+not apply directly however with an additional property 
+of the divisible case we can augment the procedure from 
+the indivisible hardness proof to compute the unweighted 
+minimum feedback arc set size k g here as well 
+first note that the optimal divisible subgraph g 
+of a 
+graph g is the weighted subgraph with minimum weighted 
+feedback arc set size l g 
+ k g and smallest sum of edge 
+weights e∈e xe since its corresponding worst case profit 
+is k g − e∈e xe according to lemmas and 
+lemma suppose graph h satisfies l h k h and 
+we remove edge e from it with weight xe then k h − 
+ e k h 
+proof assume the contrary namely k h− e k h 
+then by lemma k h − e k h − since removing 
+a single edge cannot reduce the minimum feedback arc set 
+by more than the edge weight 
+l h − xe ≤ l h − e 
+on the other hand h − e ⊂ h so we have 
+l h − e ≤ k h − e k h − l h − 
+combining and we get xe ≥ the 
+contradiction arises therefore removing any edge with less than 
+unit weight from an optimal divisible graph does not change 
+k h the minimal feedback arc set size of the unweighted 
+version of the graph 
+we now can augment the procedure for the indivisible case 
+in theorem to prove hardness of the divisible version as 
+follows 
+theorem finding the optimal match in divisible pair 
+betting is np-hard 
+proof we reduce from the unweighted minimum 
+feedback arc set problem for graph g suppose we have an oracle 
+for the optimal divisible problem called optimal divisible match 
+which on input graph h computes edge weights xe ∈ 
+for the optimal subgraph h 
+of h satisfying l h 
+ k h 
+the following procedure outputs k g 
+set g g 
+iterations 
+while g has nonempty edge set 
+reset g optimal divisible match g 
+while g has edges with weight 
+remove an edge with weight from g 
+reset g by setting all edge weights to 
+reset g optimal divisible match g 
+end while 
+if g has nonempty edge set 
+increment iterations by 
+reset g by removing any edge e 
+end if 
+end while 
+return iterations 
+as in the proof of the corresponding theorem for the 
+indivisible case we compute k g by iteratively removing 
+edges and recomputing the optimal divisible solution on the 
+remaining subgraph until all edges are deleted in each 
+iteration of the outer while loop the minimum feedback arc 
+set is reduced by thus the number of iterations is equal 
+to k g 
+it remains to verify that each iteration reduces k g by 
+exactly starting from a graph at the beginning of an 
+iteration we compute its optimal divisible subgraph we 
+then keep removing one non-unit weight edge at a time and 
+recomputing the optimal divisible subgraph until the 
+latter contains only edges with unit weight by lemma 
+throughout the iteration so far the minimum feedback arc set 
+of the corresponding unweighted graph remains unchanged 
+once the oracle returns a graph g with unit edge weights 
+removing any edge would reduce the minimum feedback arc 
+set otherwise g is not optimal since g − e would have 
+ 
+the same minimum feedback arc set but smaller total edge 
+weight by lemma removing a single edge cannot reduce 
+the minimum feedback arc set by more than one thus as 
+all edges have unit weight k g gets reduced by exactly 
+one k g is equal to the returned value from the procedure 
+hence the optimal matching problem for divisible orders is 
+np-hard 
+ existence of a match 
+knowing that the optimal matching problem is np-hard 
+for both indivisible and divisible orders in pair betting we 
+check whether the auctioneer can identify the existence of 
+a match with ease lemma states a sufficient condition 
+for the matching problem with both indivisible and divisible 
+orders 
+lemma a sufficient condition for the existence of a 
+match for pair betting is that there exists a cycle c in g 
+such that 
+e∈c 
+be ≥ c − 
+where c is the number of edges in the cycle c 
+proof the left-hand side of the inequality 
+represents the total payment that the auctioneer receives by 
+accepting every unit orders in the cycle c in full because the 
+direction of an edge represents predicted ordering of the two 
+connected nodes in the final ranking forming a cycle 
+meaning that there is some logical contradiction on the predicted 
+orderings of candidates hence whichever state is realized 
+not all of the edges in the cycle can be winning edges the 
+worst-case for the auctioneer corresponds to a state where 
+every edge in the cycle gets paid by except one with 
+ c − be the maximum payment to traders hence if 
+inequality is satisfied the auctioneer has non-negative 
+worst-case profit by accepting the orders in the cycle 
+it can be shown that identifying such a non-negative 
+worstcase profit cycle in an order graph g can be achieved in 
+polynomial time 
+lemma it takes polynomial time to find a cycle in an 
+order graph g v e that has the highest worst-case profit 
+that is 
+max 
+c∈c 
+e∈c 
+be − c − 
+where c is the set of all cycles in g 
+proof because 
+e∈c 
+be − c − 
+e∈c 
+ be − − 
+e∈c 
+ − be 
+finding the cycle that gives the highest worst-case profit in 
+the original order graph g is equivalent to finding the 
+shortest cycle in a converted graph h v e where h is achieved 
+by setting the weight for edge e in g to be − be 
+finding the shortest cycle in graph h can be done within 
+polynomial time by resorting to the shortest path problem 
+for any vertex v in v we consider every neighbor vertex 
+w such that v w ∈ e we then find the shortest path 
+from w to v denoted as path w v the shortest cycle that 
+passes vertex v is found by choosing the w such that e v w 
+path w v is minimized comparing the shortest cycle found 
+for every vertex we then can determine the shortest overall 
+cycle for the graph h because the short path problem can 
+be solved in polynomial time we can find the solution to 
+our problem in polynomial time 
+if the worst-case profit for the optimal cycle is non-negative 
+we know that there exists a match in g however the 
+condition in lemma is not a necessary condition for the 
+existence of a match even if all single cycles in the order 
+graph have negative worst-case profit the auctioneer may 
+accept multiple interweaving cycles to have positive 
+worstcase profit figure exhibits such a situation 
+if the optimal indivisible match consists only of edge 
+disjoint cycles a natural greedy algorithm can find the cycle 
+that gives the highest worst-case profit remove its edges 
+from the graph and proceed until no more cycles exist 
+however we show that such greedy algorithm can give a 
+very poor approximation 
+√ 
+n 
+√ 
+n 
+√ 
+n 
+√ 
+n 
+√ 
+n 
+√ 
+n 
+√ 
+n 
+figure graph with n vertices and n 
+√ 
+n edges 
+on which the greedy algorithm finds only two 
+cycles the dotted cycle in the center and the unique 
+remaining cycle the labels in the faces give the 
+number of edges in the corresponding cycle 
+lemma the greedy algorithm gives at most an o 
+√ 
+ 
+n approximation to the maximum number of disjoint cycles 
+proof consider the graph in figure consisting of a 
+cycle with 
+√ 
+n edges each of which participates in another 
+ otherwise disjoint cycle with 
+√ 
+n edges suppose all 
+edge weights are − the maximum number of disjoint 
+cycles is clearly 
+√ 
+n taking all cycles with length 
+√ 
+n 
+because smaller cycles gives higher worst-case profit the 
+greedy algorithm would first select the cycle of length 
+√ 
+n 
+after which there would be only one remaining cycle of length 
+n thus the total number of cycles selected by greedy is 
+and the approximation factor in this case is 
+√ 
+n 
+in light of lemma one may expect that greedy 
+algorithms would give 
+√ 
+n-approximations at best 
+approxima 
+tion algorithms for finding the maximum number of 
+edgedisjoint cycles have been considered by krivelevich 
+nutov and yuster indeed for the case of directed 
+graphs the authors show that a greedy algorithm gives a√ 
+n-approximation when the optimal match does not 
+consist of edge-disjoint cycles as in the example of figure 
+greedy algorithm trying to finding optimal single cycles fails 
+obviously 
+ conclusion 
+we consider a permutation betting scenario where traders 
+wager on the final ordering of n candidates while it is 
+unnatural and intractable to allow traders to bet directly on 
+the n different final orderings we propose two expressive 
+betting languages subset betting and pair betting in a 
+subset betting market traders can bet either on a subset of 
+positions that a candidate stands or on a subset of 
+candidates who occupy a specific position in the final ordering 
+pair betting allows traders bet on whether one given 
+candidate ranks higher than another given candidate 
+we examine the auctioneer problem of matching orders 
+without incurring risk we find that in a subset betting 
+market an auctioneer can find the optimal set and quantity of 
+orders to accept such that his worst-case profit is maximized 
+in polynomial time if orders are divisible the complexity 
+changes dramatically for pair betting we prove that the 
+optimal matching problem for the auctioneer is np-hard for 
+pair betting with both indivisible and divisible orders via 
+reductions to the minimum feedback arc set problem we 
+identify a sufficient condition for the existence of a match 
+which can be verified in polynomial time a natural greedy 
+algorithm has been shown to give poor approximation for 
+indivisible pair betting 
+interesting open questions for our permutation betting 
+include the computational complexity of optimal indivisible 
+matching for subset betting and the necessary condition for 
+the existence of a match in pair betting markets we are 
+interested in further exploring better approximation 
+algorithms for pair betting markets 
+ acknowledgments 
+we thank ravi kumar yishay mansour amin saberi 
+andrew tomkins john tomlin and members of yahoo 
+research for valuable insights and discussions 
+ references 
+ k j arrow the role of securities in the optimal 
+allocation of risk-bearing review of economic 
+studies - 
+ j e berg r forsythe f d nelson and t a 
+rietz results from a dozen years of election futures 
+markets research in c a plott and v smith 
+editors handbook of experimental economic results 
+ forthcoming 
+ t h cormen c e leiserson r l rivest and 
+c stein introduction to algorithms second edition 
+mit press and mcgraw-hill 
+ p cramton y shoham and r steinberg 
+combinatorial auctions mit press cambridge ma 
+ 
+ r forsythe t a rietz and t w ross wishes 
+expectations and actions a survey on price formation 
+in election stock markets journal of economic 
+behavior and organization - 
+ l fortnow j kilian d m pennock and m p 
+wellman betting boolean-style a framework for 
+trading in securities based on logical formulas 
+decision support systems - 
+ m gr¨otschel l lov´asz and a schrijver the 
+ellipsoid method and its consequences in combinatorial 
+optimization combinatorica - 
+ m gr¨otschel l lov´asz and a schrijver geometric 
+algorithms and combinatorial optimization 
+springer-verlag berlin heidelberg 
+ r d hanson combinatorial information market 
+design information systems frontiers - 
+ 
+ r m karp reducibility among combinatorial 
+problems in complexity of computer computations 
+ proc sympos ibm thomas j watson res center 
+yorktown heights n y pages - plenum new 
+york 
+ m krivelevich z nutov and r yuster 
+approximation algorithms for cycle packing problems 
+proceedings of the sixteenth annual acm-siam 
+symposium on discrete algorithms pages - 
+ 
+ h w kuhn the hungarian method for the 
+assignment problem naval research logistic 
+quarterly - 
+ j munkres algorithms for the assignment and 
+transportation problems journal of the society of 
+industrial and applied mathematics - 
+ n nisan bidding and allocation in combinatorial 
+auctions in proceedings of the nd acm conference 
+on electronic commerce ec minneapolis mn 
+ 
+ d m pennock s lawrence c l giles and f a 
+nielsen the real power of artificial markets science 
+ - february 
+ c plott and s sunder efficiency of experimental 
+security markets with insider information an 
+application of rational expectations models journal of 
+political economy - 
+ c plott and s sunder rational expectations and the 
+aggregation of diverse information in laboratory 
+security markets econometrica - 
+ t sandholm algorithm for optimal winner 
+determination in combinatorial auctions artificial 
+intelligence - 
+ r yuster and z nutov packing directed cycles 
+efficiently proceedings of the th international 
+symposium on mathematical foundations of 
+computer science mfcs 
+ 

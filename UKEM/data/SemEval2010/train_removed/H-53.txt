@@ -1,0 +1,883 @@
+context sensitive stemming for web search 
+fuchun peng nawaaz ahmed xin li yumao lu 
+yahoo inc 
+ first avenue 
+sunnyvale california 
+ fuchun nawaaz xinli yumaol  yahoo-inc com 
+abstract 
+traditionally stemming has been applied to information 
+retrieval tasks by transforming words in documents to the 
+their root form before indexing and applying a similar 
+transformation to query terms although it increases recall this 
+naive strategy does not work well for web search since it 
+lowers precision and requires a significant amount of 
+additional computation 
+in this paper we propose a context sensitive stemming 
+method that addresses these two issues two unique 
+properties make our approach feasible for web search first based 
+on statistical language modeling we perform context 
+sensitive analysis on the query side we accurately predict which 
+of its morphological variants is useful to expand a query term 
+with before submitting the query to the search engine this 
+dramatically reduces the number of bad expansions which 
+in turn reduces the cost of additional computation and 
+improves the precision at the same time second our approach 
+performs a context sensitive document matching for those 
+expanded variants this conservative strategy serves as a 
+safeguard against spurious stemming and it turns out to be 
+very important for improving precision using word 
+pluralization handling as an example of our stemming approach 
+our experiments on a major web search engine show that 
+stemming only of the query traffic we can improve 
+relevance as measured by average discounted cumulative 
+gain dcg by on these queries and over all 
+query traffic 
+categories and subject descriptors 
+h information systems information storage and 
+retrieval-query formulation 
+general terms 
+algorithms experimentation 
+ introduction 
+web search has now become a major tool in our daily lives 
+for information seeking one of the important issues in web 
+search is that user queries are often not best formulated to 
+get optimal results for example running shoe is a query 
+that occurs frequently in query logs however the query 
+running shoes is much more likely to give better search 
+results than the original query because documents matching 
+the intent of this query usually contain the words running 
+shoes 
+correctly formulating a query requires the user to 
+accurately predict which word form is used in the documents 
+that best satisfy his or her information needs this is 
+difficult even for experienced users and especially difficult for 
+non-native speakers one traditional solution is to use 
+stemming the process of transforming inflected or 
+derived words to their root form so that a search term will 
+match and retrieve documents containing all forms of the 
+term thus the word run will match running ran 
+runs and shoe will match shoes and shoeing 
+stemming can be done either on the terms in a document 
+during indexing and applying the same transformation to the 
+query terms during query processing or by expanding the 
+query with the variants during query processing stemming 
+during indexing allows very little flexibility during query 
+processing while stemming by query expansion allows 
+handling each query differently and hence is preferred 
+although traditional stemming increases recall by 
+matching word variants it can reduce precision by retrieving 
+too many documents that have been incorrectly matched 
+when examining the results of applying stemming to a large 
+number of queries one usually finds that nearly equal 
+numbers of queries are helped and hurt by the technique in 
+addition it reduces system performance because the search 
+engine has to match all the word variants as we will show 
+in the experiments this is true even if we simplify stemming 
+to pluralization handling which is the process of converting 
+a word from its plural to singular form or vice versa thus 
+one needs to be very cautious when using stemming in web 
+search engines 
+one problem of traditional stemming is its blind 
+transformation of all query terms that is it always performs 
+the same transformation for the same query word without 
+considering the context of the word for example the word 
+book has four forms book books booking booked and 
+store has four forms store stores storing stored for 
+the query book store expanding both words to all of their 
+variants significantly increases computation cost and hurts 
+precision since not all of the variants are useful for this 
+query transforming book store to match book stores 
+is fine but matching book storing or booking store is 
+not a weighting method that gives variant words smaller 
+weights alleviates the problems to a certain extent if the 
+weights accurately reflect the importance of the variant in 
+this particular query however uniform weighting is not 
+going to work and a query dependent weighting is still a 
+challenging unsolved problem 
+a second problem of traditional stemming is its blind 
+matching of all occurrences in documents for the query 
+book store a transformation that allows the variant stores 
+to be matched will cause every occurrence of stores in the 
+document to be treated equivalent to the query term store 
+thus a document containing the fragment reading a book 
+in coffee stores will be matched causing many wrong 
+documents to be selected although we hope the ranking 
+function can correctly handle these with many more candidates 
+to rank the risk of making mistakes increases 
+to alleviate these two problems we propose a context 
+sensitive stemming approach for web search our solution 
+consists of two context sensitive analysis one on the query 
+side and the other on the document side on the query side 
+we propose a statistical language modeling based approach 
+to predict which word variants are better forms than the 
+original word for search purpose and expanding the query 
+with only those forms on the document side we propose a 
+conservative context sensitive matching for the transformed 
+word variants only matching document occurrences in the 
+context of other terms in the query our model is simple yet 
+effective and efficient making it feasible to be used in real 
+commercial web search engines 
+we use pluralization handling as a running example for 
+our stemming approach the motivation for using 
+pluralization handling as an example is to show that even such 
+simple stemming if handled correctly can give significant 
+benefits to search relevance as far as we know no 
+previous research has systematically investigated the usage of 
+pluralization in web search as we have to point out the 
+method we propose is not limited to pluralization handling 
+it is a general stemming technique and can also be applied 
+to general query expansion experiments on general 
+stemming yield additional significant improvements over 
+pluralization handling for long queries although details will not 
+be reported in this paper 
+in the rest of the paper we first present the related work 
+and distinguish our method from previous work in section 
+we describe the details of the context sensitive stemming 
+approach in section we then perform extensive 
+experiments on a major web search engine to support our claims 
+in section followed by discussions in section finally 
+we conclude the paper in section 
+ related work 
+stemming is a long studied technology many stemmers 
+have been developed such as the lovins stemmer and 
+the porter stemmer the porter stemmer is widely used 
+due to its simplicity and effectiveness in many applications 
+however the porter stemming makes many mistakes 
+because its simple rules cannot fully describe english 
+morphology corpus analysis is used to improve porter stemmer 
+by creating equivalence classes for words that are 
+morphologically similar and occur in similar context as measured by 
+expected mutual information we use a similar corpus 
+based approach for stemming by computing the similarity 
+between two words based on their distributional context 
+features which can be more than just adjacent words and 
+then only keep the morphologically similar words as 
+candidates 
+using stemming in information retrieval is also a well 
+known technique however the effectiveness of 
+stemming for english query systems was previously reported to 
+be rather limited lennon et al compared the lovins 
+and porter algorithms and found little improvement in 
+retrieval performance later harman compares three 
+general stemming techniques in text retrieval experiments 
+including pluralization handing called s stemmer in the 
+paper they also proposed selective stemming based on query 
+length and term importance but no positive results were 
+reported on the other hand krovetz performed 
+comparisons over small numbers of documents from to k 
+and showed dramatic precision improvement up to 
+however due to the limited number of tested queries less 
+than and the small size of the collection the results 
+are hard to generalize to web search these mixed results 
+mostly failures led early ir researchers to deem stemming 
+irrelevant in general for english although recent research 
+has shown stemming has greater benefits for retrieval in 
+other languages we suspect the previous failures were 
+mainly due to the two problems we mentioned in the 
+introduction blind stemming or a simple query length based 
+selective stemming as used in is not enough stemming 
+has to be decided on case by case basis not only at the query 
+level but also at the document level as we will show if 
+handled correctly significant improvement can be achieved 
+a more general problem related to stemming is query 
+reformulation and query expansion which expands 
+words not only with word variants to 
+decide which expanded words to use people often use 
+pseudorelevance feedback techniquesthat send the original query to 
+a search engine and retrieve the top documents extract 
+relevant words from these top documents as additional query 
+words and resubmit the expanded query again this 
+normally requires sending a query multiple times to search 
+engine and it is not cost effective for processing the huge 
+amount of queries involved in web search in addition 
+query expansion including query reformulation has 
+a high risk of changing the user intent called query drift 
+since the expanded words may have different meanings adding 
+them to the query could potentially change the intent of 
+the original query thus query expansion based on 
+pseudorelevance and query reformulation can provide suggestions 
+to users for interactive refinement but can hardly be directly 
+used for web search on the other hand stemming is much 
+more conservative since most of the time stemming 
+preserves the original search intent while most work on query 
+expansion focuses on recall enhancement our work focuses 
+on increasing both recall and precision the increase on 
+recall is obvious with quality stemming good documents 
+which were not selected before stemming will be pushed up 
+and those low quality documents will be degraded 
+on selective query expansion cronen-townsend et al 
+proposed a method for selective query expansion based on 
+comparing the kullback-leibler divergence of the results 
+from the unexpanded query and the results from the 
+expanded query this is similar to the relevance feedback in 
+the sense that it requires multiple passes retrieval if a word 
+can be expanded into several words it requires running this 
+process multiple times to decide which expanded word is 
+useful it is expensive to deploy this in production web 
+search engines our method predicts the quality of 
+expansion based on oﬄine information without sending the query 
+to a search engine 
+in summary we propose a novel approach to attack an old 
+yet still important and challenging problem for web search 
+- stemming our approach is unique in that it performs 
+predictive stemming on a per query basis without relevance 
+feedback from the web using the context of the variants in 
+documents to preserve precision it s simple yet very 
+efficient and effective making real time stemming feasible for 
+web search our results will affirm researchers that 
+stemming is indeed very important to large scale information 
+retrieval 
+ context sensitive stemming 
+ overview 
+our system has four components as illustrated in 
+figure candidate generation query segmentation and head 
+word detection context sensitive query stemming and 
+context sensitive document matching candidate generation 
+ component is performed oﬄine and generated candidates 
+are stored in a dictionary for an input query we first 
+segment query into concepts and detect the head word for each 
+concept component we then use statistical language 
+modeling to decide whether a particular variant is useful 
+ component and finally for the expanded variants we 
+perform context sensitive document matching component 
+ below we discuss each of the components in more detail 
+component context sensitive document matching 
+input query 
+and head word detection 
+component segment component candidate generation 
+comparisons − comparison 
+component selective word expansion 
+decision comparisons − comparison 
+example hotel price comparisons 
+output hotel comparisons 
+hotel − hotels 
+figure system components 
+ expansion candidate generation 
+one of the ways to generate candidates is using the porter 
+stemmer the porter stemmer simply uses 
+morphological rules to convert a word to its base form it has no 
+knowledge of the semantic meaning of the words and sometimes 
+makes serious mistakes such as executive to execution 
+news to new and paste to past a more 
+conservative way is based on using corpus analysis to improve the 
+porter stemmer results the corpus analysis we do is 
+based on word distributional similarity the rationale 
+of using distributional word similarity is that true variants 
+tend to be used in similar contexts in the distributional 
+word similarity calculation each word is represented with a 
+vector of features derived from the context of the word we 
+use the bigrams to the left and right of the word as its 
+context features by mining a huge web corpus the similarity 
+between two words is the cosine similarity between the two 
+corresponding feature vectors the top similar words to 
+develop is shown in the following table 
+rank candidate score rank candidate score 
+ develop berts 
+ developing wads 
+ developed developer 
+ incubator promoting 
+ develops developmental 
+ development reengineering 
+ tutoring build 
+ analyzing construct 
+ developement educational 
+ automation institute 
+table top most similar candidates to word 
+develop column score is the similarity score 
+to determine the stemming candidates we apply a few 
+porter stemmer morphological rules to the similarity 
+list after applying these rules for the word develop 
+the stemming candidates are developing developed 
+develops development developement developer 
+developmental for the pluralization handling purpose only the 
+candidate develops is retained 
+one thing we note from observing the distributionally 
+similar words is that they are closely related semantically 
+these words might serve as candidates for general query 
+expansion a topic we will investigate in the future 
+ segmentation and headword identification 
+for long queries it is quite important to detect the 
+concepts in the query and the most important words for those 
+concepts we first break a query into segments each 
+segment representing a concept which normally is a noun phrase 
+for each of the noun phrases we then detect the most 
+important word which we call the head word segmentation 
+is also used in document sensitive matching section to 
+enforce proximity 
+to break a query into segments we have to define a 
+criteria to measure the strength of the relation between words 
+one effective method is to use mutual information as an 
+indicator on whether or not to split two words we use 
+a log of m queries and collect the bigram and unigram 
+frequencies from it for every incoming query we compute 
+the mutual information of two adjacent words if it passes 
+a predefined threshold we do not split the query between 
+those two words and move on to next word we continue 
+this process until the mutual information between two words 
+is below the threshold then create a concept boundary here 
+table shows some examples of query segmentation 
+the ideal way of finding the head word of a concept is to 
+do syntactic parsing to determine the dependency structure 
+of the query query parsing is more difficult than sentence 
+ running shoe 
+ best new york medical schools 
+ pictures of white house 
+ cookies in san francisco 
+ hotel price comparison 
+table query segmentation a segment is 
+bracketed 
+parsing since many queries are not grammatical and are very 
+short applying a parser trained on sentences from 
+documents to queries will have poor performance in our 
+solution we just use simple heuristics rules and it works very 
+well in practice for english for an english noun phrase 
+the head word is typically the last nonstop word unless the 
+phrase is of a particular pattern like xyz of in at from 
+uvw in such cases the head word is typically the last 
+nonstop word of xyz 
+ context sensitive word expansion 
+after detecting which words are the most important words 
+to expand we have to decide whether the expansions will 
+be useful 
+our statistics show that about half of the queries can be 
+transformed by pluralization via naive stemming among 
+this half about of the queries improve relevance when 
+transformed the majority about do not change their 
+top results and the remaining perform worse thus 
+it is extremely important to identify which queries should 
+not be stemmed for the purpose of maximizing relevance 
+improvement and minimizing stemming cost in addition 
+for a query with multiple words that can be transformed 
+or a word with multiple variants not all of the expansions 
+are useful taking query hotel price comparison as an 
+example we decide that hotel and price comparison are two 
+concepts head words hotel and comparison can be 
+expanded to hotels and comparisons are both 
+transformations useful 
+to test whether an expansion is useful we have to know 
+whether the expanded query is likely to get more relevant 
+documents from the web which can be quantified by the 
+probability of the query occurring as a string on the web 
+the more likely a query to occur on the web the more 
+relevant documents this query is able to return now the 
+whole problem becomes how to calculate the probability of 
+query to occur on the web 
+calculating the probability of string occurring in a 
+corpus is a well known language modeling problem the goal 
+of language modeling is to predict the probability of 
+naturally occurring word sequences s w w wn or more 
+simply to put high probability on word sequences that 
+actually occur and low probability on word sequences that 
+never occur the simplest and most successful approach to 
+language modeling is still based on the n-gram model by 
+the chain rule of probability one can write the probability 
+of any word sequence as 
+pr w w wn 
+ny 
+i 
+pr wi w wi− 
+an n-gram model approximates this probability by 
+assuming that the only words relevant to predicting pr wi w wi− 
+are the previous n − words i e 
+pr wi w wi− pr wi wi−n wi− 
+a straightforward maximum likelihood estimate of n-gram 
+probabilities from a corpus is given by the observed 
+frequency of each of the patterns 
+pr wi wi−n wi− 
+ wi−n wi 
+ wi−n wi− 
+ 
+where denotes the number of occurrences of a specified 
+gram in the training corpus although one could attempt to 
+use simple n-gram models to capture long range 
+dependencies in language attempting to do so directly immediately 
+creates sparse data problems using grams of length up to 
+n entails estimating the probability of wn 
+events where w 
+is the size of the word vocabulary this quickly overwhelms 
+modern computational and data resources for even modest 
+choices of n beyond to also because of the heavy 
+tailed nature of language i e zipf s law one is likely to 
+encounter novel n-grams that were never witnessed during 
+training in any test corpus and therefore some mechanism 
+for assigning non-zero probability to novel n-grams is a 
+central and unavoidable issue in statistical language modeling 
+one standard approach to smoothing probability estimates 
+to cope with sparse data problems and to cope with 
+potentially missing n-grams is to use some sort of back-off 
+estimator 
+pr wi wi−n wi− 
+ 
+ 
+ 
+ 
+ˆpr wi wi−n wi− 
+if wi−n wi 
+β wi−n wi− × pr wi wi−n wi− 
+otherwise 
+ 
+where 
+ˆpr wi wi−n wi− 
+discount wi−n wi 
+ wi−n wi− 
+ 
+is the discounted probability and β wi−n wi− is a 
+normalization constant 
+β wi−n wi− 
+ − 
+x 
+x∈ wi−n wi− x 
+ˆpr x wi−n wi− 
+ − 
+x 
+x∈ wi−n wi− x 
+ˆpr x wi−n wi− 
+ 
+the discounted probability can be computed with 
+different smoothing techniques including absolute smoothing 
+good-turing smoothing linear smoothing and witten-bell 
+smoothing we used absolute smoothing in our 
+experiments 
+since the likelihood of a string pr w w wn is a very 
+small number and hard to interpret we use entropy as 
+defined below to score the string 
+entropy − 
+ 
+n 
+log pr w w wn 
+now getting back to the example of the query hotel price 
+comparisons there are four variants of this query and the 
+entropy of these four candidates are shown in table we 
+can see that all alternatives are less likely than the input 
+query it is therefore not useful to make an expansion for this 
+query on the other hand if the input query is hotel price 
+comparisons which is the second alternative in the table 
+then there is a better alternative than the input query and 
+it should therefore be expanded to tolerate the variations 
+in probability estimation we relax the selection criterion to 
+those query alternatives if their scores are within a certain 
+distance in our experiments to the best score 
+query variations entropy 
+hotel price comparison 
+hotel price comparisons 
+hotels price comparison 
+hotels price comparisons 
+table variations of query hotel price 
+comparison ranked by entropy score with the original 
+query in bold face 
+ context sensitive document matching 
+even after we know which word variants are likely to be 
+useful we have to be conservative in document matching 
+for the expanded variants for the query hotel price 
+comparisons we decided that word comparisons is expanded 
+to include comparison however not every occurrence of 
+comparison in the document is of interest a page which 
+is about comparing customer service can contain all of the 
+words hotel price comparisons comparison this page is not 
+a good page for the query 
+if we accept matches of every occurrence of comparison 
+it will hurt retrieval precision and this is one of the main 
+reasons why most stemming approaches do not work well 
+for information retrieval to address this problem we have 
+a proximity constraint that considers the context around 
+the expanded variant in the document a variant match 
+is considered valid only if the variant occurs in the same 
+context as the original word does the context is the left or 
+the right non-stop segments 
+of the original word taking 
+the same query as an example the context of comparisons 
+is price the expanded word comparison is only valid if 
+it is in the same context of comparisons which is after the 
+word price thus we should only match those occurrences 
+of comparison in the document if they occur after the word 
+price considering the fact that queries and documents 
+may not represent the intent in exactly the same way we 
+relax this proximity constraint to allow variant occurrences 
+within a window of some fixed size if the expanded word 
+comparison occurs within the context of price within 
+a window it is considered valid the smaller the window 
+size is the more restrictive the matching we use a window 
+size of which typically captures contexts that include the 
+containing and adjacent noun phrases 
+ experimental evaluation 
+ evaluation metrics 
+we will measure both relevance improvement and the 
+stemming cost required to achieve the relevance 
+ 
+a context segment can not be a single stop word 
+ relevance measurement 
+we use a variant of the average discounted cumulative 
+gain dcg a recently popularized scheme to measure search 
+engine relevance given a query and a ranked list of k 
+documents k is set to in our experiments the dcg k 
+score for this query is calculated as follows 
+dcg k 
+kx 
+k 
+gk 
+log k 
+ 
+where gk is the weight for the document at rank k higher 
+degree of relevance corresponds to a higher weight a page is 
+graded into one of the five scales perfect excellent good 
+fair bad with corresponding weights we use dcg to 
+represent the average dcg over a set of test queries 
+ stemming cost 
+another metric is to measure the additional cost incurred 
+by stemming given the same level of relevance 
+improvement we prefer a stemming method that has less additional 
+cost we measure this by the percentage of queries that are 
+actually stemmed over all the queries that could possibly 
+be stemmed 
+ data preparation 
+we randomly sample queries from a three month 
+query log with from each month among all these 
+queries we remove all misspelled queries since misspelled 
+queries are not of interest to stemming we also remove all 
+one word queries since stemming one word queries without 
+context has a high risk of changing query intent especially 
+for short words in the end we have correctly spelled 
+queries with at least words 
+ naive stemming for web search 
+before explaining the experiments and results in detail 
+we d like to describe the traditional way of using stemming 
+for web search referred as the naive model this is to treat 
+every word variant equivalent for all possible words in the 
+query the query book store will be transformed into 
+ book or books store or stores when limiting stemming 
+to pluralization handling only where or is an operator that 
+denotes the equivalence of the left and right arguments 
+ experimental setup 
+the baseline model is the model without stemming we 
+first run the naive model to see how well it performs over 
+the baseline then we improve the naive stemming model 
+by document sensitive matching referred as document 
+sensitive matching model this model makes the same stemming 
+as the naive model on the query side but performs 
+conservative matching on the document side using the strategy 
+described in section the naive model and document 
+sensitive matching model stem the most queries out of the 
+ queries there are queries that they stem 
+corresponding to query traffic out of a total of we 
+then further improve the document sensitive matching model 
+from the query side with selective word stemming based on 
+statistical language modeling section referred as 
+selective stemming model based on language modeling 
+prediction this model stems only a subset of the queries 
+stemmed by the document sensitive matching model we 
+experiment with unigram language model and bigram 
+language model since we only care how much we can improve 
+the naive model we will only use these queries all the 
+queries that are affected by the naive stemming model in 
+the experiments 
+to get a sense of how these models perform we also have 
+an oracle model that gives the upper-bound performance a 
+stemmer can achieve on this data the oracle model only 
+expands a word if the stemming will give better results 
+to analyze the pluralization handling influence on 
+different query categories we divide queries into short queries 
+and long queries among the queries stemmed by the 
+naive model there are short queries with or words 
+and long queries with at least words 
+ results 
+we summarize the overall results in table and present 
+the results on short queries and long queries separately in 
+table each row in table is a stemming strategy 
+described in section the first column is the name of the 
+strategy the second column is the number of queries 
+affected by this strategy this column measures the stemming 
+cost and the numbers should be low for the same level of 
+dcg the third column is the average dcg score over all 
+tested queries in this category including the ones that were 
+not stemmed by the strategy the fourth column is the 
+relative improvement over the baseline and the last column 
+is the p-value of wilcoxon significance test 
+there are several observations about the results we can 
+see the naively stemming only obtains a statistically 
+insignificant improvement of looking at table it gives an 
+improvement of on short queries however it also 
+hurts long queries by - overall the improvement is 
+canceled out the reason that it improves short queries is 
+that most short queries only have one word that can be 
+stemmed thus blindly pluralizing short queries is 
+relatively safe however for long queries most queries can have 
+multiple words that can be pluralized expanding all of 
+them without selection will significantly hurt precision 
+document context sensitive stemming gives a significant 
+lift to the performance from to for short queries 
+and from - to - for long queries with an overall 
+lift from to the improvement comes from the 
+conservative context sensitive document matching an 
+expanded word is valid only if it occurs within the context of 
+original query in the document this reduces many spurious 
+matches however we still notice that for long queries 
+context sensitive stemming is not able to improve performance 
+because it still selects too many documents and gives the 
+ranking function a hard problem while the chosen window 
+size of works the best amongst all the choices it still 
+allows spurious matches it is possible that the window size 
+needs to be chosen on a per query basis to ensure tighter 
+proximity constraints for different types of noun phrases 
+selective word pluralization further helps resolving the 
+problem faced by document context sensitive stemming it 
+does not stem every word that places all the burden on the 
+ranking algorithm but tries to eliminate unnecessary 
+stemming in the first place by predicting which word variants 
+are going to be useful we can dramatically reduce the 
+number of stemmed words thus improving both the recall and 
+the precision with the unigram language model we can 
+reduce the stemming cost by from to 
+and lift the overall dcg improvement from to in 
+particular it gives significant improvements on long queries 
+the dcg gain is turned from negative to positive from − 
+to this confirms our hypothesis that reducing 
+unnecessary word expansion leads to precision improvement for 
+short queries too we observe both dcg improvement and 
+stemming cost reduction with the unigram language model 
+the advantages of predictive word expansion with a 
+language model is further boosted with a better bigram 
+language model the overall dcg gain is lifted from 
+to and stemming cost is dramatically reduced from 
+ to corresponding to only of query 
+traffic out of and an overall dcg 
+improvement overall all query traffic for short queries bigram 
+language model improves the dcg gain from to 
+and reduces stemming cost from to for 
+long queries bigram language model improves dcg gain from 
+ to and reduces stemming cost from to 
+ we observe that the bigram language model gives 
+a larger lift for long queries this is because the uncertainty 
+in long queries is larger and a more powerful language model 
+is needed we hypothesize that a trigram language model 
+would give a further lift for long queries and leave this for 
+future investigation 
+considering the tight upper-bound 
+on the improvement 
+to be gained from pluralization handling via the oracle 
+model the current performance on short queries is very 
+satisfying for short queries the dcg gain upper-bound is 
+for perfect pluralization handling our current gain is 
+with a bigram language model for long queries the dcg 
+gain upper-bound is for perfect pluralization handling 
+our current gain is with a bigram language model we 
+may gain additional benefit with a more powerful language 
+model for long queries however the difficulties of long 
+queries come from many other aspects including the 
+proximity and the segmentation problem these problems have 
+to be addressed separately looking at the the upper-bound 
+of overhead reduction for oracle stemming 
+of the naive stemmings are wasteful we currently capture 
+about half of them further reduction of the overhead 
+requires sacrificing the dcg gain 
+now we can compare the stemming strategies from a 
+different aspect instead of looking at the influence over all 
+queries as we described above table summarizes the dcg 
+improvements over the affected queries only we can see 
+that the number of affected queries decreases as the 
+stemming strategy becomes more accurate dcg improvement 
+for the bigram language model over the stemmed 
+queries the dcg improvement is an interesting 
+observation is the average dcg decreases with a better model 
+which indicates a better stemming strategy stems more 
+difficult queries low dcg queries 
+ discussions 
+ language models from query vs from web 
+as we mentioned in section we are trying to predict 
+the probability of a string occurring on the web the 
+language model should describe the occurrence of the string on 
+the web however the query log is also a good resource 
+ 
+note that this upperbound is for pluralization handling 
+only not for general stemming general stemming gives a 
+ upperbound which is quite substantial in terms of our 
+metrics 
+affected queries dcg dcg improvement p-value 
+baseline n a n a 
+naive model 
+document context sensitive model 
+selective model unigram lm 
+selective model bigram lm 
+oracle model 
+table results comparison of different stemming strategies over all queries affected by naive stemming 
+short query results 
+affected queries dcg improvement p-value 
+baseline n a n a 
+naive model 
+document context sensitive model 
+selective model unigram lm 
+selective model bigram lm 
+oracle model 
+long query results 
+affected queries dcg improvement p-value 
+baseline n a n a 
+naive model - 
+document context sensitive model - 
+selective model unigram lm 
+selective model bigram lm 
+oracle model 
+table results comparison of different stemming strategies overall short queries and long queries 
+users reformulate a query using many different variants to 
+get good results 
+to test the hypothesis that we can learn reliable 
+transformation probabilities from the query log we trained a 
+language model from the same query top m queries as used 
+to learn segmentation and use that for prediction we 
+observed a slight performance decrease compared to the model 
+trained on web frequencies in particular the performance 
+for unigram lm was not affected but the dcg gain for bigram 
+lm changed from to for short queries thus the 
+query log can serve as a good approximation of the web 
+frequencies 
+ how linguistics helps 
+some linguistic knowledge is useful in stemming for the 
+pluralization handling case pluralization and de-pluralization 
+is not symmetric a plural word used in a query indicates 
+a special intent for example the query new york hotels 
+is looking for a list of hotels in new york not the specific 
+new york hotel which might be a hotel located in 
+california a simple equivalence of hotel to hotels might boost 
+a particular page about new york hotel to top rank to 
+capture this intent we have to make sure the document is a 
+general page about hotels in new york we do this by 
+requiring that the plural word hotels appears in the document 
+on the other hand converting a singular word to plural is 
+safer since a general purpose page normally contains 
+specific information we observed a slight overall dcg decrease 
+although not statistically significant for document context 
+sensitive stemming if we do not consider this asymmetric 
+property 
+ error analysis 
+one type of mistakes we noticed though rare but 
+seriously hurting relevance is the search intent change after 
+stemming generally speaking pluralization or 
+depluralization keeps the original intent however the intent could 
+change in a few cases for one example of such a query 
+job at apple we pluralize job to jobs this 
+stemming makes the original query ambiguous the query job 
+or jobs at apple has two intents one is the employment 
+opportunities at apple and another is a person working at 
+apple steve jobs who is the ceo and co-founder of the 
+company thus the results after query stemming returns 
+steve jobs as one of the results in top one solution is 
+performing results set based analysis to check if the intent is 
+changed this is similar to relevance feedback and requires 
+second phase ranking 
+a second type of mistakes is the entity concept 
+recognition problem these include two kinds one is that the 
+stemmed word variant now matches part of an entity or 
+concept for example query cookies in san francisco is 
+pluralized to cookies or cookie in san francisco the 
+results will match cookie jar in san francisco although 
+cookie still means the same thing as cookies cookie 
+jar is a different concept another kind is the unstemmed 
+word matches an entity or concept because of the stemming 
+of the other words for example quote ice is 
+pluralized to quote or quotes ice the original intent for this 
+query is searching for stock quote for ticker ice however 
+we noticed that among the top results one of the results 
+is food quotes ice cream this is matched because of 
+affected queries old dcg new dcg dcg improvement 
+naive model 
+document context sensitive model 
+selective model unigram lm 
+selective model bigram lm 
+table results comparison over the stemmed queries only column old new dcg is the dcg score over the 
+affected queries before after applying stemming 
+the pluralized word quotes the unchanged word ice 
+matches part of the noun phrase ice cream here to solve 
+this kind of problem we have to analyze the documents and 
+recognize cookie jar and ice cream as concepts instead 
+of two independent words 
+a third type of mistakes occurs in long queries for the 
+query bar code reader software two words are pluralized 
+code to codes and reader to readers in fact bar 
+code reader in the original query is a strong concept and 
+the internal words should not be changed this is the 
+segmentation and entity and noun phrase detection problem in 
+queries which we actively are attacking for long queries 
+we should correctly identify the concepts in the query and 
+boost the proximity for the words within a concept 
+ conclusions and future work 
+we have presented a simple yet elegant way of stemming 
+for web search it improves naive stemming in two aspects 
+selective word expansion on the query side and 
+conservative word occurrence matching on the document side using 
+pluralization handling as an example experiments on a 
+major web search engine data show it significantly improves 
+the web relevance and reduces the stemming cost it also 
+significantly improves web click through rate details not 
+reported in the paper 
+for the future work we are investigating the problems 
+we identified in the error analysis section these include 
+entity and noun phrase matching mistakes and improved 
+segmentation 
+ references 
+ e agichtein e brill and s t dumais improving 
+web search ranking by incorporating user behavior 
+information in sigir 
+ e airio word normalization and decompounding in 
+mono- and bilingual ir information retrieval 
+ - 
+ p anick using terminological feedback for web 
+search refinement a log-based study in sigir 
+ 
+ r baeza-yates and b ribeiro-neto modern 
+information retrieval acm press addison wesley 
+ 
+ s chen and j goodman an empirical study of 
+smoothing techniques for language modeling 
+technical report tr- - harvard university 
+ s cronen-townsend y zhou and b croft a 
+framework for selective query expansion in cikm 
+ 
+ h fang and c zhai semantic term matching in 
+axiomatic approaches to information retrieval in 
+sigir 
+ w b frakes term conflation for information 
+retrieval in c j rijsbergen editor research and 
+development in information retrieval pages - 
+cambridge university press 
+ d harman how effective is suffixing jasis 
+ - 
+ d hull stemming algorithms - a case study for 
+detailed evaluation jasis - 
+ k jarvelin and j kekalainen cumulated gain-based 
+evaluation evaluation of ir techniques acm tois 
+ - 
+ r jones b rey o madani and w greiner 
+generating query substitutions in www 
+ w kraaij and r pohlmann viewing stemming as 
+recall enhancement in sigir 
+ r krovetz viewing morphology as an inference 
+process in sigir 
+ d lin automatic retrieval and clustering of similar 
+words in coling-acl 
+ j b lovins development of a stemming algorithm 
+mechanical translation and computational 
+linguistics ii - 
+ m lennon and d peirce and b tarry and p willett 
+an evaluation of some conflation algorithms for 
+information retrieval journal of information science 
+ - 
+ m porter an algorithm for suffix stripping 
+program - 
+ k m risvik t mikolajewski and p boros query 
+segmentation for web search in www 
+ s e robertson on term selection for query 
+expansion journal of documentation - 
+ 
+ g salton and c buckley improving retrieval 
+performance by relevance feedback jasis 
+- 
+ r sun c -h ong and t -s chua mining 
+dependency relations for query expansion in 
+passage retrieval in sigir 
+ c van rijsbergen information retrieval 
+butterworths second version 
+ b v´elez r weiss m a sheldon and d k gifford 
+fast and effective query refinement in sigir 
+ j xu and b croft query expansion using local and 
+global document analysis in sigir 
+ j xu and b croft corpus-based stemming using 
+cooccurrence of word variants acm tois 
+ - 

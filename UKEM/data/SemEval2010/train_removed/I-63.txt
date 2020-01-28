@@ -1,0 +1,1096 @@
+combinatorial resource scheduling for multiagent mdps 
+dmitri a dolgov michael r james and michael e samples 
+ai and robotics group 
+technical research toyota technical center usa 
+ ddolgov michael r james michael samples  gmail com 
+abstract 
+optimal resource scheduling in multiagent systems is a 
+computationally challenging task particularly when the values 
+of resources are not additive we consider the combinatorial 
+problem of scheduling the usage of multiple resources among 
+agents that operate in stochastic environments modeled as 
+markov decision processes mdps in recent years 
+efficient resource-allocation algorithms have been developed for 
+agents with resource values induced by mdps however this 
+prior work has focused on static resource-allocation 
+problems where resources are distributed once and then utilized 
+in infinite-horizon mdps we extend those existing models 
+to the problem of combinatorial resource scheduling where 
+agents persist only for finite periods between their 
+ predefined arrival and departure times requiring resources only 
+for those time periods we provide a computationally 
+efficient procedure for computing globally optimal resource 
+assignments to agents over time we illustrate and 
+empirically analyze the method in the context of a stochastic 
+jobscheduling domain 
+categories and subject descriptors 
+i artificial intelligence problem solving control 
+methods and search i artificial intelligence 
+distributed artificial intelligence-multiagent systems 
+general terms 
+algorithms performance design 
+ introduction 
+the tasks of optimal resource allocation and scheduling 
+are ubiquitous in multiagent systems but solving such 
+optimization problems can be computationally difficult due to 
+a number of factors in particular when the value of a set of 
+resources to an agent is not additive as is often the case with 
+resources that are substitutes or complements the utility 
+function might have to be defined on an exponentially large 
+space of resource bundles which very quickly becomes 
+computationally intractable further even when each agent has 
+a utility function that is nonzero only on a small subset of 
+the possible resource bundles obtaining optimal allocation 
+is still computationally prohibitive as the problem becomes 
+np-complete 
+such computational issues have recently spawned several 
+threads of work in using compact models of agents 
+preferences one idea is to use any structure present in utility 
+functions to represent them compactly via for example 
+logical formulas an alternative is to directly model 
+the mechanisms that define the agents utility functions and 
+perform resource allocation directly with these models a 
+way of accomplishing this is to model the processes by which 
+an agent might utilize the resources and define the utility 
+function as the payoff of these processes in particular if 
+an agent uses resources to act in a stochastic environment 
+its utility function can be naturally modeled with a markov 
+decision process whose action set is parameterized by the 
+available resources this representation can then be used to 
+construct very efficient resource-allocation algorithms that 
+lead to an exponential speedup over a straightforward 
+optimization problem with flat representations of combinatorial 
+preferences 
+however this existing work on resource allocation with 
+preferences induced by resource-parameterized mdps makes 
+an assumption that the resources are only allocated once and 
+are then utilized by the agents independently within their 
+infinite-horizon mdps this assumption that no reallocation 
+of resources is possible can be limiting in domains where 
+agents arrive and depart dynamically 
+in this paper we extend the work on resource allocation 
+under mdp-induced preferences to discrete-time scheduling 
+problems where agents are present in the system for finite 
+time intervals and can only use resources within these 
+intervals in particular agents arrive and depart at arbitrary 
+ predefined times and within these intervals use resources 
+to execute tasks in finite-horizon mdps we address the 
+problem of globally optimal resource scheduling where the 
+objective is to find an allocation of resources to the agents 
+across time that maximizes the sum of the expected rewards 
+that they obtain 
+in this context our main contribution is a 
+mixed-integerprogramming formulation of the scheduling problem that 
+chooses globally optimal resource assignments starting times 
+and execution horizons for all agents within their 
+arrival 
+ - - - - rps c ifaamas 
+departure intervals we analyze and empirically compare 
+two flavors of the scheduling problem one where agents 
+have static resource assignments within their finite-horizon 
+mdps and another where resources can be dynamically 
+reallocated between agents at every time step 
+in the rest of the paper we first lay down the necessary 
+groundwork in section and then introduce our model and 
+formal problem statement in section in section we 
+describe our main result the optimization program for 
+globally optimal resource scheduling following the discussion of 
+our experimental results on a job-scheduling problem in 
+section we conclude in section with a discussion of possible 
+extensions and generalizations of our method 
+ background 
+similarly to the model used in previous work on 
+resourceallocation with mdp-induced preferences we define 
+the value of a set of resources to an agent as the value of the 
+best mdp policy that is realizable given those resources 
+however since the focus of our work is on scheduling 
+problems and a large part of the optimization problem is to 
+decide how resources are allocated in time among agents 
+with finite arrival and departure times we model the agents 
+planning problems as finite-horizon mdps in contrast to 
+previous work that used infinite-horizon discounted mdps 
+in the rest of this section we first introduce some 
+necessary background on finite-horizon mdps and present a 
+linear-programming formulation that serves as the basis for 
+our solution algorithm developed in section we also 
+outline the standard methods for combinatorial resource 
+scheduling with flat resource values which serve as a comparison 
+benchmark for the new model developed here 
+ markov decision processes 
+a stationary finite-domain discrete-time mdp see for 
+example for a thorough and detailed development can 
+be described as s a p r where s is a finite set of 
+system states a is a finite set of actions that are available to 
+the agent p is a stationary stochastic transition function 
+where p σ s a is the probability of transitioning to state σ 
+upon executing action a in state s r is a stationary reward 
+function where r s a specifies the reward obtained upon 
+executing action a in state s 
+given such an mdp a decision problem under a finite 
+horizon t is to choose an optimal action at every time step 
+to maximize the expected value of the total reward accrued 
+during the agent s finite lifetime the agent s optimal 
+policy is then a function of current state s and the time until 
+the horizon an optimal policy for such a problem is to act 
+greedily with respect to the optimal value function defined 
+recursively by the following system of finite-time bellman 
+equations 
+v s t max 
+a 
+r s a 
+x 
+σ 
+p σ s a v σ t 
+∀s ∈ s t ∈ t − 
+v s t ∀s ∈ s 
+where v s t is the optimal value of being in state s at time 
+t ∈ t 
+this optimal value function can be easily computed using 
+dynamic programming leading to the following optimal 
+policy π where π s a t is the probability of executing action 
+a in state s at time t 
+π s a t 
+ 
+ a argmaxa r s a 
+p 
+σ p σ s a v σ t 
+ otherwise 
+the above is the most common way of computing the 
+optimal value function and therefore an optimal policy for 
+a finite-horizon mdp however we can also formulate the 
+problem as the following linear program similarly to the 
+dual lp for infinite-horizon discounted mdps 
+max 
+x 
+s 
+x 
+a 
+r s a 
+x 
+t 
+x s a t 
+subject to 
+x 
+a 
+x σ a t 
+x 
+s a 
+p σ s a x s a t ∀σ t ∈ t − 
+x 
+a 
+x s a α s ∀s ∈ s 
+ 
+where α s is the initial distribution over the state space and 
+x is the non-stationary occupation measure x s a t ∈ 
+ is the total expected number of times action a is 
+executed in state s at time t an optimal non-stationary 
+policy is obtained from the occupation measure as follows 
+π s a t x s a t 
+x 
+a 
+x s a t ∀s ∈ s t ∈ t 
+note that the standard unconstrained finite-horizon mdp 
+as described above always has a uniformly-optimal 
+solution optimal for any initial distribution α s therefore 
+an optimal policy can be obtained by using an arbitrary 
+constant α s in particular α s will result in 
+x s a t π s a t 
+however for mdps with resource constraints as defined 
+below in section uniformly-optimal policies do not in 
+general exist in such cases α becomes a part of the 
+problem input and a resulting policy is only optimal for that 
+particular α this result is well known for infinite-horizon 
+mdps with various types of constraints and it also 
+holds for our finite-horizon model which can be easily 
+established via a line of reasoning completely analogous to the 
+arguments in 
+ combinatorial resource scheduling 
+a straightforward approach to resource scheduling for a 
+set of agents m whose values for the resources are induced 
+by stochastic planning problems in our case finite-horizon 
+mdps would be to have each agent enumerate all possible 
+resource assignments over time and for each one compute 
+its value by solving the corresponding mdp then each 
+agent would provide valuations for each possible resource 
+bundle over time to a centralized coordinator who would 
+compute the optimal resource assignments across time based 
+on these valuations 
+when resources can be allocated at different times to 
+different agents each agent must submit valuations for 
+every combination of possible time horizons let each agent 
+m ∈ m execute its mdp within the arrival-departure time 
+interval τ ∈ τa 
+m τd 
+m hence agent m will execute an mdp 
+with time horizon no greater than tm τd 
+m−τa 
+m let bτ be 
+the global time horizon for the problem before which all of 
+the agents mdps must finish we assume τd 
+m bτ ∀m ∈ m 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+for the scheduling problem where agents have static 
+resource requirements within their finite-horizon mdps the 
+agents provide a valuation for each resource bundle for each 
+possible time horizon from tm that they may use let 
+ω be the set of resources to be allocated among the agents 
+an agent will get at most one resource bundle for one of the 
+time horizons let the variable ψ ∈ ψm enumerate all 
+possible pairs of resource bundles and time horizons for agent 
+m so there are ω 
+× tm values for ψ the space of bundles 
+is exponential in the number of resource types ω 
+the agent m must provide a value vψ 
+m for each ψ and 
+the coordinator will allocate at most one ψ resource time 
+horizon pair to each agent this allocation is expressed as 
+an indicator variable zψ 
+m ∈ that shows whether ψ is 
+assigned to agent m for time τ and resource ω the function 
+nm ψ τ ω ∈ indicates whether the bundle in ψ uses 
+resource ω at time τ we make the assumption that agents 
+have binary resource requirements this allocation problem 
+is np-complete even when considering only a single time 
+step and its difficulty increases significantly with multiple 
+time steps because of the increasing number of values of ψ 
+the problem of finding an optimal allocation that satisfies 
+the global constraint that the amount of each resource ω 
+allocated to all agents does not exceed the available amount 
+bϕ ω can be expressed as the following integer program 
+max 
+x 
+m∈m 
+x 
+ψ∈ψm 
+zψ 
+mvψ 
+m 
+subject to 
+x 
+ψ∈ψm 
+zψ 
+m ≤ ∀m ∈ m 
+x 
+m∈m 
+x 
+ψ∈ψm 
+zψ 
+mnm ψ τ ω ≤ bϕ ω ∀τ ∈ bτ ∀ω ∈ ω 
+ 
+the first constraint in equation says that no agent can 
+receive more than one bundle and the second constraint 
+ensures that the total assignment of resource ω does not at 
+any time exceed the resource bound 
+for the scheduling problem where the agents are able to 
+dynamically reallocate resources each agent must specify 
+a value for every combination of bundles and time steps 
+within its time horizon let the variable ψ ∈ ψm in this case 
+enumerate all possible resource bundles for which at most 
+one bundle may be assigned to agent m at each time step 
+therefore in this case there are 
+p 
+t∈ tm ω 
+ t 
+∼ ω tm 
+possibilities of resource bundles assigned to different time 
+slots for the tm different time horizons 
+the same set of equations can be used to solve this 
+dynamic scheduling problem but the integer program is 
+different because of the difference in how ψ is defined in this 
+case the number of ψ values is exponential in each agent s 
+planning horizon tm resulting in a much larger program 
+this straightforward approach to solving both of these 
+scheduling problems requires an enumeration and solution 
+of either ω 
+tm static allocation or 
+p 
+t∈ tm ω t 
+ 
+ dynamic reallocation mdps for each agent which very quickly 
+becomes intractable with the growth of the number of 
+resources ω or the time horizon tm 
+ model and problem statement 
+we now formally introduce our model of the 
+resourcescheduling problem the problem input consists of the 
+following components 
+ m ω bϕ τa 
+m τd 
+m bτ are as defined above in section 
+ θm s a pm rm αm are the mdps of all agents 
+m ∈ m without loss of generality we assume that state 
+and action spaces of all agents are the same but each has 
+its own transition function pm reward function rm and 
+initial conditions αm 
+ ϕm a×ω → is the mapping of actions to resources 
+for agent m ϕm a ω indicates whether action a of agent 
+m needs resource ω an agent m that receives a set of 
+resources that does not include resource ω cannot execute 
+in its mdp policy any action a for which ϕm a ω we 
+assume all resource requirements are binary as discussed 
+below in section this assumption is not limiting 
+given the above input the optimization problem we 
+consider is to find the globally optimal-maximizing the sum 
+of expected rewards-mapping of resources to agents for all 
+time steps δ τ × m × ω → a solution is feasible 
+if the corresponding assignment of resources to the agents 
+does not violate the global resource constraint 
+x 
+m 
+δm τ ω ≤ bϕ ω ∀ω ∈ ω τ ∈ bτ 
+we consider two flavors of the resource-scheduling 
+problem the first formulation restricts resource assignments to 
+the space where the allocation of resources to each agent is 
+static during the agent s lifetime the second formulation 
+allows reassignment of resources between agents at every time 
+step within their lifetimes 
+figure depicts a resource-scheduling problem with three 
+agents m m m m three resources ω ω ω ω 
+and a global problem horizon of bτ the agents arrival 
+and departure times are shown as gray boxes and are 
+ and respectively a solution to this problem 
+is shown via horizontal bars within each agents box where 
+the bars correspond to the allocation of the three resource 
+types figure a shows a solution to a static scheduling 
+problem according to the shown solution agent m begins the 
+execution of its mdp at time τ and has a lock on all 
+three resources until it finishes execution at time τ note 
+that agent m relinquishes its hold on the resources before 
+its announced departure time of τd 
+m 
+ ostensibly because 
+other agents can utilize the resources more effectively thus 
+at time τ resources ω and ω are allocated to agent 
+m who then uses them to execute its mdp using only 
+actions supported by resources ω and ω until time τ 
+agent m holds resource ω during the interval τ ∈ 
+figure b shows a possible solution to the dynamic version 
+of the same problem there resources can be reallocated 
+between agents at every time step for example agent m 
+gives up its use of resource ω at time τ although it 
+continues the execution of its mdp until time τ notice 
+that an agent is not allowed to stop and restart its mdp so 
+agent m is only able to continue executing in the interval 
+τ ∈ if it has actions that do not require any resources 
+ ϕm a ω 
+clearly the model and problem statement described above 
+make a number of assumptions about the problem and the 
+desired solution properties we discuss some of those 
+assumptions and their implications in section 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ a b 
+figure illustration of a solution to a resource-scheduling problem with three agents and three resources a static 
+resource assignments resource assignments are constant within agents lifetimes b dynamic assignment resource 
+assignments are allowed to change at every time step 
+ resource scheduling 
+our resource-scheduling algorithm proceeds in two stages 
+first we perform a preprocessing step that augments the 
+agent mdps this process is described in section 
+second using these augmented mdps we construct a global 
+optimization problem which is described in section 
+ augmenting agents mdps 
+in the model described in the previous section we assume 
+that if an agent does not possess the necessary resources to 
+perform actions in its mdp its execution is halted and the 
+agent leaves the system in other words the mdps cannot 
+be paused and resumed for example in the problem 
+shown in figure a agent m releases all resources after time 
+τ at which point the execution of its mdp is halted 
+similarly agents m and m only execute their mdps in the 
+intervals τ ∈ and τ ∈ respectively therefore an 
+important part of the global decision-making problem is to 
+decide the window of time during which each of the agents 
+is active i e executing its mdp 
+to accomplish this we augment each agent s mdp with 
+two new states start and finish states sb 
+ sf 
+ 
+respectively and a new start stop action a 
+ as illustrated in 
+figure the idea is that an agent stays in the start state 
+sb 
+until it is ready to execute its mdp at which point it 
+performs the start stop action a 
+and transitions into the 
+state space of the original mdp with the transition 
+probability that corresponds to the original initial distribution 
+α s for example in figure a for agent m this would 
+happen at time τ once the agent gets to the end of its 
+activity window time τ for agent m in figure a it 
+performs the start stop action which takes it into the sink 
+finish state sf 
+at time τ 
+more precisely given an mdp s a pm rm αm we 
+define an augmented mdp s a pm rm αm as follows 
+s s ∪ sb 
+∪ sf 
+ a a ∪ a 
+ 
+p s sb 
+ a 
+ α s ∀s ∈ s p sb 
+ sb 
+ a ∀a ∈ a 
+p sf 
+ s a 
+ ∀s ∈ s 
+p σ s a p σ s a ∀s σ ∈ s a ∈ a 
+r sb 
+ a r sf 
+ a ∀a ∈ a 
+r s a r s a ∀s ∈ s a ∈ a 
+α sb 
+ α s ∀s ∈ s 
+where all non-specified transition probabilities are assumed 
+to be zero further in order to account for the new starting 
+state we begin the mdp one time-step earlier setting τa 
+m ← 
+τa 
+m − this will not affect the resource allocation due to 
+the resource constraints only being enforced for the original 
+mdp states as will be discussed in the next section for 
+example the augmented mdps shown in figure b which 
+starts in state sb 
+at time τ would be constructed from 
+an mdp with original arrival time τ figure b also 
+shows a sample trajectory through the state space the agent 
+starts in state sb 
+ transitions into the state space s of the 
+original mdp and finally exists into the sink state sf 
+ 
+note that if we wanted to model a problem where agents 
+could pause their mdps at arbitrary time steps which might 
+be useful for domains where dynamic reallocation is 
+possible we could easily accomplish this by including an extra 
+action that transitions from each state to itself with zero 
+reward 
+ milp for resource scheduling 
+given a set of augmented mdps as defined above the 
+goal of this section is to formulate a global optimization 
+program that solves the resource-scheduling problem in this 
+section and below all mdps are assumed to be the 
+augmented mdps as defined in section 
+our approach is similar to the idea used in we 
+begin with the linear-program formulation of agents mdps 
+ and augment it with constraints that ensure that the 
+corresponding resource allocation across agents and time is 
+valid the resulting optimization problem then 
+simultaneously solves the agents mdps and resource-scheduling 
+problems in the rest of this section we incrementally develop a 
+mixed integer program milp that achieves this 
+in the absence of resource constraints the agents 
+finitehorizon mdps are completely independent and the globally 
+optimal solution can be trivially obtained via the following 
+lp which is simply an aggregation of single-agent 
+finitehorizon lps 
+max 
+x 
+m 
+x 
+s 
+x 
+a 
+rm s a 
+x 
+t 
+xm s a t 
+subject to 
+x 
+a 
+xm σ a t 
+x 
+s a 
+pm σ s a xm s a t 
+∀m ∈ m σ ∈ s t ∈ tm − 
+x 
+a 
+xm s a αm s ∀m ∈ m s ∈ s 
+ 
+where xm s a t is the occupation measure of agent m and 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ a b 
+figure illustration of augmenting an mdp to allow for variable starting and stopping times a left the original 
+two-state mdp with a single action right the augmented mdp with new states sb and sf and the new action a 
+ note that the origianl transitions are not changed in the augmentation process b the augmented mdp displayed as 
+a trajectory through time grey lines indicate all transitions while black lines indicate a given trajectory 
+objective function 
+ sum of expected rewards over all agents 
+max 
+x 
+m 
+x 
+s 
+x 
+a 
+rm s a 
+x 
+t 
+xm s a t 
+meaning implication linear constraints 
+tie x to θ agent is 
+only active when 
+occupation measure is nonzero 
+in original mdp states 
+θm τ ⇒ xm s a τ −τa 
+m 
+∀s ∈ sb 
+ sf 
+ a ∈ a 
+x 
+s ∈ sb sf 
+x 
+a 
+xm s a t ≤ θm τa 
+m t − 
+∀m ∈ m ∀t ∈ tm 
+ 
+agent can only be active 
+in τ ∈ τa 
+m τd 
+m θm τ ∀m ∈ m τ ∈ τa 
+m τd 
+m 
+cannot use resources 
+when not active 
+θm τ ⇒ δm τ ω 
+∀τ ∈ bτ ω ∈ ω δm τ ω ≤ θm τ ∀m ∈ m τ ∈ bτ ω ∈ ω 
+tie x to δ nonzero x 
+forces corresponding δ 
+to be nonzero 
+δm τ ω ϕm a ω ⇒ 
+xm s a τ − τa 
+m 
+∀s ∈ sb 
+ sf 
+ 
+ a 
+x 
+a 
+ϕm a ω 
+x 
+s ∈ sb sf 
+xm s a t ≤ δm t τa 
+m − ω 
+∀m ∈ m ω ∈ ω t ∈ tm 
+ 
+resource bounds 
+x 
+m 
+δm τ ω ≤ bϕ ω ∀ω ∈ ω τ ∈ bτ 
+agent cannot change 
+resources while 
+active only enabled for 
+scheduling with static 
+assignments 
+θm τ and θm τ ⇒ 
+δm τ ω δm τ ω 
+δm τ ω − z − θm τ ≤ 
+δm τ ω z − θm τ 
+δm τ ω z − θm τ ≥ 
+δm τ ω − z − θm τ 
+∀m ∈ m ω ∈ ω τ ∈ bτ 
+ 
+table milp for globally optimal resource scheduling 
+tm τd 
+m − τa 
+m is the time horizon for the agent s mdp 
+using this lp as a basis we augment it with constraints 
+that ensure that the resource usage implied by the agents 
+occupation measures xm does not violate the global 
+resource requirements bϕ at any time step τ ∈ bτ to 
+formulate these resource constraints we use the following binary 
+variables 
+ δm τ ω ∀m ∈ m τ ∈ bτ ω ∈ ω which 
+serve as indicator variables that define whether agent m 
+possesses resource ω at time τ these are analogous to 
+the static indicator variables used in the one-shot static 
+resource-allocation problem in 
+ θm ∀m ∈ m τ ∈ bτ are indicator variables 
+that specify whether agent m is active i e executing 
+its mdp at time τ 
+the meaning of resource-usage variables δ is illustrated in 
+figure δm τ ω only if resource ω is allocated to 
+agent m at time τ the meaning of the activity 
+indicators θ is illustrated in figure b when agent m is in either 
+the start state sb 
+or the finish state sf 
+ the corresponding 
+θm but once the agent becomes active and enters one 
+of the other states we set θm this meaning of θ can be 
+enforced with a linear constraint that synchronizes the 
+values of the agents occupation measures xm and the activity 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+indicators θ as shown in in table 
+another constraint we have to add-because the activity 
+indicators θ are defined on the global timeline τ-is to 
+enforce the fact that the agent is inactive outside of its 
+arrivaldeparture window this is accomplished by constraint in 
+table 
+furthermore agents should not be using resources while 
+they are inactive this constraint can also be enforced via a 
+linear inequality on θ and δ as shown in 
+constraint sets the value of θ to match the policy 
+defined by the occupation measure xm in a similar fashion 
+we have to make sure that the resource-usage variables δ are 
+also synchronized with the occupation measure xm this is 
+done via constraint in table which is nearly identical 
+to the analogous constraint from 
+after implementing the above constraint which enforces 
+the meaning of δ we add a constraint that ensures that the 
+agents resource usage never exceeds the amounts of 
+available resources this condition is also trivially expressed as 
+a linear inequality in table 
+finally for the problem formulation where resource 
+assignments are static during a lifetime of an agent we add a 
+constraint that ensures that the resource-usage variables δ 
+do not change their value while the agent is active θ 
+this is accomplished via the linear constraint where 
+z ≥ is a constant that is used to turn off the constraints 
+when θm τ or θm τ this constraint is not 
+used for the dynamic problem formulation where resources 
+can be reallocated between agents at every time step 
+to summarize table together with the 
+conservationof-flow constraints from defines the milp that 
+simultaneously computes an optimal resource assignment for all 
+agents across time as well as optimal finite-horizon mdp 
+policies that are valid under that resource assignment 
+as a rough measure of the complexity of this milp let 
+us consider the number of optimization variables and 
+constraints let tm 
+p 
+tm 
+p 
+m τa 
+m − τd 
+m be the sum 
+of the lengths of the arrival-departure windows across all 
+agents then the number of optimization variables is 
+tm bτ m ω bτ m 
+tm of which are continuous xm and bτ m ω bτ m are 
+binary δ and θ however notice that all but tm m of 
+the θ are set to zero by constraint which also 
+immediately forces all but tm m ω of the δ to be zero via the 
+constraints the number of constraints not including 
+the degenerate constraints in in the milp is 
+tm tm ω bτ ω bτ m ω 
+despite the fact that the complexity of the milp is in the 
+worst case exponential 
+in the number of binary variables 
+the complexity of this milp is significantly exponentially 
+lower than that of the milp with flat utility functions 
+described in section this result echos the efficiency gains 
+reported in for single-shot resource-allocation problems 
+but is much more pronounced because of the explosion of 
+the flat utility representation due to the temporal aspect of 
+the problem recall the prohibitive complexity of the 
+combinatorial optimization in section we empirically analyze 
+the performance of this method in section 
+ 
+strictly speaking solving milps to optimality is 
+npcomplete in the number of integer variables 
+ experimental results 
+although the complexity of solving milps is in the worst 
+case exponential in the number of integer variables there 
+are many efficient methods for solving milps that allow 
+our algorithm to scale well for parameters common to 
+resource allocation and scheduling problems in particular 
+this section introduces a problem domain-the repairshop 
+problem-used to empirically evaluate our algorithm s 
+scalability in terms of the number of agents m the number of 
+shared resources ω and the varied lengths of global time 
+bτ during which agents may enter and exit the system 
+the repairshop problem is a simple parameterized mdp 
+adopting the metaphor of a vehicular repair shop agents 
+in the repair shop are mechanics with a number of 
+independent tasks that yield reward only when completed in our 
+mdp model of this system actions taken to advance through 
+the state space are only allowed if the agent holds certain 
+resources that are publicly available to the shop these 
+resources are in finite supply and optimal policies for the shop 
+will determine when each agent may hold the limited 
+resources to take actions and earn individual rewards each 
+task to be completed is associated with a single action 
+although the agent is required to repeat the action numerous 
+times before completing the task and earning a reward 
+this model was parameterized in terms of the number 
+of agents in the system the number of different types of 
+resources that could be linked to necessary actions a global 
+time during which agents are allowed to arrive and depart 
+and a maximum length for the number of time steps an agent 
+may remain in the system 
+all datapoints in our experiments were obtained with 
+evaluations using cplex to solve the milps on a 
+pentium computer with gb of ram trials were conducted on 
+both the static and the dynamic version of the 
+resourcescheduling problem as defined earlier 
+figure shows the runtime and policy value for 
+independent modifications to the parameter set the top row 
+shows how the solution time for the milp scales as we 
+increase the number of agents m the global time horizon bτ 
+and the number of resources ω increasing the number of 
+agents leads to exponential complexity scaling which is to 
+be expected for an np-complete problem however 
+increasing the global time limit bτ or the total number of resource 
+types ω -while holding the number of agents 
+constantdoes not lead to decreased performance this occurs because 
+the problems get easier as they become under-constrained 
+which is also a common phenomenon for np-complete 
+problems we also observe that the solution to the dynamic 
+version of the problem can often be computed much faster than 
+the static version 
+the bottom row of figure shows the joint policy value 
+of the policies that correspond to the computed optimal 
+resource-allocation schedules we can observe that the 
+dynamic version yields higher reward as expected since the 
+reward for the dynamic version is always no less than the 
+reward of the static version we should point out that these 
+graphs should not be viewed as a measure of performance of 
+two different algorithms both algorithms produce optimal 
+solutions but to different problems but rather as 
+observations about how the quality of optimal solutions change as 
+more flexibility is allowed in the reallocation of resources 
+figure shows runtime and policy value for trials in which 
+common input variables are scaled together this allows 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+− 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+cputime sec 
+ ω τ 
+static 
+dynamic 
+ 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+global time boundary τ 
+cputime sec 
+ m ω 
+static 
+dynamic 
+ 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+number of resources ω 
+cputime sec 
+ m τ 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+value 
+ ω τ 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+global time boundary τ 
+value 
+ m ω 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of resources ω 
+value 
+ m τ 
+static 
+dynamic 
+figure evaluation of our milp for variable numbers of agents column lengths of global-time window column 
+ and numbers of resource types column top row shows cpu time and bottom row shows the joint reward of 
+agents mdp policies error bars show the st and rd quartiles and 
+ 
+ 
+− 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+cputime sec 
+τ m 
+static 
+dynamic 
+ 
+ 
+− 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+cputime sec 
+ ω m 
+static 
+dynamic 
+ 
+ 
+− 
+ 
+− 
+ 
+− 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+cputime sec 
+ ω m 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+value 
+τ m 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+value 
+ ω m 
+static 
+dynamic 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of agents m 
+value 
+ ω m 
+static 
+dynamic 
+figure evaluation of our milp using correlated input variables the left column tracks the performance and cpu 
+time as the number of agents and global-time window increase together bτ m the middle and the right column 
+track the performance and cpu time as the number of resources and the number of agents increase together as 
+ ω m and ω m respectively error bars show the st and rd quartiles and 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+us to explore domains where the total number of agents 
+scales proportionally to the total number of resource types 
+or the global time horizon while keeping constant the 
+average agent density per unit of global time or the average 
+number of resources per agent which commonly occurs in 
+real-life applications 
+overall we believe that these experimental results 
+indicate that our milp formulation can be used to effectively 
+solve resource-scheduling problems of nontrivial size 
+ discussion and conclusions 
+throughout the paper we have made a number of 
+assumptions in our model and solution algorithm we discuss 
+their implications below 
+ continual execution we assume that once an agent 
+stops executing its mdp transitions into state sf 
+ it 
+exits the system and cannot return it is easy to relax 
+this assumption for domains where agents mdps can be 
+paused and restarted all that is required is to include an 
+additional pause action which transitions from a given 
+state back to itself and has zero reward 
+ indifference to start time we used a reward model 
+where agents rewards depend only on the time horizon 
+of their mdps and not the global start time this is a 
+consequence of our mdp-augmentation procedure from 
+section it is easy to extend the model so that the 
+agents incur an explicit penalty for idling by assigning a 
+non-zero negative reward to the start state sb 
+ 
+ binary resource requirements for simplicity we have 
+assumed that resource costs are binary ϕm a ω 
+but our results generalize in a straightforward manner to 
+non-binary resource mappings analogously to the 
+procedure used in 
+ cooperative agents the optimization procedure 
+discussed in this paper was developed in the context of 
+cooperative agents but it can also be used to design a 
+mechanism for scheduling resources among self-interested agents 
+this optimization procedure can be embedded in a 
+vickreyclarke-groves auction completely analogously to the way 
+it was done in in fact all the results of about the 
+properties of the auction and information privacy directly 
+carry over to the scheduling domain discussed in this 
+paper requiring only slight modifications to deal with 
+finitehorizon mdps 
+ known deterministic arrival and departure times 
+finally we have assumed that agents arrival and 
+departure times τa 
+m and τd 
+m are deterministic and known a 
+priori this assumption is fundamental to our solution 
+method while there are many domains where this 
+assumption is valid in many cases agents arrive and 
+depart dynamically and their arrival and departure times 
+can only be predicted probabilistically leading to online 
+resource-allocation problems in particular in the case of 
+self-interested agents this becomes an interesting version 
+of an online-mechanism-design problem 
+in summary we have presented an milp formulation for 
+the combinatorial resource-scheduling problem where agents 
+values for possible resource assignments are defined by 
+finitehorizon mdps this result extends previous work 
+on static one-shot resource allocation under mdp-induced 
+preferences to resource-scheduling problems with a temporal 
+aspect as such this work takes a step in the direction of 
+designing an online mechanism for agents with combinatorial 
+resource preferences induced by stochastic planning 
+problems relaxing the assumption about deterministic arrival 
+and departure times of the agents is a focus of our future 
+work 
+we would like to thank the anonymous reviewers for their 
+insightful comments and suggestions 
+ references 
+ e altman and a shwartz adaptive control of 
+constrained markov chains criteria and policies 
+annals of operations research special issue on 
+markov decision processes - 
+ r bellman dynamic programming princeton 
+university press 
+ c boutilier solving concisely expressed combinatorial 
+auction problems in proc of aaai- pages 
+ - 
+ c boutilier and h h hoos bidding languages for 
+combinatorial auctions in proc of ijcai- pages 
+ - 
+ d dolgov integrated resource allocation and 
+planning in stochastic multiagent environments phd 
+thesis computer science department university of 
+michigan february 
+ d a dolgov and e h durfee optimal resource 
+allocation and policy formulation in loosely-coupled 
+markov decision processes in proc of icaps- 
+pages - june 
+ d a dolgov and e h durfee computationally 
+efficient combinatorial auctions for resource allocation 
+in weakly-coupled mdps in proc of aamas- 
+new york ny usa acm press 
+ d a dolgov and e h durfee resource allocation 
+among agents with preferences induced by factored 
+mdps in proc of aamas- 
+ k larson and t sandholm mechanism design and 
+deliberative agents in proc of aamas- pages 
+ - new york ny usa acm press 
+ n nisan bidding and allocation in combinatorial 
+auctions in electronic commerce 
+ d c parkes and s singh an mdp-based approach 
+to online mechanism design in proc of the 
+seventeenths annual conference on neural 
+information processing systems nips- 
+ d c parkes s singh and d yanovsky 
+approximately efficient online mechanism design in 
+proc of the eighteenths annual conference on neural 
+information processing systems nips- 
+ m l puterman markov decision processes john 
+wiley sons new york 
+ m h rothkopf a pekec and r m harstad 
+computationally manageable combinational auctions 
+management science - 
+ t sandholm an algorithm for optimal winner 
+determination in combinatorial auctions in proc of 
+ijcai- pages - san francisco ca usa 
+ morgan kaufmann publishers inc 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

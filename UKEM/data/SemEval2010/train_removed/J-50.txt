@@ -1,0 +1,1376 @@
+communication complexity of common voting rules 
+vincent conitzer 
+carnegie mellon university 
+ forbes avenue 
+pittsburgh pa usa 
+conitzer cs cmu edu 
+tuomas sandholm 
+carnegie mellon university 
+ forbes avenue 
+pittsburgh pa usa 
+sandholm cs cmu edu 
+abstract 
+we determine the communication complexity of the 
+common voting rules the rules sorted by their communication 
+complexity from low to high are plurality plurality with 
+runoff single transferable vote stv condorcet approval 
+bucklin cup maximin borda copeland and ranked pairs 
+for each rule we first give a deterministic communication 
+protocol and an upper bound on the number of bits 
+communicated in it then we give a lower bound on even the 
+nondeterministic communication requirements of the 
+voting rule the bounds match for all voting rules except stv 
+and maximin 
+categories and subject descriptors 
+f theory of computation analysis of algorithms 
+and problem complexity j computer applications 
+social and behavioral sciences-economics 
+general terms 
+algorithms economics theory 
+ introduction 
+one key factor in the practicality of any preference 
+aggregation rule is its communication burden to successfully 
+aggregate the agents preferences it is usually not necessary 
+for all the agents to report all of their preference information 
+clever protocols that elicit the agents preferences partially 
+and sequentially have the potential to dramatically reduce 
+the required communication this has at least the following 
+advantages 
+ it can make preference aggregation feasible in settings 
+where the total amount of preference information is 
+too large to communicate 
+ even when communicating all the preference 
+information is feasible reducing the communication 
+requirements lessens the burden placed on the agents this is 
+especially true when the agents rather than knowing 
+all their preferences in advance need to invest effort 
+ such as computation or information gathering to 
+determine their preferences 
+ it preserves some of the agents privacy 
+most of the work on reducing the communication burden 
+in preference aggregation has focused on resource allocation 
+settings such as combinatorial auctions in which an 
+auctioneer auctions off a number of possibly distinct items 
+in a single event because in a combinatorial auction 
+bidders can have separate valuations for each of an 
+exponential number of possible bundles of items this is a setting 
+in which reducing the communication burden is especially 
+crucial this can be accomplished by supplementing the 
+auctioneer with an elicitor that incrementally elicits parts 
+of the bidders preferences on an as-needed basis based on 
+what the bidders have revealed about their preferences so 
+far as suggested by conen and sandholm for example 
+the elicitor can ask for a bidder s value for a specific bundle 
+ value queries which of two bundles the bidder prefers 
+ order queries which bundle he ranks kth or what the rank of 
+a given bundle is rank queries which bundle he would 
+purchase given a particular vector of prices demand queries 
+etc -until at least the final allocation can be determined 
+experimentally this yields drastic savings in preference 
+revelation furthermore if the agents valuation functions 
+are drawn from certain natural subclasses the elicitation 
+problem can be solved using only polynomially many queries 
+even in the worst case for a review 
+of preference elicitation in combinatorial auctions see 
+ascending combinatorial auctions are a well-known special 
+form of preference elicitation where the elicitor asks demand 
+queries with increasing prices finally resource 
+ 
+allocation problems have also been studied from a 
+communication complexity viewpoint thereby deriving lower bounds 
+on the required communication for example nisan and 
+segal show that exponential communication is required even 
+to obtain a surplus greater than that obtained by 
+auctioning off all objects as a single bundle segal also studies 
+social choice rules in general and shows that for a large 
+class of social choice rules supporting budget sets must be 
+revealed such that if every agent prefers the same outcome 
+in her budget set this proves the optimality of that 
+outcome segal then uses this characterization to prove bounds 
+on the communication required in resource allocation as well 
+as matching settings 
+in this paper we will focus on the communication 
+requirements of a generally applicable subclass of social choice 
+rules commonly known as voting rules in a voting setting 
+there is a set of candidate outcomes over which the voters 
+express their preferences by submitting a vote typically 
+a ranking of the candidates and the winner that is the 
+chosen outcome is determined based on these votes the 
+communication required by voting rules can be large either 
+because the number of voters is large such as for example 
+in national elections or because the number of candidates 
+is large for example the agents can vote over allocations of 
+a number of resources or both prior work has studied 
+elicitation in voting studying how computationally hard it 
+is to decide whether a winner can be determined with the 
+information elicited so far as well as how hard it is to find the 
+optimal sequence of queries given perfect suspicions about 
+the voters preferences in addition that paper discusses 
+strategic game-theoretic issues introduced by elicitation 
+in contrast in this paper we are concerned with the 
+worst-case number of bits that must be communicated to 
+execute a given voting rule when nothing is known in advance 
+about the voters preferences we determine the 
+communication complexity of the common voting rules for each rule 
+we first give an upper bound on the deterministic 
+communication complexity by providing a communication protocol 
+for it and analyzing how many bits need to be transmitted 
+in this protocol segal s results do not apply to most 
+voting rules because most voting rules are not 
+intersectionmonotonic or even monotonic 
+ for many of the voting 
+rules under study it turns out that one cannot do better 
+than simply letting each voter immediately communicate all 
+her potentially relevant information however for some 
+rules such as plurality with runoff stv and cup there is 
+a straightforward multistage communication protocol that 
+with some analysis can be shown to significantly outperform 
+the immediate communication of all potentially relevant 
+information finally for some rules such as the condorcet 
+and bucklin rules we need to introduce a more complex 
+communication protocol to achieve the best possible upper 
+ 
+for two of the rules that we study that are 
+intersectionmonotonic namely the approval and condorcet rules 
+segal s results can in fact be used to give alternative proofs 
+of our lower bounds we only give direct proofs for these 
+rules here because these direct proofs are among the 
+easier ones in this paper the alternative proofs are nontrivial 
+even given segal s results and a space constraint applies 
+however we hope to also include the alternative proofs in a 
+later version 
+bound after obtaining the upper bounds we show that 
+they are tight by giving matching lower bounds on even the 
+nondeterministic communication complexity of each voting 
+rule there are two exceptions stv for which our upper 
+and lower bounds are apart by a factor log m and maximin 
+for which our best deterministic upper bound is also a factor 
+log m above the nondeterministic lower bound although 
+we give a nondeterministic upper bound that matches the 
+lower bound 
+ review of voting rules 
+in this section we review the common voting rules that 
+we study in this paper a voting rule 
+is a function 
+mapping a vector of the n voters votes i e preferences over 
+candidates to one of the m candidates the winner in the 
+candidate set c in some cases such as the condorcet rule 
+the rule may also declare that no winner exists we do not 
+concern ourselves with what happens in case of a tie 
+between candidates our lower bounds hold regardless of how 
+ties are broken and the communication protocols used for 
+our upper bounds do not attempt to break the ties all of 
+the rules that we study are rank-based rules which means 
+that a vote is defined as an ordering of the candidates with 
+the exception of the plurality rule for which a vote is a 
+single candidate and the approval rule for which a vote is a 
+subset of the candidates 
+we will consider the following voting rules for rules that 
+define a score the candidate with the highest score wins 
+ scoring rules let α α αm be a vector of 
+integers such that α ≥ α ≥ αm for each voter a 
+candidate receives α points if it is ranked first by the voter 
+α if it is ranked second etc the score sα of a candidate 
+is the total number of points the candidate receives the 
+borda rule is the scoring rule with α m− m− 
+the plurality rule is the scoring rule with α 
+ single transferable vote stv the rule proceeds through 
+a series of m − rounds in each round the candidate with 
+the lowest plurality score that is the least number of voters 
+ranking it first among the remaining candidates is 
+eliminated and each of the votes for that candidate transfer 
+to the next remaining candidate in the order given in that 
+vote the winner is the last remaining candidate 
+ plurality with run-off in this rule a first round 
+eliminates all candidates except the two with the highest plurality 
+scores votes are transferred to these as in the stv rule 
+and a second round determines the winner from these two 
+ approval each voter labels each candidate as either 
+approved or disapproved the candidate approved by the 
+greatest number of voters wins 
+ condorcet for any two candidates i and j let n i j be 
+the number of voters who prefer i to j if there is a candidate 
+i that is preferred to any other candidate by a majority of 
+the voters that is n i j n j i for all j i-that is i 
+wins every pairwise election then candidate i wins 
+ 
+the term voting protocol is often used to describe the same 
+concept but we seek to draw a sharp distinction between 
+the rule mapping preferences to outcomes and the 
+communication elicitation protocol used to implement this rule 
+ 
+ maximin aka simpson the maximin score of i is 
+s i minj i n i j -that is i s worst performance in a 
+pairwise election the candidate with the highest maximin 
+score wins 
+ copeland for any two distinct candidates i and j let 
+c i j if n i j n j i c i j if n i j 
+n j i and c i j if n i j n j i the copeland 
+score of candidate i is s i j i c i j 
+ cup sequential binary comparisons the cup rule is 
+defined by a balanced 
+binary tree t with one leaf per 
+candidate and an assignment of candidates to leaves each leaf 
+gets one candidate each non-leaf node is assigned the 
+winner of the pairwise election of the node s children the 
+candidate assigned to the root wins 
+ bucklin for any candidate i and integer l let b i l 
+be the number of voters that rank candidate i among the 
+top l candidates the winner is arg mini min l b i l 
+n that is if we say that a voter approves her top 
+l candidates then we repeatedly increase l by until some 
+candidate is approved by more than half the voters and this 
+candidate is the winner 
+ ranked pairs this rule determines an order on all 
+the candidates and the winner is the candidate at the top 
+of this order sort all ordered pairs of candidates i j by 
+n i j the number of voters who prefer i to j starting 
+with the pair i j with the highest n i j we lock in 
+the result of their pairwise election i j then we move 
+to the next pair and we lock the result of their pairwise 
+election we continue to lock every pairwise result that does 
+not contradict the ordering established so far 
+we emphasize that these definitions of voting rules do not 
+concern themselves with how the votes are elicited from the 
+voters all the voting rules including those that are 
+suggestively defined in terms of rounds are in actuality just 
+functions mapping the vector of all the voters votes to a 
+winner nevertheless there are always many different ways 
+of eliciting the votes or the relevant parts thereof from the 
+voters for example in the plurality with runoff rule one 
+way of eliciting the votes is to ask every voter to declare her 
+entire ordering of the candidates up front alternatively we 
+can first ask every voter to declare only her most preferred 
+candidate then we will know the two candidates in the 
+runoff and we can ask every voter which of these two 
+candidates she prefers thus we distinguish between the voting 
+rule the mapping from vectors of votes to outcomes and the 
+communication protocol which determines how the relevant 
+parts of the votes are actually elicited from the voters the 
+goal of this paper is to give efficient communication 
+protocols for the voting rules just defined and to prove that there 
+do not exist any more efficient communication protocols 
+it is interesting to note that the choice of the 
+communication protocol may affect the strategic behavior of the voters 
+multistage communication protocols may reveal to the 
+voters some information about how the other voters are voting 
+ for example in the two-stage communication protocol just 
+given for plurality with runoff in the second stage voters 
+ 
+balanced means that the difference in depth between two 
+leaves can be at most one 
+will know which two candidates have the highest plurality 
+scores in general when the voters receive such 
+information it may give them incentives to vote differently than 
+they would have in a single-stage communication protocol 
+in which all voters declare their entire votes simultaneously 
+of course even the single-stage communication protocol is 
+not strategy-proof 
+for any reasonable voting rule by the 
+gibbard-satterthwaite theorem however this does 
+not mean that we should not be concerned about adding 
+even more opportunities for strategic voting in fact many 
+of the communication protocols introduced in this paper do 
+introduce additional opportunities for strategic voting but 
+we do not have the space to discuss this here in prior 
+work we do give an example where an elicitation 
+protocol for the approval voting rule introduces strategic voting 
+and give principles for designing elicitation protocols that 
+do not introduce strategic problems 
+now that we have reviewed voting rules we move on to a 
+brief review of communication complexity theory 
+ review of some communication 
+complexity theory 
+in this section we review the basic model of a 
+communication problem and the lower-bounding technique of 
+constructing a fooling set the basic model of a communication 
+problem is due to yao for an overview see kushilevitz 
+and nisan 
+each player ≤ i ≤ n knows only input xi together 
+they seek to compute f x x xn in a deterministic 
+protocol for computing f in each stage one of the players 
+announces to all other players a bit of information based 
+on her own input and the bits announced so far 
+eventually the communication terminates and all players know 
+f x x xn the goal is to minimize the worst-case 
+ over all input vectors number of bits sent the 
+deterministic communication complexity of a problem is the 
+worstcase number of bits sent in the best correct deterministic 
+protocol for it in a nondeterministic protocol the next 
+bit to be sent can be chosen nondeterministically for the 
+purposes of this paper we will consider a nondeterministic 
+protocol correct if for every input vector there is some 
+sequence of nondeterministic choices the players can make so 
+that the players know the value of f when the protocol 
+terminates the nondeterministic communication complexity 
+of a problem is the worst-case number of bits sent in the 
+best correct nondeterministic protocol for it 
+we are now ready to give the definition of a fooling set 
+definition a fooling set is a set of input vectors 
+ x 
+ x 
+ x 
+n x 
+ x 
+ x 
+n xk 
+ xk 
+ xk 
+n such 
+that for any i f xi 
+ xi 
+ xi 
+n f for some constant f 
+but for any i j there exists some vector r r rn ∈ 
+ i j n 
+such that f xr 
+ xr 
+ xrn 
+n f that is we can 
+mix the inputs from the two input vectors to obtain a vector 
+with a different function value 
+it is known that if a fooling set of size k exists then log k 
+is a lower bound on the communication complexity even 
+the nondeterministic communication complexity 
+ 
+a strategy-proof protocol is one in which it is in the players 
+best interest to report their preferences truthfully 
+ 
+for the purposes of this paper f is the voting rule that 
+maps the votes to the winning candidate and xi is voter 
+i s vote the information that the voting rule would require 
+from the voter if there were no possibility of multistage 
+communication-i e the most preferred candidate 
+ plurality the approved candidates approval or the ranking of 
+all the candidates all other protocols however when we 
+derive our lower bounds f will only signify whether a 
+distinguished candidate a wins that is f is if a wins and 
+ otherwise this will strengthen our lower bound results 
+ because it implies that even finding out whether one given 
+candidate wins is hard 
+thus a fooling set in our 
+context is a set of vectors of votes so that a wins does not win 
+with each of them but for any two different vote vectors in 
+the set there is a way of taking some voters votes from the 
+first vector and the others votes from the second vector so 
+that a does not win wins 
+to simplify the proofs of our lower bounds we make 
+assumptions such as the number of voters n is odd in many 
+of these proofs therefore technically we do not prove the 
+lower bound for number of candidates number of voters 
+pairs m n that do not satisfy these assumptions for 
+example if we make the above assumption then we technically 
+do not prove the lower bound for any pair m n in which 
+n is even nevertheless we always prove the lower bound 
+for a representative set of m n pairs for example for 
+every one of our lower bounds it is the case that for infinitely 
+many values of m there are infinitely many values of n such 
+that the lower bound is proved for the pair m n 
+ results 
+we are now ready to present our results for each voting 
+rule we first give a deterministic communication protocol 
+for determining the winner to establish an upper bound 
+then we give a lower bound on the nondeterministic 
+communication complexity even on the complexity of deciding 
+whether a given candidate wins which is an easier 
+question the lower bounds match the upper bounds in all but 
+two cases the stv rule upper bound o n log m 
+ lower 
+bound ω n log m and the maximin rule upper bound 
+o nm log m although we do give a nondeterministic 
+protocol that is o nm lower bound ω nm 
+when we discuss a voting rule in which the voters rank the 
+candidates we will represent a ranking in which candidate c 
+is ranked first c is ranked second etc as c c cm 
+ 
+one possible concern is that in the case where ties are 
+possible it may require much communication to verify whether 
+a specific candidate a is among the winners but little 
+communication to produce one of the winners however all the 
+fooling sets we use in the proofs have the property that if 
+a wins then a is the unique winner therefore in these 
+fooling sets if one knows any one of the winners then one 
+knows whether a is a winner thus computing one of the 
+winners requires at least as much communication as 
+verifying whether a is among the winners in general when a 
+communication problem allows multiple correct answers for 
+a given vector of inputs this is known as computing a 
+relation rather than a function however as per the above 
+we can restrict our attention to a subset of the domain where 
+the voting rule truly is a single-valued function and hence 
+lower bounding techniques for functions rather than 
+relations will suffice 
+sometimes for the purposes of a proof the internal ranking 
+of a subset of the candidates does not matter and in this 
+case we will not specify it for example if s c c 
+then c s c indicates that either the ranking c 
+c c c or the ranking c c c c can be used 
+for the proof 
+we first give a universal upper bound 
+theorem the deterministic communication 
+complexity of any rank-based voting rule is o nm log m 
+proof this bound is achieved by simply having 
+everyone communicate their entire ordering of the candidates 
+ indicating the rank of an individual candidate requires only 
+o log m bits so each of the n voters can simply indicate 
+the rank of each of the m candidates 
+the next lemma will be useful in a few of our proofs 
+lemma if m divides n then log n −m log n m ≥ 
+n log m − 
+proof if n m that is n m then this 
+expression simplifies to log n we have log n 
+n 
+i 
+log i ≥ 
+n 
+x 
+log i dx which using integration by parts is equal to 
+n log n − n − n log n − n log m − n log m − 
+ so we can assume that n m ≥ we observe that 
+log n 
+n 
+i 
+log i 
+n m− 
+i 
+m 
+j 
+log im j ≥ 
+n m− 
+i 
+m 
+j 
+log im 
+ m 
+n m− 
+i 
+log im and that m log n m m 
+n m 
+i 
+log i 
+therefore log n − m log n m ≥ m 
+n m− 
+i 
+log im − 
+m 
+n m 
+i 
+log i m 
+n m− 
+i 
+log im i −log n m m n m− 
+ log m−log n log m n log m−m log n now using the 
+fact that n m ≥ we have m log n n m n log m n m 
+n m n log m log n m ≤ n log m log thus 
+log n − m log n m ≥ n log m − m log n ≥ n log m − 
+n log m log n log m − 
+theorem the deterministic communication 
+complexity of the plurality rule is o n log m 
+proof indicating one of the candidates requires only 
+o log m bits so each voter can simply indicate her most 
+preferred candidate 
+theorem the nondeterministic communication 
+complexity of the plurality rule is ω n log m even to decide 
+whether a given candidate a wins 
+proof we will exhibit a fooling set of size n 
+ n 
+m 
+ m 
+where 
+n n− taking the logarithm of this gives log n − 
+m log n m so the result follows from lemma the 
+fooling set will consist of all vectors of votes satisfying the 
+following constraints 
+ for any ≤ i ≤ n voters i− and i vote the same 
+ 
+ every candidate receives equally many votes from the 
+first n n − voters 
+ the last voter voter n votes for a 
+candidate a wins with each one of these vote vectors 
+because of the extra vote for a from the last voter given that 
+m divides n let us see how many vote vectors there are in 
+the fooling set we need to distribute n voter pairs evenly 
+over m candidates for a total of n m voter pairs per 
+candidate and there are precisely n 
+ n 
+m 
+ m 
+ways of doing this 
+all that remains to show is that for any two distinct vectors 
+of votes in the fooling set we can let each of the voters vote 
+according to one of these two vectors in such a way that a 
+loses let i be a number such that the two vote vectors 
+disagree on the candidate for which voters i − and i vote 
+without loss of generality suppose that in the first vote 
+vector these voters do not vote for a but for some other 
+candidate b instead now construct a new vote vector by 
+taking votes i − and i from the first vote vector and 
+the remaining votes from the second vote vector then b 
+receives n m votes in this newly constructed vote 
+vector whereas a receives at most n m votes so a is not 
+the winner in the newly constructed vote vector and hence 
+we have a correct fooling set 
+theorem the deterministic communication 
+complexity of the plurality with runoff rule is o n log m 
+proof first let every voter indicate her most preferred 
+candidate using log m bits after this the two candidates 
+in the runoff are known and each voter can indicate which 
+one she prefers using a single additional bit 
+theorem the nondeterministic communication 
+complexity of the plurality with runoff rule is ω n log m even 
+to decide whether a given candidate a wins 
+proof we will exhibit a fooling set of size n 
+ n 
+m 
+ m 
+where m m and n n − taking the 
+logarithm of this gives log n − m log n m so the result 
+follows from lemma divide the candidates into m pairs 
+ c d c d cm dm where c a and d b 
+the fooling set will consist of all vectors of votes satisfying 
+the following constraints 
+ for any ≤ i ≤ n voters i − and i − rank 
+the candidates ck i a c − a ck i for some 
+candidate ck i if ck i a then the vote is simply 
+a c − a 
+ for any ≤ i ≤ n voters i − and i rank the 
+candidates dk i a c − a dk i that is their most 
+preferred candidate is the candidate that is paired with 
+the candidate that the previous two voters vote for 
+ 
+an intuitive proof of this is the following we can count 
+the number of permutations of n elements as follows first 
+divide the elements into m buckets of size n m so that if 
+x is placed in a lower-indexed bucket than y then x will 
+be indexed lower in the eventual permutation then decide 
+on the permutation within each bucket for which there are 
+ n m choices per bucket it follows that n equals the 
+number of ways to divide n elements into m buckets of size 
+n m times n m m 
+ 
+ every candidate is ranked at the top of equally many 
+of the first n n − votes 
+ voter n n− ranks the candidates a c− a 
+ voter n n ranks the candidates b c − b 
+candidate a wins with each one of these vote vectors 
+because of the last two votes candidates a and b are one vote 
+ahead of all the other candidates and continue to the runoff 
+and at this point all the votes that had another candidate 
+ranked at the top transfer to a so that a wins the runoff 
+given that m divides n let us see how many vote vectors 
+there are in the fooling set we need to distribute n groups 
+of four voters evenly over the m pairs of candidates and 
+ as in the proof of theorem there are n 
+ n 
+m 
+ m 
+ways of 
+doing this all that remains to show is that for any two 
+distinct vectors of votes in the fooling set we can let each 
+of the voters vote according to one of these two vectors in 
+such a way that a loses let i be a number such that ck i is 
+not the same in both of these two vote vectors that is c 
+k i 
+ ck i in the first vote vector is not equal to c 
+k i ck i in 
+the second vote vector without loss of generality suppose 
+c 
+k i a now construct a new vote vector by taking votes 
+ i − i − i − i from the first vote vector and the 
+remaining votes from the second vote vector in this newly 
+constructed vote vector c 
+k i and d 
+k i each receive n m 
+votes in the first round whereas a receives at most n m 
+votes so a does not continue to the runoff in the newly 
+constructed vote vector and hence we have a correct fooling 
+set 
+theorem the nondeterministic communication 
+complexity of the borda rule is ω nm log m even to decide 
+whether a given candidate a wins 
+proof we will exhibit a fooling set of size m n 
+where 
+m m− and n n− this will prove the theorem 
+because m is ω m log m so that log m n 
+ n log m 
+is ω nm log m for every vector π π πn consisting 
+of n orderings of all candidates other than a and another 
+fixed candidate b technically the orderings take the form of 
+a one-to-one function πi m → c − a b with 
+πi j c indicating that candidate c is the jth in the order 
+represented by πi let the following vector of votes be an 
+element of the fooling set 
+ for ≤ i ≤ n let voters i − and i − rank the 
+candidates a b πi πi πi m 
+ for ≤ i ≤ n let voters i − and i rank the 
+candidates πi m πi m − πi b a 
+ let voter n n − rank the candidates a 
+b π π π m where π is an 
+arbitrary order of the candidates other than a and b 
+which is the same for every element of the fooling set 
+ let voter n n rank the candidates π m 
+π m − π a b 
+we observe that this fooling set has size m n 
+ and that 
+candidate a wins in each vector of votes in the fooling set to 
+ 
+see why we observe that for any ≤ i ≤ n votes i− and 
+ i − rank the candidates in the exact opposite way from 
+votes i − and i which under the borda rule means they 
+cancel out and the last two votes give one more point to a 
+than to any other candidate-besides b who gets two fewer 
+points than a all that remains to show is that for any two 
+distinct vectors of votes in the fooling set we can let each of 
+the voters vote according to one of these two vectors in such 
+a way that a loses let the first vote vector correspond to 
+the vector π 
+ π 
+ π 
+n and let the second vote vector 
+correspond to the vector π 
+ π 
+ π 
+n for some i we 
+must have π 
+i π 
+i so that for some candidate c ∈ a b 
+ π 
+i − 
+ c π 
+i − 
+ c that is c is ranked higher in π 
+i than 
+in π 
+i now construct a new vote vector by taking votes 
+ i− and i− from the first vote vector and the remaining 
+votes from the second vote vector a s borda score remains 
+unchanged however because c is ranked higher in π 
+i than 
+in π 
+i c receives at least more points from votes i− and 
+ i − in the newly constructed vote vector than it did in 
+the second vote vector it follows that c has a higher borda 
+score than a in the newly constructed vote vector so a is 
+not the winner in the newly constructed vote vector and 
+hence we have a correct fooling set 
+theorem the nondeterministic communication 
+complexity of the copeland rule is ω nm log m even to decide 
+whether a given candidate a wins 
+proof we will exhibit a fooling set of size m n 
+where 
+m m − and n n − this will prove the 
+theorem because m is ω m log m so that log m n 
+ 
+n log m is ω nm log m we write the set of candidates 
+as the following disjoint union c a b ∪ l ∪ r where 
+l l l lm and r r r rm for every 
+vector π π πn consisting of n permutations of the 
+integers through m πi m → m 
+let the following vector of votes be an element of the fooling 
+set 
+ for ≤ i ≤ n let voter i − rank the candidates 
+a b lπi rπi lπi rπi 
+lπi m rπi m 
+ for ≤ i ≤ n let voter i rank the candidates 
+rπi m lπi m rπi m − lπi m − 
+rπi lπi b a 
+ let voter n − n rank the candidates a b 
+l r l r lm rm 
+ let voter n n rank the candidates rm lm 
+rm − lm − r l a b 
+we observe that this fooling set has size m n 
+ and 
+that candidate a wins in each vector of votes in the 
+fooling set every pair of candidates is tied in their pairwise 
+election with the exception that a defeats b so that a wins 
+the election by half a point all that remains to show is 
+that for any two distinct vectors of votes in the fooling 
+set we can let each of the voters vote according to one 
+of these two vectors in such a way that a loses let the 
+first vote vector correspond to the vector π 
+ π 
+ π 
+n 
+and let the second vote vector correspond to the vector 
+ π 
+ π 
+ π 
+n for some i we must have π 
+i π 
+i so that 
+for some j ∈ m we have π 
+i − 
+ j π 
+i − 
+ j 
+now construct a new vote vector by taking vote i− from 
+the first vote vector and the remaining votes from the 
+second vote vector a s copeland score remains unchanged let 
+us consider the score of lj we first observe that the rank of 
+lj in vote i − in the newly constructed vote vector is at 
+least higher than it was in the second vote vector because 
+ π 
+i − 
+ j π 
+i − 
+ j let d 
+ lj be the set of candidates 
+in l ∪ r that voter i − ranked lower than lj in the first 
+vote vector d 
+ lj c ∈ l ∪ r lj 
+ 
+ i− c and let 
+d 
+ lj be the set of candidates in l ∪ r that voter i − 
+ranked lower than lj in the second vote vector d 
+ lj 
+ c ∈ l ∪ r lj 
+ 
+ i− c then it follows that in the 
+newly constructed vote vector lj defeats all the candidates 
+in d 
+ lj − d 
+ lj in their pairwise elections because lj 
+receives an extra vote in each one of these pairwise elections 
+relative to the second vote vector and loses to all the 
+candidates in d 
+ lj − d 
+ lj because lj loses a vote in each one 
+of these pairwise elections relative to the second vote 
+vector and ties with everyone else but d 
+ lj − d 
+ lj ≥ 
+and hence d 
+ lj − d 
+ lj − d 
+ lj − d 
+ lj ≥ hence 
+in the newly constructed vote vector lj has at least two 
+more pairwise wins than pairwise losses and therefore has 
+at least more point than if lj had tied all its pairwise 
+elections thus lj has a higher copeland score than a in the 
+newly constructed vote vector so a is not the winner in the 
+newly constructed vote vector and hence we have a correct 
+fooling set 
+theorem the nondeterministic communication 
+complexity of the maximin rule is o nm 
+proof the nondeterministic protocol will guess which 
+candidate w is the winner and for each other candidate 
+c which candidate o c is the candidate against whom c 
+receives its lowest score in a pairwise election then let 
+every voter communicate the following 
+ for each candidate c w whether she prefers c to w 
+ for each candidate c w whether she prefers c to o c 
+we observe that this requires the communication of n m− 
+ bits if the guesses were correct then letting n d e be 
+the number of voters preferring candidate d to candidate e 
+we should have n c o c n w c for any c w c w 
+which will prove that w wins the election 
+theorem the nondeterministic communication 
+complexity of the maximin rule is ω nm even to decide whether 
+a given candidate a wins 
+proof we will exhibit a fooling set of size n m 
+where 
+m m − and n n − let b be a candidate other 
+than a for every vector s s sn consisting of n 
+subsets si ⊆ c − a b let the following vector of votes be 
+an element of the fooling set 
+ for ≤ i ≤ n let voters i − and i − rank the 
+candidates si a c − si ∪ a b b 
+ for ≤ i ≤ n let voters i − and i rank the 
+candidates b c − si ∪ a b a si 
+ 
+ let voter n n rank the candidates a b 
+c − a b 
+we observe that this fooling set has size m 
+ n 
+ n m 
+ 
+and that candidate a wins in each vector of votes in the 
+fooling set in every one of a s pairwise elections a is ranked 
+higher than its opponent by n n n votes 
+all that remains to show is that for any two distinct vectors 
+of votes in the fooling set we can let each of the voters vote 
+according to one of these two vectors in such a way that 
+a loses let the first vote vector correspond to the vector 
+ s 
+ s 
+ s 
+n and let the second vote vector correspond 
+to the vector s 
+ s 
+ s 
+n for some i we must have 
+s 
+i s 
+i so that either s 
+i s 
+i or s 
+i s 
+i without loss 
+of generality suppose s 
+i s 
+i and let c be some candidate 
+in s 
+i − s 
+i now construct a new vote vector by taking 
+votes i − and i − from the first vote vector and the 
+remaining votes from the second vote vector in this newly 
+constructed vote vector a is ranked higher than c by only 
+ n − voters for the following reason whereas voters i− 
+and i − do not rank c higher than a in the second vote 
+vector because c ∈ s 
+i voters i − and i − do rank 
+c higher than a in the first vote vector because c ∈ s 
+i 
+moreover in every one of b s pairwise elections b is ranked 
+higher than its opponent by at least n voters so a has 
+a lower maximin score than b therefore a is not the winner 
+in the newly constructed vote vector and hence we have a 
+correct fooling set 
+theorem the deterministic communication 
+complexity of the stv rule is o n log m 
+ 
+proof consider the following communication protocol 
+let each voter first announce her most preferred candidate 
+ o n log m communication in the remaining rounds we 
+will keep track of each voter s most preferred candidate 
+among the remaining candidates which will be enough to 
+implement the rule when candidate c is eliminated let 
+each of the voters whose most preferred candidate among the 
+remaining candidates was c announce their most preferred 
+candidate among the candidates remaining after c s 
+elimination if candidate c was the ith candidate to be eliminated 
+ that is there were m − i candidates remaining before 
+c s elimination it follows that at most n m − i voters 
+had candidate c as their most preferred candidate among 
+the remaining candidates and thus the number of bits to be 
+communicated after the elimination of the ith candidate is 
+o n m−i log m 
+thus the total communication in 
+this communication protocol is o n log m 
+m− 
+i 
+ n m − i 
+ log m of course 
+m− 
+i 
+ m − i 
+m 
+i 
+ i which is 
+o log m substituting into the previous expression we find 
+that the communication complexity is o n log m 
+ 
+theorem the nondeterministic communication 
+complexity of the stv rule is ω n log m even to decide whether 
+a given candidate a wins 
+proof we omit this proof because of space constraint 
+ 
+actually o n m − i log m − i is also correct 
+but it will not improve the bound 
+theorem the deterministic communication 
+complexity of the approval rule is o nm 
+proof approving or disapproving of a candidate requires 
+only one bit of information so every voter can simply 
+approve or disapprove of every candidate for a total 
+communication of nm bits 
+theorem the nondeterministic communication 
+complexity of the approval rule is ω nm even to decide whether 
+a given candidate a wins 
+proof we will exhibit a fooling set of size n m 
+where 
+m m − and n n − for every vector 
+ s s sn consisting of n subsets si ⊆ c − a let 
+the following vector of votes be an element of the fooling 
+set 
+ for ≤ i ≤ n let voters i − and i − approve 
+si ∪ a 
+ for ≤ i ≤ n let voters i − and i approve c − 
+ si ∪ a 
+ let voter n n approve a 
+we observe that this fooling set has size m 
+ n 
+ n m 
+ 
+and that candidate a wins in each vector of votes in the 
+fooling set a is approved by n voters whereas each 
+other candidate is approved by only n voters all that 
+remains to show is that for any two distinct vectors of votes 
+in the fooling set we can let each of the voters vote 
+according to one of these two vectors in such a way that a 
+loses let the first vote vector correspond to the vector 
+ s 
+ s 
+ s 
+n and let the second vote vector correspond 
+to the vector s 
+ s 
+ s 
+n for some i we must have 
+s 
+i s 
+i so that either s 
+i s 
+i or s 
+i s 
+i without loss 
+of generality suppose s 
+i s 
+i and let b be some candidate 
+in s 
+i − s 
+i now construct a new vote vector by taking 
+votes i − and i − from the first vote vector and the 
+remaining votes from the second vote vector in this newly 
+constructed vote vector a is still approved by n votes 
+however b is approved by n votes for the following 
+reason whereas voters i− and i− do not approve b in 
+the second vote vector because b ∈ s 
+i voters i − and 
+ i − do approve b in the first vote vector because b ∈ s 
+i 
+it follows that b s score in the newly constructed vote vector 
+is b s score in the second vote vector n plus two so a 
+is not the winner in the newly constructed vote vector and 
+hence we have a correct fooling set 
+interestingly an ω m lower bound can be obtained even 
+for the problem of finding a candidate that is approved by 
+more than one voter 
+theorem the deterministic communication 
+complexity of the condorcet rule is o nm 
+proof we maintain a set of active candidates s which 
+is initialized to c at each stage we choose two of the active 
+candidates say the two candidates with the lowest indices 
+and we let each voter communicate which of the two 
+candidates she prefers such a stage requires the communication 
+of n bits one per voter the candidate preferred by fewer 
+ 
+voters the loser of the pairwise election is removed from 
+s if the pairwise election is tied both candidates are 
+removed after at most m − iterations only one candidate 
+is left or zero candidates are left in which case there is no 
+condorcet winner let a be the remaining candidate to 
+find out whether candidate a is the condorcet winner let 
+each voter communicate for every candidate c a whether 
+she prefers a to c this requires the communication of at 
+most n m − bits this is enough to establish whether 
+a won each of its pairwise elections and thus whether a is 
+the condorcet winner 
+theorem the nondeterministic communication 
+complexity of the condorcet rule is ω nm even to decide whether 
+a given candidate a wins 
+proof we will exhibit a fooling set of size n m 
+where 
+m m − and n n − for every vector 
+ s s sn consisting of n subsets si ⊆ c − a let 
+the following vector of votes be an element of the fooling 
+set 
+ for ≤ i ≤ n let voter i − rank the candidates 
+si a c − si 
+ for ≤ i ≤ n let voter i rank the candidates c − 
+si a si 
+ let voter n n rank the candidates a c − a 
+we observe that this fooling set has size m 
+ n 
+ n m 
+ 
+and that candidate a wins in each vector of votes in the 
+fooling set a wins each of its pairwise elections by a single 
+vote all that remains to show is that for any two distinct 
+vectors of votes in the fooling set we can let each of the 
+voters vote according to one of these two vectors in such a 
+way that a loses let the first vote vector correspond to 
+the vector s 
+ s 
+ s 
+n and let the second vote vector 
+correspond to the vector s 
+ s 
+ s 
+n for some i we 
+must have s 
+i s 
+i so that either s 
+i s 
+i or s 
+i s 
+i 
+without loss of generality suppose s 
+i s 
+i and let b be 
+some candidate in s 
+i − s 
+i now construct a new vote 
+vector by taking vote i − from the first vote vector and 
+the remaining votes from the second vote vector in this 
+newly constructed vote vector b wins its pairwise election 
+against a by one vote vote i − ranks b above a in the 
+newly constructed vote vector because b ∈ s 
+i whereas in 
+the second vote vector vote i − ranked a above b because 
+b ∈ s 
+i so a is not the condorcet winner in the newly 
+constructed vote vector and hence we have a correct fooling 
+set 
+theorem the deterministic communication 
+complexity of the cup rule is o nm 
+proof consider the following simple communication 
+protocol first let all the voters communicate for every one of 
+the matchups in the first round which of its two candidates 
+they prefer after this the matchups for the second round 
+are known so let all the voters communicate which 
+candidate they prefer in each matchup in the second round-etc 
+because communicating which of two candidates is preferred 
+requires only one bit per voter and because there are only 
+m − matchups in total this communication protocol 
+requires o nm communication 
+theorem the nondeterministic communication 
+complexity of the cup rule is ω nm even to decide whether a 
+given candidate a wins 
+proof we will exhibit a fooling set of size n m 
+where 
+m m − and n n − given that m is a 
+power of so that one candidate gets a bye that is does not 
+face an opponent in the first round let a be the candidate 
+with the bye of the m first-round matchups let lj denote 
+the one left candidate in the jth matchup and let rj be 
+the other right candidate let l lj ≤ j ≤ m 
+and r rj ≤ j ≤ m so that c l ∪ r ∪ a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+l r l r l r 
+a 
+m m 
+figure the schedule for the cup rule used in the 
+proof of theorem 
+for every vector s s sn consisting of n subsets 
+si ⊆ r let the following vector of votes be an element of 
+the fooling set 
+ for ≤ i ≤ n let voter i − rank the candidates 
+si l a r − si 
+ for ≤ i ≤ n let voter i rank the candidates r − 
+si l a si 
+ let voters n n− n n− n n− 
+rank the candidates l a r 
+ let voters n n − n n − rank the 
+candidates a r l r l rm lm 
+ let voters n n − n n rank the 
+candidates rm lm rm − lm − r l a 
+we observe that this fooling set has size m 
+ n 
+ n m 
+ 
+also candidate a wins in each vector of votes in the fooling 
+set for the following reasons each candidate rj defeats its 
+opponent lj in the first round for any ≤ i ≤ n the 
+net effect of votes i − and i on the pairwise election 
+between rj and lj is zero votes n − n − n − prefer 
+lj to rj but votes n − n − n − n all prefer rj to lj 
+moreover a defeats every rj in their pairwise election for 
+any ≤ i ≤ n the net effect of votes i − and i on the 
+pairwise election between a and rj is zero votes n − n 
+prefer rj to a but votes n − n − n − n − n − all 
+prefer a to rj it follows that a will defeat all the candidates 
+that it faces 
+all that remains to show is that for any two distinct 
+vectors of votes in the fooling set we can let each of the voters 
+vote according to one of these two vectors in such a way that 
+a loses let the first vote vector correspond to the vector 
+ 
+ s 
+ s 
+ s 
+n and let the second vote vector correspond 
+to the vector s 
+ s 
+ s 
+n for some i we must have 
+s 
+i s 
+i so that either s 
+i s 
+i or s 
+i s 
+i without 
+loss of generality suppose s 
+i s 
+i and let rj be some 
+candidate in s 
+i − s 
+i now construct a new vote vector by 
+taking vote i from the first vote vector and the remaining 
+votes from the second vote vector we note that whereas 
+in the second vote vector vote i preferred rj to lj because 
+rj ∈ r−s 
+i in the newly constructed vote vector this is no 
+longer the case because rj ∈ s 
+i it follows that whereas 
+in the second vote vector rj defeated lj in the first round 
+by one vote in the newly constructed vote vector lj 
+defeats rj in the first round thus at least one lj advances 
+to the second round after defeating its opponent rj now 
+we observe that in the newly constructed vote vector any 
+lk wins its pairwise election against any rq with q k this 
+is because among the first n votes at least n − prefer lk 
+to rq votes n − n − n − prefer lk to rq and because 
+q k either votes n − n − prefer lk to rq if k q 
+or votes n − n prefer lk to rq if k q thus at least 
+n n n votes prefer lk to rq moreover 
+any lk wins its pairwise election against a this is because 
+only votes n − and n − prefer a to lk it follows that 
+after the first round any surviving candidate lk can only 
+lose a matchup against another surviving lk so that one of 
+the lk must win the election so a is not the winner in the 
+newly constructed vote vector and hence we have a correct 
+fooling set 
+theorem the deterministic communication 
+complexity of the bucklin rule is o nm 
+proof let l be the minimum integer for which there is 
+a candidate who is ranked among the top l candidates by 
+more than half the votes we will do a binary search for l 
+at each point we will have a lower bound ll which is smaller 
+than l initialized to and an upper bound lh which is at 
+least l initialized to m while lh − ll we continue 
+by finding out whether lh − l is smaller than l after 
+which we can update the bounds 
+to find out whether a number k is smaller than l we 
+determine every voter s k most preferred candidates 
+every voter can communicate which candidates are among her 
+k most preferred candidates using m bits for each 
+candidate indicate whether the candidate is among the top k or 
+not but because the binary search requires log m iterations 
+this gives us an upper bound of o log m nm which is not 
+strong enough however if ll k lh and we already 
+know a voter s ll most preferred candidates as well as her lh 
+most preferred candidates then the voter no longer needs to 
+communicate whether the ll most preferred candidates are 
+among her k most preferred candidates because they must 
+be and she no longer needs to communicate whether the 
+m−lh least preferred candidates are among her k most 
+preferred candidates because they cannot be thus the voter 
+needs to communicate only m−ll − m−lh lh −ll bits 
+in any given stage because each stage lh − ll is roughly 
+halved each voter in total communicates only roughly 
+m m m ≤ m bits 
+theorem the nondeterministic communication 
+complexity of the bucklin rule is ω nm even to decide whether 
+a given candidate a wins 
+proof we will exhibit a fooling set of size n m 
+where 
+m m− and n n we write the set of candidates 
+as the following disjoint union c a ∪ l ∪ r where 
+l l l lm and r r r rm for any 
+subset s ⊆ m let l s li i ∈ s and let 
+r s ri i ∈ s for every vector s s sn 
+consisting of n sets si ⊆ m let the following 
+vector of votes be an element of the fooling set 
+ for ≤ i ≤ n let voter i − rank the candidates 
+l si r − r si a l − l si r si 
+ for ≤ i ≤ n let voter i rank the candidates l − 
+l si r si a l si r − r si 
+we observe that this fooling set has size m 
+ n 
+ n m 
+ 
+and that candidate a wins in each vector of votes in the 
+fooling set for the following reason each candidate in c − a 
+is ranked among the top m candidates by exactly half the 
+voters which is not enough to win thus we need to look 
+at the voters top m candidates and a is ranked m th 
+by all voters all that remains to show is that for any two 
+distinct vectors of votes in the fooling set we can let each of 
+the voters vote according to one of these two vectors in such 
+a way that a loses let the first vote vector correspond to 
+the vector s 
+ s 
+ s 
+n and let the second vote vector 
+correspond to the vector s 
+ s 
+ s 
+n for some i we 
+must have s 
+i s 
+i so that either s 
+i s 
+i or s 
+i s 
+i 
+without loss of generality suppose s 
+i s 
+i and let j be 
+some integer in s 
+i − s 
+i now construct a new vote vector 
+by taking vote i − from the first vote vector and the 
+remaining votes from the second vote vector in this newly 
+constructed vote vector a is still ranked m th by all 
+votes however lj is ranked among the top m candidates 
+by n n votes this is because whereas vote 
+ i − does not rank lj among the top m candidates in the 
+second vote vector because j ∈ s 
+i we have lj ∈ l s 
+i 
+vote i − does rank lj among the top m candidates in the 
+first vote vector because j ∈ s 
+i we have lj ∈ l s 
+i so a 
+is not the winner in the newly constructed vote vector and 
+hence we have a correct fooling set 
+theorem the nondeterministic communication 
+complexity of the ranked pairs rule is ω nm log m even to 
+decide whether a given candidate a wins 
+proof we omit this proof because of space constraint 
+ discussion 
+one key obstacle to using voting for preference 
+aggregation is the communication burden that an election places 
+on the voters by lowering this burden it may become 
+feasible to conduct more elections over more issues in the 
+limit this could lead to a shift from representational 
+government to a system in which most issues are decided by 
+referenda-a veritable e-democracy in this paper we 
+analyzed the communication complexity of the common voting 
+rules knowing which voting rules require little 
+communication is especially important when the issue to be voted 
+on is of low enough importance that the following is true 
+the parties involved are willing to accept a rule that tends 
+ 
+to produce outcomes that are slightly less representative of 
+the voters preferences if this rule reduces the 
+communication burden on the voters significantly the following table 
+summarizes the results we obtained 
+rule lower bound upper bound 
+plurality ω n log m o n log m 
+plurality w runoff ω n log m o n log m 
+stv ω n log m o n log m 
+condorcet ω nm o nm 
+approval ω nm o nm 
+bucklin ω nm o nm 
+cup ω nm o nm 
+maximin ω nm o nm 
+borda ω nm log m o nm log m 
+copeland ω nm log m o nm log m 
+ranked pairs ω nm log m o nm log m 
+communication complexity of voting rules sorted from low 
+to high all of the upper bounds are deterministic with 
+the exception of maximin for which the best deterministic 
+upper bound we proved is o nm log m all of the lower 
+bounds hold even for nondeterministic communication and 
+even just for determining whether a given candidate a is 
+the winner 
+one area of future research is to study what happens when 
+we restrict our attention to communication protocols that 
+do not reveal any strategically useful information this 
+restriction may invalidate some of the upper bounds that we 
+derived using multistage communication protocols also all 
+of our bounds are worst-case bounds it may be possible to 
+outperform these bounds when the distribution of votes has 
+additional structure 
+when deciding which voting rule to use for an election 
+there are many considerations to take into account the 
+voting rules that we studied in this paper are the most 
+common ones that have survived the test of time one way to 
+select among these rules is to consider recent results on 
+complexity the table above shows that from a communication 
+complexity perspective plurality plurality with runoff and 
+stv are preferable however plurality has the undesirable 
+property that it is computationally easy to manipulate by 
+voting strategically plurality with runoff is np-hard 
+to manipulate by a coalition of weighted voters or by an 
+individual that faces correlated uncertainty about the 
+others votes stv is np-hard to manipulate in those 
+settings as well but also by an individual with perfect 
+knowledge of the others votes when the number of 
+candidates is unbounded therefore stv is more robust 
+although it may require slightly more worst-case 
+communication as per the table above yet other selection criteria 
+are the computational complexity of determining whether 
+enough information has been elicited to declare a winner 
+and that of determining the optimal sequence of queries 
+ references 
+ lawrence ausubel and paul milgrom ascending auctions 
+with package bidding frontiers of theoretical economics 
+ no article 
+ john bartholdi iii and james orlin single transferable 
+vote resists strategic voting social choice and welfare 
+ - 
+ john bartholdi iii craig tovey and michael trick the 
+computational difficulty of manipulating an election social 
+choice and welfare - 
+ avrim blum jeffrey jackson tuomas sandholm and 
+martin zinkevich preference elicitation and query learning 
+journal of machine learning research - 
+ wolfram conen and tuomas sandholm preference 
+elicitation in combinatorial auctions extended abstract in 
+proceedings of the acm conference on electronic 
+commerce acm-ec pages - 
+ vincent conitzer jerome lang and tuomas sandholm 
+how many candidates are needed to make elections hard to 
+manipulate in theoretical aspects of rationality and 
+knowledge tark pages - 
+ vincent conitzer and tuomas sandholm complexity of 
+manipulating elections with few candidates in proceedings 
+of the national conference on artificial intelligence 
+ aaai pages - 
+ vincent conitzer and tuomas sandholm vote elicitation 
+complexity and strategy-proofness in proceedings of the 
+national conference on artificial intelligence aaai 
+pages - 
+ sven de vries james schummer and rakesh v vohra on 
+ascending auctions for heterogeneous objects draft 
+ allan gibbard manipulation of voting schemes 
+econometrica - 
+ benoit hudson and tuomas sandholm effectiveness of 
+query types and policies for preference elicitation in 
+combinatorial auctions in international conference on 
+autonomous agents and multi-agent systems aamas 
+pages - 
+ e kushilevitz and n nisan communication complexity 
+cambridge university press 
+ sebasti´en lahaie and david parkes applying learning 
+algorithms to preference elicitation in proceedings of the 
+acm conference on electronic commerce 
+ noam nisan and ilya segal the communication 
+requirements of efficient allocations and supporting prices 
+journal of economic theory forthcoming 
+ david parkes ibundle an efficient ascending price bundle 
+auction in proceedings of the acm conference on 
+electronic commerce acm-ec pages - 
+ tuomas sandholm an implementation of the contract net 
+protocol based on marginal cost calculations in 
+proceedings of the national conference on artificial 
+intelligence aaai pages - 
+ tuomas sandholm and craig boutilier preference 
+elicitation in combinatorial auctions in peter cramton 
+yoav shoham and richard steinberg editors 
+combinatorial auctions chapter mit press 
+ paolo santi vincent conitzer and tuomas sandholm 
+towards a characterization of polynomial preference 
+elicitation with value queries in combinatorial auctions in 
+conference on learning theory colt pages - 
+ mark satterthwaite strategy-proofness and arrow s 
+conditions existence and correspondence theorems for 
+voting procedures and social welfare functions journal of 
+economic theory - 
+ ilya segal the communication requirements of social choice 
+rules and supporting budget sets draft presented at 
+the dimacs workshop on computational issues in 
+auction design rutgers university new jersey usa 
+ peter wurman and michael wellman akba a 
+progressive anonymous-price combinatorial auction in 
+proceedings of the acm conference on electronic 
+commerce acm-ec pages - 
+ a c yao some complexity questions related to distributed 
+computing in proceedings of the th acm symposium on 
+theory of computing stoc pages - 
+ martin zinkevich avrim blum and tuomas sandholm on 
+polynomial-time preference elicitation with value queries 
+in proceedings of the acm conference on electronic 
+commerce acm-ec pages - 
+ 

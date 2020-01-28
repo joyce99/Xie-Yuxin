@@ -1,0 +1,921 @@
+adaptive duty cycling for energy harvesting systems 
+jason hsu sadaf zahedi aman kansal mani srivastava 
+electrical engineering department 
+university of california los angeles 
+ jasonh kansal szahedi mbs   ee ucla edu 
+vijay raghunathan 
+nec labs america 
+princeton nj 
+vijay nec-labs com 
+abstract 
+harvesting energy from the environment is feasible in many 
+applications to ameliorate the energy limitations in sensor networks in 
+this paper we present an adaptive duty cycling algorithm that allows 
+energy harvesting sensor nodes to autonomously adjust their duty 
+cycle according to the energy availability in the environment the 
+algorithm has three objectives namely a achieving energy neutral 
+operation i e energy consumption should not be more than the energy 
+provided by the environment b maximizing the system performance 
+based on an application utility model subject to the above 
+energyneutrality constraint and c adapting to the dynamics of the energy 
+source at run-time we present a model that enables harvesting sensor 
+nodes to predict future energy opportunities based on historical data 
+we also derive an upper bound on the maximum achievable 
+performance assuming perfect knowledge about the future behavior of 
+the energy source our methods are evaluated using data gathered from 
+a prototype solar energy harvesting platform and we show that our 
+algorithm can utilize up to more environmental energy compared 
+to the case when harvesting-aware power management is not used 
+categories and subject descriptors 
+c computer systems organization computer 
+communication networks-distributed systems 
+general terms 
+algorithms design 
+ introduction 
+energy supply has always been a crucial issue in designing 
+battery-powered wireless sensor networks because the lifetime and 
+utility of the systems are limited by how long the batteries are able to 
+sustain the operation the fidelity of the data produced by a sensor 
+network begins to degrade once sensor nodes start to run out of 
+battery power therefore harvesting energy from the environment 
+has been proposed to supplement or completely replace battery 
+supplies to enhance system lifetime and reduce the maintenance cost 
+of replacing batteries periodically 
+however metrics for evaluating energy harvesting systems are 
+different from those used for battery powered systems 
+environmental energy is distinct from battery energy in two ways 
+first it is an inexhaustible supply which if appropriately used can 
+allow the system to last forever unlike the battery which is a limited 
+resource second there is an uncertainty associated with its 
+availability and measurement compared to the energy stored in the 
+battery which can be known deterministically thus power 
+management methods based on battery status are not always 
+applicable to energy harvesting systems in addition most power 
+management schemes designed for battery-powered systems only 
+account for the dynamics of the energy consumers e g cpu radio 
+but not the dynamics of the energy supply consequently battery 
+powered systems usually operate at the lowest performance level that 
+meets the minimum data fidelity requirement in order to maximize 
+the system life energy harvesting systems on the other hand can 
+provide enhanced performance depending on the available energy 
+in this paper we will study how to adapt the performance of the 
+available energy profile there exist many techniques to accomplish 
+performance scaling at the node level such as radio transmit power 
+adjustment dynamic voltage scaling and the use of low 
+power modes however these techniques require hardware 
+support and may not always be available on resource constrained 
+sensor nodes alternatively a common performance scaling 
+technique is duty cycling low power devices typically provide at 
+least one low power mode in which the node is shut down and the 
+power consumption is negligible in addition the rate of duty cycling 
+is directly related to system performance metrics such as network 
+latency and sampling frequency we will use duty cycle adjustment 
+as the primitive performance scaling technique in our algorithms 
+ related work 
+energy harvesting has been explored for several different types 
+of systems such as wearable computers sensor networks 
+ etc several technologies to extract energy from the environment 
+have been demonstrated including solar motion-based biochemical 
+vibration-based and others are being developed 
+ while several energy harvesting sensor node platforms 
+have been prototyped there is a need for systematic 
+power management techniques that provide performance guarantees 
+during system operation the first work to take environmental 
+energy into account for data routing was followed by 
+while these works did demonstrate that environment aware 
+decisions improve performance compared to battery aware decisions 
+their objective was not to achieve energy neutral operation our 
+proposed techniques attempt to maximize system performance while 
+maintaining energy-neutral operation 
+ system model 
+the energy usage considerations in a harvesting system vary 
+significantly from those in a battery powered system as mentioned 
+earlier we propose the model shown in figure for designing 
+energy management methods in a harvesting system the functions 
+of the various blocks shown in the figure are discussed below the 
+precise methods used in our system to achieve these functions will 
+be discussed in subsequent sections 
+harvested energy tracking this block represents the mechanisms 
+used to measure the energy received from the harvesting device 
+such as the solar panel such information is useful for determining 
+the energy availability profile and adapting system performance 
+based on it collecting this information requires that the node 
+hardware be equipped with the facility to measure the power 
+generated from the environment and the heliomote platform 
+we used for evaluating the algorithms has this capability 
+energy generation model for wireless sensor nodes with limited 
+storage and processing capabilities to be able to use the harvested 
+energy data models that represent the essential components of this 
+information without using extensive storage are required the 
+purpose of this block is to provide a model for the energy available 
+to the system in a form that may be used for making power 
+management decisions the data measured by the energy tracking 
+block is used here to predict future energy availability a good 
+prediction model should have a low prediction error and provide 
+predicted energy values for durations long enough to make 
+meaningful performance scaling decisions further for energy 
+sources that exhibit both long-term and short-term patterns e g 
+diurnal and climate variations vs weather patterns for solar energy 
+the model must be able to capture both characteristics such a model 
+can also use information from external sources such as local weather 
+forecast service to improve its accuracy 
+energy consumption model it is also important to have detailed 
+information about the energy usage characteristics of the system at 
+various performance levels for general applicability of our design 
+we will assume that only one sleep mode is available we assume 
+that the power consumption in the sleep and active modes is known 
+it may be noted that for low power systems with more advanced 
+capabilities such as dynamic voltage scaling dvs multiple low 
+power modes and the capability to shut down system components 
+selectively the power consumption in each of the states and the 
+resultant effect on application performance should be known to make 
+power management decisions 
+energy storage model this block represents the model for the 
+energy storage technology since all the generated energy may not be 
+used instantaneously the harvesting system will usually have some 
+energy storage technology storage technologies e g batteries and 
+ultra-capacitors are non-ideal in that there is some energy loss while 
+storing and retrieving energy from them these characteristics must be 
+known to efficiently manage energy usage and storage this block also 
+includes the system capability to measure the residual stored energy 
+most low power systems use batteries to store energy and provide 
+residual battery status this is commonly based on measuring the 
+battery voltage which is then mapped to the residual battery energy 
+using the known charge to voltage relationship for the battery 
+technology in use more sophisticated methods which track the flow of 
+energy into and out of the battery are also available 
+harvesting-aware power management the inputs provided by the 
+previously mentioned blocks are used here to determine the suitable 
+power management strategy for the system power management 
+could be carried to meet different objectives in different applications 
+for instance in some systems the harvested energy may marginally 
+supplement the battery supply and the objective may be to maximize 
+the system lifetime a more interesting case is when the harvested 
+energy is used as the primary source of energy for the system with 
+the objective of achieving indefinitely long system lifetime in such 
+cases the power management objective is to achieve energy neutral 
+operation in other words the system should only use as much 
+energy as harvested from the environment and attempt to maximize 
+performance within this available energy budget 
+ theoretically optimal power 
+management 
+we develop the following theory to understand the energy 
+neutral mode of operation let us define ps t as the energy harvested 
+from the environment at time t and the energy being consumed by 
+the load at that time is pc t further we model the non-ideal storage 
+buffer by its round-trip efficiency η strictly less than and a 
+constant leakage power pleak using this notation applying the rule 
+of energy conservation leads to the following inequality 
+ 
+ 
+t t t 
+s c c s leakp t p t dt p t p t dt p dtb η 
+ 
+− − − ≥ −∫ ∫ ∫ 
+where b is the initial battery level and the function x 
+ x if x 
+and zero otherwise 
+definition ρ σ σ function a non-negative continuous and 
+bounded function p t is said to be a ρ σ σ function if and only if 
+for any value of finite real number t the following are satisfied 
+ 
+t 
+t p t dt tρ σ ρ σ− ≤ ≤ ∫ 
+this function can be used to model both energy sources and loads 
+if the harvested energy profile ps t is a ρ σ σ function then the 
+average rate of available energy over long durations becomes ρ and 
+the burstiness is bounded by σ and σ similarly pc t can be modeled 
+as a ρ σ function when ρ and σ are used to place an upper bound 
+on power consumption the inequality on the right side while there are 
+no minimum power consumption constraints 
+the condition for energy neutrality equation leads to the 
+following theorem based on the energy production consumption and 
+energy buffer models discussed above 
+theorem energy neutral operation consider 
+a harvesting system in which the energy production profile is 
+characterized by a ρ σ σ function the load is characterized by 
+a ρ σ function and the energy buffer is characterized by 
+parameters η for storage efficiency and pleak for leakage power the 
+following conditions are sufficient for the system to achieve energy 
+neutrality 
+ρ ≤ ηρ − pleak 
+b ≥ ησ σ 
+b ≥ b 
+where b is the initial energy stored in the buffer and provides a 
+lower bound on the capacity of the energy buffer b the proof is 
+presented in our prior work 
+to adjust the duty cycle d using our performance scaling 
+algorithm we assume the following relation between duty cycle and 
+the perceived utility of the system to the user suppose the utility of 
+the application to the user is represented by u d when the system 
+operates at a duty cycle d then 
+min 
+ min max 
+ max 
+ 
+ 
+ 
+u d if d d 
+u d k d if d d d 
+u d k if d d 
+β 
+ 
+ ≤ ≤ 
+ 
+this is a fairly general and simple model and the specific values of 
+dmin and dmax may be determined as per application requirements as 
+an example consider a sensor node designed to detect intrusion across 
+a periphery in this case a linear increase in duty cycle translates into a 
+linear increase in the detection probability the fastest and the slowest 
+speeds of the intruders may be known leading to a minimum and 
+harvested energy 
+tracking 
+energy consumption 
+model 
+energy storage model 
+ 
+harvestingaware power 
+mangement 
+energy generation 
+model 
+load 
+figure system model for an energy harvesting system 
+ 
+maximum sensing delay tolerable which results in the relevant dmax 
+and dmin for the sensor node while there may be cases where the 
+relationship between utility and duty cycle may be non-linear in this 
+paper we restrict our focus on applications that follow this linear 
+model in view of the above models for the system components and 
+the required performance the objective of our power management 
+strategy is adjust the duty cycle d i dynamically so as to maximize 
+the total utility u d over a period of time while ensuring energy 
+neutral operation for the sensor node 
+before discussing the performance scaling methods for harvesting 
+aware duty cycle adaptation let us first consider the optimal power 
+management strategy that is possible for a given energy generation 
+profile for the calculation of the optimal strategy we assume 
+complete knowledge of the energy availability profile at the node 
+including the availability in the future the calculation of the optimal is 
+a useful tool for evaluating the performance of our proposed algorithm 
+this is particularly useful for our algorithm since no prior algorithms 
+are available to serve as a baseline for comparison 
+suppose the time axis is partitioned into discrete slots of duration 
+δt and the duty cycle adaptation calculation is carried out over a 
+window of nw such time slots we define the following energy profile 
+variables with the index i ranging over   nw ps i is the power 
+output from the harvested source in time slot i averaged over the slot 
+duration pc is the power consumption of the load in active mode and 
+d i is the duty cycle used in slot i whose value is to be determined 
+b i is the residual battery energy at the beginning of slot i following 
+this convention the battery energy left after the last slot in the window 
+is represented by b nw the values of these variables will depend 
+on the choice of d i 
+the energy used directly from the harvested source and the energy 
+stored and used from the battery must be accounted for differently 
+figure shows two possible cases for ps i in a time slot ps i may 
+either be less than or higher than pc as shown on the left and right 
+respectively when ps i is lower than pc some of the energy used by 
+the load comes from the battery while when ps i is higher than pc all 
+the energy used is supplied directly from the harvested source the 
+crosshatched area shows the energy that is available for storage into 
+the battery while the hashed area shows the energy drawn from the 
+battery we can write the energy used from the battery in any slot i as 
+ c cs s sb i b i td i p p i tp i d i td i p i pη η 
+ 
+− δ − − δ − − − 
+in equation the first term on the right hand side measures the 
+energy drawn from the battery when ps i pc the next term measures 
+the energy stored into the battery when the node is in sleep mode and 
+the last term measures the energy stored into the battery in active mode 
+if ps i pc for energy neutral operation we require the battery at the 
+end of the window of nw slots to be greater than or equal to the starting 
+battery clearly battery level will go down when the harvested energy 
+is not available and the system is operated from stored energy 
+however the window nw is judiciously chosen such that over that 
+duration we expect the environmental energy availability to complete 
+a periodic cycle for instance in the case of solar energy harvesting 
+nw could be chosen to be a twenty-four hour duration corresponding 
+to the diurnal cycle in the harvested energy this is an approximation 
+since an ideal choice of the window size would be infinite but a finite 
+size must be used for analytical tractability further the battery level 
+cannot be negative at any time and this is ensured by having a large 
+enough initial battery level b such that node operation is sustained 
+even in the case of total blackout during a window period stating the 
+above constraints quantitatively we can express the calculation of the 
+optimal duty cycles as an optimization problem below 
+ 
+max 
+wn 
+i 
+d i 
+ 
+∑ 
+ c s s s cb i b i td i p p i tp i d i td i p i pη η 
+ 
+⎡ ⎤ ⎡ ⎤− δ − − δ − − −⎣ ⎦ ⎣ ⎦ 
+ 
+ b b 
+ wb n b ≥ 
+min w i n d i d≥ ∀ ∈ 
+max w i n d i d≤ ∀ ∈ 
+the solution to the optimization problem yields the duty cycles 
+that must be used in every slot and the evolution of residual battery 
+over the course of nw slots note that while the constraints above 
+contain the non-linear function x 
+ the quantities occurring within 
+that function are all known constants the variable quantities occur 
+only in linear terms and hence the above optimization problem can 
+be solved using standard linear programming techniques available 
+in popular optimization toolboxes 
+ harvesting-aware power 
+management 
+we now present a practical algorithm for power management that 
+may be used for adapting the performance based on harvested energy 
+information this algorithm attempts to achieve energy neutral 
+operation without using knowledge of the future energy availability 
+and maximizes the achievable performance within that constraint 
+the harvesting-aware power management strategy consists of 
+three parts the first part is an instantiation of the energy generation 
+model which tracks past energy input profiles and uses them to 
+predict future energy availability the second part computes the 
+optimal duty cycles based on the predicted energy and this step 
+uses our computationally tractable method to solve the optimization 
+problem the third part consists of a method to dynamically adapt 
+the duty cycle in response to the observed energy generation profile 
+in real time this step is required since the observed energy 
+generation may deviate significantly from the predicted energy 
+availability and energy neutral operation must be ensured with the 
+actual energy received rather than the predicted values 
+ energy prediction model 
+we use a prediction model based on exponentially weighted 
+moving-average ewma the method is designed to exploit the 
+diurnal cycle in solar energy but at the same time adapt to the seasonal 
+variations a historical summary of the energy generation profile is 
+maintained for this purpose while the storage data size is limited to a 
+vector length of nw values in order to minimize the memory overheads 
+of the power management algorithm the window size is effectively 
+infinite as each value in the history window depends on all the 
+observed data up to that instant the window size is chosen to be 
+hours and each time slot is taken to be minutes as the variation in 
+generated power by the solar panel using this setting is less than 
+between each adjacent slots this yields nw smaller slot 
+durations may be used at the expense of a higher nw 
+the historical summary maintained is derived as follows on a 
+typical day we expect the energy generation to be similar to the energy 
+generation at the same time on the previous days the value of energy 
+generated in a particular slot is maintained as a weighted average of the 
+energy received in the same time-slot during all observed days the 
+weights are exponential resulting in decaying contribution from older 
+figure two possible cases for energy calculations 
+slot i slot k 
+pc 
+pc 
+p i 
+p i 
+active sleep 
+ 
+data more specifically the historical average maintained for each slot 
+is given by 
+ k k kx x xα α− − 
+where α is the value of the weighting factor kx is the observed value 
+of energy generated in the slot and kx − 
+is the previously stored 
+historical average in this model the importance of each day relative to 
+the previous one remains constant because the same weighting factor 
+was used for all days 
+the average value derived for a slot is treated as an estimate of 
+predicted energy value for the slot corresponding to the subsequent 
+day this method helps the historical average values adapt to the 
+seasonal variations in energy received on different days one of the 
+parameters to be chosen in the above prediction method is the 
+parameter α which is a measure of rate of shift in energy pattern over 
+time since this parameter is affected by the characteristics of the 
+energy and sensor node location the system should have a training 
+period during which this parameter will be determined to determine a 
+good value of α we collected energy data over days and compared 
+the average error of the prediction method for various values of α the 
+error based on the different values of α is shown in figure this 
+curve suggests an optimum value of α for minimum prediction 
+error and this value will be used in the remainder of this paper 
+ low-complexity solution 
+the energy values predicted for the next window of nw slots are 
+used to calculated the desired duty cycles for the next window 
+assuming the predicted values match the observed values in the future 
+since our objective is to develop a practical algorithm for embedded 
+computing systems we present a simplified method to solve the linear 
+programming problem presented in section to this end we define 
+the sets s and d as follows 
+ 
+ 
+ 
+ 
+s c 
+c s 
+s i p i p 
+d i p p i 
+ − ≥ 
+ − 
+the two sets differ by the condition that whether the node operation 
+can be sustained entirely from environmental energy in the case that 
+energy produced from the environment is not sufficient battery will be 
+discharged to supplement the remaining energy next we sum up both 
+sides of over the entire nw window and rewrite it with the new 
+notation 
+ 
+ 
+ 
+nw nw nw 
+i i c s s s s c 
+i i d i i i s 
+b b td i p p i tp i tp i d i td i p i pη η η 
+ ∈ ∈ 
+− δ − − δ δ − δ −∑ ∑ ∑ ∑ ∑ 
+the term on the left hand side is actually the battery energy used over 
+the entire window of nw slots which can be set to for energy neutral 
+operation after some algebraic manipulation this yields 
+ 
+ 
+ 
+nw 
+c 
+s s c 
+i i d i s 
+p 
+p i d i p i p d i 
+η η ∈ ∈ 
+⎛ ⎞⎛ ⎞ 
+ − ⎜ ⎟⎜ ⎟ 
+⎝ ⎠⎝ ⎠ 
+∑ ∑ ∑ 
+the term on the left hand side is the total energy received in nw 
+slots the first term on the right hand side can be interpreted as the 
+total energy consumed during the d slots and the second term is the 
+total energy consumed during the s slots we can now replace three 
+constraints and in the original problem with restating 
+the optimization problem as follows 
+ 
+max 
+wn 
+i 
+d i 
+ 
+∑ 
+ 
+ 
+ 
+nw 
+c 
+s s c 
+i i d i s 
+p 
+p i d i p i p d i 
+η η ∈ ∈ 
+⎛ ⎞⎛ ⎞ 
+ − ⎜ ⎟⎜ ⎟ 
+⎝ ⎠⎝ ⎠ 
+∑ ∑ ∑ 
+min 
+max 
+d i d nw 
+d i d nw 
+i 
+i 
+≥ ∀ ∈ 
+≤ ∀ ∈ 
+this form facilitates a low complexity solution that doesn t require 
+a general linear programming solver since our objective is to 
+maximize the total system utility it is preferable to set the duty cycle to 
+dmin for time slots where the utility per unit energy is the least on the 
+other hand we would also like the time slots with the highest ps to 
+operate at dmax because of better efficiency of using energy directly 
+from the energy source combining these two characteristics we 
+define the utility co-efficient for each slot i as follows 
+ 
+ 
+ 
+c 
+c 
+s 
+p for i s 
+w i p 
+p i for i d 
+η η 
+∈⎧ 
+⎪ 
+ ⎛ ⎞⎛ ⎞⎨ 
+ − ∈⎜ ⎟⎜ ⎟⎪ 
+⎝ ⎠⎝ ⎠⎩ 
+where w i is a representation of how efficient the energy usage in a 
+particular time slot i is a larger w i indicates more system utility per 
+unit energy in slot i and vice versa the algorithm starts by assuming 
+d i dmin for i  nw because of the minimum duty cycle 
+requirement and computes the remaining system energy r by 
+ 
+ 
+ 
+nw 
+c 
+s s c 
+i i d i s 
+p 
+r p i d i p i p d i 
+η η ∈ ∈ 
+⎛ ⎞⎛ ⎞ 
+ − − −⎜ ⎟⎜ ⎟ 
+⎝ ⎠⎝ ⎠ 
+∑ ∑ ∑ 
+a negative r concludes that the optimization problem is infeasible 
+meaning the system cannot achieve energy neutrality even at the 
+minimum duty cycle in this case the system designer is responsible 
+for increasing the environment energy availability e g by using larger 
+solar panels if r is positive it means the system has excess energy 
+that is not being used and this may be allocated to increase the duty 
+cycle beyond dmin for some slots since our objective is to maximize 
+the total system utility the most efficient way to allocate the excess 
+energy is to assign duty cycle dmax to the slots with the highest w i 
+so the coefficients w i are arranged in decreasing order and duty 
+cycle dmax is assigned to the slots beginning with the largest 
+coefficients until the excess energy available r computed by in 
+every iteration is insufficient to assign dmax to another slot the 
+remaining energy rlast is used to increase the duty cycle to some 
+value between dmin and dmax in the slot with the next lower coefficient 
+denoting this slot with index j the duty cycle is given by 
+d j 
+min 
+ 
+ 
+last c 
+last 
+s c s 
+r p if j d 
+dr 
+if j s 
+p j p p jη 
+∈⎧ ⎫ 
+⎪ ⎪ 
+ ⎨ ⎬ 
+∈⎪ ⎪− −⎩ ⎭ 
+the above solution to the optimization problem requires only simple 
+arithmetic calculations and one sorting step which can be easily 
+implemented on an embedded platform as opposed to implementing a 
+general linear program solver 
+ slot-by-slot continual duty cycle adaptiation 
+the observed energy values may vary greatly from the predicted 
+ones such as due to the effect of clouds or other sudden changes it is 
+thus important to adapt the duty cycles calculated using the predicted 
+values to the actual energy measurements in real time to ensure energy 
+neutrality denote the initial duty cycle assignments for each time slot i 
+computed using the predicted energy values as d i nw first 
+we compute the difference between predicted power level ps i and 
+actual power level observed ps i in every slot i then the excess 
+energy in slot i denoted by x can be obtained as follows 
+ 
+ 
+ 
+s s s c 
+s s s s s c 
+p i p i if p i p 
+x 
+p i p i d i p i p i if p i p 
+η 
+− ⎧ 
+⎪ 
+ ⎨ 
+− − − − ≤⎪ 
+⎩ 
+ 
+ 
+ 
+ 
+ 
+ 
+alpha 
+avgerror ma 
+figure choice of prediction parameter 
+ 
+the upper term accounts for the energy difference when actual 
+received energy is more than the power drawn by the load on the 
+other hand if the energy received is less than pc we will need to 
+account for the extra energy used from the battery by the load which is 
+a function of duty cycle used in time slot i and battery efficiency factor 
+η when more energy is received than predicted x is positive and that 
+excess energy is available for use in the subsequent solutes while if x 
+is negative that energy must be compensated from subsequent slots 
+case i x in this case we want to reduce the duty cycles used in 
+the future slots in order to make up for this shortfall of energy since 
+our objective function is to maximize the total system utility we have 
+to reduce the duty cycles for time slots with the smallest normalized 
+utility coefficient w i this is accomplished by first sorting the 
+coefficient w j where j i in decreasing order and then iteratively 
+reducing dj to dmin until the total reduction in energy consumption is 
+the same as x 
+case ii x here we want to increase the duty cycles used in the 
+future to utilize this excess energy we received in recent time slot in 
+contrast to case i the duty cycles of future time slots with highest 
+utility coefficient w i should be increased first in order to maximize 
+the total system utility 
+suppose the duty cycle is changed by d in slot j define a quantity 
+r j d as follows 
+⎪ 
+⎩ 
+⎪ 
+⎨ 
+⎧ 
+ ⎟ 
+⎟ 
+⎠ 
+⎞ 
+⎜ 
+⎜ 
+⎝ 
+⎛ 
+⎟⎟ 
+⎠ 
+⎞ 
+⎜⎜ 
+⎝ 
+⎛ 
+− 
+ ⋅ 
+ 
+lji 
+l 
+ljl 
+ppifp 
+p 
+d 
+ppifp 
+djr 
+ 
+ 
+ 
+ d 
+ 
+ηη 
+the precise procedure to adapt the duty cycle to account for the 
+above factors is presented in algorithm this calculation is 
+performed at the end of every slot to set the duty cycle for the next 
+slot we claim that our duty cycling algorithm is energy neutral 
+because an surplus of energy at the previous time slot will always 
+translate to additional energy opportunity for future time slots and 
+vice versa the claim may be violated in cases of severe energy 
+shortages especially towards the end of window for example a large 
+deficit in energy supply can t be restored if there is no future energy 
+input until the end of the window in such case this offset will be 
+carried over to the next window so that long term energy neutrality is 
+still maintained 
+ evaluation 
+our adaptive duty cycling algorithm was evaluated using an actual 
+solar energy profile measured using a sensor node called heliomote 
+capable of harvesting solar energy this platform not only tracks 
+the generated energy but also the energy flow into and out of the 
+battery to provide an accurate estimate of the stored energy 
+the energy harvesting platform was deployed in a residential area 
+in los angeles from the beginning of june through the middle of 
+august for a total of days the sensor node used is a mica mote 
+running at a fixed duty cycle with an initially full battery battery 
+voltage and net current from the solar panels are sampled at a period of 
+ seconds the energy generation profile for that duration measured 
+by tracking the output current from the solar cell is shown in figure 
+both on continuous and diurnal scales we can observe that although 
+the energy profile varies from day to day it still exhibits a general 
+pattern over several days 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+day 
+ma 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+hour 
+ma 
+ prediction model 
+we first evaluate the performance of the prediction model which 
+is judged by the amount of absolute error it made between the 
+predicted and actual energy profile figure shows the average error 
+of each time slot in ma over the entire days generally the amount 
+of error is larger during the day time because that s when the factor of 
+weather can cause deviations in received energy while the prediction 
+made for night time is mostly correct 
+ adaptive duty cycling algorithm 
+prior methods to optimize performance while achieving energy 
+neutral operation using harvested energy are scarce instead we 
+compare the performance of our algorithm against two extremes the 
+theoretical optimal calculated assuming complete knowledge about 
+future energy availability and a simple approach which attempts to 
+achieve energy neutrality using a fixed duty cycle without accounting 
+for battery inefficiency 
+the optimal duty cycles are calculated for each slot using the 
+future knowledge of actual received energy for that slot for the simple 
+approach the duty cycle is kept constant within each day and is 
+figure solar energy profile left continuous right diurnal 
+input d initial duty cycle x excess energy due to error in the 
+prediction p predicted energy profile i index of current time slot 
+output d updated duty cycles in one or more subsequent slots 
+adaptdutycycle 
+iteration at each time slot do 
+if x 
+wsorted w nw sorted in decending order 
+q indices of wsorted 
+for k to q 
+if q k ≤ i or d q k ≥ dmax slot is already passed 
+continue 
+if r q k dmax − d q k x 
+d q k dmax 
+x x − r j dmax − d q k 
+else 
+ x insufficient to increase duty cycle to dmax 
+if p q k pl 
+d q k d q k x pl 
+else 
+d q k d q k 
+ c s 
+x 
+p p q kη η − 
+if x 
+wsorted w nw sorted in ascending order 
+q indices of wsorted 
+for k to q 
+if q k ≤ i or d q k ≤ dmin 
+continue 
+if r q k dmax − d q k x 
+d q k dmin 
+x x − r j dmin − d q k 
+else 
+if p q k pc 
+d q k d q k x pc 
+else 
+d q k d q k 
+ c s 
+x 
+p p q kη η − 
+algorithm pseudocode for the duty-cycle adaptation algorithm 
+figure average predictor error in ma 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+time h 
+abserror ma 
+ 
+computed by taking the ratio of the predicted energy availability and 
+the maximum usage and this guarantees that the senor node will never 
+deplete its battery running at this duty cycle 
+ 
+ s w c 
+i nw 
+d p i n pη 
+∈ 
+ ⋅ ⋅∑ 
+we then compare the performance of our algorithm to the two 
+extremes with varying battery efficiency figure shows the results 
+using dmax and dmin the battery efficiency was varied 
+from to on the x-axis and solar energy utilizations achieved by 
+the three algorithms are shown on the y-axis it shows the fraction of 
+net received energy that is used to perform useful work rather than lost 
+due to storage inefficiency 
+as can be seen from the figure battery efficiency factor has great 
+impact on the performance of the three different approaches the three 
+approaches all converges to utilization if we have a perfect 
+battery η that is energy is not lost by storing it into the batteries 
+when battery inefficiency is taken into account both the adaptive and 
+optimal approach have much better solar energy utilization rate than 
+the simple one additionally the result also shows that our adaptive 
+duty cycle algorithm performs extremely close to the optimal 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+eta-batery roundtrip efficiency 
+solarenergyutilization 
+optimal 
+adaptive 
+simple 
+we also compare the performance of our algorithm with different 
+values of dmin and dmax for η which is typical of nimh batteries 
+these results are shown in table as the percentage of energy saved 
+by the optimal and adaptive approaches and this is the energy which 
+would normally be wasted in the simple approach the figures and 
+table indicate that our real time algorithm is able to achieve a 
+performance very close to the optimal feasible in addition these 
+results show that environmental energy harvesting with appropriate 
+power management can achieve much better utilization of the 
+environmental energy 
+dmax 
+dmin 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+adaptive 
+optimal 
+ conclusions 
+we discussed various issues in power management for systems 
+powered using environmentally harvested energy specifically we 
+designed a method for optimizing performance subject to the 
+constraint of energy neutral operation we also derived a theoretically 
+optimal bound on the performance and showed that our proposed 
+algorithm operated very close to the optimal the proposals were 
+evaluated using real data collected using an energy harvesting sensor 
+node deployed in an outdoor environment 
+our method has significant advantages over currently used 
+methods which are based on a conservative estimate of duty cycle and 
+can only provide sub-optimal performance however this work is only 
+the first step towards optimal solutions for energy neutral operation it 
+is designed for a specific power scaling method based on adapting the 
+duty cycle several other power scaling methods such as dvs 
+submodule power switching and the use of multiple low power modes are 
+also available it is thus of interest to extend our methods to exploit 
+these advanced capabilities 
+ acknowledgements 
+this research was funded in part through support provided by 
+darpa under the pac c program the national science foundation 
+ nsf under award and the ucla center for embedded 
+networked sensing cens any opinions findings conclusions or 
+recommendations expressed in this paper are those of the authors and 
+do not necessarily reflect the views of darpa nsf or cens 
+references 
+ r ramanathan and r hain toplogy control of multihop wireless 
+networks using transmit power adjustment in proc infocom vol 
+ - pp - march 
+ t a pering t d burd and r w brodersen the simulation and 
+evaluation of dynamic voltage scaling algorithms in proc acm 
+islped pp - 
+ l benini and g de micheli dynamic power management design 
+techniques and cad tools kluwer academic publishers norwell ma 
+ 
+ john kymisis clyde kendall joseph paradiso and neil gershenfeld 
+parasitic power harvesting in shoes in iswc pages - ieee 
+computer society press october 
+ nathan s shenck and joseph a paradiso energy scavenging with 
+shoemounted piezoelectrics ieee micro ñ may-june 
+ t starner human-powered wearable computing ibm systems journal 
+ - 
+ mohammed rahimi hardik shah gaurav s sukhatme john 
+heidemann and d estrin studying the feasibility of energy harvesting in 
+a mobile sensor network in icra 
+ chrismelhuish the ecobot project www ias uwe ac uk energy 
+autonomy ecobot web page html 
+ jan m rabaey m josie ammer julio l da silva jr danny patel and 
+shad roundy picoradio supports ad-hoc ultra-low power wireless 
+networking ieee computer pages - july 
+ joseph a paradiso and mark feldmeier a compact wireless 
+selfpowered pushbutton controller in acm ubicomp pages - 
+atlanta ga usa september springer-verlag berlin heidelberg 
+ se wright ds scott jb haddow andma rosen the upper limit to solar 
+energy conversion volume pages - july 
+ darpa energy harvesting projects 
+http www darpa mil dso trans energy projects html 
+ werner weber ambient intelligence industrial research on a visionary 
+concept in proceedings of the international symposium on low 
+power electronics and design pages - acm press 
+ v raghunathan a kansal j hsu j friedman and mb srivastava 
+ design considerations for solar energy harvesting wireless embedded 
+systems ipsn spots april 
+ xiaofan jiang joseph polastre david culler perpetual environmentally 
+powered sensor networks ipsn spots april - 
+ chulsung park pai h chou and masanobu shinozuka duranode 
+wireless networked sensor for structural health monitoring to appear 
+in proceedings of the th ieee international conference on sensors 
+irvine ca oct - nov 
+ aman kansal and mani b srivastava an environmental energy 
+harvesting framework for sensor networks in international symposium on 
+low power electronicsand design pages - acm press 
+ thiemo voigt hartmut ritter and jochen schiller utilizing solar power 
+in wireless sensor networks in lcn 
+ a kansal j hsu s zahedi and m b srivastava power management 
+in energy harvesting sensor networks technical report 
+tr-ucla-nesl - networked and embedded systems laboratory ucla 
+march 
+figure duty cycles achieved with respect to η 
+table energy saved by adaptive and optimal approach 
+ 

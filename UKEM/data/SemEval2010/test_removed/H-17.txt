@@ -1,0 +1,1085 @@
+pruning policies for two-tiered inverted index 
+with correctness guarantee 
+alexandros ntoulas 
+microsoft search labs 
+ la avenida 
+mountain view ca usa 
+antoulas microsoft com 
+junghoo cho† 
+ucla computer science dept 
+boelter hall 
+los angeles ca usa 
+cho cs ucla edu 
+abstract 
+the web search engines maintain large-scale inverted indexes 
+which are queried thousands of times per second by users eager 
+for information in order to cope with the vast amounts of query 
+loads search engines prune their index to keep documents that are 
+likely to be returned as top results and use this pruned index to 
+compute the first batches of results while this approach can 
+improve performance by reducing the size of the index if we compute 
+the top results only from the pruned index we may notice a 
+significant degradation in the result quality if a document should be in 
+the top results but was not included in the pruned index it will be 
+placed behind the results computed from the pruned index given 
+the fierce competition in the online search market this phenomenon 
+is clearly undesirable 
+in this paper we study how we can avoid any degradation of 
+result quality due to the pruning-based performance optimization 
+while still realizing most of its benefit our contribution is a 
+number of modifications in the pruning techniques for creating the 
+pruned index and a new result computation algorithm that 
+guarantees that the top-matching pages are always placed at the top 
+search results even though we are computing the first batch from 
+the pruned index most of the time we also show how to determine 
+the optimal size of a pruned index and we experimentally evaluate 
+our algorithms on a collection of million web pages 
+categories and subject descriptors 
+h information storage and retrieval content analysis 
+and indexing h information storage and retrieval 
+information search and retrieval 
+general terms 
+algorithms measuring performance design experimentation 
+ introduction 
+the amount of information on the web is growing at a prodigious 
+rate according to a recent study it is estimated that the 
+web currently consists of more than billion pages due to this 
+immense amount of available information the users are becoming 
+more and more dependent on the web search engines for locating 
+relevant information on the web typically the web search 
+engines similar to other information retrieval applications utilize a 
+data structure called inverted index an inverted index provides for 
+the efficient retrieval of the documents or web pages that contain 
+a particular keyword 
+in most cases a query that the user issues may have thousands 
+or even millions of matching documents in order to avoid 
+overwhelming the users with a huge amount of results the search 
+engines present the results in batches of to relevant documents 
+the user then looks through the first batch of results and if she 
+doesn t find the answer she is looking for she may potentially 
+request to view the next batch or decide to issue a new query 
+a recent study indicated that approximately of the 
+users examine at most the first batches of the results that is 
+ of the users typically view at most to results for every 
+query that they issue to a search engine at the same time given the 
+size of the web the inverted index that the search engines maintain 
+can grow very large since the users are interested in a small 
+number of results and thus are viewing a small portion of the index for 
+every query that they issue using an index that is capable of 
+returning all the results for a query may constitute a significant waste 
+in terms of time storage space and computational resources which 
+is bound to get worse as the web grows larger over time 
+one natural solution to this problem is to create a small index on 
+a subset of the documents that are likely to be returned as the top 
+results by using for example the pruning techniques in and 
+compute the first batch of answers using the pruned index while 
+this approach has been shown to give significant improvement in 
+performance it also leads to noticeable degradation in the quality of 
+the search results because the top answers are computed only from 
+the pruned index that is even if a page should be placed as 
+the top-matching page according to a search engine s ranking 
+metric the page may be placed behind the ones contained in the pruned 
+index if the page did not become part of the pruned index for 
+various reasons given the fierce competition among search 
+engines today this degradation is clearly undesirable and needs to 
+be addressed if possible 
+in this paper we study how we can avoid any degradation of 
+search quality due to the above performance optimization while 
+still realizing most of its benefit that is we present a number of 
+simple yet important changes in the pruning techniques for 
+creating the pruned index our main contribution is a new answer 
+computation algorithm that guarantees that the top-matching pages 
+ according to the search-engine s ranking metric are always placed 
+at the top of search results even though we are computing the first 
+batch of answers from the pruned index most of the time these 
+enhanced pruning techniques and answer-computation algorithms 
+are explored in the context of the cluster architecture commonly 
+employed by today s search engines finally we study and present 
+how search engines can minimize the operational cost of answering 
+queries while providing high quality search results 
+if if if 
+if 
+if 
+if 
+if 
+ip 
+ip 
+ip 
+ip 
+ip 
+ip 
+ queries sec queries sec 
+ queries sec 
+ queries sec 
+ nd tier 
+ st tier 
+ a b 
+figure a search engine replicates its full index if to 
+increase query-answering capacity b in the st 
+tier small 
+pindexes ip handle most of the queries when ip cannot answer 
+a query it is redirected to the nd 
+tier where the full index if 
+is used to compute the answer 
+ cluster architecture and cost 
+savings from a pruned index 
+typically a search engine downloads documents from the web 
+and maintains a local inverted index that is used to answer queries 
+quickly 
+inverted indexes assume that we have collected a set of 
+documents d d dm and that we have extracted all the 
+terms t t tn from the documents for every single 
+term ti ∈ t we maintain a list i ti of document ids that contain 
+ti every entry in i ti is called a posting and can be extended to 
+include additional information such as how many times ti appears 
+in a document the positions of ti in the document whether ti is 
+bold italic etc the set of all the lists i i t i tn is 
+our inverted index 
+ two-tier index architecture 
+search engines are accepting an enormous number of queries 
+every day from eager users searching for relevant information for 
+example google is estimated to answer more than million user 
+queries per day in order to cope with this huge query load search 
+engines typically replicate their index across a large cluster of 
+machines as the following example illustrates 
+example consider a search engine that maintains a cluster of 
+machines as in figure a the size of its full inverted index if 
+is larger than what can be stored in a single machine so each copy 
+of if is stored across four different machines we also suppose 
+that one copy of if can handle the query load of queries sec 
+assuming that the search engine gets queries sec it needs 
+to replicate if five times to handle the load overall the search 
+engine needs to maintain × machines in its cluster 
+while fully replicating the entire index if multiple times is a 
+straightforward way to scale to a large number of queries typical 
+query loads at search engines exhibit certain localities allowing for 
+significant reduction in cost by replicating only a small portion of 
+the full index in principle this is typically done by pruning a full 
+index if to create a smaller pruned index or p-index ip which 
+contains a subset of the documents that are likely to be returned as 
+top results 
+given the p-index search engines operate by employing a 
+twotier index architecture as we show in figure b all incoming 
+queries are first directed to one of the p-indexes kept in the st 
+tier 
+in the cases where a p-index cannot compute the answer e g was 
+unable to find enough documents to return to the user the query 
+is answered by redirecting it to the nd 
+tier where we maintain 
+a full index if the following example illustrates the potential 
+reduction in the query-processing cost by employing this two-tier 
+index architecture 
+example assume the same parameter settings as in example 
+that is the search engine gets a query load of queries sec 
+algorithm computation of answer with correctness guarantee 
+input q t tn i i k where 
+ t tn keywords in the query 
+ i i k range of the answer to return 
+procedure 
+ a c computeanswer q ip 
+ if c then 
+ return a 
+ else 
+ a computeanswer q if 
+ return a 
+figure computing the answer under the two-tier 
+architecture with the result correctness guarantee 
+and every copy of an index both the full if and p-index ip can 
+handle up to queries sec also assume that the size of ip is 
+one fourth of if and thus can be stored on a single machine 
+finally suppose that the p-indexes can handle of the user queries 
+by themselves and only forward the remaining queries to if 
+under this setting since all sec user queries are first directed 
+to a p-index five copies of ip are needed in the st 
+tier for the 
+ nd 
+tier since or queries sec are forwarded we need 
+to maintain one copy of if to handle the load overall we need 
+a total of machines five machines for the five copies of ip and 
+four machines for one copy of if compared to example this 
+is more than reduction in the number of machines 
+the above example demonstrates the potential cost saving 
+achieved by using a p-index however the two-tier architecture 
+may have a significant drawback in terms of its result quality 
+compared to the full replication of if given the fact that the p-index 
+contains only a subset of the data of the full index it is possible that 
+for some queries the p-index may not contain the top-ranked 
+document according to the particular ranking criteria used by the search 
+engine and fail to return it as the top page leading to noticeable 
+quality degradation in search results given the fierce competition 
+in the online search market search engine operators desperately try 
+to avoid any reduction in search quality in order to maximize user 
+satisfaction 
+ correctness guarantee under two-tier 
+architecture 
+how can we avoid the potential degradation of search quality 
+under the two-tier architecture our basic idea is straightforward 
+we use the top-k result from the p-index only if we know for sure 
+that the result is the same as the top-k result from the full index 
+the algorithm in figure formalizes this idea in the algorithm 
+when we compute the result from ip step we compute not 
+only the top-k result a but also the correctness indicator function 
+c defined as follows 
+definition correctness indicator function given a query q 
+the p-index ip returns the answer a together with a correctness 
+indicator function c c is set to if a is guaranteed to be identical 
+ i e same results in the same order to the result computed from 
+the full index if if it is possible that a is different c is set to 
+note that the algorithm returns the result from ip step only 
+when it is identical to the result from if condition c in 
+step otherwise the algorithm recomputes and returns the 
+result from the full index if step therefore the algorithm is 
+guaranteed to return the same result as the full replication of if all 
+the time 
+now the real challenge is to find out how we can compute 
+the correctness indicator function c and how we should prune 
+the index to make sure that the majority of queries are handled by 
+ip alone 
+question how can we compute the correctness indicator 
+function c 
+a straightforward way to calculate c is to compute the top-k 
+answer both from ip and if and compare them this naive solution 
+however incurs a cost even higher than the full replication of if 
+because the answers are computed twice once from ip and once 
+from if is there any way to compute the correctness indicator 
+function c only from ip without computing the answer from if 
+question how should we prune if to ip to realize the maximum 
+cost saving 
+the effectiveness of algorithm critically depends on how 
+often the correctness indicator function c is evaluated to be if 
+c for all queries for example the answers to all queries will be 
+computed twice once from ip step and once from if step 
+so the performance will be worse than the full replication of if 
+what will be the optimal way to prune if to ip such that c 
+for a large fraction of queries in the next few sections we try to 
+address these questions 
+ optimal size of the p-index 
+intuitively there exists a clear tradeoff between the size of ip 
+and the fraction of queries that ip can handle when ip is large and 
+has more information it will be able to handle more queries but 
+the cost for maintaining and looking up ip will be higher when 
+ip is small on the other hand the cost for ip will be smaller 
+but more queries will be forwarded to if requiring us to maintain 
+more copies of if given this tradeoff how should we determine 
+the optimal size of ip in order to maximize the cost saving to 
+find the answer we start with a simple example 
+example again consider a scenario similar to example 
+where the query load is queries sec each copy of an index 
+can handle queries sec and the full index spans across 
+machines but now suppose that if we prune if by to ip i e 
+the size of ip is of if ip can handle of the queries 
+ i e c for of the queries also suppose that if if is 
+pruned by to ip ip can handle of the queries which 
+one of the ip ip is preferable for the st 
+-tier index 
+to find out the answer we first compute the number of machines 
+needed when we use ip for the st 
+tier at the st 
+tier we need 
+copies of ip to handle the query load of queries sec since 
+the size of ip is of if that requires machines one copy of 
+ip requires one machine therefore the total number of machines 
+required for the st 
+tier is × copies of ip with machine 
+per copy also since ip can handle of the queries the nd 
+tier has to handle queries sec of the queries sec 
+so we need a total of × machines for the nd 
+tier copies 
+of if with machines per copy overall when we use ip for the 
+ st 
+tier we need machines to handle the load we 
+can do similar analysis when we use ip and see that a total of 
+machines are needed when ip is used given this result we can 
+conclude that using ip is preferable 
+the above example shows that the cost of the two-tier 
+architecture depends on two important parameters the size of the p-index 
+and the fraction of the queries that can be handled by the st 
+tier 
+index alone we use s to denote the size of the p-index relative to 
+if i e if s for example the p-index is of the size of 
+if we use f s to denote the fraction of the queries that a p-index 
+of size s can handle i e if f s of the queries return 
+the value c from ip in general we can expect that f s will 
+increase as s gets larger because ip can handle more queries as its 
+size grows in figure we show an example graph of f s over s 
+given the notation we can state the problem of p-index-size 
+optimization as follows in formulating the problem we assume that 
+the number of machines required to operate a two-tier architecture 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionofqueriesguaranteed-f s 
+fraction of index - s 
+fraction of queries guaranteed per fraction of index 
+optimal size s 
+figure example function showing the fraction of guaranteed 
+queries f s at a given size s of the p-index 
+is roughly proportional to the total size of the indexes necessary to 
+handle the query load 
+problem optimal index size given a query load q and the 
+function f s find the optimal p-index size s that minimizes the 
+total size of the indexes necessary to handle the load q 
+the following theorem shows how we can determine the optimal 
+index size 
+theorem the cost for handling the query load q is minimal 
+when the size of the p-index s satisfies d f s 
+d s 
+ 
+proof the proof of this and the following theorems is omitted due 
+to space constraints 
+this theorem shows that the optimal point is when the slope of 
+the f s curve is for example in figure the optimal size 
+is when s note that the exact shape of the f s graph 
+may vary depending on the query load and the pruning policy for 
+example even for the same p-index if the query load changes 
+significantly fewer or more queries may be handled by the p-index 
+decreasing or increasing f s similarly if we use an effective 
+pruning policy more queries will be handled by ip than when we 
+use an ineffective pruning policy increasing f s therefore the 
+function f s and the optimal-index size may change significantly 
+depending on the query load and the pruning policy in our later 
+experiments however we find that even though the shape of the f s 
+graph changes noticeably between experiments the optimal index 
+size consistently lies between - in most experiments 
+ pruning policies 
+in this section we show how we should prune the full index if 
+to ip so that we can compute the correctness indicator function 
+c from ip itself and we can handle a large fraction of queries 
+by ip in designing the pruning policies we note the following two 
+localities in the users search behavior 
+ keyword locality although there are many different words 
+in the document collection that the search engine indexes a 
+few popular keywords constitute the majority of the query 
+loads this keyword locality implies that the search engine 
+will be able to answer a significant fraction of user queries 
+even if it can handle only these few popular keywords 
+ document locality even if a query has millions of 
+matching documents users typically look at only the first few 
+results thus as long as search engines can compute the 
+first few top-k answers correctly users often will not notice 
+that the search engine actually has not computed the correct 
+answer for the remaining results unless the users explicitly 
+request them 
+based on the above two localities we now investigate two 
+different types of pruning policies a keyword pruning policy which 
+takes advantage of the keyword locality by pruning the whole 
+inverted list i ti for unpopular keywords ti s and a document 
+pruning policy which takes advantage of the document locality by 
+keeping only a few postings in each list i ti which are likely to 
+be included in the top-k results 
+as we discussed before we need to be able to compute the 
+correctness indicator function from the pruned index alone in order to 
+provide the correctness guarantee since the computation of 
+correctness indicator function may critically depend on the particular 
+ranking function used by a search engine we first clarify our 
+assumptions on the ranking function 
+ assumptions on ranking function 
+consider a query q t t tw that contains a subset 
+of the index terms the goal of the search engine is to return the 
+documents that are most relevant to query q this is done in two 
+steps first we use the inverted index to find all the documents that 
+contain the terms in the query second once we have the 
+relevant documents we calculate the rank or score of each one of the 
+documents with respect to the query and we return to the user the 
+documents that rank the highest 
+most of the major search engines today return documents 
+containing all query terms i e they use and-semantics in order to 
+make our discussions more concise we will also assume the 
+popular and-semantics while answering a query it is straightforward 
+to extend our results to or-semantics as well the exact ranking 
+function that search engines employ is a closely guarded secret 
+what is known however is that the factors in determining the 
+document ranking can be roughly categorized into two classes 
+query-dependent relevance this particular factor of relevance 
+captures how relevant the query is to every document at a high 
+level given a document d for every term ti a search engine assigns 
+a term relevance score tr d ti to d given the tr d ti scores 
+for every ti then the query-dependent relevance of d to the query 
+noted as tr d q can be computed by combining the individual 
+term relevance values one popular way for calculating the 
+querydependent relevance is to represent both the document d and the 
+query q using the tf idf vector space model and employ a 
+cosine distance metric 
+since the exact form of tr d ti and tr d q differs 
+depending on the search engine we will not restrict to any particular form 
+instead in order to make our work applicable in the general case 
+we will make the generic assumption that the query-dependent 
+relevance is computed as a function of the individual term relevance 
+values in the query 
+tr d q ftr tr d t tr d tw 
+query-independent document quality this is a factor that 
+measures the overall quality of a document d independent of the 
+particular query issued by the user popular techniques that compute 
+the general quality of a page include pagerank hits and 
+the likelihood that the page is a spam page here we 
+will use pr d to denote this query-independent part of the final 
+ranking function for document d 
+the final ranking score r d q of a document will depend on 
+both the query-dependent and query-independent parts of the 
+ranking function the exact combination of these parts may be done in 
+a variety of ways in general we can assume that the final 
+ranking score of a document is a function of its query-dependent and 
+query-independent relevance scores more formally 
+r d q fr tr d q pr d 
+for example fr tr d q pr d may take the form 
+fr tr d q pr d α · tr d q − α · pr d 
+thus giving weight α to the query-dependent part and the weight 
+ − α to the query-independent part 
+in equations and the exact form of fr and ftr can vary 
+depending on the search engine therefore to make our discussion 
+applicable independent of the particular ranking function used by 
+search engines in this paper we will make only the generic 
+assumption that the ranking function r d q is monotonic on its 
+parameters tr d t tr d tw and pr d 
+t → d d d d d d 
+t → d d d 
+t → d d d d 
+t → d d 
+t → d d d 
+figure keyword and document pruning 
+algorithm computation of c for keyword pruning 
+procedure 
+ c 
+ foreach ti ∈ q 
+ if i ti ∈ ip then c 
+ return c 
+figure result guarantee in keyword pruning 
+definition a function f α β ω is monotonic if ∀α ≥ 
+α ∀β ≥ β ∀ω ≥ ω it holds that f α β ω ≥ 
+f α β ω 
+roughly the monotonicity of the ranking function implies that 
+between two documents d and d if d has higher 
+querydependent relevance than d and also a higher query-independent 
+score than d then d should be ranked higher than d which 
+we believe is a reasonable assumption in most practical settings 
+ keyword pruning 
+given our assumptions on the ranking function we now 
+investigate the keyword pruning policy which prunes the inverted index 
+if horizontally by removing the whole i ti s corresponding to 
+the least frequent terms in figure we show a graphical 
+representation of keyword pruning where we remove the inverted lists for 
+t and t assuming that they do not appear often in the query load 
+note that after keyword pruning if all keywords t tn in 
+the query q appear in ip the p-index has the same information as 
+if as long as q is concerned in other words if all keywords in q 
+appear in ip the answer computed from ip is guaranteed to be the 
+same as the answer computed from if figure formalizes this 
+observation and computes the correctness indicator function c for 
+a keyword-pruned index ip it is straightforward to prove that the 
+answer from ip is identical to that from if if c in the above 
+algorithm 
+we now consider the issue of optimizing the ip such that it can 
+handle the largest fraction of queries this problem can be formally 
+stated as follows 
+problem optimal keyword pruning given the query load q 
+and a goal index size s · if for the pruned index select the 
+inverted lists ip i t i th such that ip ≤ s · if and 
+the fraction of queries that ip can answer expressed by f s is 
+maximized 
+unfortunately the optimal solution to the above problem is 
+intractable as we can show by reducing from knapsack we omit the 
+complete proof 
+theorem the problem of calculating the optimal keyword 
+pruning is np-hard 
+given the intractability of the optimal solution we need to resort 
+to an approximate solution a common approach for similar 
+knapsack problems is to adopt a greedy policy by keeping the items 
+with the maximum benefit per unit cost in our context the 
+potential benefit of an inverted list i ti is the number of queries 
+that can be answered by ip when i ti is included in ip we 
+approximate this number by the fraction of queries in the query 
+load q that include the term ti and represent it as p ti for 
+example if out of queries contain the term computer 
+algorithm greedy keyword pruning hs 
+procedure 
+ ∀ti calculate hs ti 
+p ti 
+ i ti 
+ 
+ include the inverted lists with the highest 
+hs ti values such that ip ≤ s · if 
+figure approximation algorithm for the optimal keyword 
+pruning 
+algorithm global document pruning v sg 
+procedure 
+ sort all documents di based on pr di 
+ find the threshold value τp such that 
+only s fraction of the documents have pr di τp 
+ keep di in the inverted lists if pr di τp 
+figure global document pruning based on pr 
+then p computer the cost of including i ti in the 
+pindex is its size i ti thus in our greedy approach in figure 
+we include i ti s in the decreasing order of p ti i ti as long 
+as ip ≤ s · if later in our experiment section we evaluate 
+what fraction of queries can be handled by ip when we employ 
+this greedy keyword-pruning policy 
+ document pruning 
+at a high level document pruning tries to take advantage of the 
+observation that most users are mainly interested in viewing the 
+top few answers to a query given this it is unnecessary to keep 
+all postings in an inverted list i ti because users will not look at 
+most of the documents in the list anyway we depict the conceptual 
+diagram of the document pruning policy in figure in the figure 
+we vertically prune postings corresponding to d d and d of 
+t and d of t assuming that these documents are unlikely to be 
+part of top-k answers to user queries again our goal is to develop 
+a pruning policy such that we can compute the correctness 
+indicator function c from ip alone and we can handle the largest 
+fraction of queries with ip in the next few sections we discuss a 
+few alternative approaches for document pruning 
+ global pr-based pruning 
+we first investigate the pruning policy that is commonly used by 
+existing search engines the basic idea for this pruning policy is 
+that the query-independent quality score pr d is a very important 
+factor in computing the final ranking of the document e g 
+pagerank is known to be one of the most important factors determining 
+the overall ranking in the search results so we build the p-index 
+by keeping only those documents whose pr values are high i e 
+pr d τp for a threshold value τp the hope is that most of 
+the top-ranked results are likely to have high pr d values so the 
+answer computed from this p-index is likely to be similar to the 
+answer computed from the full index figure describes this pruning 
+policy more formally where we sort all documents di s by their 
+respective pr di values and keep a di in the p-index when its 
+algorithm local document pruning v sl 
+n maximum size of a single posting list 
+procedure 
+ foreach i ti ∈ if 
+ sort di s in i ti based on pr di 
+ if i ti ≤ n then keep all di s 
+ else keep the top-n di s with the highest pr di 
+figure local document pruning based on pr 
+algorithm extended keyword-specific document pruning 
+procedure 
+ for each i ti 
+ keep d ∈ i ti if pr d τpi or tr d ti τti 
+figure extended keyword-specific document pruning based 
+on pr and tr 
+pr di value is higher than the global threshold value τp we refer 
+to this pruning policy as global pr-based pruning gpr 
+variations of this pruning policy are possible for example we 
+may adjust the threshold value τp locally for each inverted list 
+i ti so that we maintain at least a certain number of postings 
+for each inverted list i ti this policy is shown in figure we 
+refer to this pruning policy as local pr-based pruning lpr 
+unfortunately the biggest shortcoming of this policy is that we can 
+prove that we cannot compute the correctness function c from ip 
+alone when ip is constructed this way 
+theorem no pr-based document pruning can provide the result 
+guarantee 
+proof assume we create ip based on the gpr policy 
+ generalizing the proof to lpr is straightforward and that every 
+document d with pr d τp is included in ip assume that the 
+kth 
+entry in the top-k results has a ranking score of r dk q 
+fr tr dk q pr dk now consider another document dj that 
+was pruned from ip because pr dj τp even so it is still 
+possible that the document s tr dj q value is very high such that 
+r dj q fr tr dj q pr dj r dk q 
+therefore under a pr-based pruning policy the quality of the 
+answer computed from ip can be significantly worse than that from 
+if and it is not possible to detect this degradation without 
+computing the answer from if in the next section we propose simple yet 
+essential changes to this pruning policy that allows us to compute 
+the correctness function c from ip alone 
+ extended keyword-specific pruning 
+the main problem of global pr-based document pruning 
+policies is that we do not know the term-relevance score tr d ti of 
+the pruned documents so a document not in ip may have a higher 
+ranking score than the ones returned from ip because of their high 
+tr scores 
+here we propose a new pruning policy called extended 
+keyword-specific document pruning eks which avoids this 
+problem by pruning not just based on the query-independent pr d 
+score but also based on the term-relevance tr d ti score that 
+is for every inverted list i ti we pick two threshold values τpi 
+for pr and τti for tr such that if a document d ∈ i ti satisfies 
+pr d τpi or tr d ti τti we include it in i ti of ip 
+otherwise we prune it from ip figure formally describes this 
+algorithm the threshold values τpi and τti may be selected in 
+a number of different ways for example if pr and tr have equal 
+weight in the final ranking and if we want to keep at most n 
+postings in each inverted list i ti we may want to set the two 
+threshold values equal to τi τpi τti τi and adjust τi such that n 
+postings remain in i ti 
+this new pruning policy when combined with a monotonic 
+scoring function enables us to compute the correctness indicator 
+function c from the pruned index we use the following example to 
+explain how we may compute c 
+example consider the query q t t and a monotonic 
+ranking function f pr d tr d t tr d t there are three 
+possible scenarios on how a document d appears in the pruned 
+index ip 
+ d appears in both i t and i t of ip since complete 
+information of d appears in ip we can compute the exact 
+algorithm computing answer from ip 
+input query q t tw 
+output a top-k result c correctness indicator function 
+procedure 
+ for each di ∈ i t ∪ · · · ∪ i tw 
+ for each tm ∈ q 
+ if di ∈ i tm 
+ tr di tm tr di tm 
+ else 
+ tr di tm τtm 
+ f di f pr di tr di t tr di tn 
+ a top-k di s with highest f di values 
+ c 
+j 
+ if all di ∈ a appear in all i ti ti ∈ q 
+ otherwise 
+figure ranking based on thresholds trτ ti and prτ ti 
+score of d based on pr d tr d t and tr d t values 
+in ip f pr d tr d t tr d t 
+ d appears only in i t but not in i t since d does 
+not appear in i t we do not know tr d t so we 
+cannot compute its exact ranking score however from our 
+pruning criteria we know that tr d t cannot be larger 
+than the threshold value τt therefore from the 
+monotonicity of f definition we know that the ranking score 
+of d f pr d tr d t tr d t cannot be larger than 
+f pr d tr d t τt 
+ d does not appear in any list since d does not appear 
+at all in ip we do not know any of the pr d tr d t 
+tr d t values however from our pruning criteria we 
+know that pr d ≤ τp and ≤ τp and that tr d t ≤ τt 
+and tr d t ≤ τt therefore from the monotonicity of f 
+we know that the ranking score of d cannot be larger than 
+f min τp τp τt τt 
+the above example shows that when a document does not appear 
+in one of the inverted lists i ti with ti ∈ q we cannot compute 
+its exact ranking score but we can still compute its upper bound 
+score by using the threshold value τti for the missing values this 
+suggests the algorithm in figure that computes the top-k result 
+a from ip together with the correctness indicator function c in 
+the algorithm the correctness indicator function c is set to one only 
+if all documents in the top-k result a appear in all inverted lists 
+i ti with ti ∈ q so we know their exact score in this case 
+because these documents have scores higher than the upper bound 
+scores of any other documents we know that no other documents 
+can appear in the top-k the following theorem formally proves the 
+correctness of the algorithm in fagin et al provides a similar 
+proof in the context of multimedia middleware 
+theorem given an inverted index ip pruned by the algorithm 
+in figure a query q t tw and a monotonic ranking 
+function the top-k result from ip computed by algorithm is the 
+same as the top-k result from if if c 
+proof let us assume dk is the kth 
+ranked document computed 
+from ip according to algorithm for every document di ∈ 
+if that is not in the top-k result from ip there are two possible 
+scenarios 
+first di is not in the final answer because it was pruned from 
+all inverted lists i tj ≤ j ≤ w in ip in this case we know 
+that pr di ≤ min ≤j≤wτpj pr dk and that tr di tj ≤ 
+τtj tr dk tj ≤ j ≤ w from the monotonicity assumption 
+it follows that the ranking score of di is r di r dk that is 
+di s score can never be larger than that of dk 
+second di is not in the answer because di is pruned from some 
+inverted lists say i t i tm in ip let us assume ¯r di 
+f pr di τt τtm tr di tm tr di tw then from 
+tr di tj ≤ τtj ≤ j ≤ m and the monotonicity assumption 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionofqueriesguaranteed−f s 
+fraction of index − s 
+fraction of queries guaranteed per fraction of index 
+queries guaranteed 
+figure fraction of guaranteed queries f s answered in a 
+keyword-pruned p-index of size s 
+we know that r di ≤ ¯r di also algorithm sets c 
+ only when the top-k documents have scores larger than ¯r di 
+therefore r di cannot be larger than r dk 
+ experimental evaluation 
+in order to perform realistic tests for our pruning policies we 
+implemented a search engine prototype for the experiments in this 
+paper our search engine indexed about million pages crawled 
+from the web during march of the crawl started from the 
+open directory s homepage and proceeded in a breadth-first 
+manner overall the total uncompressed size of our crawled web 
+pages is approximately tb yielding a full inverted index if of 
+approximately tb 
+for the experiments reported in this section we used a real set 
+of queries issued to looksmart on a daily basis during april 
+of after keeping only the queries containing keywords that 
+were present in our inverted index we were left with a set of about 
+ million queries within our query set the average number of 
+terms per query is and of the queries contain at most terms 
+some experiments require us to use a particular ranking 
+function for these we use the ranking function similar to the one used 
+in more precisely our ranking function r d q is 
+r d q prnorm d trnorm d q 
+where prnorm d is the normalized pagerank of d computed 
+from the downloaded pages and trnorm d q is the normalized 
+tf idf cosine distance of d to q this function is clearly simpler 
+than the real functions employed by commercial search engines 
+but we believe for our evaluation this simple function is adequate 
+because we are not studying the effectiveness of a ranking function 
+but the effectiveness of pruning policies 
+ keyword pruning 
+in our first experiment we study the performance of the keyword 
+pruning described in section more specifically we apply 
+the algorithm hs of figure to our full index if and create a 
+keyword-pruned p-index ip of size s for the construction of our 
+keyword-pruned p-index we used the query frequencies observed 
+during the first days of our data set then using the remaining 
+ -day query load we measured f s the fraction of queries 
+handled by ip according to the algorithm of figure a query can be 
+handled by ip i e c if ip includes the inverted lists for all 
+of the query s keywords 
+we have repeated the experiment for varying values of s 
+picking the keywords greedily as discussed in section the result is 
+shown in figure the horizontal axis denotes the size s of the 
+p-index as a fraction of the size of if the vertical axis shows the 
+fraction f s of the queries that the p-index of size s can answer 
+the results of figure are very encouraging we can answer a 
+significant fraction of the queries with a small fraction of the 
+original index for example approximately of the queries can be 
+answered using of the original index also we find that when 
+we use the keyword pruning policy only the optimal index size is 
+s 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionofqueriesguaranteed-f s 
+fraction of index - s 
+fraction of queries guaranteed for top- per fraction of index 
+fraction of queries guaranteed eks 
+figure fraction of guaranteed queries f s answered in a 
+document-pruned p-index of size s 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionofqueriesanswered 
+index size - s 
+fraction of queries answered for top- per fraction of index 
+gpr 
+lpr 
+eks 
+figure fraction of queries answered in a document-pruned 
+p-index of size s 
+ document pruning 
+we continue our experimental evaluation by studying the 
+performance of the various document pruning policies described in 
+section for the experiments on document pruning reported here 
+we worked with a sample of the whole query set the reason 
+behind this is merely practical since we have much less machines 
+compared to a commercial search engine it would take us about a 
+year of computation to process all million queries 
+for our first experiment we generate a document-pruned p-index 
+of size s by using the extended keyword-specific pruning eks 
+in section within the p-index we measure the fraction of queries 
+that can be guaranteed according to theorem to be correct we 
+have performed the experiment for varying index sizes s and the 
+result is shown in figure based on this figure we can see that 
+our document pruning algorithm performs well across the scale of 
+index sizes s for all index sizes larger than we can guarantee 
+the correct answer for about of the queries this implies that 
+our eks algorithm can successfully identify the necessary 
+postings for calculating the top- results for of the queries by 
+using at least of the full index size from the figure we can 
+see that the optimal index size s when we use eks as our 
+pruning policy 
+we can compare the two pruning schemes namely the keyword 
+pruning and eks by contrasting figures and our 
+observation is that if we would have to pick one of the two pruning 
+policies then the two policies seem to be more or less equivalent 
+for the p-index sizes s ≤ for the p-index sizes s 
+keyword pruning does a much better job as it provides a higher 
+number of guarantees at any given index size later in section 
+we discuss the combination of the two policies 
+in our next experiment we are interested in comparing eks 
+with the pr-based pruning policies described in section to 
+this end apart from eks we also generated document-pruned 
+pindexes for the global pr-based pruning gpr and the local 
+prbased pruning lpr policies for each of the polices we created 
+document-pruned p-indexes of varying sizes s since gpr and 
+lpr cannot provide a correctness guarantee we will compare the 
+fraction of queries from each policy that are identical i e the same 
+results in the same order to the top-k results calculated from the 
+full index here we will report our results for k the results 
+are similar for other values of k the results are shown in figure 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averagefractionofdocsinanswer 
+index size - s 
+average fraction of docs in answer for top- per fraction of index 
+gpr 
+lpr 
+eks 
+figure average fraction of the top- results of p-index with 
+size s contained in top- results of the full index 
+fraction of queries guaranteed for top- per fraction of index using keyword and document 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+keyword fraction 
+of index - sh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+document fraction 
+of index - sv 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fraction of queries 
+guaranteed - f s 
+figure combining keyword and document pruning 
+the horizontal axis shows the size s of the p-index the vertical 
+axis shows the fraction f s of the queries whose top- results are 
+identical to the top- results of the full index for a given size s 
+by observing figure we can see that gpr performs the 
+worst of the three policies on the other hand eks picks up early 
+by answering a great fraction of queries about correctly with 
+only of the index size the fraction of queries that lpr can 
+answer remains below that of eks until about s for any 
+index size larger than lpr performs the best 
+in the experiment of figure we applied the strict definition 
+that the results of the p-index have to be in the same order as the 
+ones of the full index however in a practical scenario it may 
+be acceptable to have some of the results out of order therefore 
+in our next experiment we will measure the fraction of the results 
+coming from an p-index that are contained within the results of the 
+full index the result of the experiment is shown on figure the 
+horizontal axis is again the size s of the p-index the vertical axis 
+shows the average fraction of the top- results common with the 
+top- results from the full index overall figure depicts that 
+eks and lpr identify the same high ≈ fraction of results 
+on average for any size s ≥ with gpr not too far behind 
+ combining keyword and document 
+pruning 
+in sections and we studied the individual performance 
+of our keyword and document pruning schemes one interesting 
+question however is how do these policies perform in 
+combination what fraction of queries can we guarantee if we apply both 
+keyword and document pruning in our full index if 
+to answer this question we performed the following experiment 
+we started with the full index if and we applied keyword pruning 
+to create an index ih 
+p of size sh · of if after that we 
+further applied document pruning to ih 
+p and created our final 
+pindex ip of size sv · of ih 
+p we then calculated the fraction of 
+guaranteed queries in ip we repeated the experiment for different 
+values of sh and sv the result is shown on figure the x-axis 
+shows the index size sh after applying keyword pruning the y-axis 
+shows the index size sv after applying document pruning the z-axis 
+shows the fraction of guaranteed queries after the two prunings for 
+example the point means that if we apply keyword 
+pruning and keep of if and subsequently on the resulting 
+index we apply document pruning keeping thus creating a 
+pindex of size · of if we can guarantee of the 
+queries by observing figure we can see that for p-index sizes 
+smaller than our combined pruning does relatively well for 
+example by performing keyword and document pruning 
+ which translates to a pruned index with s we can provide 
+a guarantee for about of the queries in figure we also 
+observe a plateau for sh and sv for this combined 
+pruning policy the optimal index size is at s with sh 
+ and sv 
+ related work 
+ provide a good overview of inverted indexing in web 
+search engines and ir systems experimental studies and analyses 
+of various partitioning schemes for an inverted index are presented 
+in the pruning algorithms that we have presented in 
+this paper are independent of the partitioning scheme used 
+the works in are the most related to ours as they 
+describe pruning techniques based on the idea of keeping the 
+postings that contribute the most in the final ranking however 
+ do not consider any query-independent quality such as 
+pagerank in the ranking function presents a generic framework 
+for computing approximate top-k answers with some probabilistic 
+bounds on the quality of results our work essentially extends 
+ by proposing mechanisms for providing the 
+correctness guarantee to the computed top-k results 
+search engines use various methods of caching as a means of 
+reducing the cost associated with queries this thread 
+of work is also orthogonal to ours because a caching scheme may 
+operate on top of our p-index in order to minimize the answer 
+computation cost the exact ranking functions employed by current 
+search engines are closely guarded secrets in general however 
+the rankings are based on query-dependent relevance and 
+queryindependent document quality query-dependent relevance can 
+be calculated in a variety of ways see similarly there are a 
+number of works that measure the quality of the documents 
+typically as captured through link-based analysis since 
+our work does not assume a particular form of ranking function it 
+is complementary to this body of work 
+there has been a great body of work on top-k result calculation 
+the main idea is to either stop the traversal of the inverted lists 
+early or to shrink the lists by pruning postings from the lists 
+ our proof for the correctness indicator function was 
+primarily inspired by 
+ concluding remarks 
+web search engines typically prune their large-scale inverted 
+indexes in order to scale to enormous query loads while this 
+approach may improve performance by computing the top results 
+from a pruned index we may notice a significant degradation in 
+the result quality in this paper we provided a framework for 
+new pruning techniques and answer computation algorithms that 
+guarantee that the top matching pages are always placed at the 
+top of search results in the correct order we studied two pruning 
+techniques namely keyword-based and document-based pruning as 
+well as their combination our experimental results demonstrated 
+that our algorithms can effectively be used to prune an inverted 
+index without degradation in the quality of results in particular a 
+keyword-pruned index can guarantee of the queries with a size 
+of of the full index while a document-pruned index can 
+guarantee of the queries with the same size when we combine the 
+two pruning algorithms we can guarantee of the queries with 
+an index size of it is our hope that our work will help search 
+engines develop better faster and more efficient indexes and thus 
+provide for a better user search experience on the web 
+ references 
+ v n anh o de kretser and a moffat vector-space ranking with 
+effective early termination in sigir 
+ v n anh and a moffat pruning strategies for mixed-mode 
+querying in cikm 
+ r a baeza-yates and b a ribeiro-neto modern information 
+retrieval acm press addison-wesley 
+ n bruno l gravano and a marian evaluating top-k queries over 
+web-accessible databases in icde 
+ s b¨uttcher and c l a clarke a document-centric approach to 
+static index pruning in text retrieval systems in cikm 
+ b cahoon k s mckinley and z lu evaluating the performance 
+of distributed architectures for information retrieval using a variety of 
+workloads acm tois 
+ d carmel d cohen r fagin e farchi m herscovici y maarek 
+and a soffer static index pruning for information retrieval systems 
+in sigir 
+ s chaudhuri and l gravano optimizing queries over multimedia 
+repositories in sigmod 
+ t h cormen c e leiserson and r l rivest introduction to 
+algorithms nd edition mit press mcgraw hill 
+ open directory http www dmoz org 
+ r fagin combining fuzzy information an overview in sigmod 
+record 
+ r fagin a lotem and m naor optimal aggregation algorithms 
+for middleware in pods 
+ a gulli and a signorini the indexable web is more than 
+billion pages in www 
+ u guntzer g balke and w kiessling towards efficient 
+multi-feature queries in heterogeneous environments in itcc 
+ z gy¨ongyi h garcia-molina and j pedersen combating web 
+spam with trustrank in vldb 
+ b j jansen and a spink an analysis of web documents retrieved 
+and viewed in international conf on internet computing 
+ j kleinberg authoritative sources in a hyperlinked environment 
+journal of the acm - september 
+ r lempel and s moran predictive caching and prefetching of query 
+results in search engines in www 
+ r lempel and s moran optimizing result prefetching in web search 
+engines with segmented indices acm trans inter tech 
+ x long and t suel optimized query execution in large search 
+engines with global page ordering in vldb 
+ x long and t suel three-level caching for efficient query 
+processing in large web search engines in www 
+ looksmart inc http www looksmart com 
+ s melnik s raghavan b yang and h garcia-molina building a 
+distributed full-text index for the web acm tois - 
+ 
+ a ntoulas j cho c olston what s new on the web the evolution 
+of the web from a search engine perspective in www 
+ a ntoulas m najork m manasse and d fetterly detecting spam 
+web pages through content analysis in www 
+ l page s brin r motwani and t winograd the pagerank 
+citation ranking bringing order to the web technical report 
+stanford university 
+ m persin j zobel and r sacks-davis filtered document retrieval 
+with frequency-sorted indexes journal of the american society of 
+information science 
+ m richardson and p domingos the intelligent surfer probabilistic 
+combination of link and content information in pagerank in 
+advances in neural information processing systems 
+ s robertson and k sp¨arck-jones relevance weighting of search 
+terms journal of the american society for information science 
+ - 
+ g salton and m j mcgill introduction to modern information 
+retrieval mcgraw-hill first edition 
+ p c saraiva e s de moura n ziviani w meira r fonseca and 
+b riberio-neto rank-preserving two-level caching for scalable 
+search engines in sigir 
+ m theobald g weikum and r schenkel top-k query evaluation 
+with probabilistic guarantees in vldb 
+ a tomasic and h garcia-molina performance of inverted indices 
+in shared-nothing distributed text document information retrieval 
+systems in parallel and distributed information systems 

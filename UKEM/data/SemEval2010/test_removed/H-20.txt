@@ -1,0 +1,938 @@
+new event detection based on indexing-tree 
+and named entity 
+zhang kuo 
+tsinghua university 
+beijing china 
+ - - 
+zkuo  mails tsinghua edu cn 
+li juan zi 
+tsinghua university 
+beijing china 
+ - - 
+ljz keg cs tsinghua edu cn 
+wu gang 
+tsinghua university 
+beijing china 
+ - - 
+wug  keg cs tsinghua edu cn 
+abstract 
+new event detection ned aims at detecting from one or 
+multiple streams of news stories that which one is reported on a 
+new event i e not reported previously with the overwhelming 
+volume of news available today there is an increasing need for a 
+ned system which is able to detect new events more efficiently 
+and accurately in this paper we propose a new ned model to 
+speed up the ned task by using news indexing-tree dynamically 
+moreover based on the observation that terms of different types 
+have different effects for ned task two term reweighting 
+approaches are proposed to improve ned accuracy in the first 
+approach we propose to adjust term weights dynamically based 
+on previous story clusters and in the second approach we propose 
+to employ statistics on training data to learn the named entity 
+reweighting model for each class of stories experimental results 
+on two linguistic data consortium ldc datasets tdt and 
+tdt show that the proposed model can improve both efficiency 
+and accuracy of ned task significantly compared to the baseline 
+system and other existing systems 
+categories and subject descriptors 
+h information systems information search and retrieval 
+h information systems applications types of 
+systemsdecision support 
+general terms 
+algorithms performance experimentation 
+ introduction 
+topic detection and tracking tdt program aims to develop 
+techniques which can effectively organize search and structure 
+news text materials from a variety of newswire and broadcast 
+media new event detection ned is one of the five tasks in 
+tdt it is the task of online identification of the earliest report for 
+each topic as soon as that report arrives in the sequence of 
+documents a topic is defined as a seminal event or activity 
+along with directly related events and activities an event is 
+defined as something non-trivial happening in a certain place at 
+a certain time for instance when a bomb explodes in a 
+building the exploding is the seminal event that triggers the topic 
+and other stories on the same topic would be those discussing 
+salvaging efforts the search for perpetrators arrests and trial and 
+so on useful news information is usually buried in a mass of data 
+generated everyday therefore ned systems are very useful for 
+people who need to detect novel information from real-time news 
+stream these real-life needs often occur in domains like financial 
+markets news analysis and intelligence gathering 
+in most of state-of-the-art currently ned systems each news 
+story on hand is compared to all the previous received stories if 
+all the similarities between them do not exceed a threshold then 
+the story triggers a new event they are usually in the form of 
+cosine similarity or hellinger similarity metric the core problem 
+of ned is to identify whether two stories are on the same topic 
+obviously these systems cannot take advantage of topic 
+information further more it is not acceptable in real applications 
+because of the large amount of computation required in the ned 
+process other systems organize previous stories into clusters 
+ each cluster corresponds to a topic and new story is compared to 
+the previous clusters instead of stories this manner can reduce 
+comparing times significantly nevertheless it has been proved 
+that this manner is less accurate this is because sometimes 
+stories within a topic drift far away from each other which could 
+lead low similarity between a story and its topic 
+on the other hand some proposed ned systems tried to improve 
+accuracy by making better use of named entities 
+however none of the systems have considered that terms of 
+different types e g noun verb or person name have different 
+effects for different classes of stories in determining whether two 
+stories are on the same topic for example the names of election 
+candidates person name are very important for stories of election 
+class the locations location name where accidents happened are 
+important for stories of accidents class 
+so in ned there still exist following three problems to be 
+investigated how to speed up the detection procedure while 
+do not decrease the detection accuracy how to make good 
+use of cluster topic information to improve accuracy how to 
+obtain better news story representation by better understanding of 
+named entities 
+driven by these problems we have proposed three approaches in 
+this paper to make the detection procedure faster we propose 
+a new ned procedure based on news indexing-tree created 
+dynamically story indexing-tree is created by assembling similar 
+stories together to form news clusters in different hierarchies 
+according to their values of similarity comparisons between 
+current story and previous clusters could help find the most 
+similar story in less comparing times the new procedure can 
+reduce the amount of comparing times without hurting accuracy 
+ we use the clusters of the first floor in the indexing-tree as 
+news topics in which term weights are adjusted dynamically 
+according to term distribution in the clusters in this approach 
+cluster topic information is used properly so the problem of 
+theme decentralization is avoided based on observations on 
+the statistics obtained from training data we found that terms of 
+different types e g noun and verb have different effects for 
+different classes of stories in determining whether two stories are 
+on the same topic and we propose to use statistics to optimize the 
+weights of the terms of different types in a story according to the 
+news class that the story belongs to on tdt dataset the new 
+ned model just uses comparing times of the basic model 
+while its minimum normalized cost is which is 
+better than the basic model and also better than any other results 
+previously reported for this dataset 
+the rest of the paper is organized as follows we start off this 
+paper by summarizing the previous work in ned in section 
+section presents the basic model for ned that most current 
+systems use section describes our new detection procedure 
+based on news indexing-tree in section two term reweighting 
+methods are proposed to improve ned accuracy section gives 
+our experimental data and evaluation metrics we finally wrap up 
+with the experimental results in section and the conclusions and 
+future work in section 
+ related work 
+papka et al proposed single-pass clustering on ned when a 
+new story was encountered it was processed immediately to 
+extract term features and a query representation of the story s 
+content is built up then it was compared with all the previous 
+queries if the document did not trigger any queries by exceeding 
+a threshold it was marked as a new event lam et al build up 
+previous query representations of story clusters each of which 
+corresponds to a topic in this manner comparisons happen 
+between stories and clusters 
+recent years most work focus on proposing better methods on 
+comparison of stories and document representation brants et al 
+ extended a basic incremental tf-idf model to include 
+sourcespecific models similarity score normalization based on 
+document-specific averages similarity score normalization based 
+on source-pair specific averages term reweighting based on 
+inverse event frequencies and segmentation of documents good 
+improvements on tdt bench-marks were shown stokes et al 
+utilized a combination of evidence from two distinct 
+representations of a document s content one of the 
+representations was the usual free text vector the other made use 
+of lexical chains created using wordnet to build another term 
+vector then the two representations are combined in a linear 
+fashion a marginal increase in effectiveness was achieved when 
+the combined representation was used 
+some efforts have been done on how to utilize named entities to 
+improve ned yang et al gave location named entities four times 
+weight than other terms and named entities doremi 
+research group combined semantic similarities of person names 
+location names and time together with textual similarity 
+umass research group split document representation into two 
+parts named entities and non-named entities and it was found 
+that some classes of news could achieve better performance using 
+named entity representation while some other classes of news 
+could achieve better performance using non-named entity 
+representation both and used text categorization 
+technique to classify news stories in advance in news stories 
+are classified automatically at first and then test sensitivities of 
+names and non-name terms for ned for each class in 
+frequent terms for each class are removed from document 
+representation for example word election does not help 
+identify different elections in their work effectiveness of 
+different kinds of names or terms with different pos for ned in 
+different news classes are not investigated we use statistical 
+analysis to reveal the fact and use it to improve ned performance 
+ basic model 
+in this section we present the basic new event detection model 
+which is similar to what most current systems apply then we 
+propose our new model by extending the basic model 
+new event detection systems use news story stream as input in 
+which stories are strictly time-ordered only previously received 
+stories are available when dealing with current story the output is 
+a decision for whether the current story is on a new event or not 
+and the confidence of the decision usually a ned model consists 
+of three parts story representation similarity calculation and 
+detection procedure 
+ story representation 
+preprocessing is needed before generating story representation 
+for preprocessing we tokenize words recognize abbreviations 
+normalize abbreviations add part-of-speech tags remove 
+stopwords included in the stop list used in inquery replace 
+words with their stems using k-stem algorithm and then 
+generate word vector for each news story 
+we use incremental tf-idf model for term weight calculation 
+ in a tf-idf model term frequency in a news document is 
+weighted by the inverse document frequency which is generated 
+from training corpus when a new term occurs in testing process 
+there are two solutions simply ignore the new term or set df of the 
+term as a small const e g df the new term receives too low 
+weight in the first solution and too high weight in the second 
+solution in incremental tf-idf model document frequencies are 
+updated dynamically in each time step t 
+ t t d tdf w df w df w− 
+where dt represents news story set received in time t and dfdt w 
+means the number of documents that term w occurs in and dft w 
+means the total number of documents that term w occurs in before 
+time t in this work each time window includes news stories 
+thus each story d received in t is represented as follows 
+ nd weight d t w weight d t w weight d t w→ 
+where n means the number of distinct terms in story d and 
+ weight d t w means the weight of term w in story d at time t 
+ 
+log log 
+ 
+log log 
+t t 
+t t 
+w d 
+tf d w n df w 
+weight d t w 
+tf d w n df w 
+∈ 
+ 
+ 
+ ∑ 
+ 
+where nt means the total number of news stories before time t and 
+tf d w means how many times term w occurs in news story d 
+ similarity calculation 
+we use hellinger distance for the calculation of similarity 
+between two stories for two stories d and d at time t their 
+similarity is defined as follows 
+ 
+ 
+w d d 
+sim d d t weight d t w weight d t w 
+∈ 
+ ∑ 
+ detection procedure 
+for each story d received in time step t the value 
+ 
+ 
+time d time d 
+n d max sim d d t 
+ 
+ 
+is a score used to determine whether d is a story about a new topic 
+and at the same time is an indication of the confidence in our 
+decision time d means the publication time of story d if the 
+score exceeds the thresholdθ new then there exists a sufficiently 
+similar document thus d is a old story otherwise there is no 
+sufficiently similar previous document thus d is an new story 
+ new ned procedure 
+traditional ned systems can be classified into two main types on 
+the aspect of detection procedure s-s type in which the story 
+on hand is compared to each story received previously and use 
+the highest similarity to determine whether current story is about a 
+new event s-c type in which the story on hand is compared 
+to all previous clusters each of which representing a topic and the 
+highest similarity is used for final decision for current story if the 
+highest similarity exceeds thresholdθ new then it is an old story 
+and put it into the most similar cluster otherwise it is a new story 
+and create a new cluster previous work show that the first manner 
+is more accurate than the second one since sometimes 
+stories within a topic drift far away from each other a story may 
+have very low similarity with its topic so using similarities 
+between stories for determining new story is better than using 
+similarities between story and clusters nevertheless the first 
+manner needs much more comparing times which means the first 
+manner is low efficient we propose a new detection procedure 
+which uses comparisons with previous clusters to help find the 
+most similar story in less comparing times and the final new 
+event decision is made according to the most similar story 
+therefore we can get both the accuracy of s-s type methods and 
+the efficiency of s-c type methods 
+the new procedure creates a news indexing-tree dynamically in 
+which similar stories are put together to form a hierarchy of 
+clusters we index similar stories together by their common 
+ancestor a cluster node dissimilar stories are indexed in 
+different clusters when a story is coming we use comparisons 
+between the current story and previous hierarchical clusters to 
+help find the most similar story which is useful for new event 
+decision after the new event decision is made the current story is 
+inserted to the indexing-tree for the following detection 
+the news indexing-tree is defined formally as follows 
+s-tree r nc 
+ ns 
+ e 
+where r is the root of s-tree nc 
+is the set of all cluster nodes ns 
+is the set of all story nodes and e is the set of all edges in s-tree 
+we define a set of constraints for a s-tree 
+ⅰ is an non-terminal node in the treec 
+i i n i∀ ∈ → 
+ⅱ is a terminal node in the trees 
+i i n i∀ ∈ → 
+ⅲ out degree of is at least c 
+i i n i∀ ∈ → 
+ⅳ is represented as the centroid of its desendantsc 
+i i in∀ ∈ → 
+for a news story di the comparison procedure and inserting 
+procedure based on indexing-tree are defined as follows an 
+example is shown by figure and figure 
+figure comparison procedure 
+figure inserting procedure 
+comparison procedure 
+step compare di to all the direct child nodes of r and select λ 
+nodes with highest similarities e g c 
+ and c 
+ in figure 
+step for each selected node in the last step e g c 
+ compare di 
+to all its direct child nodes and select λ nodes with highest 
+similarities e g c 
+ and d repeat step for all non-terminal 
+nodes 
+step record the terminal node with the highest similarty to di 
+e g s and the similarity value 
+inserting di to the s-tree with r as root 
+find the node n which is direct child of r in the path from r to the 
+terminal node with highest similarity s e g c 
+ if s is smaller 
+than θ init h- δ then add di to the tree as a direct child of r 
+otherwise if n is a terminal node then create a cluster node 
+instead of n and add both n and di as its direct children if n is an 
+non-terminal node then repeat this procedure and insert di to the 
+sub-tree with n as root recursively here h is the length between n 
+and the root of s-tree 
+the more the stories in a cluster similar to each other the better 
+the cluster represents the stories in it hence we add no constraints 
+on the maximum of tree s height and degree of a node therefore 
+we cannot give the complexity of this indexing-tree based 
+procedure but we will give the number of comparing times 
+needed by the new procedure in our experiments in section 
+ term reweighting methods 
+in this section two term reweighting methods are proposed to 
+improve ned accuracy in the first method a new way is 
+explored for better using of cluster topic information the 
+second one finds a better way to make use of named entities based 
+on news classification 
+ term reweighting based on distribution 
+distance 
+tf-idf is the most prevalent model used in information retrieval 
+systems the basic idea is that the fewer documents a term 
+appears in the more important the term is in discrimination of 
+documents relevant or not relevant to a query containing the 
+term nevertheless in tdt domain we need to discriminate 
+documents with regard to topics rather than queries intuitively 
+using cluster topic vectors to compare with subsequent news 
+stories should outperform using story vectors unfortunately the 
+experimental results do not support this intuition based on 
+observation on data we find the reason is that a news topic 
+usually contains many directly or indirectly related events while 
+they all have their own sub-subjects which are usually different 
+with each other take the topic described in section as an 
+example events like the explosion and salvage have very low 
+similarities with events about criminal trial therefore stories about 
+trial would have low similarity with the topic vector built on its 
+previous events this section focuses on how to effectively make 
+use of topic information and at the same time avoid the problem of 
+content decentralization 
+at first we classify terms into classes to help analysis the needs 
+of the modified model 
+term class a terms that occur frequently in the whole corpus 
+e g year and people terms of this class should be given low 
+weights because they do not help much for topic discrimination 
+term class b terms that occur frequently within a news category 
+e g election storm they are useful to distinguish two stories 
+in different news categories however they cannot provide 
+information to determine whether two stories are on the same or 
+different topics in another words term election and term 
+storm are not helpful in differentiate two election campaigns 
+and two storm disasters therefore terms of this class should be 
+assigned lower weights 
+term class c terms that occur frequently in a topic and 
+infrequently in other topics e g the name of a crash plane the 
+name of a specific hurricane news stories that belong to different 
+topics rarely have overlap terms in this class the more frequently 
+a term appears in a topic the more important the term is for a 
+story belonging to the topic therefore the term should be set 
+higher weight 
+term class d terms that appear in a topic exclusively but not 
+frequently for example the name of a fireman who did very well 
+in a salvage action which may appears in only two or three stories 
+but never appeared in other topics terms of this type should 
+receive more weights than in tf-idf model however since they 
+are not popular in the topic it is not appropriate to give them too 
+high weights 
+term class e terms with low document frequency and appear in 
+different topics terms of this class should receive lower weights 
+now we analyze whether tf-idf model can give proper weights 
+to the five classes of terms obviously terms of class a are lowly 
+weighted in tf-idf model which is conformable with the 
+requirement described above in tf-idf model terms of class b 
+are highly dependant with the number of stories in a news class 
+tf-idf model cannot provide low weights if the story containing 
+the term belongs to a relative small news class for a term of class 
+c the more frequently it appears in a topic the less weight 
+tfidf model gives to it this strongly conflicts with the requirement 
+of terms in class c for terms of class d tf-idf model gives 
+them high weights correctly but for terms of class e tf-idf 
+model gives high weights to them which are not conformable with 
+the requirement of low weights to sum up terms of class b c e 
+cannot be properly weighted in tf-idf model so we propose a 
+modified model to resolve this problem 
+when θ init andθ new are set closely we assume that most of the 
+stories in a first-level cluster a direct child node of root node are 
+on the same topic therefore we make use of a first-level cluster 
+to capture term distribution df for all the terms within the cluster 
+within the topic dynamically kl divergence of term distribution 
+in a first-level cluster and the whole story set is used to adjust 
+term weights 
+ 
+ 
+ 
+ 
+ 
+cw tw 
+cw tw 
+w d 
+d 
+weight d t w kl p p 
+weight d t w 
+weight d t w kl p p 
+γ 
+γ 
+∈ 
+ 
+ 
+ ∑ 
+ 
+where 
+ 
+ cw cw 
+c c 
+c c 
+df w df w 
+p y p y 
+n n 
+ − 
+ 
+ t t 
+tw tw 
+t t 
+df w df w 
+p y p y 
+n n 
+ − 
+where dfc w is the number of documents containing term w 
+within cluster c and nc is the number of documents in cluster c 
+and nt is the total number of documents that arrive before time 
+step t γ is a const parameter now is manually set 
+kl divergence is defined as follows 
+ 
+ log 
+ x 
+p x 
+kl p q p x 
+q x 
+ ∑ 
+the basic idea is for a story in a topic the more a term occurs 
+within the topic and the less it occurs in other topics it should be 
+assigned higher weights obviously modified model can meet all 
+the requirements of the five term classes listed above 
+ term reweighting based on term type 
+and story class 
+previous work found that some classes of news stories could 
+achieve good improvements by giving extra weight to named 
+entities but we find that terms of different types should be given 
+different amount of extra weight for different classes of news 
+stories 
+we use open-nlp 
+to recognize named entity types and 
+part-ofspeech tags for terms that appear in news stories named entity 
+types include person name organization name location name 
+date time money and percentage and five poss are selected 
+none nn verb vb adjective jj adverb rb and cardinal 
+number cd statistical analysis shows topic-level discriminative 
+terms types for different classes of stories for the sake of 
+convenience named entity type and part-of-speech tags are 
+uniformly called term type in subsequent sections 
+determining whether two stories are about the same topic is a 
+basic component for ned task so at first we use 
+χ statistic to 
+compute correlations between terms and topics for a term t and a 
+topic t a contingence table is derived 
+table a × contingence table 
+doc number 
+belong to 
+topic t 
+not belong to 
+topic t 
+include t a b 
+not include t c d 
+the 
+χ statistic for a specific term t with respect to topic t is 
+defined to be 
+ 
+ 
+ 
+ 
+ 
+w t 
+a b c d ad cb 
+a c b d a b c d 
+χ 
+ − 
+ 
+ 
+news topics for the tdt task are further classified into rules 
+of interpretations rois 
+ the roi can be seen as a higher level 
+class of stories the average correlation between a term type and a 
+topic roi is computed as 
+ 
+avg 
+ 
+ k m 
+m km kt r w p 
+w tp r p w t 
+r p 
+χ χ 
+∈ ∈ 
+∑ ∑    
+ 
+k  k m  m 
+where k is the number of term types set constantly in the 
+paper m is the number news classes rois set in the paper 
+pk represents the set of all terms of type k and rm represents the 
+set of all topics of class m p t t means the probability that t 
+occurs in topic t because of limitation of space only parts of the 
+term types term types and parts of news classes classes are 
+listed in table with the average correlation values between them 
+the statistics is derived from labeled data in tdt corpus 
+ results in table are already normalized for convenience in 
+comparison 
+the statistics in table indicates the usefulness of different term 
+types in topic discrimination with respect to different news 
+classes we can see that location name is the most useful term 
+type for three news classes natural disasters violence or war 
+finances and for three other categories elections legal criminal 
+cases science and discovery person name is the most 
+discriminative term type for scandals hearings date is the most 
+important information for topic discrimination in addition 
+legal criminal cases and finance topics have higher correlation 
+with money terms while science and discovery have higher 
+correlation with percentage terms non-name terms are more 
+stable for different classes 
+ 
+ http opennlp sourceforge net 
+ 
+ http projects ldc upenn edu tdt guide label html 
+from the analysis of table it is reasonable to adjust term weight 
+according to their term type and the news class the story belongs 
+to new term weights are reweighted as follows 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+class d 
+d type w 
+t class d 
+d type w 
+w d 
+weight d t w 
+weight d t w 
+weight d t w 
+α 
+α 
+∈ 
+ 
+∑ 
+ 
+where type w represents the type of term w and class d 
+represents the class of story d c 
+kα is reweighting parameter for 
+news class c and term type k in the work we just simply use 
+statistics in table as the reweighting parameters even thought 
+using the statistics directly may not the best choice we do not 
+discuss how to automatically obtain the best parameters we will 
+try to use machine learning techniques to obtain the best 
+parameters in the future work 
+in the work we use boostexter to classify all stories into one 
+of the rois boostexter is a boosting based machine learning 
+program which creates a series of simple rules for building a 
+classifier for text or attribute-value data we use term weight 
+generated using tf-idf model as feature for story classification 
+we trained the model on the judged english stories in 
+tdt and classify the rest of the stories in tdt and all stories 
+in tdt classification results are used for term reweighting in 
+formula since the class labels of topic-off stories are not 
+given in tdt datasets we cannot give the classification accuracy 
+here thus we do not discuss the effects of classification accuracy 
+to ned performance in the paper 
+ experimental setup 
+ datasets 
+we used two ldc datasets tdt and tdt for our 
+experiments tdt contains news stories from january to june 
+ it contains around stories from sources like abc 
+associated press cnn new york times public radio 
+international voice of america etc only english stories in the 
+collection were considered tdt contains approximately 
+english stories collected from october to december in 
+addition to the sources used in tdt it also contains stories from 
+nbc and msnbc tv broadcasts we used transcribed versions 
+of the tv and radio broadcasts besides textual news 
+tdt dataset is labeled with about topics and approximately 
+ english stories belong to at least one of these topics tdt 
+dataset is labeled with about topics and approximately 
+english stories belong to at least one of these topics all the topics 
+are classified into rules of interpretation elections 
+ scandals hearings legal criminal cases natural 
+disasters accidents ongoing violence or war science 
+and discovery news finance new law sports news 
+ misc news 
+ evaluation metric 
+tdt uses a cost function cdet that combines the probabilities of 
+missing a new story and a false alarm 
+ det miss miss target fa fa nontargetc c p p c p p 
+table average correlation between term types and news classes 
+where cmiss means the cost of missing a new story pmiss means 
+the probability of missing a new story and ptarget means the 
+probability of seeing a new story in the data cfa means the cost 
+of a false alarm pfa means the probability of a false alarm and 
+pnontarget means the probability of seeing an old story the cost 
+cdet is normalized such that a perfect system scores and a trivial 
+system which is the better one of mark all stories as new or old 
+scores 
+ 
+ 
+ 
+det 
+det 
+miss target fa nontarget 
+c 
+norm c 
+min c p c p 
+ 
+new event detection system gives two outputs for each story the 
+first part is yes or no indicating whether the story triggers a 
+new event or not the second part is a score indicating confidence 
+of the first decision confidence scores can be used to plot det 
+curve i e curves that plot false alarm vs miss probabilities 
+minimum normalized cost can be determined if optimal threshold 
+on the score were chosen 
+ experimental results 
+ main results 
+to test the approaches proposed in the model we implemented 
+and tested five systems 
+system- this system is used as baseline it is implemented based 
+on the basic model described in section i e using incremental 
+tf-idf model to generate term weights and using hellinger 
+distance to compute document similarity similarity score 
+normalization is also employed s-s detection procedure is 
+used 
+system- this system is the same as system- except that s-c 
+detection procedure is used 
+system- this system is the same as system- except that it uses 
+the new detection procedure which is based on indexing-tree 
+system- implemented based on the approach presented in 
+section i e terms are reweighted according to the distance 
+between term distributions in a cluster and all stories the new 
+detection procedure is used 
+system- implemented based on the approach presented in 
+section i e terms of different types are reweighted according 
+to news class using trained parameters the new detection 
+procedure is used 
+the following are some other ned systems 
+system- for each pair of stories it computes three 
+similarity values for named entity non-named entity and all terms 
+respectively and employ support vector machine to predict 
+new or old using the similarity values as features 
+system- it extended a basic incremental tf-idf model to 
+include source-specific models similarity score normalization 
+based on document-specific averages similarity score 
+normalization based on source-pair specific averages etc 
+system- it split document representation into two parts 
+named entities and non-named entities and choose one effective 
+part for each news class 
+table and table show topic-weighted normalized costs and 
+comparing times on tdt and tdt datasets respectively since 
+no heldout data set for fine-tuning the threshold θ new was 
+available for experiments on tdt we only report minimum 
+normalized costs for our systems in table system- outperforms 
+all other systems including system- and it performs only 
+ e comparing times in detection procedure which is only 
+ of system- 
+table ned results on tdt 
+systems min norm cdet cmp times 
+system- e 
+system- ① e 
+system- ② e 
+system- ② e 
+system- ② e 
+system- 
+-① θ new 
+② θ init λ δ 
+when evaluating on the normalized costs on tdt we use the 
+optimal thresholds obtained from tdt data set for all systems 
+system- reduces comparing times to e which is just 
+ of system- but at the same time it also gets a deteriorated 
+minimum normalized cost which is higher than system- 
+system- uses the new detection procedure based on news 
+indexing-tree it requires even less comparing times than system- 
+this is because story-story comparisons usually yield greater 
+similarities than story-cluster ones so stories tend to be combined 
+location person date organization money percentage nn jj cd 
+elections 
+scandals hearings 
+legal criminal cases 
+natural disasters 
+violence or war 
+science and discovery 
+finances 
+sports 
+together in system- and system- is basically equivalent to 
+system- in accuracy results system- adjusts term weights based 
+on the distance of term distributions between the whole corpus 
+and cluster story set yielding a good improvement by 
+compared to system- the best system system- has a 
+minimum normalized cost which is better than 
+system- and also better than any other results previously 
+reported for this dataset further more system- only 
+needs e comparing times which is of system- 
+table ned results on tdt 
+systems norm cdet min norm cdet cmp times 
+system- e 
+system- ① e 
+system- ② e 
+system- ② e 
+system- ② e 
+system- -- 
+-system- -- 
+-① θ new 
+② θ init λ δ 
+figure shows the five det curves for our systems on data set 
+tdt system- achieves the minimum cost at a false alarm rate 
+of and a miss rate of we can observe that 
+system and system- obtain lower miss probability at regions of low 
+false alarm probabilities the hypothesis is that more weight 
+value is transferred to key terms of topics from non-key terms 
+similarity score between two stories belonging to different topics 
+are lower than before because their overlapping terms are usually 
+not key terms of their topics 
+ parameter selection for indexing-tree 
+detection 
+figure shows the minimum normalized costs obtained by 
+system- on tdt using different parameters theθ init parameter 
+is tested on six values spanning from to and the λ 
+parameter is tested on four values and we can see that 
+whenθ init is set to which is the closest one toθ new the costs 
+are lower than others this is easy to explain because when 
+stories belonging to the same topic are put in a cluster it is more 
+reasonable for the cluster to represent the stories in it when 
+parameter λ is set to or the costs are better than other cases 
+but there is no much difference between and 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+θ-initλ 
+mincost 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure min cost on tdt δ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+θ-init 
+λ 
+comparingtimes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+figure comparing times on tdt δ 
+figure gives the comparing times used by system- on tdt 
+with the same parameters as figure the comparing times are 
+strongly dependent onθ init because the greaterθ init is the less 
+stories combined together the more comparing times are needed 
+for new event decision 
+so we useθ init λ δ for system- and in this 
+parameter setting we can get both low minimum normalized costs 
+and less comparing times 
+ conclusion 
+we have proposed a news indexing-tree based detection 
+procedure in our model it reduces comparing times to about one 
+seventh of traditional method without hurting ned accuracy we 
+also have presented two extensions to the basic tf-idf model 
+the first extension is made by adjust term weights based on term 
+distributions between the whole corpus and a cluster story set 
+and the second extension to basic tf-idf model is better use of 
+term types named entities types and part-of-speed according to 
+news categories our experimental results on tdt and tdt 
+datasets show that both of the two extensions contribute 
+significantly to improvement in accuracy 
+we did not consider news time information as a clue for ned 
+task since most of the topics last for a long time and tdt data 
+sets only span for a relative short period no more than months 
+for the future work we want to collect news set which span for a 
+longer period from internet and integrate time information in 
+ned task since topic is a relative coarse-grained news cluster 
+we also want to refine cluster granularity to event-level and 
+identify different events and their relations within a topic 
+acknowledgments 
+this work is supported by the national natural science 
+foundation of china under grant no any opinions 
+findings and conclusions or recommendations expressed in this 
+material are the author s and do not necessarily reflect those of 
+the sponsor 
+ references 
+ http www nist gov speech tests tdt index htm 
+ in topic detection and tracking event-based information 
+organization kluwer academic publishers 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+false alarm probability in 
+missprobability in system topic weighted curve 
+system min norm cost 
+system topic weighted curve 
+system min norm cost 
+system topic weighted curve 
+system min norm cost 
+system topic weighted curve 
+system min norm cost 
+system topic weighted curve 
+system min norm cost 
+random performance 
+figure det curves on tdt 
+ y yang j carbonell r brown t pierce b t archibald 
+and x liu learning approaches for detecting and tracking 
+news events in ieee intelligent systems special issue on 
+applications of intelligent information retrieval volume 
+ - 
+ y yang t pierce and j carbonell a study on 
+retrospective and on-line event detection in proceedings 
+of sigir- melbourne australia - 
+ j allan v lavrenko d malin and r swan detections 
+bounds and timelines umass and tdt- in proceedings of 
+topic detection and tracking workshop tdt- vienna 
+va - 
+ r papka and j allan on-line new event detection using 
+single pass clustering title technical report 
+um-cs - 
+ w lam h meng k wong and j yen using contextual 
+analysis for news event detection international journal on 
+intelligent systems - 
+ b thorsten c francine and f ayman a system for new 
+event detection in proceedings of the th annual 
+international acm sigir conference new york ny usa 
+acm press - 
+ s nicola and c joe combining semantic and syntactic 
+document classifiers to improve first story detection in 
+proceedings of the th annual international acm sigir 
+conference new york ny usa acm press 
+ 
+ y yang j zhang j carbonell and c jin 
+topicconditioned novelty detection in proceedings of the th 
+acm sigkdd international conference acm press 
+ - 
+ m juha a m helena and s marko applying semantic 
+classes in event detection and tracking in proceedings of 
+international conference on natural language processing 
+ icon pages - 
+ m juha a m helena and s marko simple semantics in 
+topic detection and tracking information retrieval - 
+ - 
+ k giridhar and j allan text classification and named 
+entities for new event detection in proceedings of the th 
+annual international acm sigir conference new york 
+ny usa acm press - 
+ j p callan w b croft and s m harding the inquery 
+retrieval system in proceedings of dexa- rd 
+international conference on database and expert systems 
+applications - 
+ r krovetz viewing morphology as an inference process 
+in proceedings of acm sigir - 
+ y yang and j pedersen a comparative study on feature 
+selection in text categorization in j d h fisher editor 
+the fourteenth international conference on machine 
+learning icml morgan kaufmann - 
+ t m cover and j a thomas elements of information 
+theory wiley 
+ the linguistic data consortium http www ldc upenn edu 
+ the tdt task definition and evaluation plan 
+http www nist gov speech tests tdt tdt evalplan htm 
+ r e schapire and y singer boostexter a boosting-based 
+system for text categorization in machine learning 
+ kluwer academic publishers - 
+ k giridhar and j allan using names and topics for 
+new event detection in proceedings of human technology 
+conference and conference on empirical methods in 
+natural language vancouver - 

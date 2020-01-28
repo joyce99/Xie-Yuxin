@@ -1,0 +1,985 @@
+broad expertise retrieval in sparse data environments 
+krisztian balog 
+isla university of amsterdam 
+kruislaan sj 
+amsterdam the netherlands 
+kbalog science uva nl 
+toine bogers 
+ilk tilburg university 
+p o box le 
+tilburg the netherlands 
+a m bogers uvt nl 
+leif azzopardi 
+dept of computing science 
+university of glasgow 
+glasgow g qq 
+leif dcs gla ac uk 
+maarten de rijke 
+isla university of amsterdam 
+kruislaan sj 
+amsterdam the netherlands 
+mdr science uva nl 
+antal van den bosch 
+ilk tilburg university 
+p o box le 
+tilburg the netherlands 
+antal vdnbosch uvt nl 
+abstract 
+expertise retrieval has been largely unexplored on data other than 
+the w c collection at the same time many intranets of 
+universities and other knowledge-intensive organisations offer examples 
+of relatively small but clean multilingual expertise data covering 
+broad ranges of expertise areas we first present two main 
+expertise retrieval tasks along with a set of baseline approaches based on 
+generative language modeling aimed at finding expertise relations 
+between topics and people for our experimental evaluation we 
+introduce and release a new test set based on a crawl of a 
+university site using this test set we conduct two series of experiments 
+the first is aimed at determining the effectiveness of baseline 
+expertise retrieval methods applied to the new test set the second 
+is aimed at assessing refined models that exploit characteristic 
+features of the new test set such as the organizational structure of the 
+university and the hierarchical structure of the topics in the test set 
+expertise retrieval models are shown to be robust with respect to 
+environments smaller than the w c collection and current 
+techniques appear to be generalizable to other settings 
+categories and subject descriptors 
+h information storage and retrieval h content 
+analysis and indexing h information search and retrieval h 
+systems and software h information systems applications 
+h types of systems h m miscellaneous 
+general terms 
+algorithms measurement performance experimentation 
+ introduction 
+an organization s intranet provides a means for exchanging 
+information between employees and for facilitating employee 
+collaborations to efficiently and effectively achieve this it is necessary 
+to provide search facilities that enable employees not only to access 
+documents but also to identify expert colleagues 
+at the trec enterprise track the need to study and 
+understand expertise retrieval has been recognized through the 
+introduction of expert finding tasks the goal of expert finding is to 
+identify a list of people who are knowledgeable about a given topic 
+this task is usually addressed by uncovering associations between 
+people and topics commonly a co-occurrence of the name 
+of a person with topics in the same context is assumed to be 
+evidence of expertise an alternative task which using the same idea 
+of people-topic associations is expert profiling where the task is to 
+return a list of topics that a person is knowledgeable about 
+the launch of the expert finding task at trec has generated a 
+lot of interest in expertise retrieval with rapid progress being made 
+in terms of modeling algorithms and evaluation aspects however 
+nearly all of the expert finding or profiling work performed has 
+been validated experimentally using the w c collection from 
+the enterprise track while this collection is currently the only 
+publicly available test collection for expertise retrieval tasks it only 
+represents one type of intranet with only one test collection it is 
+not possible to generalize conclusions to other realistic settings 
+in this paper we focus on expertise retrieval in a realistic setting 
+that differs from the w c setting-one in which relatively small 
+amounts of clean multilingual data are available that cover a broad 
+range of expertise areas as can be found on the intranets of 
+universities and other knowledge-intensive organizations typically this 
+setting features several additional types of structure topical 
+structure e g topic hierarchies as employed by the organization 
+organizational structure faculty department as well as multiple 
+types of documents research and course descriptions publications 
+and academic homepages this setting is quite different from the 
+w c setting in ways that might impact upon the performance of 
+expertise retrieval tasks 
+we focus on a number of research questions in this paper does 
+the relatively small amount of data available on an intranet affect 
+the quality of the topic-person associations that lie at the heart of 
+expertise retrieval algorithms how do state-of-the-art algorithms 
+developed on the w c data set perform in the alternative scenario 
+of the type described above more generally do the lessons from 
+the expert finding task at trec carry over to this setting how 
+does the inclusion or exclusion of different documents affect 
+expertise retrieval tasks in addition to how can the topical and 
+organizational structure be used for retrieval purposes 
+to answer our research questions we first present a set of 
+baseline approaches based on generative language modeling aimed at 
+finding associations between topics and people this allows us to 
+formulate the expert finding and expert profiling tasks in a uniform 
+way and has the added benefit of allowing us to understand the 
+relations between the two tasks for our experimental evaluation we 
+introduce a new data set the uvt expert collection which is 
+representative of the type of intranet that we described above our 
+collection is based on publicly available data crawled from the 
+website of tilburg university uvt this type of data is particularly 
+interesting since it is clean heterogeneous structured and 
+focused but comprises a limited number of documents contains 
+information on the organizational hierarchy it is bilingual 
+ english and dutch and the list of expertise areas of an individual 
+are provided by the employees themselves using the uvt expert 
+collection we conduct two sets of experiments the first is aimed 
+at determining the effectiveness of baseline expertise finding and 
+profiling methods in this new setting a second group of 
+experiments is aimed at extensions of the baseline methods that exploit 
+characteristic features of the uvt expert collection specifically 
+we propose and evaluate refined expert finding and profiling 
+methods that incorporate topicality and organizational structure 
+apart from the research questions and data set that we contribute 
+our main contributions are as follows the baseline models 
+developed for expertise finding perform well on the new data set while 
+on the w c setting the expert finding task appears to be more 
+difficult than profiling for the uvt data the opposite is the case we 
+find that profiling on the uvt data set is considerably more 
+difficult than on the w c set which we believe is due to the large 
+ but realistic number of topical areas that we used for profiling 
+about for the uvt set versus in the w c case 
+taking the similarity between topics into account can significantly 
+improve retrieval performance the best performing similarity 
+measures are content-based therefore they can be applied on the w c 
+ and other settings as well finally we demonstrate that the 
+organizational structure can be exploited in the form of a context model 
+improving map scores for certain models by up to 
+the remainder of this paper is organized as follows in the next 
+section we review related work then in section we provide 
+detailed descriptions of the expertise retrieval tasks that we address 
+in this paper expert finding and expert profiling in section we 
+present our baseline models of which the performance is then 
+assessed in section using the uvt data set that we introduce in 
+section advanced models exploiting specific features of our data are 
+presented in section and evaluated in section we formulate our 
+conclusions in section 
+ related work 
+initial approaches to expertise finding often employed databases 
+containing information on the skills and knowledge of each 
+individual in the organization most of these tools usually called 
+yellow pages or people-finding systems rely on people to self-assess 
+their skills against a predefined set of keywords for updating 
+profiles in these systems in an automatic fashion there is a need for 
+intelligent technologies more recent approaches use specific 
+document sets such as email or software to find expertise 
+in contrast with focusing on particular document types there is also 
+an increased interest in the development of systems that index and 
+mine published intranet documents as sources of evidence for 
+expertise one such published approach is the p noptic system 
+which builds a representation of each person by concatenating all 
+documents associated with that person-this is similar to model 
+of balog et al who formalize and compare two methods balog 
+et al s model directly models the knowledge of an expert from 
+associated documents while their model first locates documents 
+on the topic and then finds the associated experts in the reported 
+experiments the second method performs significantly better when 
+there are sufficiently many associated documents per candidate 
+most systems that took part in the and editions of the 
+expert finding task at trec implemented variations on one of 
+these two models see macdonald and ounis propose 
+a different approach for ranking candidate expertise with respect to 
+a topic based on data fusion techniques without using 
+collectionspecific heuristics they find that applying field-based weighting 
+models improves the ranking of candidates petkova and croft 
+propose yet another approach based on a combination of the above 
+model and explicitly modeling topics 
+turning to other expert retrieval tasks that can also be addressed 
+using topic-people associations balog and de rijke addressed 
+the task of determining topical expert profiles while their methods 
+proved to be efficient on the w c corpus they require an amount 
+of data that may not be available in the typical knowledge-intensive 
+organization balog and de rijke study the related task of 
+finding experts that are similar to a small set of experts given as input 
+as an aside creating a textual summary of a person shows 
+some similarities to biography finding which has received a 
+considerable amount of attention recently see e g 
+we use generative language modeling to find associations 
+between topics and people in our modeling of expert finding and 
+profiling we collect evidence for expertise from multiple sources in 
+a heterogeneous collection and integrate it with the co-occurrence 
+of candidates names and query terms-the language modeling 
+setting allows us to do this in a transparent manner our modeling 
+proceeds in two steps in the first step we consider three baseline 
+models two taken from the models and mentioned above 
+and one a refined version of a model introduced in which we 
+refer to as model below this third model is also similar to the 
+model described by petkova and croft the models we 
+consider in our second round of experiments are mixture models 
+similar to contextual language models and to the expanded 
+documents of tao et al however the features that we use for 
+definining our expansions-including topical structure and 
+organizational structure-have not been used in this way before 
+ tasks 
+in the expertise retrieval scenario that we envisage users seeking 
+expertise within an organization have access to an interface that 
+combines a search box where they can search for experts or topics 
+with navigational structures of experts and of topics that allows 
+them to click their way to an expert page providing the profile of a 
+person or a topic page providing a list of experts on the topic 
+to feed the above interface we face two expertise retrieval 
+tasks expert finding and expert profiling that we first define and 
+then formalize using generative language models in order to model 
+either task the probability of the query topic being associated to a 
+candidate expert plays a key role in the final estimates for searching 
+and profiling by using language models both the candidates and 
+the query are characterized by distributions of terms in the 
+vocabulary used in the documents made available by the organization 
+whose expertise retrieval needs we are addressing 
+ expert finding 
+expert finding involves the task of finding the right person with 
+the appropriate skills and knowledge who are the experts on topic 
+x e g an employee wants to ascertain who worked on a 
+particular project to find out why particular decisions were made without 
+having to trawl through documentation if there is any or they 
+may be in need a trained specialist for consultancy on a specific 
+problem 
+within an organization there are usually many possible 
+candidates who could be experts for given topic we can state this 
+problem as follows 
+what is the probability of a candidate ca being an 
+expert given the query topic q 
+that is we determine p ca q and rank candidates ca according to 
+this probability the candidates with the highest probability given 
+the query are deemed the most likely experts for that topic the 
+challenge is how to estimate this probability accurately since the 
+query is likely to consist of only a few terms to describe the 
+expertise required we should be able to obtain a more accurate estimate 
+by invoking bayes theorem and estimating 
+p ca q 
+p q ca p ca 
+p q 
+ 
+where p ca is the probability of a candidate and p q is the 
+probability of a query since p q is a constant it can be ignored for 
+ranking purposes thus the probability of a candidate ca being an 
+expert given the query q is proportional to the probability of a query 
+given the candidate p q ca weighted by the a priori belief p ca 
+that candidate ca is an expert 
+p ca q ∝ p q ca p ca 
+in this paper our main focus is on estimating the probability of 
+a query given the candidate p q ca because this probability 
+captures the extent to which the candidate knows about the query topic 
+whereas the candidate priors are generally assumed to be 
+uniformand thus will not influence the ranking-it has been demonstrated 
+that a sensible choice of priors may improve the performance 
+ expert profiling 
+while the task of expert searching was concerned with 
+finding experts given a particular topic the task of expert profiling 
+seeks to answer a related question what topics does a candidate 
+know about essentially this turns the questions of expert finding 
+around the profiling of an individual candidate involves the 
+identification of areas of skills and knowledge that they have expertise 
+about and an evaluation of the level of proficiency in each of these 
+areas this is the candidate s topical profile 
+generally topical profiles within organizations consist of 
+tabular structures which explicitly catalogue the skills and knowledge 
+of each individual in the organization however such practice is 
+limited by the resources available for defining creating 
+maintaining and updating these profiles over time by focusing on 
+automatic methods which draw upon the available evidence within the 
+document repositories of an organization our aim is to reduce the 
+human effort associated with the maintenance of topical profiles 
+ 
+a topical profile of a candidate then is defined as a vector where 
+each element i of the vector corresponds to the candidate ca s 
+expertise on a given topic ki i e s ca ki each topic ki defines a 
+particular knowledge area or skill that the organization uses to 
+define the candidate s topical profile thus it is assumed that a list of 
+topics k kn where n is the number of pre-defined topics 
+is given 
+profile ca s ca k s ca k s ca kn 
+ 
+context and evidence are needed to help users of expertise 
+finding systems to decide whom to contact when seeking expertise in a 
+particular area examples of such context are who does she work 
+with what are her contact details is she well-connected just 
+in case she is not able to help us herself what is her role in the 
+organization who is her superior collaborators and affiliations 
+etc are all part of the candidate s social profile and can serve as 
+a background against which the system s recommendations should 
+be interpreted in this paper we only address the problem of 
+determining topical profiles and leave social profiling to further work 
+we state the problem of quantifying the competence of a person on 
+a certain knowledge area as follows 
+what is the probability of a knowledge area ki being 
+part of the candidate s expertise profile 
+where s ca ki is defined by p ki ca our task then is to 
+estimate p ki ca which is equivalent to the problem of obtaining 
+p q ca where the topic ki is represented as a query topic q i e a 
+sequence of keywords representing the expertise required 
+both the expert finding and profiling tasks rely on the accurate 
+estimation of p q ca the only difference derives from the prior 
+probability that a person is an expert p ca which can be 
+incorporated into the expert finding task this prior does not apply to 
+the profiling task since the candidate individual is fixed 
+ baseline models 
+in this section we describe our baseline models for estimating 
+p q ca i e associations between topics and people both expert 
+finding and expert profiling boil down to this estimation we 
+employ three models for calculating this probability 
+ from topics to candidates 
+using candidate models model model defines the 
+probability of a query given a candidate p q ca using standard 
+language modeling techniques based on a multinomial unigram 
+language model for each candidate ca a candidate language model 
+θca is inferred such that the probability of a term given θca is 
+nonzero for all terms i e p t θca from the candidate model the 
+query is generated with the following probability 
+p q θca 
+y 
+t∈q 
+p t θca n t q 
+ 
+where each term t in the query q is sampled identically and 
+independently and n t q is the number of times t occurs in q the 
+candidate language model is inferred as follows an empirical 
+model p t ca is computed it is smoothed with background 
+probabilities using the associations between a candidate and a 
+document the probability p t ca can be approximated by 
+p t ca 
+x 
+d 
+p t d p d ca 
+where p d ca is the probability that candidate ca generates a 
+supporting document d and p t d is the probability of a term t 
+occurring in the document d we use the maximum-likelihood estimate 
+of a term that is the normalised frequency of the term t in 
+document d the strength of the association between document d and 
+candidate ca expressed by p d ca reflects the degree to which the 
+candidates expertise is described using this document the 
+estimation of this probability is presented later in section 
+the candidate model is then constructed as a linear interpolation 
+of p t ca and the background model p t to ensure there are no 
+zero probabilities which results in the final estimation 
+p q θca 
+y 
+t∈q 
+ 
+ − λ 
+x 
+d 
+p t d p d ca 
+ 
+ λp t 
+ n t q 
+ 
+model amasses all the term information from all the documents 
+associated with the candidate and uses this to represent that 
+candidate this model is used to predict how likely a candidate would 
+produce a query q this can can be intuitively interpreted as the 
+probability of this candidate talking about the query topic where 
+we assume that this is indicative of their expertise 
+using document models model model takes a 
+different approach here the process is broken into two parts given 
+a candidate ca a document that is associated with a candidate 
+is selected with probability p d ca and from this document a 
+query q is generated with probability p q d then the sum over all 
+documents is taken to obtain p q ca such that 
+p q ca 
+x 
+d 
+p q d p d ca 
+the probability of a query given a document is estimated by 
+inferring a document language model θd for each document d in a 
+similar manner as the candidate model was inferred 
+p t θd − λ p t d λp t 
+where p t d is the probability of the term in the document the 
+probability of a query given the document model is 
+p q θd 
+y 
+t∈q 
+p t θd n t q 
+ 
+the final estimate of p q ca is obtained by substituting p q d for 
+p q θd into eq see for full details conceptually model 
+differs from model because the candidate is not directly modeled 
+instead the document acts like a hidden variable in the process 
+which separates the query from the candidate this process is akin 
+to how a user may search for candidates with a standard search 
+engine initially by finding the documents which are relevant and 
+then seeing who is associated with that document by examining a 
+number of documents the user can obtain an idea of which 
+candidates are more likely to discuss the topic q 
+using topic models model we introduce a third model model 
+instead of attempting to model the query generation process via 
+candidate or document models we represent the query as a topic 
+language model and directly estimate the probability of the 
+candidate p ca q this approach is similar to the model presented 
+in as with the previous models a language model is 
+inferred but this time for the query we adapt the work of lavrenko 
+and croft to estimate a topic model from the query 
+the procedure is as follows given a collection of documents 
+and a query topic q it is assumed that there exists an unknown 
+topic model θk that assigns probabilities p t θk to the term 
+occurrences in the topic documents both the query and the documents 
+are samples from θk as opposed to the previous approaches where 
+a query is assumed to be sampled from a specific document or 
+candidate model the main task is to estimate p t θk the probability 
+of a term given the topic model since the query q is very sparse 
+and as there are no examples of documents on the topic this 
+distribution needs to be approximated lavrenko and croft suggest 
+a reasonable way of obtaining such an approximation by assuming 
+that p t θk can be approximated by the probability of term t given 
+the query q we can then estimate p t q using the joint probability 
+of observing the term t together with the query terms q qm 
+and dividing by the joint probability of the query terms 
+p t θk ≈ p t q 
+p t q qm 
+p q qm 
+ 
+p t q qm 
+p 
+t ∈t p t q qm 
+ 
+where p q qm 
+p 
+t ∈t p t q qm and t is the 
+entire vocabulary of terms in order to estimate the joint probability 
+p t q qm we follow and assume t and q qm 
+are mutually independent once we pick a source distribution from 
+the set of underlying source distributions u if we choose u to be 
+a set of document models then to construct this set the query q 
+would be issued against the collection and the top n returned are 
+assumed to be relevant to the topic and thus treated as samples 
+from the topic model note that candidate models could be used 
+instead with the document models forming u the joint 
+probability of term and query becomes 
+p t q qm 
+x 
+d∈u 
+p d 
+˘ 
+p t θd 
+my 
+i 
+p qi θd 
+¯ 
+ 
+here p d denotes the prior distribution over the set u which 
+reflects the relevance of the document to the topic we assume that 
+p d is uniform across u in order to rank candidates according 
+to the topic model defined we use the kullback-leibler divergence 
+metric kl to measure the difference between the candidate 
+models and the topic model 
+kl θk θca 
+x 
+t 
+p t θk log 
+p t θk 
+p t θca 
+ 
+candidates with a smaller divergence from the topic model are 
+considered to be more likely experts on that topic the candidate model 
+θca is defined in eq by using kl divergence instead of the 
+probability of a candidate given the topic model p ca θk we avoid 
+normalization problems 
+ document-candidate associations 
+for our models we need to be able to estimate the probability 
+p d ca which expresses the extent to which a document d 
+characterizes the candidate ca in two methods are presented for 
+estimating this probability based on the number of person names 
+recognized in a document however in our intranet setting it is 
+reasonable to assume that authors of documents can unambiguously be 
+identified e g as the author of an article the teacher assigned to a 
+course the owner of a web page etc hence we set p d ca to be 
+ if candidate ca is author of document d otherwise the probability 
+is in section we describe how authorship can be determined 
+on different types of documents within the collection 
+ the uvt expert collection 
+the uvt expert collection used in the experiments in this paper 
+fits the scenario outlined in section the collection is based on 
+the webwijs webwise system developed at tilburg university 
+ uvt in the netherlands webwijs http www uvt nl 
+webwijs is a publicly accessible database of uvt employees 
+who are involved in research or teaching currently webwijs 
+contains information about experts each of whom has a page with 
+contact information and if made available by the expert a research 
+description and publications list in addition each expert can 
+select expertise areas from a list of topics and is encouraged to 
+suggest new topics that need to be approved by the webwijs editor 
+each topic has a separate page that shows all experts associated 
+with that topic and if available a list of related topics 
+webwijs is available in dutch and english and this bilinguality 
+has been preserved in the collection every dutch webwijs page 
+has an english translation not all dutch topics have an english 
+translation but the reverse is true the english topics all have a 
+dutch equivalent 
+about of the experts teach courses at tilburg university 
+these courses were also crawled and included in the profile in 
+addition about of the experts link to their academic homepage 
+from their webwijs page these home pages were crawled and 
+added to the collection this means that if experts put the full-text 
+versions of their publications on their academic homepage these 
+were also available for indexing we also obtained full-text 
+versions of publications from the uvt institutional repository and 
+dutch english 
+no of experts 
+no of experts with ≥ topic 
+no of topics 
+no of expert-topic pairs 
+avg no of topics expert 
+max no of topics expert no of experts 
+min no of topics expert no of experts 
+avg no of experts topic 
+max no of experts topic no of topics 
+min no of experts topic no of topics 
+no of experts with hp 
+no of experts with cd 
+avg no of cds per teaching expert 
+no of experts with rd 
+no of experts with pub 
+avg no of pubs per expert 
+avg no of pub citations per expert 
+avg no of full-text pubs per expert 
+table descriptive statistics of the dutch and english versions 
+of the uvt expert collection 
+converted them to plain text we ran the textcat language 
+identifier to classify the language of the home pages and the 
+fulltext publications we restricted ourselves to pages where the 
+classifier was confident about the language used on the page 
+this resulted in four document types research descriptions rd 
+course descriptions cd publications pub full-text and 
+citationonly versions and academic homepages hp everything was 
+bundled into the uvt expert collection which is available at http 
+ ilk uvt nl uvt-expert-collection 
+the uvt expert collection was extracted from a different 
+organizational setting than the w c collection and differs from it in 
+a number of ways the uvt setting is one with relatively small 
+amounts of multilingual data document-author associations are 
+clear and the data is structured and clean the collection covers a 
+broad range of expertise areas as one can typically find on intranets 
+of universities and other knowledge-intensive institutes 
+additionally our university setting features several types of structure 
+ topical and organizational as well as multiple document types 
+another important difference between the two data sets is that the 
+expertise areas in the uvt expert collection are self-selected instead 
+of being based on group membership or assignments by others 
+size is another dimension along which the w c and uvt expert 
+collections differ the latter is the smaller of the two also realistic 
+are the large differences in the amount of information available for 
+each expert utilizing webwijs is voluntary dutch experts 
+did not select any topics at all this leaves us with dutch and 
+ english usable expert profiles table provides descriptive 
+statistics for the uvt expert collection 
+universities tend to have a hierarchical structure that goes from 
+the faculty level to departments research groups down to the 
+individual researchers in the uvt expert collection we have 
+information about the affiliations of researchers with faculties and 
+institutes providing us with a two-level organizational hierarchy 
+tilburg university has organizational units at the faculty level 
+ including the university office and several research institutes and 
+ departments which amounts to departments per faculty 
+as to the topical hierarchy used by webwijs of the 
+topics are top nodes in the hierarchy this hierarchy has an average 
+topic chain length of and a maximum length of topics 
+ evaluation 
+below we evaluate section s models for expert finding and 
+profiling onthe uvt expert collection we detail our research 
+questions and experimental setup and then present our results 
+ research questions 
+we address the following research questions both expert finding 
+and profiling rely on the estimations of p q ca the question is 
+how the models compare on the different tasks and in the setting of 
+the uvt expert collection in model outperformed model 
+on the w c collection how do they compare on our data set and 
+how does model compare to model what about performance 
+differences between the two languages in our test collection 
+ experimental setup 
+the output of our models was evaluated against the self-assigned 
+topic labels which were treated as relevance judgements results 
+were evaluated separately for english and dutch for english we 
+only used topics for which the dutch translation was available for 
+dutch all topics were considered the results were averaged for 
+the queries in the intersection of relevance judgements and results 
+missing queries do not contribute a value of to the scores 
+we use standard information retrieval measures such as mean 
+average precision map and mean reciprocal rank mrr we 
+also report the percentage of topics q and candidates ca 
+covered for the expert finding and profiling tasks respectively 
+ results 
+table shows the performance of model and on the 
+expert finding and profiling tasks the rows of the table correspond 
+to the various document types rd cd pub and hp and to their 
+combinations rd cd pub hp is equivalent to the full 
+collection and will be referred as the baseline of our experiments 
+looking at table we see that model performs the best across 
+the board however when the data is clean and very focused rd 
+model outperforms it in a number of cases model has the 
+best coverage of candidates ca and topics q the various 
+document types differ in their characteristics and how they improve 
+the finding and profiling tasks expert profiling benefits much from 
+the clean data present in the rd and cd document types while the 
+publications contribute the most to the expert finding task adding 
+the homepages does not prove to be particularly useful 
+when we compare the results across languages we find that the 
+coverage of english topics q is higher than of the dutch ones 
+for expert finding apart from that the scores fall in the same range 
+for both languages for the profiling task the coverage of the 
+candidates ca is very similar for both languages however the 
+performance is substantially better for the english topics 
+while it is hard to compare scores across collections we 
+conclude with a brief comparison of the absolute scores in table to 
+those reported in on the w c test set edition for 
+expert finding the map scores for model reported here are about 
+ higher than the corresponding figures in while our mrr 
+scores are slightly below those in for expert profiling the 
+differences are far more dramatic the map scores for model 
+reported here are around below the scores in while the best 
+mrr scores are about the same as those in the cause for the 
+latter differences seems to reside in the number of knowledge areas 
+considered here-approx times more than in the w c setting 
+ advanced models 
+now that we have developed and assessed basic language 
+modeling techniques for expertise retrieval we turn to refined models 
+that exploit special features of our test collection 
+ exploiting knowledge area similarity 
+one way to improve the scoring of a query given a candidate is 
+to consider what other requests the candidate would satisfy and use 
+them as further evidence to support the original query proportional 
+expert finding expert profiling 
+document types model model model model model model 
+ q map mrr q map mrr q map mrr ca map mrr ca map mrr ca map mrr 
+english 
+rd 
+cd 
+pub 
+hp 
+rd cd 
+rd cd pub 
+rd cd pub hp 
+dutch 
+rd 
+cd 
+pub 
+hp 
+rd cd 
+rd cd pub 
+rd cd pub hp 
+table performance of the models on the expert finding and profiling tasks using different document types and their combinations 
+ q is the number of topics covered applies to the expert finding task ca is the number of candidates covered applies to the 
+expert profiling task the top and bottom blocks correspond to english and dutch respectively the best scores are in boldface 
+to how related the other requests are to the original query this can 
+be modeled by interpolating between the p q ca and the further 
+supporting evidence from all similar requests q as follows 
+p q ca λp q ca − λ 
+x 
+q 
+p q q p q ca 
+where p q q represents the similarity between the two topics q 
+and q to be able to work with similarity methods that are not 
+necessarily probabilities we set p q q w q q 
+γ 
+ where γ is 
+a normalizing constant such that γ 
+p 
+q w q q we 
+consider four methods for calculating the similarity score between two 
+topics three approaches are strictly content-based and establish 
+similarity by examining co-occurrence patterns of topics within the 
+collection while the last approach exploits the hierarchical 
+structure of topical areas that may be present within an organization see 
+ for further examples of integrating word relationships into 
+language models 
+the kullback-leibler kl divergence metric defined in eq 
+provides a measure of how different or similar two probability 
+distributions are a topic model is inferred for q and q using the 
+method presented in section to describe the query across the 
+entire vocabulary since a lower kl score means the queries are 
+more similar we let w q q max kl θq · − kl θq θq 
+pointwise mutual information pmi is a measure of 
+association used in information theory to determine the extent of 
+independence between variables the dependence between two queries 
+is reflected by the si q q score where scores greater than zero 
+indicate that it is likely that there is a dependence which we take 
+to mean that the queries are likely to be similar 
+si q q log 
+p q q 
+p q p q 
+ 
+we estimate the probability of a topic p q using the number of 
+documents relevant to query q within the collection the joint 
+probability p q q is estimated similarly by using the 
+concatenation of q and q as a query to obtain p q q we then set 
+w q q si q q when si q q otherwise w q q 
+because we are only interested in including queries that are similar 
+the log-likelihood statistic provides another measure of 
+dependence which is more reliable than the pointwise mutual 
+information measure let k be the number of co-occurrences of q 
+and q k the number of occurrences of q not co-occurring with q 
+n the total number of occurrences of q and n the total number 
+of topic tokens minus the number of occurrences of q then let 
+p k n p k n and p k k n n 
+ q q p k n p k n 
+− p k n − p k n 
+where p n k k log p n − k log − p the higher 
+score indicate that queries are also likely to be similar thus we set 
+w q q q q 
+finally we also estimate the similarity of two topics based on 
+their distance within the topic hierarchy the topic hierarchy is 
+viewed as a directed graph and for all topic-pairs the shortest path 
+sp q q is calculated we set the similarity score to be the 
+reciprocal of the shortest path w q q sp q q 
+ contextual information 
+given the hierarchy of an organization the units to which a 
+person belong are regarded as a context so as to compensate for data 
+sparseness we model it as follows 
+p q ca 
+ 
+ − 
+p 
+ou∈ou ca λou 
+ 
+· p q ca 
+ 
+p 
+ou∈ou ca λou · p q ou 
+where ou ca is the set of organizational units of which 
+candidate ca is a member of and p q o expresses the strength of the 
+association between query q and the unit ou the latter probability 
+can be estimated using either of the three basic models by simply 
+replacing ca with ou in the corresponding equations an 
+organizational unit is associated with all the documents that its members 
+have authored that is p d ou maxca∈ou p d ca 
+ a simple multilingual model 
+for knowledge institutes in europe academic or otherwise a 
+multilingual or at least bilingual setting is typical the following 
+model builds on a kind of independence assumption there is no 
+spill-over of expertise profiles across language boundaries while a 
+simplification this is a sensible first approach that is p q ca p 
+l∈l λl · p ql ca where l is the set of languages used in the 
+collection ql is the translation of the query q to language l and λl is 
+a language specific smoothing parameter such that 
+p 
+l∈l λl 
+ advanced models evaluation 
+in this section we present an experimental evaluation of our 
+advanced models 
+expert finding expert profiling 
+language model model model model model model 
+ q map mrr q map mrr q map mrr ca map mrr ca map mrr ca map mrr 
+english only 
+dutch only 
+combination 
+table performance of the combination of languages on the expert finding and profiling tasks on candidates best scores for each 
+model are in italic absolute best scores for the expert finding and profiling tasks are in boldface 
+method model model model 
+map mrr map mrr map mrr 
+english 
+baseline 
+kldiv 
+pmi 
+ll 
+hdist 
+dutch 
+baseline 
+kldiv 
+pmi 
+ll 
+hdist 
+method model model model 
+map mrr map mrr map mrr 
+english 
+baseline 
+kldiv 
+pmi 
+ll 
+hdist 
+dutch 
+baseline 
+kldiv 
+pmi 
+ll 
+hdist 
+table performance on the expert finding top and profiling 
+ bottom tasks using knowledge area similarities runs were 
+evaluated on the main topics set best scores are in boldface 
+ research questions 
+our questions follow the refinements presented in the preceding 
+section does exploiting the knowledge area similarity improve 
+effectiveness which of the various methods for capturing word 
+relationships is most effective furthermore is our way of bringing 
+in contextual information useful for which tasks and finally is 
+our simple way of combining the monolingual scores sufficient for 
+obtaining significant improvements 
+ experimental setup 
+given that the self-assessments are also sparse in our collection 
+in order to be able to measure differences between the various 
+models we selected a subset of topics and evaluated some of the runs 
+only on this subset this set is referred as main topics and consists 
+of topics that are located at the top level of the topical hierarchy a 
+main topic has subtopics but is not a subtopic of any other topic 
+this main set consists of dutch and english topics the 
+relevance judgements were restricted to the main topic set but were 
+not expanded with subtopics 
+ exploiting knowledge area similarity 
+table presents the results the four methods used for 
+estimating knowledge-area similarity are kl divergence kldiv 
+pointlang topics model model model 
+map mrr map mrr map mrr 
+expert finding 
+uk all 
+uk main 
+nl all 
+nl main 
+expert profiling 
+uk all 
+uk main 
+nl all 
+nl main 
+table evaluating the context models on organizational units 
+wise mutual information pmi log-likelihood ll and distance 
+within topic hierarchy hdist we managed to improve upon the 
+baseline in all cases but the improvement is more noticeable for 
+the profiling task for both tasks the ll method performed best 
+the content-based approaches performed consistently better than 
+hdist 
+ contextual information 
+a two level hierarchy of organizational units faculties and 
+institutes is available in the uvt expert collection the unit a person 
+belongs to is used as a context for that person first we evaluated 
+the models of the organizational units using all topics all and 
+only the main topics main an organizational unit is considered 
+to be relevant for a given topic or vice versa if at least one member 
+of the unit selected the given topic as an expertise area 
+table reports on the results as far as expert finding goes given 
+a topic the corresponding organizational unit can be identified with 
+high precision however the expert profiling task shows a different 
+picture the scores are low and the task seems hard the 
+explanation may be that general concepts i e our main topics may belong 
+to several organizational units 
+second we performed another evaluation where we combined 
+the contextual models with the candidate models to score 
+candidates again table reports on the results we find a positive 
+impact of the context models only for expert finding noticably 
+for expert finding and model it improves over for 
+english and over for dutch on map the poor performance 
+on expert profiling may be due to the fact that context models alone 
+did not perform very well on the profiling task to begin with 
+ multilingual models 
+in this subsection we evaluate the method for combining 
+results across multiple languages that we described in section 
+in our setting the set of languages consists of english and dutch 
+l uk nl the weights on these languages were set to be 
+identical λuk λnl we performed experiments with 
+various λ settings but did not observe significant differences in 
+performance 
+table reports on the multilingual results where performance is 
+evaluated on the full topic set all three models significantly 
+imlang method model model model 
+map mrr map mrr map mrr 
+expert finding 
+uk bl 
+uk ct 
+nl bl 
+nl ct 
+expert profiling 
+uk bl 
+uk ct 
+nl bl 
+nl ct 
+table performance of the context models ct compared to 
+the baseline bl best scores are in boldface 
+proved over all measures for both tasks the coverage of topics 
+and candidates for the expert finding and profiling tasks 
+respectively is close to in all cases the relative improvement 
+of the precision scores ranges from to these scores 
+demonstrate that despite its simplicity our method for combining 
+results over multiple languages achieves substantial improvements 
+over the baseline 
+ conclusions 
+in this paper we focused on expertise retrieval expert finding 
+and profiling in a new setting of a typical knowledge-intensive 
+organization in which the available data is of high quality 
+multilingual and covering a broad range of expertise area typically the 
+amount of available data in such an organization e g a university 
+a research institute or a research lab is limited when compared to 
+the w c collection that has mostly been used for the experimental 
+evaluation of expertise retrieval so far 
+to examine expertise retrieval in this setting we introduced and 
+released the uvt expert collection as a representative case of such 
+knowledge intensive organizations the new collection reflects the 
+typical properties of knowledge-intensive institutes noted above and 
+also includes several features which may are potentially useful for 
+expertise retrieval such as topical and organizational structure 
+we evaluated how current state-of-the-art models for expert 
+finding and profiling performed in this new setting and then refined 
+these models in order to try and exploit the different 
+characteristics within the data environment language topicality and 
+organizational structure we found that current models of expertise 
+retrieval generalize well to this new environment in addition we 
+found that refining the models to account for the differences results 
+in significant improvements thus making up for problems caused 
+by data sparseness issues 
+future work includes setting up manual assessments of 
+automatically generated profiles by the employees themselves especially in 
+cases where the employees have not provided a profile themselves 
+ acknowledgments 
+krisztian balog was supported by the netherlands organisation 
+for scientific research nwo under project number - - 
+maarten de rijke was also supported by nwo under project 
+numbers - - - - - - 
+ - - 
+ and by the e u ist programme of the th 
+fp for rtd under project multimatch contract ist- 
+the work of toine bogers and antal van den bosch was funded 
+by the iop-mmi-program of senternovem the dutch ministry 
+of economic affairs as part of the a propos project 
+ references 
+ l azzopardi incorporating context in the language modeling 
+framework for ad-hoc information retrieval phd thesis university 
+of paisley 
+ k balog and m de rijke finding similar experts in this volume 
+ 
+ k balog and m de rijke determining expert profiles with an 
+application to expert finding in ijcai proc th intern joint conf 
+on artificial intelligence pages - 
+ k balog l azzopardi and m de rijke formal models for expert 
+finding in enterprise corpora in sigir proc th annual 
+intern acm sigir conf on research and development in information 
+retrieval pages - 
+ i becerra-fernandez the role of artificial intelligence technologies 
+in the implementation of people-finder knowledge management 
+systems in aaai workshop on bringing knowledge to business 
+processes march 
+ c s campbell p p maglio a cozzi and b dom expertise 
+identification using email communications in cikm proc twelfth 
+intern conf on information and knowledge management pages 
+ 
+ g cao j -y nie and j bai integrating word relationships into 
+language models in sigir proc th annual intern acm sigir 
+conf on research and development in information retrieval pages 
+ - 
+ t m cover and j a thomas elements of information theory 
+wiley-interscience 
+ n craswell d hawking a m vercoustre and p wilkins p noptic 
+expert searching for experts not just for documents in ausweb 
+ n craswell a de vries and i soboroff overview of the 
+trec enterprise track in the fourteenth text retrieval conf proc 
+ trec 
+ t h davenport and l prusak working knowledge how 
+organizations manage what they know harvard business school press 
+boston ma 
+ t dunning accurate methods for the statistics of surprise and 
+coincidence computational linguistics - 
+ e filatova and j prager tell me what you do and i ll tell you what 
+you are learning occupation-related activities for biographies in 
+hlt emnlp 
+ v lavrenko and w b croft relevance based language models in 
+sigir proc th annual intern acm sigir conf on research 
+and development in information retrieval pages - 
+ v lavrenko m choquette and w b croft cross-lingual relevance 
+models in sigir proc th annual intern acm sigir conf on 
+research and development in information retrieval pages - 
+ 
+ c macdonald and i ounis voting for candidates adapting data 
+fusion techniques for an expert search task in cikm proc th 
+acm intern conf on information and knowledge management pages 
+ - 
+ c manning and h sch¨utze foundations of statistical natural 
+language processing the mit press 
+ a mockus and j d herbsleb expertise browser a quantitative 
+approach to identifying expertise in icse proc th intern conf 
+on software engineering pages - 
+ d petkova and w b croft hierarchical language models for expert 
+finding in enterprise corpora in proc ictai pages - 
+ 
+ i soboroff a de vries and n craswell overview of the trec 
+ enterprise track in trec working notes 
+ t tao x wang q mei and c zhai language model information 
+retrieval with document expansion in hlt-naacl 
+ trec enterprise track url http www ins cwi 
+nl projects trec-ent wiki 
+ g van noord textcat language guesser url http www 
+let rug nl ˜vannoord textcat 
+ w c the w c test collection url http research 
+microsoft com users nickcr w c-summary html 

@@ -1,0 +1,1174 @@
+operation context and context-based operational 
+transformation 
+david sun 
+computer science division eecs 
+university of california 
+berkeley ca 
+davidsun cs berkeley edu 
+chengzheng sun 
+school of computer engineering 
+nanyang technological university 
+singapore 
+czsun ntu edu sg 
+abstract 
+operational transformation ot is a technique for 
+consistency maintenance and group undo and is being applied 
+to an increasing number of collaborative applications the 
+theoretical foundation for ot is crucial in determining its 
+capability to solve existing and new problems as well as 
+the quality of those solutions the theory of causality has 
+been the foundation of all prior ot systems but it is 
+inadequate to capture essential correctness requirements past 
+research had invented various patches to work around this 
+problem resulting in increasingly intricate and complicated 
+ot algorithms after having designed implemented and 
+experimented with a series of ot algorithms we reflected 
+on what had been learned and set out to develop a new 
+theoretical framework for better understanding and resolving 
+ot problems reducing its complexity and supporting its 
+continual evolution in this paper we report the main 
+results of this effort the theory of operation context and the 
+cot context-based ot algorithm the cot algorithm 
+is capable of supporting both do and undo of any 
+operations at anytime without requiring transformation functions 
+to preserve reversibility property convergence property 
+inverse properties and the cot algorithm is not only 
+simpler and more efficient than prior ot control algorithms 
+but also simplifies the design of transformation functions 
+we have implemented the cot algorithm in a generic 
+collaboration engine and used it for supporting a range of novel 
+collaborative applications 
+categories and subject descriptors 
+c computer-communication networks 
+distributed systems-distributed applications h information 
+interfaces and presentation group and organization 
+interfaces-collaborative computing synchronous 
+interaction 
+general terms 
+algorithms design theory 
+ introduction 
+operational transformation ot was originally invented 
+for consistency maintenance in plain-text group editors 
+in over years ot has evolved to support an increasing 
+number of applications including group undo 
+ group-awareness operation notification and 
+compression spreadsheet and table-centric applications 
+ html xml and tree-structured document editing 
+ word processing and slide creation 
+transparent and heterogenous application-sharing and 
+mobile replicated computing and database systems 
+to effectively and efficiently support existing and new 
+applications we must continue to improve the capability and 
+quality of ot in solving both old and new problems the 
+soundness of the theoretical foundation for ot is crucial in 
+this process one theoretical underpinning of all existing ot 
+algorithms is causality concurrency causally 
+related operations must be executed in their causal order 
+concurrent operations must be transformed before their 
+execution however the theory of causality is inadequate to 
+capture essential ot conditions for correct transformation 
+the limitation of the causality theory had caused 
+correctness problems from the very beginning of ot the dopt 
+algorithm was the first ot algorithm and was based solely 
+on the concurrency relationships among operations a 
+pair of operations are transformable as long as they are 
+concurrent however later research discovered that the 
+concurrency condition alone is not sufficient to ensure the 
+correctness of transformation another condition is that the two 
+concurrent operations must be defined on the same 
+document state in fact the failure to meet the second 
+condition was the root of the dopt-puzzle this puzzle was 
+solved in various ways but the theory of causality as well as 
+its limitation were inherited by all follow-up ot algorithms 
+the causality theory limitation became even more 
+prominent when ot was applied to solve the undo problem in 
+group editors the concept of causality is unsuitable to 
+capture the relationships between an inverse operation as 
+an interpretation of a meta-level undo command and other 
+normal editing operations in fact the causality relation is 
+not defined for inverse operations see section various 
+patches were invented to work around this problem 
+resulting in more intricate complicated ot algorithms 
+after having designed implemented and experimented 
+with a series of ot algorithms of increased complexity we 
+reflected on what had been learned and set out to develop 
+a uniformed theoretical framework for better understanding 
+and resolving ot problems reducing its complexity and 
+ 
+supporting its continual evolution in this paper we report 
+the main results of this effort the theory of operation 
+context and the cot context-based ot algorithm 
+the rest of this paper is organized as follows first we 
+define causal-dependency -independency and briefly describe 
+their limitations in section then we present the key 
+elements of the operation context theory including the 
+definition of operation context context-dependency -independency 
+relations context-based conditions and context vectors in 
+section in section we present the basic cot 
+algorithm for supporting consistency maintenance do and 
+group undo under the assumption that underlying 
+transformation functions are able to preserve some important 
+transformation properties then these transformation properties 
+and their pre-conditions are discussed in section the 
+cot solutions to these transformation properties are 
+presented in section comparison of the cot work to prior 
+ot work ot correctness issues and future work are 
+discussed in section finally major contributions of this 
+work are summarized in section 
+ limitations of causality 
+the theory of causality is central to distributed 
+computing and to the design of all existing ot algorithms 
+following lamport causal-dependency -independency 
+relations among editing operations can be defined in terms of 
+their generation and execution sequences 
+definition causal-dependency relation → 
+given two operations oa and ob generated at sites i and 
+j ob is causal-dependent on oa denoted by oa → ob iff 
+ i j and the generation of oa happened before the 
+generation of ob or i j and the execution of oa at site j 
+happened before the generation of ob or there exists an 
+operation ox such that oa → ox and ox → ob 
+definition causal-independency relation 
+given two operations oa and ob oa and ob are 
+causalindependent or concurrent denoted by oa ob iff neither 
+oa → ob nor ob → oa 
+just as vector logical clocks are used for capturing 
+casuality in distributed systems state vectors have been 
+used for capturing causal relationships among operations 
+and for representing document states in ot systems 
+ 
+to illustrate causal relations among operations consider 
+a real-time group editing session with two sites in figure 
+there are three editing operations in this scenario the undo 
+command undo o and its relation with other operations 
+shall be explained later o generated at site and o and 
+o generated at site according to definitions and 
+we have o → o because the generation of o happened 
+before the generation of o o o and o o because 
+for each pair neither operation s execution happened before 
+the other operation s generation 
+in the following discussion we shall use the term 
+ittransform to mean the use of the it inclusion 
+transformation function it oa ob which transforms operation 
+oa against operation ob in such a way that the impact of ob 
+is effectively included in oa this term is introduced to 
+differentiate this special transformation function from other 
+steps involved in a transformation process 
+figure a real-time group editing scenario 
+the scenario in figure without the undo command has 
+often been used to illustrate the dopt-puzzle under the 
+dopt algorithm when o arrives at site it will be 
+ittransformed against o since o o this is correct because 
+o and o are defined on the same initial document state 
+when o arrives at site it will also be it-transformed 
+against o since o o but this is incorrect because o is 
+defined on the document state that contains the effect of o 
+whereas o is defined on the initial document state in this 
+case the parameters of o and o are not comparable and 
+hence may not be it-transformed correctly the solution to 
+this puzzle is first to it-transform o against o to produce 
+o which is defined on the document state including the 
+effect of o the same state on which o is defined and 
+then to it-transform o against o 
+from definitions and it is clear that the 
+causaldependency relation is only defined for original operations 
+ e g o o and o directly generated by users but not for 
+transformed operations e g o furthermore the 
+concurrency relation does not capture the essential condition for 
+correct it-transformation the two input operations must 
+be defined on the same document state 
+another major limitation of causality is its unsuitability 
+for capturing ot conditions for inverse operations the 
+undo o command in figure is interpreted as an inverse 
+operation o the correct undo effect for o is to eliminate 
+the effect of o but retain the effects of other operations 
+ i e o and o to achieve this effect o needs to 
+be treated as an operation defined on the document state 
+including the effect of o but not o and o so that o 
+can be transformed against o and o before its execution 
+however according to lamport s happen-before relation 
+undo o is causally dependent on o o and o if o 
+was to inherit the causal relation of undo o then it would 
+be effectively treated as an operation defined on the 
+document state with the effects of all three operations o o 
+and o which would prohibit o from being transformed 
+against any operation thus failing to achieve the correct 
+undo effect moreover after executing an inverse 
+operation like o the document state can no longer be properly 
+represented by the state vector which is only capable of 
+representing original normal editing operations 
+ operation context 
+ basic concept 
+conceptually each operation o is associated with a 
+context denoted by c o which corresponds to the document 
+ 
+state on which the operation is defined the significance of 
+operation context is twofold an operation can be 
+correctly executed only if its context and the current document 
+state are the same and an operation can be correctly 
+ittransformed against another operation only if the contexts 
+of these two operations are the same 
+in figure both o and o are defined on the same 
+initial document so they are associated with the same context 
+o is defined on the document state which includes the effect 
+of o so c o is different from c o or c o when 
+o arrives at site it cannot be executed as-is since c o 
+does not match the current document state at site which 
+includes the effect of o o can be correctly it-transformed 
+against o since their contexts corresponds to the same 
+initial document state when o arrives at site it cannot be 
+executed as-is either since c o does not match the current 
+document state at site which includes the effects of both 
+o and o o cannot be correctly it-transformed against 
+o since their contexts are different which is the root of the 
+dopt-puzzle as discussed in section undo o should 
+be interpreted as an inverse o defined on the document 
+state with the effect of o only 
+ set representation of operation context 
+to facilitate comparison and manipulation of operation 
+contexts for correct execution and transformation it is 
+necessary to explicitly represent operation context 
+in ot systems there are two different kinds of operation 
+original operations which are generated by users and 
+transformed operations which are the outcomes of some 
+transformations original operations can be further divided into 
+two classes normal operations which are generated to do 
+something and inverse operations which are generated to 
+undo some executed operations for any operation o its 
+inverse is denoted by o since every transformed operation 
+must come from an original operation we use the notation 
+org o to denote the original operation of o if o is an 
+original operation then org o o 
+since the context of an operation corresponds to the 
+document state on which the operation is defined the problem 
+of context representation can be reduced into the problem 
+of document state representation in an ot-based group 
+editor each document state can be uniquely represented by 
+the set of original operations executed so far on the 
+document these original operations may be executed in different 
+orders or in different original or transformed forms at 
+different sites but the same document state must be achieved 
+ according to the convergence requirement we use 
+original normal and inverse operations rather than their 
+transformed versions to represent a document state 
+definition document state representation 
+a document state can be represented by ds as follows 
+ the initial document state is represented by ds 
+ after executing an operation o of any type on the 
+document state represented by ds the new document 
+state is represented by ds ds ∪ org o 
+this presentation does not specify what execution forms 
+the original operations in ds should take to bring the 
+document to the current state but it captures essential and 
+sufficient information for detecting whether two document 
+states are the same and for deriving their differences in terms 
+of original operations 
+based on the document state representation the context 
+of an original normal operation should be the same as the 
+representation of the document state from which this 
+operation was generated to achieve the undo effect in 
+an original inverse operation o should be defined on the 
+document state ds c o ∪ o which is the state 
+after executing the original operation o on the state c o 
+according to the definition of the it function a 
+transformed operation o where o it o ox should be 
+defined on the document state ds c o ∪ org ox which 
+is the state achievable by executing ox on the state c o 
+more precisely the context of an operation is defined blow 
+definition the context of an operation 
+ for an original normal operation o c o ds 
+where ds is the representation of the document state 
+from which o was generated 
+ for an original inverse operation o c o c o ∪ 
+ o where o is the operation to be undone 
+ for a transformed operation o c o c o ∪ 
+ org ox where o it o ox 
+according to the above definition the context of any type of 
+operation can be represented as a set of original operations 
+for the scenario in figure we have c o c o 
+ and c o o according to definition -item 
+according to definition -item we have c o o 
+from o it o o we have c o o according 
+to definition -item 
+ context-dependency -independency 
+we define the context-dependency -independency relation 
+among operations in terms of whether an original operation 
+is included in the context of another operation of any type 
+definition context-dependency relation 
+c 
+→ 
+given an original operation oa and an operation ob of any 
+type ob is context-dependent on oa denoted by oa 
+c 
+→ ob 
+iff oa ∈ c ob or there exists an original operation 
+ox such that oa ∈ c ox and ox ∈ c ob 
+it should be noted that the context-dependency relation is 
+defined only between an original either normal or inverse 
+operation and another operation of any type original or 
+transformed this is because any operation has a context 
+but only original operations can be included in a context 
+definition context-independency relation 
+c 
+ 
+given two original operations oa and ob oa and ob are 
+context-independent denoted by oa 
+c 
+ob iff neither oa 
+c 
+→ 
+ob nor ob 
+c 
+→ oa 
+it can be shown that if both oa and ob are original normal 
+operations then oa 
+c 
+→ ob is equivalent to oa → ob and 
+oa 
+c 
+ob is equivalent to oa ob in other words the 
+causal-dependency -independency relation is a special case 
+of the context-dependency -independency relation 
+ context-based conditions 
+the following context-based conditions cc capture 
+essential requirements for operation execution and 
+transformation in ot systems 
+ 
+cc c o ⊆ ds is a necessary condition for an original 
+operation o to be transformed to the document state 
+ds for execution 
+cc ensures that o is always executed after the 
+contextdependent operations included in c o in other words 
+for any original operation ox if ox 
+c 
+→ o then ox 
+must be executed before o when o is an original 
+normal operation all operations which are causally before 
+o must be included in c o according to definition 
+and definition so cc preserves the causal 
+ordering among original normal operations when o 
+is an original inverse operation c o must include the 
+operation to be undone by o see definition -item 
+so cc preserves the do-undo ordering among normal 
+and inverse operations 
+cc ds − c o 
+is the set of operations that o must be 
+transformed against before o is executed on the 
+document state ds 
+cc ensures that o is transformed against all 
+contextindependent operations in ds before its execution it 
+can be shown that for any ox in ds − c o it must 
+be that ox 
+c 
+o when o is an original normal 
+operation ds − c o must include all executed 
+operations which are concurrent with o so cc covers 
+the condition that o should be transformed against 
+concurrent operations when o is an inverse 
+operation cc covers the condition that o should be 
+transformed against all operations which are executed 
+after the operation to be undone by o 
+cc c o ds is a necessary condition for o to be 
+executed on the document state ds 
+cc is required for correctly executing operations 
+cc c oa ⊆ c ob is a necessary condition for oa to be 
+it-transformable to the new context given by c ob 
+cc is required because if c oa ⊆ c ob then there 
+must be an operation ox ∈ c oa but ox ∈ c ob 
+which means oa cannot be it-transformed to the new 
+context c ob since it-transformation cannot remove 
+this ox from c oa see definition -item 
+cc c ob − c oa is the set of operations that oa must 
+be transformed against before it-transformed against ob 
+cc ensures that oa is transformed against 
+contextindependent operations in c ob before it-transformed 
+against ob it can be shown that for any ox in 
+c ob − c oa it must be that ox 
+c 
+oa 
+cc c oa c ob is a necessary condition for oa to be 
+it-transformed against ob 
+cc is required for correctly applying it functions 
+in summary cc and cc are required for ensuring 
+correct ordering of operation execution transformation cc 
+and cc are required for selecting correct transformation 
+target operations and cc and cc are required for 
+ensuring correct operation execution transformation these 
+context-based conditions form the foundation for the cot 
+algorithm to be presented in section and section 
+ 
+ds − c o is the set difference between ds and c o 
+ context vector 
+an important element of the operation context theory is 
+the context vector which represents the set of operations of 
+a context in an efficient way for notational convenience 
+we assume that a collaborative editing session consists of n 
+collaborating sites identified by n − 
+ representing original normal operations 
+original normal operations generated at each site are strictly 
+sequential so each of them can be uniquely identified by a 
+pair of integers sid ns where sid is the site identifier and 
+ns is the local sequence number of this operation 
+let oij be an original normal operation generated at site 
+i with a sequence number j if oij is included in a 
+context c o then oi oi oij− must also be included 
+in c o according to definition and definition 
+therefore all normal operations generated at the same site can 
+be sufficiently characterized by the largest sequence 
+number of these operations all original normal operations in a 
+context can be partitioned into n groups according to their 
+generation sites so n integers are needed for representing 
+original normal operations in a context 
+ representing original inverse operations 
+an original inverse operation can be generated to undo 
+an original normal operation or to redo an undone 
+operation each original inverse operation directly or indirectly 
+corresponds to exactly one original normal operation for 
+example inverse operation o may be generated to undo o 
+and o may be generated to undo o both o and o 
+correspond to the same normal operation o based on this 
+observation all original inverse operations in an operation 
+context can be grouped by their corresponding original 
+normal operations one inverse group for each undone original 
+normal operation 
+inverse operations in the same inverse group can be 
+further differentiated by a sequence number based on their 
+execution order within this group for example o and o are 
+in the same inverse group corresponding to o so o has the 
+sequence number and o has the sequence number 
+in general an inverse can be identified by a triple sid ns is 
+where sid and ns are the site identifier and sequence 
+number of the corresponding normal operation and is is the 
+inverse sequence number within the group since inverses 
+are sequentially executed the largest sequence number in 
+the group can be used to represent all inverses in the group 
+inverse groups can be further partitioned into n inverse 
+clusters according to the site identifiers of their 
+corresponding normal operations the inverse cluster at site i - 
+icican be expressed as follows 
+ici ns is ns is nsk− isk− 
+where each pair nsj isj ≤ j k represents an inverse 
+group with isj inverse operations corresponding to the 
+original normal operation with sequence number nsj at site i if 
+no normal operation at site i has been undone ici is empty 
+ representing normal and inverse operations 
+to represent an operation context with both original 
+normal and inverse operations an n-dimensional context 
+vector is defined below 
+ 
+definition context vector 
+given an operation o its context c o can be represented 
+by the following context vector cv o 
+cv o ns ic ns ic nsn− icn− 
+where for ≤ i ≤ n − 
+ nsi represents all original normal operations generated 
+at site i and 
+ ici ns is ns is nsk− isk− 
+represents all inverse operations for undoing normal 
+operations generated at site i where nsj isj ≤ j k 
+represents an inverse group with isj inverses related to 
+the normal operation with sequence number nsj 
+in the absence of inverse operations in the operation 
+context all ici ≤ i ≤ n − would be empty and a context 
+vector would be reduced to a state vector 
+the vector representation of operation context can also be 
+used as the vector representation of the document state as 
+an example consider the document state after interpreting 
+the undo command undo o in figure since undo o 
+is interpreted as an inverse o see section the 
+document state after executing the transformed o shall be 
+ds o o o o this document state cannot be 
+represented by a state vector but can be represented as a 
+context vector as follows cv ds 
+based on definition it is straightforward to derive the 
+scheme for maintaining the vector representation for the 
+document state after executing each operation according 
+to definition moreover the vector representation of 
+operation context can also be used to efficiently detect 
+contextdependency -independency relations due to space 
+limitation these technical details are omitted in this paper 
+ the basic cot algorithm 
+in the basic cot algorithm we assume each site 
+maintains a document state ds which contains the set of original 
+operations executed so-far this is different from the log or 
+the history buffer hb schemes in prior ot algorithms 
+ which record a list of transformed operations we 
+deliberately leave the internal data structure of ds 
+unspecified to keep the cot algorithm independent of the operation 
+buffering strategy 
+in algorithm description we shall use the context set 
+representation c o rather than the context vector 
+representation cv o when an operation o is propagated from the 
+local site to remote sites however it is the context vector 
+not the context set that is actually piggy-backed on o for 
+propagation the set of operations in c o can be easily 
+determined from ds based on the information in cv o 
+the cot algorithm has two parts the cot-do part 
+for supporting consistency maintenance do and the 
+cotundo part for supporting undo both parts share the 
+same core context-based transformation procedure 
+operation context and context-based conditions are central to 
+the whole cot algorithm 
+ cot-do 
+cot-do takes two parameters o - an original operation 
+to be executed and ds - the current document state 
+representation cot-do is invoked only if c o ⊆ ds cc 
+which ensures that all operations included in the context of 
+o have already been executed on ds 
+algorithm cot-do o ds 
+ transform o ds − c o 
+ execute o ds ds ∪ org o 
+procedure transform o cd 
+repeat until cd 
+ remove ox from cd where c ox ⊆ c o 
+ transform ox c o − c ox 
+ o it o ox c o c o ∪ org ox 
+cot-do first invokes procedure transform to transform 
+o against operations in ds − c o cc this is to 
+upgrade the context of o to ds in step it must be that 
+c o ds cc so o is executed as-is and the original 
+of o is added to ds according to definition -item 
+the heart of cot-do is transform o cd whose task is 
+to transform o against operations in cd which represents 
+the context difference between c o and a new context on 
+which o is to be defined this procedure repeats the 
+following three steps until cd becomes empty 
+ remove an operation ox from cd where c ox ⊆ 
+c o cc an operation ox meeting this condition 
+can be determined if all operations in cd are sorted in 
+the order of their execution and sequentially retrieved 
+ the procedure transform is recursively invoked to 
+transform ox against operations in c o −c ox cc 
+this is to upgrade ox to the context of o so that they 
+can be used for it transformation in the next step 
+ after the recursive call to transform it must be that 
+c o c ox cc so o is it-transformed against 
+ox and the context of o is updated by adding the 
+original of ox according to definition -item 
+to show how cot-do works we examine how it resolves 
+the dopt-puzzle in figure consider the operation 
+executions at site with the initial document state ds 
+ after the generation of o since c o ds o is 
+executed as-is and ds is updated to ds o 
+ when o arrives with c o transform o ds − 
+c o is called where ds − c o o 
+inside transform o o since c o c o we 
+have o it o o and c o o 
+returning from transform o o we have c o 
+ds so o is executed and ds is updated to ds 
+ o o where o org o 
+ when o arrives with c o o transform o ds − 
+c o is called where ds − c o o 
+inside transform o o transform o c o −c o 
+is recursively called with c o − c o o 
+which is the key step in detecting the dopt-puzzle 
+in the recursive transform o o since c o 
+c o we have o it o o and c o o 
+returning from the recursion we have c o c o 
+so c o it o o the dopt-puzzle resolved 
+here and c o o o where o org o 
+after returning from transform o o c o 
+ds so o is executed and ds is updated to ds 
+ o o o where o org o 
+ 
+ cot-undo 
+to undo an operation o a meta-level undo command 
+undo o must be issued by a user how to generate the 
+undo command for selecting any operation to undo is part 
+of the undo policy this paper is confined to the 
+discussion of the undo mechanism which determines how to undo 
+the selected operation in a given context 
+in cot-undo undo o is interpreted as an inverse o 
+that is context-dependent on operations in c o and o itself 
+cot-undo takes two input parameters o is the operation 
+selected to be undone which can be any operation done 
+sofar and ds is the current document state representation 
+algorithm cot-undo o ds 
+ o makeinverse o c o c o ∪ o 
+ cot-do o ds 
+cot-undo works by first creating an inverse o by 
+invoking makeinverse o 
+ with its context c o c o ∪ o 
+ according to definition -item and then invoking 
+cotdo to handle o 
+for example to interpret undo o in figure 
+cotundo is invoked with parameters o and ds o o o 
+first o and c o o are created then cot-do 
+is invoked with parameters o and ds inside cot-do 
+transform o ds − c o shall be invoked and o shall 
+be correctly transformed against o and o since cd 
+ds − c o o o this example shows that an 
+inverse operation can be handled by cot-do in the same way 
+as other normal operations this is because context-based 
+conditions cc - cc are uniformly applicable to both 
+normal and inverse operations 
+the basic cot algorithm is simple yet powerful - 
+capable of doing and undoing any operations at anytime among 
+all prior ot systems only the combination of goto and 
+anyundo referred as goto-anyundo has similar 
+capabilities 
+ transformation properties 
+cot is a high-level control algorithm responsible for 
+determining which operation should be transformed against 
+other operations and in which order according to 
+contextbased conditions another important component of an ot 
+system is the low-level transformation functions 
+responsible for transforming operations according to their types and 
+parameters past research has identified a range of 
+transformation properties conditions that must be maintained for 
+ensuring the correctness of an ot system different ot 
+systems may have different control algorithms different 
+transformation functions and different divisions of 
+responsibilities among these components 
+unlike goto-anyundo the basic cot algorithm does 
+not use et exclusion transformation functions thus 
+avoiding the requirement of the reversibility property rp 
+between it and et functions 
+similar to goto-anyundo the basic cot algorithm 
+assumes that underlying transformation functions are 
+capable of preserving the following properties 
+ 
+the reader is referred to for precise definitions of three 
+primitive operations insert delete and update and their 
+corresponding inverses the makeinverse o procedure directly 
+follows these definitions 
+ convergence property cp 
+ given a 
+document state ds and operations oa ob if oa 
+it oa ob and ob it ob oa then it must be 
+ds ◦ oa ob ds ◦ ob oa 
+which means that oa ob and ob oa are equivalent 
+with respect to the effect on the document state ds 
+ convergence property cp given three 
+operations o oa and ob if oa it oa ob and ob 
+it ob oa then it must be 
+it it o oa ob it it o ob oa 
+which means that oa ob and ob oa are equivalent 
+with respect to the effect in transformation 
+ inverse property ip 
+ given any operation ox 
+and a pair of operations o o it must be 
+it it ox o o it ox i ox 
+which means that o o and i are equivalent with 
+respect to the effect in transformation 
+ inverse property ip given two operations oa 
+and ob if oa it oa ob ob it ob oa and 
+oa it oa ob then it must be 
+oa oa 
+which means the transformed inverse operation oa is 
+equal to the inverse of the transformed operation oa 
+the above transformation properties are important 
+discoveries of past research but they are not unconditionally 
+required the pre-conditions for requiring them however 
+were never explicitly stated in their specifications which has 
+unfortunately caused quite some misconceptions in ot 
+literature to explore alternative solutions to these properties 
+we explicitly state the pre-conditions pc for cp cp 
+ip and ip as follows 
+ pc-cp cp is required only if the ot system 
+allows the same group of context-independent operations 
+to be executed in different orders 
+ pc-cp cp is required only if the ot system 
+allows an operation to be transformed against the same 
+group of context-independent operations in different 
+orders 
+ pc-ip ip is required only if the ot system allows 
+an operation ox to be transformed against a pair of 
+do and undo operations o and o one-by-one 
+ pc-ip ip is required only if the ot system allows 
+an inverse operation oa to be transformed against 
+another operation ob that is context-independent of oa 
+ 
+convergence property in this paper and in are 
+the same as transformation property in 
+ 
+there is another inverse property ip that is required in 
+an ot system for achieving the correct undo effect but ip 
+is not related to it functions 
+ 
+there are generally two ways to achieve ot correctness 
+with respect to these transformation properties one is to 
+design transformation functions capable of preserving these 
+properties the other is to design control algorithms capable 
+of breaking the pre-conditions for requiring these properties 
+past research has shown that it is relatively easy to 
+design transformation functions capable of preserving cp 
+but non-trivial to design and formally prove transformation 
+functions capable of preserving cp ip and ip 
+counterexamples illustrating the violation of these properties in 
+some early published transformation functions can be found 
+in it functions capable of preserving ip 
+and ip had been devised in the context of anyundo 
+but our experience in implementing these functions revealed 
+that those solutions are quick intricate and inefficient more 
+analysis can be found in section 
+clearly solving cp ip and ip at the control algorithm 
+level has the benefit of simplifying the design of 
+transformation functions and the ot system as a whole in the 
+following section we extend the basic cot algorithm to provide 
+simple and efficient solutions to cp ip and ip at the 
+control algorithm level 
+ cot solutions to cp ip and ip 
+a distinctive feature of cot is that in every 
+transformation process i e an invocation of transform o cd 
+the whole set of transformation target operations are 
+determined in advance and available in the context-difference 
+parameter cd calculated by using context-based conditions 
+cc and cc with the knowledge of all operations 
+involved in the transformation process we are able to 
+properly arrange these operations to break the pre-conditions for 
+cp ip and ip 
+ extended transform procedure 
+we extend the core procedure transform o cd to take 
+advantage of the global knowledge of operations in the 
+contextdifference parameter cd for breaking pc-cp pc-ip and 
+pc-ip the extended transform as shown in 
+procedure retains the structure and main elements of 
+procedure but adds solutions to cp ip and ip in step 
+ ensure tpsafety and in step - c the if-then part 
+procedure transform o cd 
+ if cd ensure tpsafety o cd 
+ repeat until cd 
+ a remove the first operation ox from cd 
+ b transform ox c o − c ox 
+ c if ox is a do-undo-pair 
+then c o c o ∪ org ox org ox 
+else o it o ox c o c o ∪ org ox 
+procedure ensure tpsafety o cd 
+ ensure cp -safety sort operations in cd in a total 
+order that respects their context-dependency order 
+ ensure ip -safety for any ox ∈ cd if ox ∈ cd 
+then mark ox as a do-undo-pair remove ox from cd 
+ ensure ip -safety if o is inverse the invoke 
+make ip safe inverse o cd 
+procedure make ip safe inverse o cd 
+ o makeinverse o c o c o − o 
+ ncd ox ox ∈ cd and ox 
+c 
+o 
+ transform o ncd 
+ o makeinverse o c o c o ∪ o 
+ cd cd − ncd 
+ breaking the pre-condition for cp 
+the cot solution to cp is to sort all operations in cd 
+in a total order which respects their context-dependency 
+order in step of ensure tpsafety if an operation o is 
+transformed against the same group of context-independent 
+operations in multiple invocations to transform o cd this 
+group of operations must be included in cd and sorted in 
+the same total order therefore o can never be transformed 
+against the same group of operations in different orders thus 
+breaking pc-cp 
+it should be noted that cd becomes an ordered set after 
+the sorting the first ox in cd must meet the condition 
+c ox ⊆ c o in step a of transform o cd 
+ procedure so this condition is no longer explicitly specified 
+in procedure a correct total order for breaking 
+pccp can be conveniently determined by using the 
+contextdependency relations among all operations plus the site 
+identifiers of context-independent operations 
+there have been several prior ot systems capable of 
+breaking pc-cp including the got system by an undo redo 
+scheme based on total ordering the soct system 
+ by a control strategy based on global sequencing the 
+nice system by a central transformation-based notifier 
+and the tibot system by a distributed synchronization 
+protocol based on time-internal the cot solution to 
+cp is unique and avoids the use of any undo redo or global 
+sequencing synchronization 
+ breaking the pre-condition for ip 
+the basic idea of the cot solution to ip is to make 
+sure that an operation is never transformed against a pair 
+of do and undo operations one by one thus breaking 
+pcip this solution consists of two parts step of 
+ensure tpsafety cd couples operations with their 
+corresponding inverses if they are all included in the context 
+difference cd and remove these inverses from cd in step 
+ - c of transform if ox is found to be a do-undo-pair the 
+it-transformation of o against ox is skipped effectively 
+treating this pair as an identity operation and the context of 
+o is updated by adding two operations org ox org ox 
+ breaking the pre-condition for ip 
+the cot solution to ip is encapsulated in the procedure 
+make ip safe inverse o cd which makes o an ip -safe 
+inverse with respect to the context difference cd an 
+inverse o is ip -safe with respect to cd if it is made from a 
+transformed version of o which has included all operations 
+in cd that are context-independent of o under the control 
+of cot the ip -safe inverse o shall never be transformed 
+against operations that are context-independent of o thus 
+breaking pc-ip 
+the make ip safe inverse procedure works as follows 
+create operation o the inverse of o and c o c o − 
+ 
+ o select all operations from cd which are 
+contextindependent of o and create a new context difference ncd 
+ transform o against operations in ncd by recursively 
+invoking transform create a new inverse from the 
+transformed o and create a new cd by subtracting 
+ncd from the old cd the new cd must maintain the 
+total order as required for solving cp this new inverse 
+o must be ip -safe because it is created from a 
+transformed operation whose context has included all operations 
+in ncd the ip -safe inverse o shall never be transformed 
+against the operations in ncd since these operations have 
+been removed from the new cd in step 
+ discussions 
+ the theory of operation context 
+the notion of operation context was first proposed in the 
+got algorithm and used in conjunction with the 
+theory of causality in follow-up goto and anyundo 
+algorithms in prior work the context of an operation o 
+was defined as a sequence of transformed operations which 
+can be executed to bring the document from its initial state 
+to the state on which o is defined this definition is directly 
+coupled to the sequential history buffering strategy which 
+saves executed operations in their execution forms and 
+orders there was no explicit representation of an operation 
+context context relationships among operations are 
+derived from the causality relationships plus the history buffer 
+position relationships among operations 
+in this paper the concept of operation context is defined 
+as a set of original operations corresponding to the 
+document state on which this operation is defined this new 
+concept of operation context is independent of the 
+underlying operation buffering strategy and is explicitly represented 
+as an operation set based on the set representation of 
+operation context essential ot conditions cc - cc have 
+been precisely and concisely captured moreover the 
+context vector has been devised to efficiently represent both 
+normal and inverse operations in a context the context 
+vector is more general than the state vector and potentially 
+applicable to other distributed computing systems as well 
+based on the theory of causality prior ot algorithms 
+have used state vectors to capture causal-dependency 
+relationships among original normal operations and to 
+represent document states in terms of original normal 
+operations however causal-dependency relationships are not 
+defined for inverse or transformed operations and state 
+vectors cannot represent document states with original inverse 
+operations the theory of causality is unable to capture 
+essential ot conditions cc - cc for all types of operation 
+- original and transformed normal and inverse operations 
+ cot versus goto-anyundo 
+both cot and goto-anyundo are capable of doing 
+and undoing any operations at anytime the main 
+difference is that cot achieves this capability without using et 
+functions thus eliminating the rp requirement for it 
+functions and without requiring it functions to preserve cp 
+ip and ip the avoidance of rp cp ip and ip has 
+significantly simplified the design of transformation 
+functions and the ot system as a whole 
+cot is simpler than goto-anyundo and prior ot 
+algorithms based on the causality theory because of the use 
+of a single theory of operation context for capturing all 
+otrelated conditions cc -cc the uniformity of 
+contextbased conditions for treating all types of operation and the 
+conciseness of these context-based conditions 
+the cot-based system is more efficient than the 
+gotoanyundo-based system in solving ip and ip in 
+gotoanyundo the do-part a normal operation and the 
+undopart an inverse operation need to be coupled for the 
+purpose of preserving ip an eager coupling strategy 
+was adopted an inverse operation is coupled with its 
+corresponding normal operation immediately after its execution 
+under this scheme inverse operations are not explicitly 
+represented in the history buffer when a normal operation 
+is to be executed however it may need to be transformed 
+against only the undo-part of a do-undo-pair to cope with 
+this problem an extra decouple-goto-recouple scheme 
+has to be used to decouple a do-undo-pair before 
+invoking goto and then recouple them afterwards 
+however the implementation of this decouple-recouple scheme 
+revealed it was rather intricate and causing many repeated 
+transformations 
+in the cot algorithm cot-do and cot-undo are 
+seamlessly integrated inverse operations are explicitly 
+represented in the operation context and a lazy coupling 
+strategy is adopted the coupling of a do-undo-pair occurs not 
+immediately after executing each inverse but only when both 
+the do-part and the undo-part appear in the same 
+transformation process at some late stage these strategies help to 
+avoid overhead transformations caused by the eager coupling 
+scheme and the decouple-recouple scheme 
+in the goto-anyundo-based system the solution to 
+ip is encapsulated in an ip -preserving it function called 
+ip p-it inside this function an extended et function 
+has to be used which may invoke the expensive goto 
+algorithm to ensure rp with the corresponding it function 
+in contrast the cot solution to ip is encapsulated in the 
+high-level procedure make ip safe inverse o cd which is 
+more efficient since it avoids converting o to o back and 
+forth multiple times for each ox ∈ ncd if ip p-it o ox 
+were used instead and the transform procedure is 
+much cheaper than goto 
+ ot buffering strategies 
+another distinctive feature of the cot algorithm is the 
+separation of the algorithm from the underlying operation 
+buffering strategy this has not only resulted in a cleaner 
+and simpler logical structure to the algorithm itself but also 
+allowed a range of performance optimizations at the 
+operation buffering level 
+we have devised and implemented a buffering structure in 
+which not only original operations but also transformed 
+versions can be saved and all transformed operations from the 
+same original operation are organized in the same version 
+group when an original operation is required at the cot 
+algorithm level the corresponding version group is searched 
+for a version that matches the context requirement if such 
+a version already exists it is used to represent the 
+original operation in the transformation process thus saving the 
+overhead to transform the original operation into this 
+version under this buffering structure various heuristics can 
+be used to selectively save transformed versions to maximize 
+their reuse and minimize their space usage by 
+experimentation we have identified some useful heuristics that are 
+ 
+effective in saving transformations for a number of common 
+patterns of operation sequence 
+cot is not the first ot algorithm that buffers and uses 
+original operations for transformation several prior ot 
+algorithms including ccu adopted and 
+gotoanyundo have also buffered original operations cot 
+is unique in its way of buffering and using original as well 
+as transformed operations 
+ ot correctness 
+ot correctness is a central topic of discussion in ot 
+research in this section we provide our observations and 
+opinions on some important ot correctness issues 
+ot is a complex system with multiple interrelated 
+components a system-oriented approach is needed for addressing 
+ot issues an experimental method called 
+puzzle-detectionresolution has commonly been used in exploring and 
+refining ot solutions puzzles are subtle but representative 
+scenarios in which certain ot properties conditions may be 
+violated and the system may produce incorrect results the 
+ability to solve all known puzzles is a necessary condition 
+and an important indicator of the soundness of an ot 
+system in research literature simple puzzle scenarios are 
+often used to illustrate the key reasons why an ot system 
+works or fails in real ot system design however a real 
+implementation and comprehensive testing cases based on 
+complex puzzle scenarios are crucial in validating a design 
+theoretical methods have also been used to formally 
+verify ot correctness with respect to some identified 
+transformation properties conditions formal verification can be 
+effective if the correctness issues have been well-understood 
+and the verification criteria and boundary conditions have 
+been well-defined in this regard experimental methods 
+like puzzle-detection-resolution can play an important role 
+in gaining the necessary insights into the real correctness 
+issues and establishing suitable criteria and conditions for 
+formal verification 
+a systematic approach is needed in conducting both 
+experimental and theoretic ot research many ot 
+components and issues are intimately related and a solution to 
+one issue if examined in isolation is unlikely to be 
+correct or complete for example a solution that works well 
+for consistency maintenance do may fail when both do 
+and undo problems are considered and an undo solution 
+ e g preserving ip may violate the solution to 
+consistency maintenance a complete ot solution to both do 
+and undo problems is significantly more difficult to design 
+than a partial solution to only one of them 
+on the other hand a difficult issue in one ot component 
+may be resolved easily or avoided altogether if this issue 
+is addressed from a different ot component for example 
+it is known that devising and proving transformation 
+functions capable of preserving properties cp ip and ip 
+are difficult however these difficulties can be avoided by 
+devising control algorithms like cot capable of breaking 
+the pre-conditions for requiring these properties it is also 
+easier to prove a control algorithm is capable of breaking 
+the pre-conditions for these properties than to prove 
+transformation functions are capable of preserving them 
+different ot systems may have different divisions of 
+responsibility among their components and hence different 
+correctness requirements for these components caution 
+must be taken in interpreting correctness results for 
+example cp and cp were proven to be necessary and 
+sufficient for adopted-based systems to converge but 
+this result cannot be generalized to all ot systems in fact 
+cp and cp are neither sufficient nor necessary for many 
+ot systems they are insufficient because an ot system 
+may need to preserve additional properties conditions such 
+as ip ip and those summarized in they are 
+unnecessary if the pre-conditions for requiring them have been 
+broken for example neither cp nor cp is required in the 
+reduce system based on the got algorithm for ensuring 
+convergence cp is also not required by ot systems 
+based on cot or some prior ot algorithms 
+one ot correctness issue which is often discussed in 
+relation to the cp -violation problem is the false-tie problem 
+when two or more insert operations with the same position 
+are it-transformed with each other the position tie may be 
+false if it was not original but caused by previous 
+transformations an ot system may fail to produce correct results 
+if the normal tie-breaking rule e g based on site 
+identifiers is used to break false-ties this problem was long 
+discovered in early ot work and a concrete scenario related 
+to this problem was illustrated in fig of it is beyond 
+the scope of this paper to discuss solutions to this problem 
+but it is worth pointing out that the false-tie problem is 
+different from the cp -violation problem a false-tie may 
+occur without violating cp in our view the false-tie 
+problem is an issue at the transformation function level and 
+its solution could and should be localized at this level as 
+well for alternative views and approaches to this problem 
+the reader is referred to 
+the cot algorithm has been implemented and validated 
+by a comprehensive testing suite covering all known ot 
+puzzle scenarios in this paper informal analysis and 
+simple puzzle scenarios have been used to show the 
+correctness of cot with respect to various transformation 
+properties conditions formal verification of cot correctness 
+with respect to these properties conditions and 
+quantitative analysis of the time and space complexity of cot shall 
+be reported in a journal version of this paper 
+ conclusions 
+we have contributed the theory of operation context and 
+the cot context-based ot algorithm the theory of 
+operation context is capable of capturing essential relationships 
+and conditions for all types of operation in an ot system 
+it provides a new foundation for better understanding and 
+resolving ot problems the cot algorithm provides 
+uniformed solutions to both consistency maintenance and undo 
+problems it is simpler and more efficient than prior ot 
+control algorithms with similar capabilities and it significantly 
+simplifies the design of transformation functions the cot 
+algorithm has been implemented in a generic collaboration 
+engine and used for supporting a range of novel collaborative 
+applications 
+real-world applications provide exciting opportunities and 
+challenges to future ot research the theory of operation 
+context and the cot algorithm shall serve as new 
+foundations for addressing the technical challenges in existing and 
+emerging ot applications 
+acknowledgments 
+the authors are grateful to bo begole and anonymous 
+reviewers for their valuable comments and suggestions which 
+have helped improve the presentation of the paper 
+ 
+ references 
+ j begole m rosson and c shaffer flexible 
+collaboration transparency supporting worker 
+independence in replicated application-sharing 
+systems acm trans on computer-human 
+interaction - 
+ g cormack a calculus for concurrent update in 
+research report cs- - dept of computer 
+science university of waterloo canada 
+ a davis c sun and j lu generalizing operational 
+transformation to the standard general markup 
+language in proc of the acm conf on 
+computer-supported cooperative work pages - 
+nov 
+ c a ellis and s j gibbs concurrency control in 
+groupware systems in proc of the acm conf on 
+management of data pages - may 
+ n gu j yang and q zhang consistency 
+maintenance based on the mark retrace technique 
+in groupware systems in proc of acm conf on 
+supporting group work pages - nov 
+ r guerraoui and corine hari on the consistency 
+problem in mobile distributed computing in 
+proceedings of the second acm international 
+workshop on principles of mobile computing pages 
+ - new york octo acm 
+ c ignat and m c norrie customizable collaborative 
+editor relying on treeopt algorithm in proc of the 
+european conf of computer-supported cooperative 
+work pages - sept 
+ a imine p molli g oster and m rusinowitch 
+proving correctness of transformation functions in 
+real-time groupware in proc of the european conf 
+on computer-supported cooperative work sept 
+ l lamport time clocks and the ordering of events 
+in a distributed system communication of acm 
+ - 
+ d li and r li transparent sharing and 
+interoperation of heterogeneous single-user 
+applications in proc of the acm conf on 
+computer-supported cooperative work pages 
+ - nov 
+ d li and r li preserving operation effects relation 
+in group editors in proc of the acm conf on 
+computer-supported cooperative work pages 
+ - nov 
+ r li d li and c sun a time interval based 
+consistency control algorithm for interactive 
+groupware applications in proc of international 
+conference on parallel and distributed systems pages 
+ - july 
+ b lushman and g cormack proof of correctness of 
+ressels adopted algorithm information processing 
+letters - 
+ c palmer and g cormack operation transforms for 
+a distributed shared spreadsheet in proc of the acm 
+conf on computer-supported cooperative work 
+pages - nov 
+ a prakash and m knister a framework for undoing 
+actions in collaborative systems acm trans on 
+computer-human interaction - dec 
+ 
+ n preguica m shapiro and j legatheaux martins 
+automating semantics-based reconciliation for mobile 
+databases in proceedings of the th conference 
+francaise sur les systems d exploitation octo 
+ m raynal and m singhal logical time capturing 
+causality in distributed systems ieee computer 
+magazine - feb 
+ m ressel and r gunzenh¨auser reducing the 
+problems of group undo in proc of the acm conf 
+on supporting group work pages - nov 
+ m ressel d nitsche-ruhland and r gunzenh¨auser 
+an integrating transformation-oriented approach to 
+concurrency control and undo in group editors in 
+proc of the acm conf on computer-supported 
+cooperative work pages - nov 
+ h f shen and c sun a flexible notification 
+framework for collaborative systems in proc of the 
+acm conf on computer-supported cooperative 
+work pages - nov 
+ c sun undo as concurrent inverse in group editors 
+acm trans on computer-human interaction 
+ - december 
+ c sun and c a ellis operational transformation in 
+real-time group editors issues algorithms and 
+achievements in proc of the acm conf on 
+computer-supported cooperative work pages - 
+nov 
+ c sun x jia y zhang y yang and d chen 
+achieving convergence causality-preservation and 
+intention-preservation in real-time cooperative editing 
+systems acm trans on computer-human 
+interaction - march 
+ c sun q xia d sun d chen h f shen and 
+w cai transparent adaptation of single-user 
+applications for multi-user real-time collaboration 
+acm trans on computer-human interaction 
+ d sun s xia c sun and d chen operational 
+transformation for collaborative word processing in 
+proc of the acm conf on computer-supported 
+cooperative work pages - nov 
+ n vidot m cart j ferri´e and m suleiman copies 
+convergence in a distributed real-time collaborative 
+environment in proc of the acm conf on 
+computer-supported cooperative work pages 
+ - dec 
+ s xia d sun c sun and d chen a collaborative 
+table editing technique based on transparent 
+adaptation in proc of the international conf on 
+cooperative information systems lncs vol 
+springer verlag pages - nov 
+ s xia d sun c sun and d chen 
+object-associated telepointer for real-time 
+collaborative document editing systems in proc of 
+the ieee conf on collaborative computing 
+networking applications and worksharing dec 
+ s xia d sun c sun d chen and h f shen 
+leveraging single-user applications for multi-user 
+collaboration the coword approach in proc of the 
+acm conf on computer-supported cooperative 
+work pages - nov 
+ 

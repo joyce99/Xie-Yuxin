@@ -1,0 +1,994 @@
+a reinforcement learning based distributed search 
+algorithm for hierarchical peer-to-peer information 
+retrieval systems 
+haizheng zhang 
+college of information science and technology 
+pennsylvania state university 
+university park pa 
+hzhang ist psu edu 
+victor lesser 
+department of computer science 
+university of massachusetts 
+amherst ma 
+lesser cs umass edu 
+abstract 
+the dominant existing routing strategies employed in 
+peerto-peer p p based information retrieval ir systems are 
+similarity-based approaches in these approaches agents 
+depend on the content similarity between incoming queries 
+and their direct neighboring agents to direct the distributed 
+search sessions however such a heuristic is myopic in that 
+the neighboring agents may not be connected to more 
+relevant agents in this paper an online reinforcement-learning 
+based approach is developed to take advantage of the 
+dynamic run-time characteristics of p p ir systems as 
+represented by information about past search sessions 
+specifically agents maintain estimates on the downstream agents 
+abilities to provide relevant documents for incoming queries 
+these estimates are updated gradually by learning from the 
+feedback information returned from previous search sessions 
+based on this information the agents derive corresponding 
+routing policies thereafter these agents route the queries 
+based on the learned policies and update the estimates based 
+on the new routing policies experimental results 
+demonstrate that the learning algorithm improves considerably the 
+routing performance on two test collection sets that have 
+been used in a variety of distributed ir studies 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent 
+systems 
+general terms 
+algorithms performance experimentation 
+ introduction 
+over the last few years there have been increasing 
+interests in studying how to control the search processes in 
+peer-to-peer p p based information retrieval ir systems 
+ in this line of research one of the core 
+problems that concerns researchers is to efficiently route user 
+queries in the network to agents that are in possession of 
+appropriate documents in the absence of global 
+information the dominant strategies in addressing this problem are 
+content-similarity based approaches while 
+the content similarity between queries and local nodes 
+appears to be a creditable indicator for the number of 
+relevant documents residing on each node these approaches 
+are limited by a number of factors first of all 
+similaritybased metrics can be myopic since locally relevant nodes 
+may not be connected to other relevant nodes second the 
+similarity-based approaches do not take into account the 
+run-time characteristics of the p p ir systems including 
+environmental parameters bandwidth usage and the 
+historical information of the past search sessions that provide 
+valuable information for the query routing algorithms 
+in this paper we develop a reinforcement learning based 
+ir approach for improving the performance of distributed 
+ir search algorithms agents can acquire better search 
+strategies by collecting and analyzing feedback information 
+from previous search sessions particularly agents 
+maintain estimates namely expected utility on the downstream 
+agents capabilities of providing relevant documents for 
+specific types of incoming queries these estimates are 
+updated gradually by learning from the feedback information 
+returned from previous search sessions based on the 
+updated expected utility information the agents derive 
+corresponding routing policies thereafter these agents route 
+the queries based on the learned policies and update the 
+estimates on the expected utility based on the new routing 
+policies this process is conducted in an iterative manner 
+the goal of the learning algorithm even though it consumes 
+some network bandwidth is to shorten the routing time so 
+that more queries are processed per time unit while at the 
+same time finding more relevant documents this contrasts 
+with the content-similarity based approaches where similar 
+operations are repeated for every incoming query and the 
+processing time keeps largely constant over time 
+another way of viewing this paper is that our basic 
+approach to distributed ir search is to construct a hierarchical 
+overlay network agent organization based on the 
+contentsimilarity measure among agents document collections in a 
+bottom-up fashion in the past work we have shown that 
+this organization improves search performance significantly 
+however this organizational structure does not take into 
+account the arrival patterns of queries including their 
+frequency types and where they enter the system nor the 
+available communication bandwidth of the network and 
+processing capabilities of individual agents the intention of 
+the reinforcement learning is to adapt the agents routing 
+decisions to the dynamic network situations and learn from 
+past search sessions specifically the contributions of this 
+paper include a reinforcement learning based approach 
+for agents to acquire satisfactory routing policies based on 
+estimates of the potential contribution of their neighboring 
+agents two strategies to speed up the learning process 
+to our best knowledge this is one of the first reinforcement 
+learning applications in addressing distributed content 
+sharing problems and it is indicative of some of the issues in 
+applying reinforcement in a complex application 
+the remainder of this paper is organized as follows 
+section reviews the hierarchical content sharing systems and 
+the two-phase search algorithm based on such topology 
+section describes a reinforcement learning based approach to 
+direct the routing process section details the experimental 
+settings and analyze the results section discusses related 
+studies and section concludes the paper 
+ search in hierarchical 
+p p ir systems 
+this section briefly reviews our basic approaches to 
+hierarchical p p ir systems in a hierarchical p p ir 
+system illustrated in fig agents are connected to each other 
+through three types of links upward links downward links 
+and lateral links in the following sections we denote the 
+set of agents that are directly connected to agent ai as 
+directconn ai which is defined as 
+directconn ai nei ai ∪ par ai ∪ chl ai 
+ where nei ai is the set of neighboring agents connected 
+to ai through lateral links par ai is the set of agents 
+whom agent ai is connected to through upward links and 
+chl ai is the set of agents that agent ai connects to 
+through downward links these links are established through 
+a bottom-up content-similarity based distributed clustering 
+process these links are then used by agents to locate 
+other agents that contain documents relevant to the given 
+queries 
+a typical agent ai in our system uses two queues a local 
+search queue lsi and a message forwarding queue mfi 
+the states of the two queues constitute the internal states of 
+an agent the local search queue lsi stores search sessions 
+that are scheduled for local processing it is a priority queue 
+and agent ai always selects the most promising queries to 
+process in order to maximize the global utility mfi 
+consists of a set of queries to forward on and is processed in 
+a fifo first in first out fashion for the first query in 
+mfi agent ai determines which subset of its neighboring 
+agents to forward it to based on the agent s routing policy 
+πi these routing decisions determine how the search 
+process is conducted in the network in this paper we call ai 
+as aj s upstream agent and aj as ai s downstream agent if 
+a a a a 
+a 
+a 
+a 
+nei a a 
+par a a 
+chl a a a 
+a 
+a 
+figure a fraction of a hierarchical p pir system 
+an agent ai routes a query to agent aj 
+the distributed search protocol of our hierarchical agent 
+organization is composed of two steps in the first step upon 
+receipt of a query qk at time tl from a user agent ai 
+initiates a search session si by probing its neighboring agents 
+aj ∈ nei ai with the message probe for the similarity 
+value sim qk aj between qk and aj here ai is defined as 
+the query initiator of search session si in the second step 
+ai selects a group of the most promising agents to start 
+the actual search process with the message search these 
+search messages contain a ttl time to live 
+parameter in addition to the query the ttl value decreases by 
+after each hop in the search process agents discard those 
+queries that either have been previously processed or whose 
+ttl drops to which prevents queries from looping in the 
+system forever the search session ends when all the agents 
+that receive the query drop it or ttl decreases to upon 
+receipt of search messages for qk agents schedule local 
+activities including local searching forwarding qk to their 
+neighbors and returning search results to the query 
+initiator this process and related algorithms are detailed in 
+ 
+ a basic reinforcementlearning 
+based search approach 
+in the aforementioned distributed search algorithm the 
+routing decisions of an agent ai rely on the similarity 
+comparison between incoming queries and ai s neighboring agents 
+in order to forward those queries to relevant agents 
+without flooding the network with unnecessary query messages 
+however this heuristic is myopic because a relevant 
+direct neighbor is not necessarily connected to other relevant 
+agents in this section we propose a more general approach 
+by framing this problem as a reinforcement learning task 
+in pursuit of greater flexibility agents can switch between 
+two modes learning mode and non-learning mode in the 
+non-learning mode agents operate in the same way as they 
+do in the normal distributed search processes described in 
+ on the other hand in the learning mode in 
+parallel with distributed search sessions agents also participate 
+in a learning process which will be detailed in this section 
+note that in the learning protocol the learning process does 
+not interfere with the distributed search process agents can 
+choose to initiate and stop learning processes without 
+affecting the system performance in particular since the learning 
+process consumes network resources especially bandwidth 
+agents can choose to initiate learning only when the network 
+load is relatively low thus minimizing the extra 
+communication costs incurred by the learning algorithm 
+the section is structured as follows section describes 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+a reinforcement learning based model section describes 
+a protocol to deploy the learning algorithm in the network 
+section discusses the convergence of the learning 
+algorithm 
+ the model 
+an agent s routing policy takes the state of a search 
+session as input and output the routing actions for that query 
+in our work the state of a search session sj is stipulated as 
+qsj qk ttlj 
+where ttlj is the number of hops that remains for the 
+search session sj qk is the specific query ql is an attribute 
+of qk that indicates which type of queries qk most likely 
+belong to the set of ql can be generated by running a 
+simple online classification algorithm on all the queries that 
+have been processed by the agents or an oﬄine algorithm on 
+a pre-designated training set the assumption here is that 
+the set of query types is learned ahead of time and belongs to 
+the common knowledge of the agents in the network future 
+work includes exploring how learning can be accomplished 
+when this assumption does not hold given the query types 
+set an incoming query qi can be classified to one query class 
+q qi by the formula 
+q qi arg max 
+qj 
+p qi qj 
+where p qi qj indicates the likelihood that the query qi is 
+generated by the query class qj 
+the set of atomic routing actions of an agent ai is denoted 
+as αi where αi is defined as αi αi αi αin an 
+element αij represents an action to route a given query to 
+the neighboring agent aij ∈ directconn ai the routing 
+policy πi of agent ai is stochastic and its outcome for a 
+search session with state qsj is defined as 
+πi qsj αi πi qsi αi αi πi qsi αi 
+note that operator πi is overloaded to represent either the 
+probabilistic policy for a search session with state qsj 
+denoted as πi qsj or the probability of forwarding the query 
+to a specific neighboring agent aik ∈ directconn ai 
+under the policy πi qsj denoted as πi qsj αik 
+therefore equation means that the probability of 
+forwarding the search session to agent ai is πi qsi αi and so 
+on under this stochastic policy the routing action is 
+nondeterministic the advantage of such a strategy is that 
+the best neighboring agents will not be selected repeatedly 
+thereby mitigating the potential hot spots situations 
+the expected utility un 
+i qsj is used to estimate the 
+potential utility gain of routing query type qsj to agent ai 
+under policy πn 
+i the superscript n indicates the value at the 
+nth iteration in an iterative learning process the expected 
+utility provides routing guidance for future search sessions 
+in the search process each agent ai maintains partial 
+observations of its neighbors states as shown in fig the 
+partial observation includes non-local information such as 
+the potential utility estimation of its neighbor am for query 
+state qsj denoted as um qsj as well as the load 
+information lm these observations are updated periodically 
+by the neighbors the estimated utility information will be 
+used to update ai s expected utility for its routing policy 
+load information 
+expected utility for different query types 
+neighboring agents 
+ 
+a 
+a 
+a 
+a 
+un 
+ qs 
+ 
+ 
+ 
+ 
+un 
+ qs 
+un 
+ qs 
+un 
+ qs 
+un 
+ qs 
+un 
+ qs 
+un 
+ qs 
+un 
+ qs 
+ln 
+ 
+ln 
+ 
+ln 
+ 
+ln 
+ 
+ 
+qs qs 
+figure agent ai s partial observation about its 
+neighbors a a 
+the load information of am lm is defined as 
+lm 
+ mfm 
+cm 
+ where mfm is the length of the message-forward queue 
+and cm is the service rate of agent am s message-forward 
+queue therefore lm characterizes the utilization of an 
+agent s communication channel and thus provide non-local 
+information for am s neighbors to adjust the parameters of 
+their routing policy to avoid inundating their downstream 
+agents note that based on the characteristics of the queries 
+entering the system and agents capabilities the loading of 
+agents may not be uniform after collecting the utilization 
+rate information from all its neighbors agent ai computes 
+li as a single measure for assessing the average load 
+condition of its neighborhood 
+li 
+p 
+k lk 
+ directconn ai 
+agents exploit li value in determining the routing 
+probability in its routing policy 
+note that as described in section information about 
+neighboring agents is piggybacked with the query message 
+propagated among the agents whenever possible to reduce 
+the traffic overhead 
+ update the policy 
+an iterative update process is introduced for agents to 
+learn a satisfactory stochastic routing policy in this 
+iterative process agents update their estimates on the potential 
+utility of their current routing policies and then propagate 
+the updated estimates to their neighbors their neighbors 
+then generate a new routing policy based on the updated 
+observation and in turn they calculate the expected utility 
+based on the new policies and continue this iterative process 
+in particular at time n given a set of expected 
+utility an agent ai whose directly connected agents set is 
+directconn ai ai aim determines its 
+corresponding stochastic routing policy for a search session of state qsj 
+based on the following steps 
+ ai first selects a subset of agents as the potential 
+downstream agents from set directconn ai denoted as 
+pdn ai qsj the size of the potential downstream agent 
+is specified as 
+ pdn ai qsj min nei ai dn 
+i k 
+where k is a constant and is set to in this paper dn 
+i 
+the forward width is defined as the expected number of 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+neighboring agents that agent ai can forward to at time 
+n this formula specifies that the potential downstream 
+agent set pdn ai qsj is either the subset of neighboring 
+agents with dn 
+i k highest expected utility value for state 
+qsj among all the agents in directconn ai or all their 
+neighboring agents the k is introduced based on the idea 
+of a stochastic routing policy and it makes the forwarding 
+probability of the dn 
+i k highest agent less than note 
+that if we want to limit the number of downstream agents 
+for search session sj as the probability of forwarding the 
+query to all neighboring agents should add up to 
+setting up dn 
+i value properly can improve the utilization rate 
+of the network bandwidth when much of the network is idle 
+while mitigating the traffic load when the network is highly 
+loaded the dn 
+i value is updated based on dn 
+i the 
+previous and current observations on the traffic situation in the 
+neighborhood specifically the update formula for dn 
+i is 
+dn 
+i dn 
+i 
+ − li 
+ directconn ai 
+ 
+in this formula the forward width is updated based on the 
+traffic conditions of agent ai s neighborhood i e li and its 
+previous value 
+ for each agent aik in the pdn ai qsj the 
+probability of forwarding the query to aik is determined in the 
+following way in order to assign higher forwarding 
+probability to the neighboring agents with higher expected utility 
+value 
+πn 
+i qsj αik 
+dn 
+i 
+ pdn ai qsj 
+ 
+β 
+` 
+uik qsj − 
+pdu ai qsj 
+ pdn ai qsj 
+´ 
+ 
+where 
+pdun ai qsj 
+x 
+o∈p dn ai qsj 
+uo qsj 
+and qsj is the subsequent state of agent aik after agent 
+ai forwards the search session with state qsj to its 
+neighboring agent aik if qsj qk ttl then qsj qk ttl − 
+ 
+in formula the first term on the right of the equation 
+dn 
+i 
+ p dn ai qsj 
+ is used to to determine the forwarding 
+probability by equally distributing the forward width dn 
+i to 
+the agents in pdn ai qsj set the second term is used to 
+adjust the probability of being chosen so that agents with 
+higher expected utility values will be favored β is 
+determined according to 
+β min 
+` m − dn 
+i 
+m umax − pdun ai qsj 
+ 
+dn 
+i 
+pdun ai qsj − m umin 
+´ 
+ 
+where m pdn ai qsj 
+umax max 
+o∈p dn ao qsj 
+uo qsj 
+and 
+umin min 
+o∈p dn ao qsj 
+uo qsj 
+this formula guarantees that the final πn 
+i qsj αik value 
+is well defined i e 
+ ≤ πn 
+i qsj αik ≤ 
+and 
+x 
+i 
+πn 
+i qsj αik dn 
+i 
+however such a solution does not explore all the 
+possibilities in order to balance between exploitation and 
+exploration a λ-greedy approach is taken in the λ-greedy 
+approach in addition to assigning higher probability to those 
+agents with higher expected utility value as in the equation 
+ agents that appear to be not-so-good choices will 
+also be sent queries based on a dynamic exploration rate 
+in particular for agents in the set pdn ai qsj πn 
+i 
+ qsj 
+is determined in the same way as the above with the only 
+difference being that dn 
+i is replaced with dn 
+i − λn 
+the remaining search bandwidth is used for learning by 
+assigning probability λn evenly to agents ai in the set 
+directconn ai − pdn ai qsj 
+πn 
+i 
+ qsj αik 
+dn 
+i λn 
+ directconn ai − pdn ai qsj 
+ 
+where pdn ai qsj ⊂ directconn ai note that the 
+exploration rate λ is not a constant and it decreases 
+overtime the λ is determined according to the following 
+equation 
+λn λ e−c n 
+ 
+where λ is the initial exploration rate which is a 
+constant c is also a constant to adjust the decreasing rate of 
+the exploration rate n is the current time unit 
+ update expected utility 
+once the routing policy at step n πn 
+i is determined 
+based on the above formula agent ai can update its own 
+expected utility un 
+i qsi based on the the updated routing 
+policy resulted from the formula and the updated u values 
+of its neighboring agents under the assumption that after a 
+query is forwarded to ai s neighbors the subsequent search 
+sessions are independent the update formula is similar to 
+the bellman update formula in q-learning 
+un 
+i qsj − θi un 
+i qsj 
+θi rn 
+i qsj 
+x 
+k 
+πn 
+i qsj αik un 
+k qsj 
+where qsj qj ttl − is the next state of qsj 
+ qj ttl rn 
+i qsj is the expected local reward for query 
+class qk at agent ai under the routing policy πn 
+i θi is the 
+coefficient for deciding how much weight is given to the old 
+value during the update process the smaller θi value is the 
+faster the agent is expected to learn the real value while the 
+greater volatility of the algorithm and vice versa rn 
+ s 
+is updated according to the following equation 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+rn 
+i qsj rn 
+i qsj 
+ γi r qsj − rn 
+i qsj p qj qj 
+where r qsj is the local reward associated with the search 
+session p qj qj indicates how relevant the query qj is to 
+the query type qj and γi is the learning rate for agent ai 
+depending on the similarity between a specific query qi and 
+its corresponding query type qi the local reward associated 
+with the search session has different impact on the rn 
+i qsj 
+estimation in the above formula this impact is reflected by 
+the coefficient the p qj qj value 
+ reward function 
+after a search session stops when its ttl values expires 
+all search results are returned back to the user and are 
+compared against the relevance judgment assuming the set of 
+search results is sr the reward rew sr is defined as 
+rew sr 
+j 
+ if rel sr c 
+ rel sr 
+c 
+otherwise 
+where sr is the set of returned search results rel sr 
+is the set of relevant documents in the search results this 
+equation specifies that users give reward if the number 
+of returned relevant documents reaches a predefined number 
+c otherwise the reward is in proportion to the number of 
+relevant documents returned this rationale for setting up 
+such a cut-off value is that the importance of recall ratio 
+decreases with the abundance of relevant documents in real 
+world therefore users tend to focus on only a limited number 
+of searched results 
+the details of the actual routing protocol will be 
+introduced in section when we introduce how the learning 
+algorithm is deployed in real systems 
+ deployment of the learning algorithm 
+this section describes how the learning algorithm can be 
+used in either a single-phase or a two-phase search process 
+in the single-phase search algorithm search sessions start 
+from the initiators of the queries in contrast in the two-step 
+search algorithm the query initiator first attempts to seek a 
+more appropriate starting point for the query by introducing 
+an exploratory step as described in section despite the 
+difference in the quality of starting points the major part 
+of the learning process for the two algorithms is largely the 
+same as described in the following paragraphs 
+before learning starts each agent initializes the expected 
+utility value for all possible states as thereafter upon 
+receipt of a query in addition to the normal operations 
+described in the previous section an agent ai also sets up a 
+timer to wait for the search results returned from its 
+downstream agents once the timer expires or it has received 
+response from all its downstream agents ai merges and 
+forwards the search results accrued from its downstream agents 
+to its upstream agent setting up the timer speeds up the 
+learning because agents can avoid waiting too long for the 
+downstream agents to return search results note that these 
+detailed results and corresponding agent information will 
+still be stored at ai until the feedback information is passed 
+from its upstream agent and the performance of its 
+downstream agents can be evaluated the duration of the timer 
+is related to the ttl value in this paper we set the timer 
+to 
+ttimer ttli tf 
+ where ttli is the sum of the travel time of the queries in 
+the network and tf is the expected time period that users 
+would like to wait 
+the search results will eventually be returned to the search 
+session initiator a they will be compared to the relevance 
+judgment that is provided by the final users as described 
+in the experiment section the relevance judgement for the 
+query set is provided along with the data collections the 
+reward will be calculated and propagated backward to the 
+agents along the way that search results were passed this 
+is a reverse process of the search results propagation in the 
+process of propagating reward backward agents update 
+estimates of their own potential utility value generate an 
+upto-dated policy and pass their updated results to the 
+neighboring agents based on the algorithm described in section 
+upon change of expected utility value agent ai sends out its 
+updated utility estimation to its neighbors so that they can 
+act upon the changed expected utility and corresponding 
+state this update message includes the potential reward 
+as well as the corresponding state qsi qk ttll of agent 
+ai each neighboring agent aj reacts to this kind of 
+update message by updating the expected utility value for state 
+qsj qk ttll according to the newly-announced changed 
+expected utility value once they complete the update the 
+agents would again in turn inform related neighbors to 
+update their values this process goes on until the ttl value 
+in the update message increases to the ttl limit 
+to speed up the learning process while updating the 
+expected utility values of an agent ai s neighboring agents we 
+specify that 
+um qk ttl um qk ttl iff ttl ttl 
+thus when agent ai receives an updated expected utility 
+value with ttl it also updates the expected utility values 
+with any ttl ttl if um qk ttl um qk ttl to speed 
+up convergence this heuristic is based on the fact that 
+the utility of a search session is a non-decreasing function of 
+time t 
+ discussion 
+in formalizing the content routing system as a learning 
+task many assumptions are made in real systems these 
+assumptions may not hold and thus the learning algorithm 
+may not converge two problems are of particular note 
+ this content routing problem does not have markov 
+properties in contrast to ip-level based packet routing the 
+routing decision of each agent for a particular search 
+session sj depends on the routing history of sj therefore 
+the assumption that all subsequent search sessions are 
+independent does not hold in reality this may lead to 
+double counting problem that the relevant documents of some 
+agents will be counted more than once for the state where 
+the ttl value is more than however in the context 
+of the hierarchical agent organizations two factors mitigate 
+this problems first the agents in each content group form 
+a tree-like structure with the absense of the cycles the 
+estimates inside the tree would be close to the accurate value 
+secondly the stochastic nature of the routing policy partly 
+remedies this problem 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ another challenge for this learning algorithm is that 
+in a real network environment observations on neighboring 
+agents may not be able to be updated in time due to the 
+communication delay or other situations in addition when 
+neighboring agents update their estimates at the same time 
+oscillation may arise during the learning process 
+this paper explores several approaches to speed up the 
+learning process besides the aforementioned strategy of 
+updating the expected utility values we also employ an 
+active update strategy where agents notify their 
+neighbors whenever its expected utility is updated thus a faster 
+convergence speed can be achieved this strategy contrasts 
+to the lazy update where agents only echo their 
+neighboring agents with their expected utility change when they 
+exchange information the trade off between the two 
+approaches is the network load versus learning speed 
+the advantage of this learning algorithm is that once a 
+routing policy is learned agents do not have to repeatedly 
+compare the similarity of queries as long as the network 
+topology remains unchanged instead agent just have to 
+determine the classification of the query properly and follow 
+the learned policies the disadvantage of this learning-based 
+approach is that the learning process needs to be conducted 
+whenever the network structure changes there are many 
+potential extensions for this learning model for example a 
+single measure is currently used to indicate the traffic load 
+for an agent s neighborhood a simple extension would be to 
+keep track of individual load for each neighbor of the agent 
+ experimentssettingsand results 
+the experiments are conducted on trano simulation 
+toolkit with two sets of datasets trec-vlc- and 
+trec - the following sub-sections introduce the trano 
+testbed the datasets and the experimental results 
+ trano testbed 
+trano task routing on agent network organization 
+is a multi-agent based network based information retrieval 
+testbed trano is built on top of the farm a time 
+based distributed simulator that provides a data 
+dissemination framework for large scale distributed agent network 
+based organizations trano supports importation and 
+exportation of agent organization profiles including topological 
+connections and other features each trano agent is 
+composed of an agent view structure and a control unit in 
+simulation each agent is pulsed regularly and the agent checks 
+the incoming message queues performs local operations and 
+then forwards messages to other agents 
+ experimental settings 
+in our experiment we use two standard datasets 
+trecvlc- and trec- - datasets to simulate the 
+collections hosted on agents the trec-vlc- and 
+trec - datasets were created by the u s national institute 
+for standard technology nist for its trec conferences 
+in distributed information retrieval domain the two data 
+collections are split to and sub-collections it is 
+observed that dataset trec-vlc- is more heterogeneous 
+than trec- - in terms of source document length 
+and relevant document distribution from the statistics of the 
+two data collections listed in hence trec-vlc- is 
+much closer to real document distributions in p p 
+environments furthermore trec- - is split into two sets of 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+arss 
+query number 
+arss versus the number of incoming queries for trec-vlc- 
+ssla- 
+ssna- 
+figure arss average reward per search 
+session versus the number of search sessions for phase 
+search in trec-vlc- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+arss 
+query number 
+arss versus query number for trec-vlc- 
+tsla- 
+tsna- 
+figure arss average reward per search 
+session versus the number of search sessions for phase 
+search in trec-vlc- 
+sub-collections in two ways randomly and by source the 
+two partitions are denoted as trec- - -random and 
+trec- - -source respectively the documents in each 
+subcollection in dataset trec- - -source are more 
+coherent than those in trec- - -random the two 
+different sets of partitions allow us to observe how the 
+distributed learning algorithm is affected by the homogeneity 
+of the collections 
+the hierarchical agent organization is generated by the 
+algorithm described in our previous algorithm during 
+the topology generation process degree information of each 
+agent is estimated by the algorithm introduced by palmer 
+et al with parameters α and β in our 
+experiments we estimate the upward limit and downward 
+degree limit using linear discount factors and 
+once the topology is built queries randomly selected from 
+the query set − on trec-vlc- and query set − 
+ on trec- - -random and trec- - -source 
+are injected to the system based on a poisson distribution 
+p n t n 
+ λt n 
+n 
+e−λ 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+cumulativeutility 
+query number 
+cumulative utility over the number of incoming queries 
+tsla- 
+ssna- 
+ssla- 
+tsna- 
+figure the cumulative utility versus the number 
+of search sessions trec-vlc- 
+in addition we assume that all agents have an equal chance 
+of getting queries from the environment i e λ is the same 
+for every agent in our experiments λ is set as so 
+that the mean of the incoming queries from the environment 
+to the agent network is per time unit the service time 
+for the communication queue and local search queue i e tqij 
+and trs is set as time unit and time units 
+respectively in our experiments there are ten types of queries 
+acquired by clustering the query set − and − 
+ results analysis and evaluation 
+figure demonstrates the arss average reward per 
+search session versus the number of incoming queries over 
+time for the the single-step based non-learning algorithm 
+ ssna and the single-step learning algorithm ssla for 
+data collection trec-vlc- it shows that the average 
+reward for ssna algorithm ranges from − and the 
+performance changes little over time the average reward 
+for ssla approach starts at the same level with the ssna 
+algorithm but the performance increases over time and 
+the average performance gain stabilizes at about after 
+query range − 
+figure shows the arss average reward per search 
+session versus the number of incoming queries over time for the 
+the two-step based non-learning algorithm tsna and 
+the two-step learning algorithm tsla for data 
+collection trec-vlc- the tsna approach has a relatively 
+consistent performance with the average reward ranges from 
+ − the average reward for tsla approach where 
+learning algorithm is exploited starts at the same level with 
+the tsna algorithm and improves the average reward over 
+time until − queries joining the system the results 
+show that the average performance gain for tsla approach 
+over tnla approach is after stabilization 
+figure shows the cumulative utility versus the number 
+of incoming queries over time for ssna ssla tsna and 
+tsla respectively it illustrates that the cumulative 
+utility of non-learning algorithms increases largely linearly over 
+time while the gains of learning-based algorithms 
+accelerate when more queries enter the system these experimental 
+results demonstrate that learning-based approaches 
+consistently perform better than non-learning based routing 
+algorithm moreover two-phase learning based algorithm is 
+better than single-phase based learning algorithm because 
+the maximal reward an agent can receive from searching its 
+neighborhood within ttl hops is related to the total 
+number of the relevant documents in that area thus even the 
+optimal routing policy can do little beyond reaching these 
+relevant documents faster on the contrary the 
+two-stepbased learning algorithm can relocate the search session to 
+a neighborhood with more relevant documents the tsla 
+combines the merits of both approaches and outperforms 
+them 
+table lists the cumulative utility for datasets 
+trec - -random and trec- - -source with 
+hierarchical organizations the five columns show the results for four 
+different approaches in particular column tsna-random 
+shows the results for dataset trec- - -random with 
+the tsna approach the column tsla-random shows the 
+results for dataset trec- - -random with the tsla 
+approach there are two numbers in each cell in the 
+column tsla-random the first number is the actual 
+cumulative utility while the second number is the percentage 
+gain in terms of the utility over tsna approach columns 
+tsna-source and tsla-source show the results for dataset 
+trec- - -source with tsna and tsla approaches 
+respectively table shows that the performance 
+improvement for trec- - -random is not as significant as the 
+other datasets this is because that the documents in the 
+sub-collection of trec- - -random are selected 
+randomly which makes the collection model the signature of 
+the collection less meaningful since both algorithms are 
+designed based on the assumption that document collections 
+can be well represented by their collection model this result 
+is not surprising 
+overall figures and table demonstrate that the 
+reinforcement learning based approach can considerably 
+enhance the system performance for both data collections 
+however it remains as future work to discover the 
+correlation between the magnitude of the performance gains and 
+the size of the data collection and or the extent of the 
+heterogeneity between the sub-collections 
+ related work 
+the content routing problem differs from the 
+networklevel routing in packet-switched communication networks in 
+that content-based routing occurs in application-level 
+networks in addition the destination agents in our 
+contentrouting algorithms are multiple and the addresses are not 
+known in the routing process ip-level routing problems 
+have been attacked from the reinforcement learning 
+perspective these studies have explored fully 
+distributed algorithms that are able without central 
+coordination to disseminate knowledge about the network to 
+find the shortest paths robustly and efficiently in the face of 
+changing network topologies and changing link costs there 
+are two major classes of adaptive distributed packet 
+routing algorithms in the literature distance-vector algorithms 
+and link-state algorithms while this line of studies carry a 
+certain similarity with our work it has mainly focused on 
+packet-switched communication networks in this domain 
+the destination of a packet is deterministic and unique each 
+agent maintains estimations probabilistically or 
+deterministically on the distance to a certain destination through its 
+neighbors a variant of q-learning techniques is deployed 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table cumulative utility for datasets trec- - -random and trec- - -source with hierarchical 
+organization the percentage numbers in the columns tsla-random and tsla-source demonstrate 
+the performance gain over the algorithm without learning 
+query number tsna-random tsla-random tsna-source tsla-source 
+ - 
+ 
+ 
+ 
+ 
+ 
+to update the estimations to converge to the real distances 
+it has been discovered that the locality property is an 
+important feature of information retrieval systems in user 
+modeling studies in p p based content sharing systems this 
+property is exemplified by the phenomenon that users tend 
+to send queries that represent only a limited number of 
+topics and conversely users in the same neighborhood are likely 
+to share common interests and send similar queries the 
+learning based approach is perceived to be more beneficial 
+for real distributed information retrieval systems which 
+exhibit locality property this is because the users traffic and 
+query patterns can reduce the state space and speed up the 
+learning process related work in taking advantage of this 
+property include where the authors attempted to address 
+this problem by user modeling techniques 
+ conclusions 
+in this paper a reinforcement-learning based approach 
+is developed to improve the performance of distributed ir 
+search algorithms particularly agents maintain estimates 
+namely expected utility on the downstream agents ability to 
+provide relevant documents for incoming queries these 
+estimates are updated gradually by learning from the feedback 
+information returned from previous search sessions based 
+on the updated expected utility information the agents 
+modify their routing policies thereafter these agents route the 
+queries based on the learned policies and update the 
+estimates on the expected utility based on the new routing 
+policies the experiments on two different distributed ir 
+datasets illustrates that the reinforcement learning approach 
+improves considerably the cumulative utility over time 
+ references 
+ s abdallah and v lesser learning the task 
+allocation game in aamas proceedings of the 
+fifth international joint conference on autonomous 
+agents and multiagent systems pages - new 
+york ny usa acm press 
+ j a boyan and m l littman packet routing in 
+dynamically changing networks a reinforcement 
+learning approach in advances in neural information 
+processing systems volume pages - morgan 
+kaufmann publishers inc 
+ j c french a l powell j p callan c l viles 
+t emmitt k j prey and y mou comparing the 
+performance of database selection algorithms in 
+research and development in information retrieval 
+pages - 
+ b horling r mailler and v lesser farm a 
+scalable environment for multi-agent development and 
+evaluation in advances in software engineering for 
+multi-agent systems pages - berlin 
+springer-verlag 
+ m littman and j boyan a distributed reinforcement 
+learning scheme for network routing in proceedings of 
+the international workshop on applications of neural 
+networks to telecommunications 
+ j lu and j callan federated search of text-based 
+digital libraries in hierarchical peer-to-peer networks 
+in in ecir 
+ j lu and j callan user modeling for full-text 
+federated search in peer-to-peer networks in acm 
+sigir acm press 
+ c d manning and h sch¨utze foundations of 
+statistical natural language processing the mit 
+press cambridge massachusetts 
+ c r palmer and j g steffan generating network 
+topologies that obey power laws in proceedings of 
+globecom november 
+ k sripanidkulchai b maggs and h zhang efficient 
+content location using interest-based locality in 
+peer-topeer systems in infocom 
+ d subramanian p druschel and j chen ants and 
+reinforcement learning a case study in routing in 
+dynamic networks in in proceedings of the fifteenth 
+international joint conference on artificial 
+intelligence pages - 
+ j n tao and l weaver a multi-agent policy 
+gradient approach to network routing in in 
+proceedings of the eighteenth international conference 
+on machine learning 
+ h zhang w b croft b levine and v lesser a 
+multi-agent approach for peer-to-peer information 
+retrieval in proceedings of third international joint 
+conference on autonomous agents and multi-agent 
+systems july 
+ h zhang and v lesser multi-agent based 
+peer-to-peer information retrieval systems with 
+concurrent search sessions in proceedings of the fifth 
+international joint conference on autonomous agents 
+and multi-agent systems may 
+ h zhang and v r lesser a dynamically formed 
+hierarchical agent organization for a distributed 
+content sharing system in ieee wic acm 
+international conference on intelligent agent 
+technology iat - september 
+beijing china pages - ieee computer 
+society 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

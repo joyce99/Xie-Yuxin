@@ -1,0 +1,1157 @@
+an adversarial environment model for bounded rational 
+agents in zero-sum interactions 
+inon zuckerman 
+ sarit kraus 
+ jeffrey s rosenschein 
+ gal kaminka 
+ 
+department of computer science 
+the school of engineering 
+bar-ilan university and computer science 
+ramat-gan israel hebrew university jerusalem israel 
+ zukermi sarit galk  cs biu ac il jeff cs huji ac il 
+abstract 
+multiagent environments are often not cooperative nor 
+collaborative in many cases agents have conflicting interests 
+leading to adversarial interactions this paper presents a 
+formal adversarial environment model for bounded 
+rational agents operating in a zero-sum environment in such 
+environments attempts to use classical utility-based search 
+methods can raise a variety of difficulties e g implicitly 
+modeling the opponent as an omniscient utility maximizer 
+rather than leveraging a more nuanced explicit opponent 
+model 
+we define an adversarial environment by describing the 
+mental states of an agent in such an environment we then 
+present behavioral axioms that are intended to serve as 
+design principles for building such adversarial agents we 
+explore the application of our approach by analyzing log files 
+of completed connect-four games and present an empirical 
+analysis of the axioms appropriateness 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-intelligent agents multiagent systems 
+i artificial intelligence knowledge representation 
+formalisms and methods -modal logic 
+general terms 
+design theory 
+ introduction 
+early research in multiagent systems mas considered 
+cooperative groups of agents because individual agents had 
+limited resources or limited access to information e g 
+limited processing power limited sensor coverage they worked 
+together by design to solve problems that individually they 
+could not solve or at least could not solve as efficiently 
+mas research however soon began to consider 
+interacting agents with individuated interests as representatives of 
+different humans or organizations with non-identical 
+interests when interactions are guided by diverse interests 
+participants may have to overcome disagreements 
+uncooperative interactions and even intentional attempts to damage 
+one another when these types of interactions occur 
+environments require appropriate behavior from the agents 
+situated in them we call these environments adversarial 
+environments and call the clashing agents adversaries 
+models of cooperation and teamwork have been 
+extensively explored in mas through the axiomatization of 
+mental states e g however none of this research 
+dealt with adversarial domains and their implications for 
+agent behavior our paper addresses this issue by 
+providing a formal axiomatized mental state model for a subset 
+of adversarial domains namely simple zero-sum adversarial 
+environments 
+simple zero-sum encounters exist of course in various 
+twoplayer games e g chess checkers but they also exist in 
+n-player games e g risk diplomacy auctions for a 
+single good and elsewhere in these latter environments 
+especially using a utility-based adversarial search such as the 
+min-max algorithm does not always provide an adequate 
+solution the payoff function might be quite complex or 
+difficult to quantify and there are natural computational 
+limitations on bounded rational agents in addition traditional 
+search methods like min-max do not make use of a model 
+of the opponent which has proven to be a valuable addition 
+to adversarial planning 
+in this paper we develop a formal axiomatized model 
+for bounded rational agents that are situated in a zero-sum 
+adversarial environment the model uses different modality 
+operators and its main foundations are the sharedplans 
+model for collaborative behavior we explore environment 
+properties and the mental states of agents to derive 
+behavioral axioms these behavioral axioms constitute a formal 
+model that serves as a specification and design guideline for 
+agent design in such settings 
+we then investigate the behavior of our model empirically 
+using the connect-four board game we show that this 
+game conforms to our environment definition and analyze 
+players behavior using a large set of completed match log 
+ 
+ - - - - rps c ifaamas 
+files in addition we use the results presented in to 
+discuss the importance of opponent modeling in our 
+connectfour adversarial domain 
+the paper proceeds as follows section presents the 
+model s formalization section presents the empirical 
+analysis and its results we discuss related work in section 
+and conclude and present future directions in section 
+ adversarial environments 
+the adversarial environment model denoted as ae is 
+intended to guide the design of agents by providing a 
+specification of the capabilities and mental attitudes of an agent in 
+an adversarial environment we focus here on specific types 
+of adversarial environments specified as follows 
+ zero-sum interactions positive and negative utilities 
+of all agents sum to zero 
+ simple aes all agents in the environment are 
+adversarial agents 
+ bilateral aes ae s with exactly two agents 
+ multilateral aes ae s of three or more agents 
+we will work on both bilateral and multilateral 
+instantiations of zero-sum and simple environments in particular 
+our adversarial environment model will deal with 
+interactions that consist of n agents n ≥ where all agents 
+are adversaries and only one agent can succeed examples 
+of such environments range from board games e g chess 
+connect-four and diplomacy to certain economic 
+environments e g n-bidder auctions over a single good 
+ model overview 
+our approach is to formalize the mental attitudes and 
+behaviors of a single adversarial agent we consider how a 
+single agent perceives the ae the following list specifies 
+the conditions and mental states of an agent in a simple 
+zero-sum ae 
+ the agent has an individual intention that its own goal 
+will be completed 
+ the agent has an individual belief that it and its 
+adversaries are pursuing full conflicting goals defined 
+below there can be only one winner 
+ the agent has an individual belief that each adversary 
+has an intention to complete its own full conflicting goal 
+ the agent has an individual belief in the partial profile 
+of its adversaries 
+item is required since it might be the case that some 
+agent has a full conflicting goal and is currently considering 
+adopting the intention to complete it but is as of yet not 
+committed to achieving it this might occur because the 
+agent has not yet deliberated about the effects that 
+adopting that intention might have on the other intentions it is 
+currently holding in such cases it might not consider itself 
+to even be in an adversarial environment 
+item states that the agent should hold some belief about 
+the profiles of its adversaries the profile represents all the 
+knowledge the agent has about its adversary its weaknesses 
+strategic capabilities goals intentions trustworthiness and 
+more it can be given explicitly or can be learned from 
+observations of past encounters 
+ model definitions for mental states 
+we use grosz and kraus s definitions of the modal 
+operators predicates and meta-predicates as defined in their 
+sharedplan formalization we recall here some of the 
+predicates and operators that are used in that 
+formalization int to ai α tn tα c represents ai s intentions at 
+time tn to do an action α at time tα in the context of 
+c int th ai prop tn tprop c represents ai s intentions 
+at time tn that a certain proposition prop holds at time 
+tprop in the context of c the potential intention 
+operators pot int to and pot int th are used to 
+represent the mental state when an agent considers adopting an 
+intention but has not deliberated about the interaction of 
+the other intentions it holds the operator bel ai f tf 
+represents agent ai believing in the statement expressed in 
+formula f at time tf mb a f tf represents mutual 
+belief for a group of agents a 
+a snapshot of the system finds our environment to be in 
+some state e ∈ e of environmental variable states and each 
+adversary in any lai ∈ l of possible local states at any 
+given time step the system will be in some world w of the 
+set of all possible worlds w ∈ w where w e×la ×la × 
+ lan and n is the number of adversaries for example in 
+a texas hold em poker game an agent s local state might 
+be its own set of cards which is unknown to its adversary 
+while the environment will consist of the betting pot and 
+the community cards which are visible to both players 
+a utility function under this formalization is defined as a 
+mapping from a possible world w ∈ w to an element in 
+which expresses the desirability of the world from a single 
+agent perspective we usually normalize the range to 
+where represents the least desirable possible world and 
+ is the most desirable world the implementation of the 
+utility function is dependent on the domain in question 
+the following list specifies new predicates functions 
+variables and constants used in conjunction with the original 
+definitions for the adversarial environment formalization 
+ φ is a null action the agent does not do anything 
+ gai is the set of agent ai s goals each goal is a set of 
+predicates whose satisfaction makes the goal complete we 
+use g 
+ai 
+∈ gai to represent an arbitrary goal of agent ai 
+ gai is the set of agent ai s subgoals subgoals are 
+predicates whose satisfaction represents an important milestone 
+toward achievement of the full goal gg 
+ai 
+⊆ gai is the set of 
+subgoals that are important to the completion of goal g 
+ai 
+ we will use g 
+g 
+ai 
+∈ gg 
+ai 
+to represent an arbitrary subgoal 
+ p 
+aj 
+ai 
+is the profile object agent ai holds about agent aj 
+ ca is a general set of actions for all agents in a which 
+are derived from the environment s constraints cai ⊆ ca 
+is the set of agent ai s possible actions 
+ do ai α tα w holds when ai performs action α over 
+time interval tα in world w 
+ achieve g 
+ai 
+ α w is true when goal g 
+ai 
+is achieved 
+following the completion of action α in world w ∈ w where 
+α ∈ cai 
+ profile ai pai 
+ai 
+ is true when agent ai holds an object 
+profile for agent aj 
+definition full conflict fulconf describes a 
+zerosum interaction where only a single goal of the goals in 
+conflict can be completed 
+fulconf g 
+ai 
+ g 
+aj 
+ ⇒ ∃α ∈ cai ∀w β ∈ caj 
+ achieve g 
+ai 
+ α w ⇒ ¬achieve g 
+aj 
+ β w ∨ 
+ ∃β ∈ caj ∀w α ∈ cai achieve g 
+aj 
+ β w ⇒ 
+¬achieve g 
+ai 
+ α w 
+definition adversarial knowledge advknow is a 
+function returning a value which represents the amount of 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+knowledge agent ai has on the profile of agent aj at time 
+tn the higher the value the more knowledge agent ai has 
+advknow p 
+aj 
+ai 
+× tn → 
+definition eval - this evaluation function returns an 
+estimated expected utility value for an agent in a after 
+completing an action from ca in some world state w 
+eval a × ca × w → 
+definition trh - threshold is a numerical constant 
+in the range that represents an evaluation function 
+ eval threshold value an action that yields an estimated 
+utility evaluation above the trh is regarded as a highly 
+beneficial action 
+the eval value is an estimation and not the real utility 
+function which is usually unknown using the real utility 
+value for a rational agent would easily yield the best outcome 
+for that agent however agents usually do not have the real 
+utility functions but rather a heuristic estimate of it 
+there are two important properties that should hold for 
+the evaluation function 
+property the evaluation function should state that the 
+most desirable world state is one in which the goal is achieved 
+therefore after the goal has been satisfied there can be no 
+future action that can put the agent in a world state with 
+higher eval value 
+ ∀ai g 
+ai 
+ α β ∈ cai w ∈ w 
+achieve g 
+ai 
+ α w ⇒ eval ai α w ≥ eval ai β w 
+property the evaluation function should project an 
+action that causes a completion of a goal or a subgoal to a value 
+which is greater than trh a highly beneficial action 
+ ∀ai g 
+ai 
+∈ gai α ∈ cai w ∈ w g 
+gai 
+∈ ggai 
+ 
+achieve g 
+ai 
+ α w ∨ achieve g 
+gai 
+ α w ⇒ 
+eval ai α w ≥ trh 
+definition setaction we define a set action 
+ setaction as a set of action operations either complex or basic 
+actions from some action sets cai and caj which 
+according to agent ai s belief are attached together by a temporal 
+and consequential relationship forming a chain of events 
+ action and its following consequent action 
+ ∀α 
+ αu 
+∈ cai β 
+ βv 
+∈ caj w ∈ w 
+setaction α 
+ αu 
+ β 
+ βv 
+ w ⇒ 
+ do ai α 
+ tα w ⇒ do aj β 
+ tβ w ⇒ 
+do ai α 
+ tα w ⇒ ⇒ do ai αu 
+ tαu w 
+the consequential relation might exist due to various 
+environmental constraints when one action forces the 
+adversary to respond with a specific action or due to the agent s 
+knowledge about the profile of its adversary 
+property as the knowledge we have about our 
+adversary increases we will have additional beliefs about its 
+behavior in different situations which in turn creates new set 
+actions formally if our advknow at time tn is greater 
+than advknow at time tn then every setaction known at 
+time tn is also known at time tn 
+advknow p 
+aj 
+ai 
+ tn advknow p 
+aj 
+ai 
+ tn ⇒ 
+ ∀α 
+ αu 
+∈ cai β 
+ βv 
+∈ caj 
+bel aag setaction α 
+ αu 
+ β 
+ βv 
+ tn ⇒ 
+bel aag setaction α 
+ αu 
+ β 
+ βv 
+ tn 
+ the environment formulation 
+the following axioms provide the formal definition for a 
+simple zero-sum adversarial environment ae 
+satisfaction of these axioms means that the agent is situated in 
+such an environment it provides specifications for agent 
+aag to interact with its set of adversaries a with respect to 
+goals g 
+aag 
+and g 
+a at time tco at some world state w 
+ae aag a g 
+aag 
+ a ak g 
+a 
+ g 
+ak 
+ tn w 
+ aag has an int th his goal would be completed 
+ ∃α ∈ caag tα 
+int th aag achieve g 
+aag 
+ α tn tα ae 
+ aag believes that it and each of its adversaries ao are 
+pursuing full conflicting goals 
+ ∀ao ∈ a ak 
+bel aag fulconf g 
+aag 
+ g 
+ao 
+ tn 
+ aag believes that each of his adversaries in ao has the 
+int th his conflicting goal g 
+aoi 
+will be completed 
+ ∀ao ∈ a ak ∃β ∈ cao tβ 
+bel aag int th ao achieve g 
+ao 
+ β tco tβ ae tn 
+ aag has beliefs about the partial profiles of its 
+adversaries 
+ ∀ao ∈ a ak 
+ ∃pao 
+aag 
+∈ paag bel aag profile ao pao 
+aag 
+ tn 
+to build an agent that will be able to operate successfully 
+within such an ae we must specify behavioral guidelines for 
+its interactions using a naive eval maximization strategy 
+to a certain search depth will not always yield satisfactory 
+results for several reasons the search horizon problem 
+when searching for a fixed depth the strong assumption 
+of an optimally rational unbounded resources adversary 
+using an estimated evaluation function which will not give 
+optimal results in all world states and can be exploited 
+the following axioms specify the behavioral principles 
+that can be used to differentiate between successful and 
+less successful agents in the above adversarial environment 
+those axioms should be used as specification principles when 
+designing and implementing agents that should be able to 
+perform well in such adversarial environments the 
+behavioral axioms represent situations in which the agent will 
+adopt potential intentions to pot int to perform an 
+action which will typically require some means-end 
+reasoning to select a possible course of action this reasoning will 
+lead to the adoption of an int to see 
+a goal achieving axiom the first axiom is the 
+simplest case when the agent aag believes that it is one action 
+ α away from achieving his conflicting goal g 
+aag 
+ it should 
+adopt the potential intention to do α and complete its goal 
+ ∀aag α ∈ caag tn tα w ∈ w 
+ bel aag do aag α tα w ⇒ achieve g 
+aag 
+ α w 
+⇒ pot int to aag α tn tα w 
+this somewhat trivial behavior is the first and strongest 
+axiom in any situation when the agent is an action away 
+from completing the goal it should complete the action 
+any fair eval function would naturally classify α as the 
+maximal value action property however without 
+explicit axiomatization of such behavior there might be 
+situations where the agent will decide on taking another action 
+for various reasons due to its bounded decision resources 
+a preventive act axiom being in an adversarial 
+situation agent aag might decide to take actions that will 
+damage one of its adversary s plans to complete its goal 
+even if those actions do not explicitly advance aag towards 
+its conflicting goal g 
+aag 
+ such preventive action will take 
+place when agent aag has a belief about the possibility of 
+its adversary ao doing an action β that will give it a high 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+utility evaluation value trh believing that taking 
+action α will prevent the opponent from doing its β it will 
+adopt a potential intention to do α 
+ ∀aag ao ∈ a α ∈ caag β ∈ cao tn tβ w ∈ w 
+ bel aag do ao β tβ w ∧ eval ao β w trh tn ∧ 
+bel aag do aag α tα w ⇒ ¬do ao β tβ w tn 
+⇒ pot int to aag α tn tα w 
+this axiom is a basic component of any adversarial 
+environment for example looking at a chess board game 
+a player could realize that it is about to be checkmated by 
+its opponent thus making a preventive move another 
+example is a connect four game when a player has a row of 
+three chips its opponent must block it or lose 
+a specific instance of a occurs when the adversary is one 
+action away from achieving its goal and immediate 
+preventive action needs to be taken by the agent formally we 
+have the same beliefs as stated above with a changed belief 
+that doing action β will cause agent ao to achieve its goal 
+proposition prevent or lose case 
+ ∀aag ao ∈ a α ∈ caag β ∈ cao g 
+ao 
+ tn tα tβ w ∈ 
+w 
+bel aag do ao β tβ w ⇒ achieve g 
+ao 
+ β w tn ∧ 
+bel aag do aag α tα w ⇒ ¬do ao β tβ w 
+⇒ pot int to aag α tn tα w 
+sketch of proof proposition can be easily derived 
+from axiom a and the property of the eval function 
+which states that any action that causes a completion of a 
+goal is a highly beneficial action 
+the preventive act behavior will occur implicitly when 
+the eval function is equal to the real world utility function 
+however being bounded rational agents and dealing with an 
+estimated evaluation function we need to explicitly 
+axiomatize such behavior for it will not always occur implicitly 
+from the evaluation function 
+a suboptimal tactical move axiom in many 
+scenarios a situation may occur where an agent will decide not 
+to take the current most beneficial action it can take the 
+action with the maximal utility evaluation value because it 
+believes that taking another action with lower utility 
+evaluation value might yield depending on the adversary s 
+response a future possibility for a highly beneficial action 
+this will occur most often when the eval function is 
+inaccurate and differs by a large extent from the utility function 
+put formally agent aag believes in a certain setaction that 
+will evolve according to its initial action and will yield a high 
+beneficial value trh solely for it 
+ ∀aag ao ∈ a tn w ∈ w 
+ ∃α 
+ αu 
+∈ cai β 
+ βv 
+∈ caj tα 
+bel aag setaction α 
+ αu 
+ β 
+ βv 
+ tn ∧ 
+bel aag eval ao βv 
+ w trh eval aag αu 
+ w tn 
+⇒ pot int to aag α 
+ tn tα w 
+an agent might believe that a chain of events will 
+occur for various reasons due to the inevitable nature of the 
+domain for example in chess we often observe the 
+following a move causes a check position which in turn limits the 
+opponent s moves to avoiding the check to which the first 
+player might react with another check and so on the agent 
+might also believe in a chain of events based on its 
+knowledge of its adversary s profile which allows it to foresee the 
+adversary s movements with high accuracy 
+a profile detection axiom the agent can adjust 
+its adversary s profiles by observations and pattern study 
+ specifically if there are repeated encounters with the same 
+adversary however instead of waiting for profile 
+information to be revealed an agent can also initiate actions that 
+will force its adversary to react in a way that will reveal 
+profile knowledge about it formally the axiom states that 
+if all actions γ are not highly beneficial actions trh 
+the agent can do action α in time tα if it believes that it will 
+result in a non-highly beneficial action β from its adversary 
+which in turn teaches it about the adversary s profile i e 
+gives a higher advknow p 
+aj 
+ai 
+ tβ 
+ ∀aag ao ∈ a α ∈ caag β ∈ cao tn tα tβ w ∈ w 
+bel aag ∀γ ∈ caag eval aag γ w trh tn ∧ 
+bel aag do aag α tα w ⇒ do ao β tβ w tn ∧ 
+bel aag eval ao β w trh ∧ 
+bel aag advknow p 
+aj 
+ai 
+ tβ advknow p 
+aj 
+ai 
+ tn tn ⇒ 
+pot int to aag α tn tα w 
+for example going back to the chess board game 
+scenario consider starting a game versus an opponent about 
+whom we know nothing not even if it is a human or a 
+computerized opponent we might start playing a strategy that 
+will be suitable versus an average opponent and adjust our 
+game according to its level of play 
+a alliance formation axiom the following 
+behavioral axiom is relevant only in a multilateral instantiation 
+of the adversarial environment obviously an alliance 
+cannot be formed in a bilateral zero-sum encounter in 
+different situations during a multilateral interaction a group 
+of agents might believe that it is in their best interests to 
+form a temporary alliance such an alliance is an agreement 
+that constrains its members behavior but is believed by its 
+members to enable them to achieve a higher utility value 
+than the one achievable outside of the alliance 
+as an example we can look at the classical risk board 
+game where each player has an individual goal of being the 
+sole conquerer of the world a zero-sum game however in 
+order to achieve this goal it might be strategically wise to 
+make short-term ceasefire agreements with other players or 
+to join forces and attack an opponent who is stronger than 
+the rest 
+an alliance s terms defines the way its members should 
+act it is a set of predicates denoted as terms that is agreed 
+upon by the alliance members and should remain true for 
+the duration of the alliance for example the set terms in 
+the risk scenario could contain the following predicates 
+ alliance members will not attack each other on territories 
+x y and z 
+ alliance members will contribute c units per turn for 
+attacking adversary ao 
+ members are obligated to stay as part of the alliance until 
+time tk or until adversary s ao army is smaller than q 
+the set terms specifies inter-group constraints on each 
+of the alliance member s ∀aal 
+i ∈ aal 
+⊆ a set of actions 
+cal 
+i ⊆ c 
+definition al val - the total evaluation value that 
+agent ai will achieve while being part of aal 
+is the sum of 
+evali eval for ai of each of aal 
+j eval values after taking 
+their own α actions via the agent α predicate 
+al val ai cal 
+ aal 
+ w α∈cal evali aal 
+j agent α w 
+definition al trh - is a number representing an al val 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+threshold above it the alliance can be said to be a highly 
+beneficial alliance 
+the value of al trh will be calculated dynamically 
+according to the progress of the interaction as can be seen in 
+after an alliance is formed its members are now working in 
+their normal adversarial environment as well as according 
+to the mental states and axioms required for their 
+interactions as part of the alliance the following alliance model 
+ al specifies the conditions under which the group aal 
+can 
+be said to be in an alliance and working with a new and 
+constrained set of actions cal 
+ at time tn 
+al aal 
+ cal 
+ w tn 
+ aal 
+has a mb that all members are part of aal 
+ 
+mb aal 
+ ∀aal 
+i ∈ aal 
+ member aal 
+i aal 
+ tn 
+ aal 
+has a mb that the group be maintained 
+mb aal 
+ ∀aal 
+i ∈ aal 
+ int th 
+ ai member ai aal 
+ tn tn co tn 
+ aal 
+has a mb that being members gives them high utility 
+value 
+mb aal 
+ ∀aal 
+i ∈ aal 
+ al val aal 
+i cal 
+ aal 
+ w ≥ al trh tn 
+members profiles are a crucial part of successful alliances 
+we assume that agents that have more accurate profiles of 
+their adversaries will be more successful in such 
+environments such agents will be able to predict when a 
+member is about to breach the alliance s contract item in the 
+above model and take counter measures when item will 
+falsify the robustness of the alliance is in part a function 
+of its members trustfulness measure objective position 
+estimation and other profile properties we should note that an 
+agent can simultaneously be part of more than one alliance 
+such a temporary alliance where the group members do 
+not have a joint goal but act collaboratively for the interest 
+of their own individual goals is classified as a treatment 
+group by modern psychologists in contrast to a task 
+group where its members have a joint goal the shared 
+activity model as presented in modeled treatment group 
+behavior using the same sharedplans formalization 
+when comparing both definitions of an alliance and a 
+treatment group we found an unsurprising resemblance 
+between both models the environment model s definitions 
+are almost identical see sa s definitions in and their 
+selfish-act and cooperative act axioms conform to our 
+adversarial agent s behavior the main distinction between 
+both models is the integration of a helpful-behavior act 
+axiom in the shared activity which cannot be part of ours 
+this axiom states that an agent will consider taking action 
+that will lower its eval value to a certain lower bound if it 
+believes that a group partner will gain a significant benefit 
+such behavior cannot occur in a pure adversarial 
+environment as a zero-sum game is where the alliance members 
+are constantly on watch to manipulate their alliance to their 
+own advantage 
+a evaluation maximization axiom in a case when 
+all other axioms are inapplicable we will proceed with the 
+action that maximizes the heuristic value as computed in 
+the eval function 
+ ∀aag ao ∈ a α ∈ cag tn w ∈ w 
+bel aag ∀γ ∈ cag eval aag α w ≥ eval aag γ w tn 
+⇒ pot int to aag α tn tα w 
+t optimality on eval utility the above axiomatic 
+model handles situations where the utility is unknown and 
+the agents are bounded rational agents the following 
+theorem shows that in bilateral interactions where the agents 
+have the real utility function i e eval utility and are 
+rational agents the axioms provide the same optimal result 
+as classic adversarial search e g min-max 
+theorem let ae 
+ag be an unbounded rational ae agent 
+using the eval heuristic evaluation function au 
+ag be the same 
+agent using the true utility function and ao be a sole 
+unbounded utility-based rational adversary given that eval 
+utility 
+ ∀α ∈ cau 
+ag 
+ α ∈ cae 
+ag 
+ tn w ∈ w 
+pot int to au 
+ag α tn tα w → 
+pot int to ae 
+ag α tn tα w ∧ 
+ α α ∨ utility au 
+ag α w eval ae 
+ag α w 
+sketch of proof - given that au 
+ag has the real utility 
+function and unbounded resources it can generate the full 
+game tree and run the optimal minmax algorithm to choose 
+the highest utility value action which we denote by α the 
+proof will show that ae 
+ag using the ae axioms will select 
+the same or equal utility α when there is more than one 
+action with the same max utility when eval utility 
+ a goal achieving axiom - suppose there is an α such 
+that its completion will achieve au 
+ag s goal it will obtain 
+the highest utility by min-max for au 
+ag the ae 
+ag agent will 
+select α or another action with the same utility value via 
+a if such α does not exist ae 
+ag cannot apply this axiom 
+and proceeds to a 
+ a preventive act axiom - looking at the basic case 
+ see prop if there is a β which leads ao to achieve its 
+goal then a preventive action α will yield the highest 
+utility for au 
+ag au 
+ag will choose it through the utility while 
+ae 
+ag will choose it through a in the general case β 
+is a highly beneficial action for ao thus yields low utility 
+for au 
+ag which will guide it to select an α that will prevent 
+β while ae 
+ag will choose it through a 
+if such β does not 
+exist for ao then a is not applicable and ae 
+ag can proceed 
+to a 
+ a suboptimal tactical move axiom - when using a 
+heuristic eval function ae 
+ag has a partial belief in the profile 
+of its adversary item in ae model which may lead it 
+to believe in setactions prop in our case ae 
+ag is 
+holding a full profile on its optimal adversary and knows that 
+ao will behave optimally according to the real utility 
+values on the complete search tree therefore any belief about 
+suboptimal setaction cannot exist yielding this axiom 
+inapplicable ae 
+ag will proceed to a 
+ a profile detection axiom - given that ae 
+ag has the full 
+profile of ao none of ae 
+ag s actions can increase its 
+knowledge that axiom will not be applied and the agent will 
+proceed with a a will be disregarded because the 
+interaction is bilateral 
+ a evaluation maximization axiom - this axiom will 
+select the max eval for ae 
+ag given that eval utility the 
+same α that was selected by au 
+ag will be selected 
+ evaluation 
+the main purpose of our experimental analysis is to 
+evaluate the model s behavior and performance in a real 
+adversarial environment this section investigates whether bounded 
+ 
+a case where following the completion of β there exists a γ 
+which gives high utility for agent au 
+ag cannot occur because 
+ao uses the same utility and γ s existence will cause it to 
+classify β as a low utility action 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+rational agents situated in such adversarial environments 
+will be better off applying our suggested behavioral axioms 
+ the domain 
+to explore the use of the above model and its behavioral 
+axioms we decided to use the connect-four game as our 
+adversarial environment connect-four is a -player 
+zerosum game which is played using a x matrix-like board 
+each turn a player drops a disc into one of the columns 
+ the set of discs is usually colored yellow for player and 
+red for player we will use white and black respectively to 
+avoid confusion the winner is the first player to complete 
+a horizontal vertical or diagonal set of four discs with its 
+color on very rare occasions the game might end in a tie 
+if all the empty grids are filled but no player managed to 
+create a -disc set 
+the connect-four game was solved in where it is 
+shown that the first player playing with the white discs 
+can force a win by starting in the middle column column 
+and playing optimally however the optimal strategy is very 
+complex and difficult to follow even for complex bounded 
+rational agents such as human players 
+before we can proceed checking agent behavior we must 
+first verify that the domain conforms to the adversarial 
+environment s definition as given above which the behavioral 
+axioms are based on first when playing a connect-four 
+game the agent has an intention to win the game item 
+second item our agent believes that in connect-four 
+there can only be one winner or no winner at all in the rare 
+occurrence of a tie in addition our agent believes that its 
+opponent to the game will try to win item and we hope 
+it has some partial knowledge item about its adversary 
+ this knowledge can vary from nothing through simple facts 
+such as age to strategies and weaknesses 
+of course not all connect-four encounters are 
+adversarial for example when a parent is playing the game with its 
+child the following situation might occur the child having 
+a strong incentive to win treats the environment as 
+adversarial it intends to win understands that there can only 
+be one winner and believes that its parent is trying to beat 
+him however the parent s point of view might see the 
+environment as an educational one where its goal is not to 
+win the game but to cause enjoyment or practice strategic 
+reasoning in such an educational environment a new set of 
+behavioral axioms might be more beneficial to the parent s 
+goals than our suggested adversarial behavioral axioms 
+ axiom analysis 
+after showing that the connect-four game is indeed a 
+zero-sum bilateral adversarial environment the next step 
+is to look at players behaviors during the game and check 
+whether behaving according to our model does improve 
+performance to do so we have collected log files from 
+completed connect-four games that were played by human 
+players over the internet our collected log file data came from 
+play by email pbem sites these are web sites that host 
+email games where each move is taken by an email 
+exchange between the server and the players many such 
+sites archives contain real competitive interactions and also 
+maintain a ranking system for their members most of the 
+data we used can be found in 
+as can be learned from connect-four has an optimal 
+strategy and a considerable advantage for the player who 
+starts the game which we call the white player we will 
+concentrate in our analysis on the second player s moves to 
+be called black the white player being the first to act 
+has the so-called initiative advantage having the advantage 
+and a good strategy will keep the black player busy reacting 
+to its moves instead of initiating threats a threat is a 
+combination of three discs of the same color with an empty 
+spot for the fourth winning disk an open threat is a threat 
+that can be realized in the opponent s next move in order 
+for the black player to win it must somehow turn the tide 
+take the advantage and start presenting threats to the white 
+player we will explore black players behavior and their 
+conformance to our axioms 
+to do so we built an application that reads log files and 
+analyzes the black player s moves the application contains 
+two main components a min-max algorithm for 
+evaluation of moves open threats detector for the discovering of 
+open threats the min-max algorithm will work to a given 
+depth d and for each move α will output the heuristic value 
+for the next action taken by the player as written in the log 
+file h α alongside the maximum heuristic value maxh α 
+that could be achieved prior to taking the move obviously 
+if h α maxh α then the player did not do the optimal 
+move heuristically the threat detector s job is to notify 
+if some action was taken in order to block an open threat 
+ not blocking an open threat will probably cause the player 
+to lose in the opponent s next move 
+the heuristic function used by min-max to evaluate the 
+player s utility is the following function which is simple to 
+compute yet provides a reasonable challenge to human 
+opponents 
+definition let group be an adjacent set of four squares 
+that are horizontal vertical or diagonal groupn 
+b groupn 
+w 
+be a group with n pieces of the black white color and −n 
+empty squares 
+h 
+ group 
+b α group 
+b β group 
+b γ group 
+b ∞ 
+− 
+ group 
+w α group 
+w β group 
+w γ group 
+w ∞ 
+the values of α β and δ can vary to form any desired 
+linear combination however it is important to value them 
+with the α β δ ordering in mind we used and as 
+their respective values groups of discs of the same color 
+means victory thus discovery of such a group will result in 
+∞ to ensure an extreme value 
+we now use our estimated evaluation function to evaluate 
+the black player s actions during the connect-four 
+adversarial interaction each game from the log file was input into 
+the application which processed and output a reformatted 
+log file containing the h value of the current move the maxh 
+value that could be achieved and a notification if an open 
+threat was detected a total of games were analyzed 
+ with white winning and with black winning a 
+few additional games were manually ignored in the 
+experiment due to these problems a player abandoning the game 
+while the outcome is not final or a blunt irrational move in 
+the early stages of the game e g not blocking an obvious 
+winning group in the first opening moves in addition a 
+single tie game was also removed the simulator was run to 
+a search depth of moves we now proceed to analyze the 
+games with respect to each behavioral axiom 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table average heuristic difference analysis 
+black losses black won 
+avg minh - - 
+avg lowest h moves min 
+h - - 
+ affirming the suboptimal tactical move axiom 
+the following section presents the heuristic evaluations 
+of the min-max algorithm for each action and checks the 
+amount and extent of suboptimal tactical actions and their 
+implications on performance 
+table shows results and insights from the games 
+heuristic analysis when search depth equals this search depth 
+was selected for the results to be comparable to see 
+section the table s heuristic data is the difference 
+between the present maximal heuristic value and the heuristic 
+value of the action that was eventually taken by the player 
+ i e the closer the number is to the closer the action was 
+to the maximum heuristic action 
+the first row presents the difference values of the 
+action that had the maximal difference value among all the 
+black player s actions in a given game as averaged over all 
+black s winning and losing games see respective columns 
+in games in which the black player loses its average 
+difference value was - while in games in which the black 
+player won its average was - the second row expands 
+the analysis by considering the highest heuristic difference 
+actions and averaging them in that case we notice an 
+average heuristic difference of points between games which the 
+black player loses and games in which it wins nevertheless 
+the importance of those numbers is that they allowed us to 
+take an educated guess on a threshold number of as 
+the value of the trh constant which differentiates between 
+normal actions and highly beneficial ones 
+after finding an approximated trh constant we can 
+proceed with an analysis of the importance of suboptimal moves 
+to do so we took the subset of games in which the minimum 
+heuristic difference value for black s actions was as 
+presented in table we can see the different min 
+h 
+average of the largest ranges and the respective percentage of 
+games won the first row shows that the black player won 
+only of the games in which the average of its highest 
+heuristically difference actions min 
+h was smaller than the 
+suggested threshold trh 
+the second row shows a surprising result it seems that 
+when min 
+h − the black player rarely wins intuition 
+would suggest that games in which the action evaluation 
+values were closer to the maximal values will result in more 
+winning games for black however it seems that in the 
+connect-four domain merely responding with somewhat 
+easily expected actions without initiating a few surprising 
+and suboptimal moves does not yield good results the last 
+row sums up the main insights from the analysis most of 
+black s wins came when its min 
+h was in the range 
+of - to - a close inspection of those black winning 
+games shows the following pattern behind the numbers 
+after standard opening moves black suddenly drops a disc 
+into an isolated column which seems a waste of a move 
+white continues to build its threats while usually 
+disregarding black s last move which in turn uses the isolated disc 
+as an anchor for a future winning threat 
+the results show that it was beneficial for the black player 
+table black s winnings percentages 
+ of games 
+min 
+h − 
+min 
+h − 
+− ≤ min 
+h ≤ − 
+to take suboptimal actions and not give the current 
+highest possible heuristic value but will not be too harmful 
+for its position i e will not give high beneficial value to 
+its adversary as it turned out learning the threshold is 
+an important aspect of success taking wildly risky moves 
+ min 
+h − or trying to avoid them min 
+h − 
+reduces the black player s winning chances by a large margin 
+ affirming the profile monitoring axiom 
+in the task of showing the importance of monitoring one s 
+adversaries profiles our log files could not be used because 
+they did not contain repeated interactions between players 
+which are needed to infer the players knowledge about their 
+adversaries however the importance of opponent 
+modeling and its use in attaining tactical advantages was already 
+studied in various domains are good examples 
+in a recent paper markovitch and reger explored the 
+notion of learning and exploitation of opponent weakness in 
+competitive interactions they apply simple learning 
+strategies by analyzing examples from past interactions in a 
+specific domain they also used the connect-four adversarial 
+domain which can now be used to understand the 
+importance of monitoring the adversary s profile 
+following the presentation of their theoretical model they 
+describe an extensive empirical study and check the agent s 
+performance after learning the weakness model with past 
+examples one of the domains used as a competitive 
+environment was the same connect-four game checkers was 
+the second domain their heuristic function was identical 
+to ours with three different variations h h and h that 
+are distinguished from one another in their linear 
+combination coefficient values the search depth for the players was 
+ as in our analysis their extensive experiments check 
+and compare various learning strategies risk factors 
+predefined feature sets and usage methods the bottom line is 
+that the connect-four domain shows an improvement from 
+a winning rate before modeling to a after 
+modeling page their conclusions showing improved 
+performance when holding and using the adversary s model 
+justify the effort to monitor the adversary profile for 
+continuous and repeated interactions 
+an additional point that came up in their experiments is 
+the following after the opponent weakness model has been 
+learned the authors describe different methods of 
+integrating the opponent weakness model into the agent s decision 
+strategy nevertheless regardless of the specific method 
+they chose to work with all integration methods might cause 
+the agent to take suboptimal decisions it might cause the 
+agent to prefer actions that are suboptimal at the present 
+decision junction but which might cause the opponent to 
+react in accordance with its weakness model as represented 
+by our agent which in turn will be beneficial for us in the 
+future the agent s behavior as demonstrated in further 
+confirms and strengthens our suboptimal tactical axiom as 
+discussed in the previous section 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ additional insights 
+the need for the goal achieving preventive act and 
+evaluation maximization axioms are obvious and need no 
+further verification however even with respect to those 
+axioms a few interesting insights came up in the log analysis 
+the goal achieving and preventive act axioms though 
+theoretically trivial seem to provide some challenge to a human 
+player in the initial inspection of the logs we encountered 
+few games 
+where a player for inexplicable reasons did not 
+block the other from winning or failed to execute its own 
+winning move we can blame those faults on the human s 
+lack of attention or a typing error in its move reply 
+nevertheless those errors might occur in bounded rational agents 
+and the appropriate behavior needs to be axiomatized 
+a typical connect-four game revolves around generating 
+threats and blocking them in our analysis we looked for 
+explicit preventive actions i e moves that block a group of 
+ discs or that remove a future threat in our limited search 
+horizon we found that in of the total games there was 
+at least one preventive action taken by the black player it 
+was also found that black averaged preventive actions 
+per game on the games in which it lost while averaging 
+preventive actions per game when winning it seems that 
+black requires or preventive actions to build its initial 
+taking position before starting to present threats if it did 
+not manage to win it will usually prevent an extra threat 
+or two before succumbing to white 
+ related work 
+much research deals with the axiomatization of teamwork 
+and mental states of individuals some models use 
+knowledge and belief others have models of goals and 
+intentions however all these formal theories deal with 
+agent teamwork and cooperation as far as we know our 
+model is the first to provide a formalized model for explicit 
+adversarial environments and agents behavior in it 
+the classical min-max adversarial search algorithm was 
+the first attempt to integrate the opponent into the search 
+space with a weak assumption of an optimally playing 
+opponent since then much effort has gone into integrating 
+the opponent model into the decision procedure to predict 
+future behavior the m algorithm presented by carmel 
+and markovitch showed a method of incorporating 
+opponent models into adversary search while in they used 
+learning to provide a more accurate opponent model in a 
+ player repeated game environment where agents strategies 
+were modeled as finite automata additional adversarial 
+planning work was done by willmott et al which 
+provided an adversarial planning approach to the game of go 
+the research mentioned above dealt with adversarial search 
+and the integration of opponent models into classical 
+utilitybased search methods that work shows the importance of 
+opponent modeling and the ability to exploit it to an agent s 
+advantage however the basic limitations of those search 
+methods still apply our model tries to overcome those 
+limitations by presenting a formal model for a new mental 
+state-based adversarial specification 
+ conclusions 
+we presented an adversarial environment model for a 
+ 
+these were later removed from the final analysis 
+bounded rational agent that is situated in an n-player 
+zerosum environment we used the sharedplans formalization 
+to define the model and the axioms that agents can apply 
+as behavioral guidelines 
+the model is meant to be used as a guideline for 
+designing agents that need to operate in such adversarial 
+environments we presented empirical results based on 
+connectfour log file analysis that exemplify the model and the 
+axioms for a bilateral instance of the environment 
+the results we presented are a first step towards an 
+expanded model that will cover all types of adversarial 
+environments for example environments that are non-zero-sum 
+and environments that contain natural agents that are not 
+part of the direct conflict those challenges and more will 
+be dealt with in future research 
+ acknowledgment 
+this research was supported in part by israel science 
+foundation grants and 
+ references 
+ l v allis a knowledge-based approach of 
+connect-four - the game is solved white wins 
+master s thesis free university amsterdam the 
+netherlands 
+ d carmel and s markovitch incorporating opponent 
+models into adversary search in proceedings of the 
+thirteenth national conference on artificial 
+intelligence pages - portland or 
+ d carmel and s markovitch opponent modeling in 
+multi-agent systems in g weiß and s sen editors 
+adaptation and learning in multi-agent systems 
+pages - springer-verlag 
+ b j grosz and s kraus collaborative plans for 
+complex group action artificial intelligence 
+ - 
+ m hadad g kaminka g armon and s kraus 
+supporting collaborative activity in proc of 
+aaai- pages - pittsburgh 
+ http www gamerz net ˜pbmserv 
+ s kraus and d lehmann designing and building a 
+negotiating automated agent computational 
+intelligence - 
+ h j levesque p r cohen and j h t nunes on 
+acting together in proc of aaai- pages - 
+boston ma 
+ s markovitch and r reger learning and exploiting 
+relative weaknesses of opponent agents autonomous 
+agents and multi-agent systems - 
+ y m ronald fagin joseph y halpern and m y 
+vardi reasoning about knowledge mit press 
+cambridge mass 
+ p thagard adversarial problem solving modeling an 
+oponent using explanatory coherence cognitive 
+science - 
+ r w toseland and r f rivas an introduction to 
+group work practice prentice hall englewood cliffs 
+nj nd edition edition 
+ s willmott j richardson a bundy and j levine 
+an adversarial planning approach to go lecture 
+notes in computer science - 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

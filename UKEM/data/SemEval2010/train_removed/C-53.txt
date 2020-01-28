@@ -1,0 +1,638 @@
+globally synchronized dead-reckoning with local lag for 
+continuous distributed multiplayer games 
+yi zhang 
+ ling chen 
+ gencai chen 
+ college of computer science zhejiang university hangzhou p r china 
+ school of computer science and it the university of nottingham nottingham ng bb uk 
+ m zhangyi lingchen chengc  cs zju edu cn 
+abstract 
+dead-reckoning dr is an effective method to maintain 
+consistency for continuous distributed multiplayer games 
+ cdmg since dr can filter most unnecessary state updates and 
+improve the scalability of a system it is widely used in 
+commercial cdmg however dr cannot maintain high 
+consistency and this constrains its application in highly 
+interactive games with the help of global synchronization dr 
+can achieve higher consistency but it still cannot eliminate before 
+inconsistency in this paper a method named globally 
+synchronized dr with local lag gs-dr-ll which combines 
+local lag and globally synchronized dr gs-dr is presented 
+performance evaluation shows that gs-dr-ll can effectively 
+decrease before inconsistency and the effects increase with the 
+lag 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems - distributed applications 
+general terms 
+algorithms performance experimentation 
+ introduction 
+nowadays many distributed multiplayer games adopt replicated 
+architectures in such games the states of entities are changed not 
+only by the operations of players but also by the passing of time 
+ these games are referred to as continuous distributed 
+multiplayer games cdmg like other distributed applications 
+cdmg also suffer from the consistency problem caused by 
+network transmission delay although new network techniques 
+ e g qos can reduce or at least bound the delay they can not 
+completely eliminate it as there exists the physical speed 
+limitation of light for instance ms is needed for light to 
+propagate from europe to australia there are many studies 
+about the effects of network transmission delay in different 
+applications in replication based games network 
+transmission delay makes the states of local and remote sites to be 
+inconsistent which can cause serious problems such as reducing 
+the fairness of a game and leading to paradoxical situations etc in 
+order to maintain consistency for distributed systems many 
+different approaches have been proposed among which local lag 
+and dead-reckoning dr are two representative approaches 
+mauve et al proposed local lag to maintain high consistency 
+for replicated continuous applications it synchronizes the 
+physical clocks of all sites in a system after an operation is 
+issued at local site it delays the execution of the operation for a 
+short time during this short time period the operation is 
+transmitted to remote sites and all sites try to execute the 
+operation at a same physical time in order to tackle the 
+inconsistency caused by exceptional network transmission delay 
+a time warp based mechanism is proposed to repair the state 
+local lag can achieve significant high consistency but it is based 
+on operation transmission which forwards every operation on a 
+shared entity to remote sites since operation transmission 
+mechanism requests that all operations should be transmitted in a 
+reliable way message filtering is difficult to be deployed and the 
+scalability of a system is limited 
+dr is based on state transmission mechanism in addition to the 
+high fidelity model that maintains the accurate states of its own 
+entities each site also has a dr model that estimates the states of 
+all entities including its own entities after each update of its 
+own entities a site compares the accurate state with the estimated 
+one if the difference exceeds a pre-defined threshold a state 
+update would be transmitted to all sites and all dr models would 
+be corrected through state estimation dr can not only maintain 
+consistency but also decrease the number of transmitted state 
+updates compared with aforementioned local lag dr cannot 
+maintain high consistency due to network transmission delay 
+when a remote site receives a state update of an entity the state of 
+the entity might have changed at the site sending the state update 
+in order to make dr maintain high consistency aggarwal et al 
+proposed globally synchronized dr gs-dr which 
+synchronizes the physical clocks of all sites in a system and adds 
+time stamps to transmitted state updates detailed description of 
+gs-dr can be found in section 
+when a state update is available gs-dr immediately updates the 
+state of local site and then transmits the state update to remote 
+sites which causes the states of local site and remote sites to be 
+inconsistent in the transmission procedure thus with the 
+synchronization of physical clocks gs-dr can eliminate after 
+inconsistency but it cannot tackle before inconsistency in this 
+paper we propose a new method named globally synchronized 
+dr with local lag gs-dr-ll which combines local lag and 
+gs-dr by delaying the update to local site gs-dr-ll can 
+achieve higher consistency than gs-dr the rest of this paper is 
+organized as follows section gives the definition of consistency 
+and corresponding metrics the cause of the inconsistency of dr 
+is analyzed in section section describes how gs-dr-ll 
+works performance evaluation is presented in section section 
+ concludes the paper 
+ consistency definitions and 
+metrics 
+the consistency of replicated applications has already been well 
+defined in discrete domain but few related work 
+has been done in continuous domain mauve et al have given a 
+definition of consistency for replicated applications in continuous 
+domain but the definition is based on operation transmission and 
+it is difficult for the definition to describe state transmission based 
+methods e g dr here we present an alternative definition of 
+consistency in continuous domain which suits state transmission 
+based methods well 
+given two distinct sites i and j which have replicated a shared 
+entity e at a given time t the states of e at sites i and j are si t 
+and sj t 
+definition the states of e at sites i and j are consistent at 
+time t iff 
+de i j t si t - sj t 
+definition the states of e at sites i and j are consistent 
+between time t and t t t iff 
+de i j t t dt t s t s 
+t 
+t 
+ji 
+in this paper formulas and are used to determine whether 
+the states of shared entities are consistent between local and 
+remote sites due to network transmission delay it is difficult to 
+maintain the states of shared entities absolutely consistent 
+corresponding metrics are needed to measure the consistency of 
+shared entities between local and remote sites 
+de i j t can be used as a metric to measure the degree of 
+consistency at a certain time point if de i j t de i j t it 
+can be stated that between sites i and j the consistency of the 
+states of entity e at time point t is lower than that at time point t 
+if de i j t de l k t it can be stated that at time point t the 
+consistency of the states of entity e between sites i and j is lower 
+than that between sites l and k 
+similarly de i j t t can been used as a metric to measure the 
+degree of consistency in a certain time period if de i j t t 
+de i j t t and t - t t - t it can be stated that between 
+sites i and j the consistency of the states of entity e between time 
+points t and t is lower than that between time points t and t if 
+de i j t t de l k t t it can be stated that between time 
+points t and t the consistency of the states of entity e between 
+sites i and j is lower than that between sites l and k 
+in dr the states of entities are composed of the positions and 
+orientations of entities and some prediction related parameters 
+ e g the velocities of entities given two distinct sites i and j 
+which have replicated a shared entity e at a given time point t the 
+positions of e at sites i and j are xit yit zit and xjt yjt zjt de i j 
+t and d i j t t could be calculated as 
+de i j t zz yy xx jtit 
+ 
+jtit 
+ 
+jtit 
+ 
+ 
+de i j t t 
+ dt zz yy xx 
+ t 
+ t jtit 
+ 
+jtit 
+ 
+jtit 
+ 
+ 
+in this paper formulas and are used as metrics to measure 
+the consistency of shared entities between local and remote sites 
+ inconsistency in dr 
+the inconsistency in dr can be divided into two sections by the 
+time point when a remote site receives a state update the 
+inconsistency before a remote site receives a state update is 
+referred to as before inconsistency and the inconsistency after a 
+remote site receives a state update is referred to as after 
+inconsistency before inconsistency and after inconsistency are 
+similar with the terms before export error and after export error 
+ 
+after inconsistency is caused by the lack of synchronization 
+between the physical clocks of all sites in a system by employing 
+physical clock synchronization gs-dr can accurately calculate 
+the states of shared entities after receiving state updates and it 
+can eliminate after inconsistency before inconsistency is caused 
+by two reasons the first reason is the delay of sending state 
+updates as local site does not send a state update unless the 
+difference between accurate state and the estimated one is larger 
+than a predefined threshold the second reason is network 
+transmission delay as a shared entity can be synchronized only 
+after remote sites receiving corresponding state update 
+figure the paths of a shared entity by using gs-dr 
+for example it is assumed that the velocity of a shared entity is 
+the only parameter to predict the entity s position and current 
+position of the entity can be calculated by its last position and 
+current velocity to simplify the description it is also assumed 
+that there are only two sites i and j in a game session site i acts as 
+ the th workshop on network system support for games - netgames 
+local site and site j acts as remote site and t is the time point the 
+local site updates the state of the shared entity figure illustrates 
+the paths of the shared entity at local site and remote site in x axis 
+by using gs-dr at the beginning the positions of the shared 
+entity are the same at sites i and j and the velocity of the shared 
+entity is before time point t the paths of the shared entity at 
+sites i and j in x coordinate are exactly the same at time point t 
+the player at site i issues an operation which changes the velocity 
+in x axis to v site i first periodically checks whether the 
+difference between the accurate position of the shared entity and 
+the estimated one in this case is larger than a predefined 
+threshold at time point t site i finds that the difference is larger 
+than the threshold and it sends a state update to site j the state 
+update contains the position and velocity of the shared entity at 
+time point t and time point t is also attached as a timestamp at 
+time point t the state update reaches site j and the received state 
+and the time deviation between time points t and t are used to 
+calculate the current position of the shared entity then site j 
+updates its replicated entity s position and velocity and the paths 
+of the shared entity at sites i and j overlap again 
+from figure it can be seen that the after inconsistency is and 
+the before consistency is composed of two parts d and d d 
+is de i j t t and it is caused by the state filtering mechanism 
+of dr d is de i j t t and it is caused by network 
+transmission delay 
+ globally synchronized dr 
+with local lag 
+from the analysis in section it can be seen that gs-dr can 
+eliminate after inconsistency but it cannot effectively tackle 
+before inconsistency in order to decrease before inconsistency 
+we propose gs-dr-ll which combines gs-dr with local lag 
+and can effectively decrease before inconsistency 
+in gs-dr-ll the state of a shared entity at a certain time point t 
+is notated as s t pos par par   par n in which pos 
+means the position of the entity and par to par n means the 
+parameters to calculate the position of the entity in order to 
+simplify the description of gs-dr-ll it is assumed that there are 
+only one shared entity and one remote site 
+at the beginning of a game session the states of the shared entity 
+are the same at local and remote sites with the same position p 
+and parameters pars pars represents all the parameters local 
+site keeps three states the real state of the entity sreal the 
+predicted state at remote site sp-remote and the latest state updated 
+to remote site slate remote site keep only one state sremote which 
+is the real state of the entity at remote site therefore at the 
+beginning of a game session sreal sp-remote slate sremote t 
+p pars in gs-dr-ll it is assumed that the physical clocks of 
+all sites are synchronized with a deviation of less than ms 
+ using ntp or gps clock furthermore it is necessary to make 
+corrections to a physical clock in a way that does not result in 
+decreasing the value of the clock for example by slowing down 
+or halting the clock for a period of time additionally it is 
+assumed that the game scene is updated at a fixed frequency and 
+t stands for the time interval between two consecutive updates 
+for example if the scene update frequency is hz t would be 
+ ms n stands for the lag value used by local lag and t stands for 
+current physical time 
+after updating the scene local site waits for a constant amount of 
+time t during this time period local site receives the operations 
+of the player and stores them in a list l all operations in l are 
+sorted by their issue time at the end of time period t local site 
+executes all stored operations whose issue time is between t - t 
+and t on slate to get the new slate and it also executes all stored 
+operations whose issue time is between t - n t and t - n on 
+sreal to get the new sreal additionally local site uses sp-remote and 
+corresponding prediction methods to estimate the new sp-remote 
+after new slate sreal and sp-remote are calculated local site 
+compares whether the difference between the new slate and 
+spremote exceeds the predefined threshold if yes local site sends 
+new slate to remote site and sp-remote is updated with new slate note 
+that the timestamp of the sent state update is t after that local 
+site uses sreal to update local scene and deletes the operations 
+whose issue time is less than t - n from l 
+after updating the scene remote site waits for a constant amount 
+of time t during this time period remote site stores received 
+state update s in a list r all state updates in r are sorted by their 
+timestamps at the end of time period t remote site checks 
+whether r contains state updates whose timestamps are less than t 
+- n note that t is current physical time and it increases during the 
+transmission of state updates if yes it uses these state updates 
+and corresponding prediction methods to calculate the new sremote 
+else they use sremote and corresponding prediction methods to 
+estimate the new sremote after that local site uses sremote to update 
+local scene and deletes the sate updates whose timestamps are 
+less than t - n from r 
+from the above description it can been see that the main 
+difference between gs-dr and gs-dr-ll is that gs-dr-ll 
+uses the operations whose issue time is less than t - n to 
+calculate sreal that means that the scene seen by local player is 
+the results of the operations issued a period of time i e n ago 
+meanwhile if the results of issued operations make the difference 
+between slate and sp-remote exceed a predefined threshold 
+corresponding state updates are sent to remote sites immediately 
+the aforementioned is the basic mechanism of gs-dr-ll in the 
+case with multiple shared entities and remote sites local site 
+calculates slate sreal and sp-remote for different shared entities 
+respectively if there are multiple slate need to be transmitted local 
+site packets them in one state update and then send it to all remote 
+sites 
+figure illustrates the paths of a shared entity at local site and 
+remote site while using gs-dr and gs-dr-ll all conditions 
+are the same with the conditions used in the aforementioned 
+example describing gs-dr compared with t t and n t i e 
+the time interval between two consecutive updates is quite small 
+and it is ignored in the following description 
+at time point t the player at site i issues an operation which 
+changes the velocity of the shared entity form to v by using 
+gs-dr-ll the results of the operation are updated to local scene 
+at time point t n however the operation is immediately used 
+to calculate slate thus in spite of gs-dr or gs-dr-ll at time 
+point t site i finds that the difference between accurate position 
+and the estimated one is larger than the threshold and it sends a 
+state update to site j at time point t the state update is received 
+by remote site j assuming that the timestamp of the state update 
+is less than t - n site j uses it to update local scene immediately 
+the th workshop on network system support for games - netgames 
+with gs-dr the time period of before inconsistency is t - t 
+ t - t whereas it decreases to t - t - n t - t with the 
+help of gs-dr-ll note that t - t is caused by network 
+transmission delay and t - t is caused by the state filtering 
+mechanism of dr if n is larger than t - t gs-dr-ll can 
+eliminate the before inconsistency caused by network 
+transmission delay but it cannot eliminate the before 
+inconsistency caused by the state filtering mechanism of dr 
+ unless the threshold is set to in highly interactive games 
+which request high consistency and gs-dr-ll might be 
+employed the results of operations are quite difficult to be 
+estimated and a small threshold must be used thus in practice 
+most before inconsistency is caused by network transmission 
+delay and gs-dr-ll has the capability to eliminate such before 
+inconsistency 
+figure the paths of a shared entity by using gs-dr and 
+gs-dr-ll 
+to gs-dr-ll the selection of lag value n is very important and 
+both network transmission delay and the effects of local lag on 
+interaction should be considered according to the results of hci 
+related researches humans cannot perceive the delay imposed on 
+a system when it is smaller than a specific value and the specific 
+value depends on both the system and the task for example in a 
+graphical user interface a delay of approximately ms cannot 
+be noticed for keyboard interaction and the threshold increases to 
+ ms for mouse interaction and a delay of up to ms is 
+uncritical for a car-racing game thus if network transmission 
+delay is less than the specific value of a game system n can be set 
+to the specific value else n can be set in terms of the effects of 
+local lag on the interaction of a system in the case that a 
+large n must be used some hci methods e g echo can be 
+used to relieve the negative effects of the large lag in the case 
+that n is larger than the network transmission delay gs-dr-ll 
+can eliminate most before inconsistency traditional local lag 
+requests that the lag value must be larger than typical network 
+transmission delay otherwise state repairs would flood the system 
+however gs-dr-ll allows n to be smaller than typical network 
+transmission delay in this case the before inconsistency caused 
+by network transmission delay still exists but it can be decreased 
+ performance evaluation 
+in order to evaluate gs-dr-ll and compare it with gs-dr in a 
+real application we had implemented both two methods in a 
+networked game named spaceship spaceship is a very simple 
+networked computer game in which players can control their 
+spaceships to accelerate decelerate turn and shoot spaceships 
+controlled by remote players with laser beams if a spaceship is 
+hit by a laser beam its life points decrease one if the life points 
+of a spaceship decrease to the spaceship is removed from the 
+game and the player controlling the spaceship loses the game 
+in our practical implementation gs-dr-ll and gs-dr 
+coexisted in the game system and the test bed was composed of 
+two computers connected by m switched ethernet with one 
+computer acted as local site and the other acted as remote site in 
+order to simulate network transmission delay a specific module 
+was developed to delay all packets transmitted between the two 
+computers in terms of a predefined delay value 
+the main purpose of performance evaluation is to study the 
+effects of gs-dr-ll on decreasing before inconsistency in a 
+particular game system under different thresholds lags and 
+network transmission delays two different thresholds were used 
+in the evaluation one is pixels deviation in position or 
+degrees deviation in orientation and the other is pixels or 
+degrees six different combinations of lag and network 
+transmission delay were used in the evaluation and they could be 
+divided into two categories in one category the lag was fixed at 
+ ms and three different network transmission delays ms 
+ ms and ms were used in the other category the 
+network transmission delay was fixed at ms and three 
+different lags ms ms and ms were used therefore 
+the total number of settings used in the evaluation was × 
+the procedure of performance evaluation was composed of three 
+steps in the first step two participants were employed to play the 
+game and the operation sequences were recorded based on the 
+records a sub operation sequence which lasted about one minute 
+and included different operations e g accelerate decelerate and 
+turn was selected in the second step the physical clocks of the 
+two computers were synchronized first under different settings 
+and consistency maintenance approaches the selected sub 
+operation sequence was played back on one computer and it 
+drove the two spaceships one was local and the other was remote 
+to move meanwhile the tracks of the spaceships on the two 
+computers were recorded separately and they were called as a 
+track couple since there are settings and consistency 
+maintenance approaches the total number of recorded track 
+couples was in the last step to each track couple the 
+inconsistency between them was calculated and the unit of 
+inconsistency was pixel since the physical clocks of the two 
+computers were synchronized the calculation of inconsistency 
+was quite simple the inconsistency at a particular time point was 
+the distance between the positions of the two spaceships at that 
+time point i e formula 
+in order to show the results of inconsistency in a clear way only 
+parts of the results which last about seconds are used in the 
+following figures and the figures show almost the same parts of 
+the results figures and show the results of inconsistency 
+when the lag is fixed at ms and the network transmission 
+delays are and ms it can been seen that 
+inconsistency does exist but in most of the time it is 
+additionally inconsistency increases with the network 
+transmission delay but decreases with the threshold compared 
+with gs-dr gs-dr-ll can decrease more inconsistency and it 
+eliminates most inconsistency when the network transmission 
+delay is ms and the threshold is pixels or degrees 
+ the th workshop on network system support for games - netgames 
+according to the prediction and state filtering mechanisms of dr 
+inconsistency cannot be completely eliminated if the threshold is 
+not with the definitions of before inconsistency and after 
+inconsistency it can be indicated that gs-dr and gs-dr-ll 
+both can eliminate after inconsistency and gs-dr-ll can 
+effectively decrease before inconsistency it can be foreseen that 
+with proper lag and threshold e g the lag is larger than the 
+network transmission delay and the threshold is gs-dr-ll 
+even can eliminate before inconsistency 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+figures and show the results of inconsistency when the 
+network transmission delay is fixed at ms and the lag are 
+ and ms it can be seen that with gs-dr-ll before 
+inconsistency decreases with the lag in traditional local lag the 
+lag must be set to a value larger than typical network transmission 
+delay otherwise the state repairs would flood the system from 
+the above results it can be seen that there does not exist any 
+constraint on the selection of the lag with gs-dr-ll a system 
+would work fine even if the lag is much smaller than the network 
+transmission delay 
+the th workshop on network system support for games - netgames 
+from all above results it can be indicated that gs-dr and 
+gsdr-ll both can eliminate after inconsistency and gs-dr-ll 
+can effectively decrease before inconsistency and the effects 
+increase with the lag 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+ 
+ 
+ 
+ 
+ 
+ 
+time seconds 
+inconsistency pixels 
+gs-dr-ll gs-dr 
+the threshold is pixels or degrees 
+figure inconsistency when the network transmission delay is ms and the lag is ms 
+ conclusions 
+compared with traditional dr gs-dr can eliminate after 
+inconsistency through the synchronization of physical clocks but 
+it cannot tackle before inconsistency which would significantly 
+influence the usability and fairness of a game in this paper we 
+proposed a method named gs-dr-ll which combines local lag 
+and gs-dr to decrease before inconsistency through delaying 
+updating the execution results of local operations to local scene 
+performance evaluation indicates that gs-dr-ll can effectively 
+decrease before inconsistency and the effects increase with the 
+lag 
+gs-dr-ll has significant implications to consistency 
+maintenance approaches first gs-dr-ll shows that improved 
+dr can not only eliminate after inconsistency but also decrease 
+ the th workshop on network system support for games - netgames 
+before inconsistency with proper lag and threshold it would even 
+eliminate before inconsistency as a result the application of dr 
+can be greatly broadened and it could be used in the systems 
+which request high consistency e g highly interactive games 
+second gs-dr-ll shows that by combining local lag and 
+gsdr the constraint on selecting lag value is removed and a lag 
+which is smaller than typical network transmission delay could 
+be used as a result the application of local lag can be greatly 
+broadened and it could be used in the systems which have large 
+typical network transmission delay e g internet based games 
+ references 
+ mauve m vogel j hilt v and effelsberg w local-lag 
+and timewarp providing consistency for replicated 
+continuous applications ieee transactions on multimedia 
+vol no - 
+ li f w li l w and lau r w supporting continuous 
+consistency in multiplayer online games in proc of acm 
+multimedia - 
+ pantel l and wolf l on the suitability of dead 
+reckoning schemes for games in proc of netgames 
+ - 
+ alhalabi m o horiguchi s and kunifuji s an 
+experimental study on the effects of network delay in 
+cooperative shared haptic virtual environment computers 
+and graphics vol no - 
+ pantel l and wolf l c on the impact of delay on 
+realtime multiplayer games in proc of nossdav 
+ 
+ meehan m razzaque s whitton m c and brooks f p 
+effect of latency on presence in stressful virtual 
+environments in proc of ieee vr - 
+ bernier y w latency compensation methods in 
+client server in-game protocol design and optimization in 
+proc of game developers conference 
+ aggarwal s banavar h and khandelwal a accuracy in 
+dead-reckoning based distributed multi-player games in 
+proc of netgames - 
+ raynal m and schiper a from causal consistency to 
+sequential consistency in shared memory systems in proc 
+of conference on foundations of software technology and 
+theoretical computer science - 
+ ahamad m burns j e hutto p w and neiger g causal 
+memory in proc of international workshop on distributed 
+algorithms - 
+ herlihy m and wing j linearizability a correctness 
+condition for concurrent objects acm transactions on 
+programming languages and systems vol no 
+ - 
+ misra j axioms for memory access in asynchronous 
+hardware systems acm transactions on programming 
+languages and systems vol no - 
+ dabrowski j r and munson e v is milliseconds too 
+fast in proc of sigchi conference on human factors in 
+computing systems - 
+ chen h chen l and chen g c effects of local-lag 
+mechanism on cooperation performance in a desktop cve 
+system journal of computer science and technology vol 
+ no - 
+ chen l chen h and chen g c echo a method to 
+improve the interaction quality of cves in proc of ieee 
+vr - 
+the th workshop on network system support for games - netgames 

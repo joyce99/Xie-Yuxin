@@ -1,0 +1,1507 @@
+tsar a two tier sensor storage architecture using 
+interval skip graphs 
+ 
+peter desnoyers deepak ganesan and prashant shenoy 
+department of computer science 
+university of massachusetts 
+amherst ma 
+pjd cs umass edu dganesan cs umass edu shenoy cs umass edu 
+abstract 
+archival storage of sensor data is necessary for applications that query 
+mine and analyze such data for interesting features and trends we argue 
+that existing storage systems are designed primarily for flat hierarchies of 
+homogeneous sensor nodes and do not fully exploit the multi-tier nature 
+of emerging sensor networks where an application can comprise tens of 
+tethered proxies each managing tens to hundreds of untethered sensors 
+we present tsar a fundamentally different storage architecture that 
+envisions separation of data from metadata by employing local archiving at 
+the sensors and distributed indexing at the proxies at the proxy tier tsar 
+employs a novel multi-resolution ordered distributed index structure the 
+interval skip graph for efficiently supporting spatio-temporal and value 
+queries at the sensor tier tsar supports energy-aware adaptive 
+summarization that can trade off the cost of transmitting metadata to the proxies 
+against the overhead of false hits resulting from querying a coarse-grain 
+index we implement tsar in a two-tier sensor testbed comprising 
+stargatebased proxies and mote-based sensors our experiments demonstrate the 
+benefits and feasibility of using our energy-efficient storage architecture in 
+multi-tier sensor networks 
+categories and subject descriptors c computer - 
+communication networks distributed systems 
+general terms algorithms performance experimentation 
+ introduction 
+ motivation 
+many different kinds of networked data-centric sensor 
+applications have emerged in recent years sensors in these applications 
+sense the environment and generate data that must be processed 
+filtered interpreted and archived in order to provide a useful 
+infrastructure to its users to achieve its goals a typical sensor 
+application needs access to both live and past sensor data whereas 
+access to live data is necessary in monitoring and surveillance 
+applications access to past data is necessary for applications such as 
+mining of sensor logs to detect unusual patterns analysis of 
+historical trends and post-mortem analysis of particular events archival 
+storage of past sensor data requires a storage system the key 
+attributes of which are where the data is stored whether it is indexed 
+and how the application can access this data in an energy-efficient 
+manner with low latency 
+there have been a spectrum of approaches for constructing 
+sensor storage systems in the simplest sensors stream data or events 
+to a server for long-term archival storage where the server 
+often indexes the data to permit efficient access at a later time since 
+sensors may be several hops from the nearest base station network 
+costs are incurred however once data is indexed and archived 
+subsequent data accesses can be handled locally at the server without 
+incurring network overhead in this approach the storage is 
+centralized reads are efficient and cheap while writes are expensive 
+further all data is propagated to the server regardless of whether 
+it is ever used by the application 
+an alternate approach is to have each sensor store data or events 
+locally e g in flash memory so that all writes are local and incur 
+no communication overheads a read request such as whether an 
+event was detected by a particular sensor requires a message to 
+be sent to the sensor for processing more complex read requests 
+are handled by flooding for instance determining if an intruder 
+was detected over a particular time interval requires the request to 
+be flooded to all sensors in the system thus in this approach 
+the storage is distributed writes are local and inexpensive while 
+reads incur significant network overheads requests that require 
+flooding due to the lack of an index are expensive and may waste 
+precious sensor resources even if no matching data is stored at 
+those sensors research efforts such as directed diffusion 
+have attempted to reduce these read costs however by intelligent 
+message routing 
+between these two extremes lie a number of other sensor storage 
+systems with different trade-offs summarized in table the 
+geographic hash table ght approach advocates the use of 
+an in-network index to augment the fully distributed nature of 
+sensor storage in this approach each data item has a key associated 
+with it and a distributed or geographic hash table is used to map 
+keys to nodes that store the corresponding data items thus writes 
+cause data items to be sent to the hashed nodes and also trigger 
+updates to the in-network hash table a read request requires a lookup 
+in the in-network hash table to locate the node that stores the data 
+ 
+item observe that the presence of an index eliminates the need for 
+flooding in this approach 
+most of these approaches assume a flat homogeneous 
+architecture in which every sensor node is energy-constrained in this 
+paper we propose a novel storage architecture called tsar 
+that 
+reflects and exploits the multi-tier nature of emerging sensor 
+networks where the application is comprised of tens of tethered 
+sensor proxies or more each controlling tens or hundreds of 
+untethered sensors tsar is a component of our presto predictive 
+storage architecture which combines archival storage with caching 
+and prediction we believe that a fundamentally different storage 
+architecture is necessary to address the multi-tier nature of future 
+sensor networks specifically the storage architecture needs to 
+exploit the resource-rich nature of proxies while respecting resource 
+constraints at the remote sensors no existing sensor storage 
+architecture explicitly addresses this dichotomy in the resource 
+capabilities of different tiers 
+any sensor storage system should also carefully exploit current 
+technology trends which indicate that the capacities of flash 
+memories continue to rise as per moore s law while their costs continue 
+to plummet thus it will soon be feasible to equip each sensor with 
+ gb of flash storage for a few tens of dollars an even more 
+compelling argument is the energy cost of flash storage which can be 
+as much as two orders of magnitude lower than that for 
+communication newer nand flash memories offer very low write and 
+erase energy costs - our comparison of a gb samsung nand 
+flash storage and the chipcon cc wireless radio 
+ in section indicates a ratio in per-byte energy cost 
+between the two devices even before accounting for network protocol 
+overheads these trends together with the energy-constrained 
+nature of untethered sensors indicate that local storage offers a viable 
+energy-efficient alternative to communication in sensor networks 
+tsar exploits these trends by storing data or events locally on 
+the energy-efficient flash storage at each sensor sensors send 
+concise identifying information which we term metadata to a nearby 
+proxy depending on the representation used this metadata may be 
+an order of magnitude or more smaller than the data itself 
+imposing much lower communication costs the resource-rich proxies 
+interact with one another to construct a distributed index of the 
+metadata reported from all sensors and thus an index of the 
+associated data stored at the sensors this index provides a unified 
+logical view of the distributed data and enables an application to 
+query and read past data efficiently - the index is used to 
+pinpoint all data that match a read request followed by messages to 
+retrieve that data from the corresponding sensors in-network 
+index lookups are eliminated reducing network overheads for read 
+requests this separation of data which is stored at the sensors 
+and the metadata which is stored at the proxies enables tsar to 
+reduce energy overheads at the sensors by leveraging resources at 
+tethered proxies 
+ contributions 
+this paper presents tsar a novel two-tier storage architecture 
+for sensor networks to the best of our knowledge this is the first 
+sensor storage system that is explicitly tailored for emerging 
+multitier sensor networks our design and implementation of tsar has 
+resulted in four contributions 
+at the core of the tsar architecture is a novel distributed index 
+structure based on interval skip graphs that we introduce in this 
+paper this index structure can store coarse summaries of sensor 
+data and organize them in an ordered manner to be easily 
+search 
+tsar tiered storage architecture for sensor networks 
+able this data structure has o log n expected search and update 
+complexity further the index provides a logically unified view of 
+all data in the system 
+second at the sensor level each sensor maintains a local archive 
+that stores data on flash memory our storage architecture is fully 
+stateless at each sensor from the perspective of the metadata index 
+all index structures are maintained at the resource-rich proxies and 
+only direct requests or simple queries on explicitly identified 
+storage locations are sent to the sensors storage at the remote sensor 
+is in effect treated as appendage of the proxy resulting in low 
+implementation complexity which makes it ideal for small 
+resourceconstrained sensor platforms further the local store is optimized 
+for time-series access to archived data as is typical in many 
+applications each sensor periodically sends a summary of its data to a 
+proxy tsar employs a novel adaptive summarization technique 
+that adapts the granularity of the data reported in each summary to 
+the ratio of false hits for application queries more fine grain 
+summaries are sent whenever more false positives are observed thereby 
+balancing the energy cost of metadata updates and false positives 
+third we have implemented a prototype of tsar on a multi-tier 
+testbed comprising stargate-based proxies and mote-based sensors 
+our implementation supports spatio-temporal value and 
+rangebased queries on sensor data 
+fourth we conduct a detailed experimental evaluation of tsar 
+using a combination of emstar emtos and our prototype 
+while our emstar emtos experiments focus on the scalability of 
+tsar in larger settings our prototype evaluation involves latency 
+and energy measurements in a real setting our results demonstrate 
+the logarithmic scaling property of the sparse skip graph and the 
+low latency of end-to-end queries in a duty-cycled multi-hop 
+network 
+the remainder of this paper is structured as follows section 
+presents key design issues that guide our work section and 
+present the proxy-level index and the local archive and 
+summarization at a sensor respectively section discusses our prototype 
+implementation and section presents our experimental results we 
+present related work in section and our conclusions in section 
+ design considerations 
+in this section we first describe the various components of a 
+multi-tier sensor network assumed in our work we then present a 
+description of the expected usage models for this system followed 
+by several principles addressing these factors which guide the 
+design of our storage system 
+ system model 
+we envision a multi-tier sensor network comprising multiple tiers 
+- a bottom tier of untethered remote sensor nodes a middle tier of 
+tethered sensor proxies and an upper tier of applications and user 
+terminals see figure 
+the lowest tier is assumed to form a dense deployment of 
+lowpower sensors a canonical sensor node at this tier is equipped 
+with low-power sensors a micro-controller and a radio as well as 
+a significant amount of flash memory e g gb the common 
+constraint for this tier is energy and the need for a long lifetime 
+in spite of a finite energy constraint the use of radio processor 
+ram and the flash memory all consume energy which needs to 
+be limited in general we assume radio communication to be 
+substantially more expensive than accesses to flash memory 
+the middle tier consists of power-rich sensor proxies that have 
+significant computation memory and storage resources and can use 
+ 
+table characteristics of sensor storage systems 
+system data index reads writes order preserving 
+centralized store centralized centralized index handled at store send to store yes 
+local sensor store fully distributed no index flooding diffusion local no 
+ght dcs fully distributed in-network index hash to node send to hashed node no 
+tsar presto fully distributed distributed index at proxies proxy lookup sensor query local plus index update yes 
+user 
+unified logical store 
+queries 
+ time space value 
+query 
+response 
+cache 
+query forwarding 
+proxy 
+remote 
+sensors 
+local data archive 
+on flash memory 
+interval 
+skip graph 
+query 
+forwarding 
+summaries 
+start index 
+end index 
+linear 
+traversal 
+query 
+response 
+cache-miss 
+triggered 
+query forwarding 
+summaries 
+figure architecture of a multi-tier sensor network 
+these resources continuously in urban environments the proxy tier 
+would comprise a tethered base-station class nodes e g crossbow 
+stargate each with with multiple radios-an radio that 
+connects it to a wireless mesh network and a low-power radio e g 
+ that connects it to the sensor nodes in remote sensing 
+applications this tier could comprise a similar stargate node 
+with a solar power cell each proxy is assumed to manage several 
+tens to hundreds of lower-tier sensors in its vicinity a typical 
+sensor network deployment will contain multiple geographically 
+distributed proxies for instance in a building monitoring application 
+one sensor proxy might be placed per floor or hallway to monitor 
+temperature heat and light sensors in their vicinity 
+at the highest tier of our infrastructure are applications that query 
+the sensor network through a query interface in this work we 
+focus on applications that require access to past sensor data to 
+support such queries the system needs to archive data on a 
+persistent store our goal is to design a storage system that exploits the 
+relative abundance of resources at proxies to mask the scarcity of 
+resources at the sensors 
+ usage models 
+the design of a storage system such as tsar is affected by the 
+queries that are likely to be posed to it a large fraction of queries 
+on sensor data can be expected to be spatio-temporal in nature 
+sensors provide information about the physical world two key 
+attributes of this information are when a particular event or activity 
+occurred and where it occurred some instances of such queries 
+include the time and location of target or intruder detections e g 
+security and monitoring applications notifications of specific types 
+of events such as pressure and humidity values exceeding a 
+threshold e g industrial applications or simple data collection queries 
+which request data from a particular time or location e g weather 
+or environment monitoring 
+expected queries of such data include those requesting ranges 
+of one or more attributes for instance a query for all image data 
+from cameras within a specified geographic area for a certain 
+period of time in addition it is often desirable to support efficient 
+access to data in a way that maintains spatial and temporal 
+ordering there are several ways of supporting range queries such as 
+locality-preserving hashes such as are used in dims 
+however the most straightforward mechanism and one which naturally 
+provides efficient ordered access is via the use of order-preserving 
+data structures order-preserving structures such as the well-known 
+b-tree maintain relationships between indexed values and thus 
+allow natural access to ranges as well as predecessor and successor 
+operations on their key values 
+applications may also pose value-based queries that involve 
+determining if a value v was observed at any sensor the query 
+returns a list of sensors and the times at which they observed this 
+value variants of value queries involve restricting the query to a 
+geographical region or specifying a range v v rather than a 
+single value v value queries can be handled by indexing on the 
+values reported in the summaries specifically if a sensor reports 
+a numerical value then the index is constructed on these values a 
+search involves finding matching values that are either contained in 
+the search range v v or match the search value v exactly 
+hybrid value and spatio-temporal queries are also possible such 
+queries specify a time interval a value range and a spatial region 
+and request all records that match these attributes - find all 
+instances where the temperature exceeded o 
+f at location r 
+during the month of august these queries require an index on both 
+time and value 
+in tsar our focus is on range queries on value or time with 
+planned extensions to include spatial scoping 
+ design principles 
+our design of a sensor storage system for multi-tier networks is 
+based on the following set of principles which address the issues 
+arising from the system and usage models above 
+ principle store locally access globally current 
+technology allows local storage to be significantly more 
+energyefficient than network communication while technology 
+trends show no signs of erasing this gap in the near future 
+for maximum network life a sensor storage system should 
+leverage the flash memory on sensors to archive data locally 
+substituting cheap memory operations for expensive radio 
+transmission but without efficient mechanisms for retrieval 
+the energy gains of local storage may be outweighed by 
+communication costs incurred by the application in searching for 
+data we believe that if the data storage system provides 
+the abstraction of a single logical store to applications as 
+ 
+does tsar then it will have additional flexibility to 
+optimize communication and storage costs 
+ principle distinguish data from metadata data must 
+be identified so that it may be retrieved by the application 
+without exhaustive search to do this we associate 
+metadata with each data record - data fields of known syntax 
+which serve as identifiers and may be queried by the storage 
+system examples of this metadata are data attributes such as 
+location and time or selected or summarized data values we 
+leverage the presence of resource-rich proxies to index 
+metadata for resource-constrained sensors the proxies share this 
+metadata index to provide a unified logical view of all data in 
+the system thereby enabling efficient low-latency lookups 
+such a tier-specific separation of data storage from metadata 
+indexing enables the system to exploit the idiosyncrasies of 
+multi-tier networks while improving performance and 
+functionality 
+ principle provide data-centric query support in a sensor 
+application the specific location i e offset of a record in a 
+stream is unlikely to be of significance except if it conveys 
+information concerning the location and or time at which the 
+information was generated we thus expect that applications 
+will be best served by a query interface which allows them 
+to locate data by value or attribute e g location and time 
+rather than a read interface for unstructured data this in turn 
+implies the need to maintain metadata in the form of an index 
+that provides low cost lookups 
+ system design 
+tsar embodies these design principles by employing local 
+storage at sensors and a distributed index at the proxies the key 
+features of the system design are as follows 
+in tsar writes occur at sensor nodes and are assumed to 
+consist of both opaque data as well as application-specific metadata 
+this metadata is a tuple of known types which may be used by the 
+application to locate and identify data records and which may be 
+searched on and compared by tsar in the course of locating data 
+for the application in a camera-based sensing application for 
+instance this metadata might include coordinates describing the field 
+of view average luminance and motion values in addition to basic 
+information such as time and sensor location depending on the 
+application this metadata may be two or three orders of magnitude 
+smaller than the data itself for instance if the metadata consists of 
+features extracted from image or acoustic data 
+in addition to storing data locally each sensor periodically sends 
+a summary of reported metadata to a nearby proxy the summary 
+contains information such as the sensor id the interval t t 
+over which the summary was generated a handle identifying the 
+corresponding data record e g its location in flash memory 
+and a coarse-grain representation of the metadata associated with 
+the record the precise data representation used in the summary 
+is application-specific for instance a temperature sensor might 
+choose to report the maximum and minimum temperature values 
+observed in an interval as a coarse-grain representation of the 
+actual time series 
+the proxy uses the summary to construct an index the index 
+is global in that it stores information from all sensors in the 
+system and it is distributed across the various proxies in the system 
+thus applications see a unified view of distributed data and can 
+query the index at any proxy to get access to data stored at any 
+sensor specifically each query triggers lookups in this distributed 
+index and the list of matches is then used to retrieve the 
+corresponding data from the sensors there are several distributed index and 
+lookup methods which might be used in this system however the 
+index structure described in section is highly suited for the task 
+since the index is constructed using a coarse-grain summary 
+instead of the actual data index lookups will yield approximate 
+matches the tsar summarization mechanism guarantees that 
+index lookups will never yield false negatives - i e it will never miss 
+summaries which include the value being searched for however 
+index lookups may yield false positives where a summary matches 
+the query but when queried the remote sensor finds no matching 
+value wasting network resources the more coarse-grained the 
+summary the lower the update overhead and the greater the 
+fraction of false positives while finer summaries incur update overhead 
+while reducing query overhead due to false positives remote 
+sensors may easily distinguish false positives from queries which result 
+in search hits and calculate the ratio between the two based on this 
+ratio tsar employs a novel adaptive technique that dynamically 
+varies the granularity of sensor summaries to balance the metadata 
+overhead and the overhead of false positives 
+ data structures 
+at the proxy tier tsar employs a novel index structure called 
+the interval skip graph which is an ordered distributed data 
+structure for finding all intervals that contain a particular point or range 
+of values interval skip graphs combine interval trees an 
+interval-based binary search tree with skip graphs a ordered 
+distributed data structure for peer-to-peer systems the 
+resulting data structure has two properties that make it ideal for 
+sensor networks first it has o log n search complexity for 
+accessing the first interval that matches a particular value or range and 
+constant complexity for accessing each successive interval 
+second indexing of intervals rather than individual values makes the 
+data structure ideal for indexing summaries over time or value 
+such summary-based indexing is a more natural fit for 
+energyconstrained sensor nodes since transmitting summaries incurs less 
+energy overhead than transmitting all sensor data 
+definitions we assume that there are np proxies and ns 
+sensors in a two-tier sensor network each proxy is responsible for 
+multiple sensor nodes and no assumption is made about the 
+number of sensors per proxy each sensor transmits interval summaries 
+of data or events regularly to one or more proxies that it is 
+associated with where interval i is represented as lowi highi these 
+intervals can correspond to time or value ranges that are used for 
+indexing sensor data no assumption is made about the size of an 
+interval or about the amount of overlap between intervals 
+range queries on the intervals are posed by users to the network 
+of proxies and sensors each query q needs to determine all index 
+values that overlap the interval lowq highq the goal of the 
+interval skip graph is to index all intervals such that the set that overlaps 
+a query interval can be located efficiently in the rest of this section 
+we describe the interval skip graph in greater detail 
+ skip graph overview 
+in order to inform the description of the interval skip graph we 
+first provide a brief overview of the skip graph data structure for 
+a more extensive description the reader is referred to figure 
+shows a skip graph which indexes keys the keys may be seen 
+along the bottom and above each key are the pointers associated 
+with that key each data element consisting of a key and its 
+associated pointers may reside on a different node in the network 
+ 
+ 
+level 
+level 
+level 
+key 
+single skip graph element 
+ each may be on different node 
+find 
+node-to-node messages 
+figure skip graph of elements 
+ 
+ 
+ low high 
+max 
+contains 
+match 
+no 
+match 
+halt 
+figure interval skip graph 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+node 
+node 
+node 
+level 
+level 
+level 
+figure distributed interval skip graph 
+and pointers therefore identify both a remote node as well as a data 
+element on that node in this figure we may see the following 
+properties of a skip graph 
+ ordered index the keys are members of an ordered data 
+type for instance integers lookups make use of ordered 
+comparisons between the search key and existing index 
+entries in addition the pointers at the lowest level point 
+directly to the successor of each item in the index 
+ in-place indexing data elements remain on the nodes 
+where they were inserted and messages are sent between 
+nodes to establish links between those elements and others 
+in the index 
+ log n height there are log n pointers associated with each 
+element where n is the number of data elements indexed 
+each pointer belongs to a level l in log n − and 
+together with some other pointers at that level forms a chain 
+of n l 
+elements 
+ probabilistic balance rather than relying on re-balancing 
+operations which may be triggered at insert or delete skip 
+graphs implement a simple random balancing mechanism 
+which maintains close to perfect balance on average with 
+an extremely low probability of significant imbalance 
+ redundancy and resiliency each data element forms an 
+independent search tree root so searches may begin at any 
+node in the network eliminating hot spots at a single search 
+root in addition the index is resilient against node failure 
+data on the failed node will not be accessible but remaining 
+data elements will be accessible through search trees rooted 
+on other nodes 
+in figure we see the process of searching for a particular value 
+in a skip graph the pointers reachable from a single data element 
+form a binary tree a pointer traversal at the highest level skips over 
+n elements n at the next level and so on search consists 
+of descending the tree from the highest level to level at each 
+level comparing the target key with the next element at that level 
+and deciding whether or not to traverse in the perfectly balanced 
+case shown here there are log n levels of pointers and search will 
+traverse or pointers at each level we assume that each data 
+element resides on a different node and measure search cost by the 
+number messages sent i e the number of pointers traversed this 
+will clearly be o log n 
+tree update proceeds from the bottom as in a b-tree with the 
+root s being promoted in level as the tree grows in this way for 
+instance the two chains at level always contain n entries each 
+and there is never a need to split chains as the structure grows the 
+update process then consists of choosing which of the l 
+chains to 
+insert an element into at each level l and inserting it in the proper 
+place in each chain 
+maintaining a perfectly balanced skip graph as shown in 
+figure would be quite complex instead the probabilistic balancing 
+method introduced in skip lists is used which trades off a 
+small amount of overhead in the expected case in return for simple 
+update and deletion the basis for this method is the observation 
+that any element which belongs to a particular chain at level l can 
+only belong to one of two chains at level l to insert an element 
+we ascend levels starting at randomly choosing one of the two 
+possible chains at each level an stopping when we reach an empty 
+chain 
+one means of implementation e g as described in is to 
+assign each element an arbitrarily long random bit string each 
+chain at level l is then constructed from those elements whose bit 
+strings match in the first l bits thus creating l 
+possible chains 
+at each level and ensuring that each chain splits into exactly two 
+chains at the next level although the resulting structure is not 
+perfectly balanced following the analysis in we can show that 
+the probability of it being significantly out of balance is extremely 
+small in addition since the structure is determined by the random 
+number stream input data patterns cannot cause the tree to become 
+imbalanced 
+ interval skip graph 
+a skip graph is designed to store single-valued entries in this 
+section we introduce a novel data structure that extends skip graphs 
+to store intervals lowi highi and allows efficient searches for all 
+intervals covering a value v i e i lowi ≤ v ≤ highi our data 
+structure can be extended to range searches in a straightforward 
+manner 
+the interval skip graph is constructed by applying the method of 
+augmented search trees as described by cormen leiserson and 
+rivest and applied to binary search trees to create an interval 
+tree the method is based on the observation that a search structure 
+based on comparison of ordered keys such as a binary tree may 
+also be used to search on a secondary key which is non-decreasing 
+in the first key 
+given a set of intervals sorted by lower bound - lowi ≤ 
+lowi - we define the secondary key as the cumulative maximum 
+maxi maxk i highk the set of intervals intersecting a 
+value v may then be found by searching for the first interval and 
+thus the interval with least lowi such that maxi ≥ v we then 
+ 
+traverse intervals in increasing order lower bound until we find the 
+first interval with lowi v selecting those intervals which 
+intersect v 
+using this approach we augment the skip graph data structure as 
+shown in figure so that each entry stores a range lower bound 
+and upper bound and a secondary key cumulative maximum of 
+upper bound to efficiently calculate the secondary key maxi for 
+an entry i we take the greatest of highi and the maximum values 
+reported by each of i s left-hand neighbors 
+to search for those intervals containing the value v we first 
+search for v on the secondary index maxi and locate the first entry 
+with maxi ≥ v by the definition of maxi for this data element 
+maxi highi if lowi v then this interval does not contain 
+v and no other intervals will either so we are done otherwise we 
+traverse the index in increasing order of mini returning matching 
+intervals until we reach an entry with mini v and we are done 
+searches for all intervals which overlap a query range or which 
+completely contain a query range are straightforward extensions 
+of this mechanism 
+lookup complexity lookup for the first interval that matches 
+a given value is performed in a manner very similar to an interval 
+tree the complexity of search is o log n the number of 
+intervals that match a range query can vary depending on the amount of 
+overlap in the intervals being indexed as well as the range specified 
+in the query 
+insert complexity in an interval tree or interval skip list the 
+maximum value for an entry need only be calculated over the 
+subtree rooted at that entry as this value will be examined only when 
+searching within the subtree rooted at that entry for a simple 
+interval skip graph however this maximum value for an entry must be 
+computed over all entries preceding it in the index as searches may 
+begin anywhere in the data structure rather than at a distinguished 
+root element it may be easily seen that in the worse case the 
+insertion of a single interval one that covers all existing intervals in 
+the index will trigger the update of all entries in the index for a 
+worst-case insertion cost of o n 
+ sparse interval skip graph 
+the final extensions we propose take advantage of the 
+difference between the number of items indexed in a skip graph and the 
+number of systems on which these items are distributed the cost 
+in network messages of an operation may be reduced by 
+arranging the data structure so that most structure traversals occur locally 
+on a single node and thus incur zero network cost in addition 
+since both congestion and failure occur on a per-node basis we 
+may eliminate links without adverse consequences if those links 
+only contribute to load distribution and or resiliency within a 
+single node these two modifications allow us to achieve reductions 
+in asymptotic complexity of both update and search 
+as may be in section insert and delete cost on an 
+interval skip graph has a worst case complexity of o n compared to 
+o log n for an interval tree the main reason for the difference 
+is that skip graphs have a full search structure rooted at each 
+element in order to distribute load and provide resilience to system 
+failures in a distributed setting however in order to provide load 
+distribution and failure resilience it is only necessary to provide a 
+full search structure for each system if as in tsar the number 
+of nodes proxies is much smaller than the number of data 
+elements data summaries indexed then this will result in significant 
+savings 
+implementation to construct a sparse interval skip graph we 
+ensure that there is a single distinguished element on each system 
+the root element for that system all searches will start at one of 
+these root elements when adding a new element rather than 
+splitting lists at increasing levels l until the element is in a list with no 
+others we stop when we find that the element would be in a list 
+containing no root elements thus ensuring that the element is reachable 
+from all root elements an example of applying this optimization 
+may be seen in figure in practice rather than designating 
+existing data elements as roots as shown it may be preferable to insert 
+null values at startup 
+when using the technique of membership vectors as in this 
+may be done by broadcasting the membership vectors of each root 
+element to all other systems and stopping insertion of an element 
+at level l when it does not share an l-bit prefix with any of the np 
+root elements the expected number of roots sharing a log np-bit 
+prefix is giving an expected expected height for each element of 
+log np o an alternate implementation which distributes 
+information concerning root elements at pointer establishment time 
+is omitted due to space constraints this method eliminates the need 
+for additional messages 
+performance in a non-interval sparse skip graph since the 
+expected height of an inserted element is now log np o 
+expected insertion complexity is o log np rather than o log n 
+where np is the number of root elements and thus the number of 
+separate systems in the network in the degenerate case of a 
+single system we have a skip list with splitting probability the 
+expected height of an individual element is note that since 
+searches are started at root elements of expected height log n 
+search complexity is not improved 
+for an interval sparse skip graph update performance is 
+improved considerably compared to the o n worst case for the 
+nonsparse case in an augmented search structure such as this an 
+element only stores information for nodes which may be reached from 
+that element-e g the subtree rooted at that element in the case of 
+a tree thus when updating the maximum value in an interval tree 
+the update is only propagated towards the root in a sparse interval 
+skip graph updates to a node only propagate towards the np root 
+elements for a worst-case cost of np log n 
+shortcut search when beginning a search for a value v rather 
+than beginning at the root on that proxy we can find the element 
+that is closest to v e g using a secondary local index and then 
+begin the search at that element the expected distance between 
+this element and the search terminus is log np and the search 
+will now take on average log np o steps to illustrate this 
+optimization in figure depending on the choice of search root a 
+search for beginning at node may take network hops 
+traversing to node then back to node and finally to node 
+where the destination is located for a cost of messages the 
+shortcut search however locates the intermediate data element on 
+node and then proceeds directly to node for a cost of message 
+performance this technique may be applied to the primary key 
+search which is the first of two insertion steps in an interval skip 
+graph by combining the short-cut optimization with sparse 
+interval skip graphs the expected cost of insertion is now o log np 
+independent of the size of the index or the degree of overlap of the 
+inserted intervals 
+ alternative data structures 
+thus far we have only compared the sparse interval skip graph 
+with similar structures from which it is derived a comparison with 
+several other data structures which meet at least some of the 
+requirements for the tsar index is shown in table 
+ 
+table comparison of distributed index structures 
+range query support interval representation re-balancing resilience small networks large networks 
+dht ght no no no yes good good 
+local index flood query yes yes no yes good bad 
+p-tree rp distributed b-trees yes possible yes no good good 
+dims yes no yes yes yes yes 
+interval skipgraph yes yes no yes good good 
+ 
+roots node 
+node 
+figure sparse interval skip graph 
+the hash-based systems dht and ght lack the 
+ability to perform range queries and are thus not well-suited to indexing 
+spatio-temporal data indexing locally using an appropriate 
+singlenode structure and then flooding queries to all proxies is a 
+competitive alternative for small networks for large networks the linear 
+dependence on the number of proxies becomes an issue two 
+distributed b-trees were examined - p-trees and rp each 
+of these supports range queries and in theory could be modified 
+to support indexing of intervals however they both require 
+complex re-balancing and do not provide the resilience characteristics 
+of the other structures dims provides the ability to perform 
+spatio-temporal range queries and has the necessary resilience to 
+failures however it cannot be used index intervals which are used 
+by tsar s data summarization algorithm 
+ data storage and summarization 
+having described the proxy-level index structure we turn to the 
+mechanisms at the sensor tier tsar implements two key 
+mechanisms at the sensor tier the first is a local archival store at each 
+sensor node that is optimized for resource-constrained devices the 
+second is an adaptive summarization technique that enables each 
+sensor to adapt to changing data and query characteristics the rest 
+of this section describes these mechanisms in detail 
+ local storage at sensors 
+interval skip graphs provide an efficient mechanism to lookup 
+sensor nodes containing data relevant to a query these queries are 
+then routed to the sensors which locate the relevant data records 
+in the local archive and respond back to the proxy to enable such 
+lookups each sensor node in tsar maintains an archival store of 
+sensor data while the implementation of such an archival store 
+is straightforward on resource-rich devices that can run a database 
+sensors are often power and resource-constrained consequently 
+the sensor archiving subsystem in tsar is explicitly designed to 
+exploit characteristics of sensor data in a resource-constrained 
+setting 
+timestamp 
+calibration 
+parameters 
+opaque datadata event attributes size 
+figure single storage record 
+sensor data has very distinct characteristics that inform our 
+design of the tsar archival store sensors produce time-series data 
+streams and therefore temporal ordering of data is a natural and 
+simple way of storing archived sensor data in addition to 
+simplicity a temporally ordered store is often suitable for many sensor data 
+processing tasks since they involve time-series data processing 
+examples include signal processing operations such as fft wavelet 
+transforms clustering similarity matching and target detection 
+consequently the local archival store is a collection of records 
+designed as an append-only circular buffer where new records are 
+appended to the tail of the buffer the format of each data record is 
+shown in figure each record has a metadata field which includes 
+a timestamp sensor settings calibration parameters etc raw 
+sensor data is stored in the data field of the record the data field 
+is opaque and application-specific-the storage system does not 
+know or care about interpreting this field a camera-based sensor 
+for instance may store binary images in this data field in order 
+to support a variety of applications tsar supports variable-length 
+data fields as a result record sizes can vary from one record to 
+another 
+our archival store supports three operations on records create 
+read and delete due to the append-only nature of the store 
+creation of records is simple and efficient the create operation simply 
+creates a new record and appends it to the tail of the store since 
+records are always written at the tail the store need not maintain 
+a free space list all fields of the record need to be specified at 
+creation time thus the size of the record is known a priori and the 
+store simply allocates the the corresponding number of bytes at the 
+tail to store the record since writes are immutable the size of a 
+record does not change once it is created 
+proxy 
+proxy 
+proxy 
+record 
+ record 
+summary 
+local archive in 
+flash memory 
+data summary 
+start end offset 
+time interval 
+sensor 
+summary 
+sent to proxy 
+insert summaries 
+into interval skip graph 
+figure sensor summarization 
+ 
+the read operation enables stored records to be retrieved in 
+order to answer queries in a traditional database system efficient 
+lookups are enabled by maintaining a structure such as a b-tree that 
+indexes certain keys of the records however this can be quite 
+complex for a small sensor node with limited resources consequently 
+tsar sensors do not maintain any index for the data stored in their 
+archive instead they rely on the proxies to maintain this metadata 
+index-sensors periodically send the proxy information 
+summarizing the data contained in a contiguous sequence of records as well 
+as a handle indicating the location of these records in flash memory 
+the mechanism works as follows in addition to the summary 
+of sensor data each node sends metadata to the proxy containing 
+the time interval corresponding to the summary as well as the start 
+and end offsets of the flash memory location where the raw data 
+corresponding is stored as shown in figure thus random 
+access is enabled at granularity of a summary-the start offset of each 
+chunk of records represented by a summary is known to the proxy 
+within this collection records are accessed sequentially when a 
+query matches a summary in the index the sensor uses these offsets 
+to access the relevant records on its local flash by sequentially 
+reading data from the start address until the end address any 
+queryspecific operation can then be performed on this data thus no 
+index needs to be maintained at the sensor in line with our goal 
+of simplifying sensor state management the state of the archive 
+is captured in the metadata associated with the summaries and is 
+stored and maintained at the proxy 
+while we anticipate local storage capacity to be large eventually 
+there might be a need to overwrite older data especially in high 
+data rate applications this may be done via techniques such as 
+multi-resolution storage of data or just simply by overwriting 
+older data when older data is overwritten a delete operation is 
+performed where an index entry is deleted from the interval skip 
+graph at the proxy and the corresponding storage space in flash 
+memory at the sensor is freed 
+ adaptive summarization 
+the data summaries serve as glue between the storage at the 
+remote sensor and the index at the proxy each update from a sensor 
+to the proxy includes three pieces of information the summary a 
+time period corresponding to the summary and the start and end 
+offsets for the flash archive in general the proxy can index the 
+time interval representing a summary or the value range reported 
+in the summary or both the former index enables quick lookups 
+on all records seen during a certain interval while the latter index 
+enables quick lookups on all records matching a certain value 
+as described in section there is a trade-off between the 
+energy used in sending summaries and thus the frequency and 
+resolution of those summaries and the cost of false hits during queries 
+the coarser and less frequent the summary information the less 
+energy required while false query hits in turn waste energy on 
+requests for non-existent data 
+tsar employs an adaptive summarization technique that 
+balances the cost of sending updates against the cost of false positives 
+the key intuition is that each sensor can independently identify the 
+fraction of false hits and true hits for queries that access its local 
+archive if most queries result in true hits then the sensor 
+determines that the summary can be coarsened further to reduce update 
+costs without adversely impacting the hit ratio if many queries 
+result in false hits then the sensor makes the granularity of each 
+summary finer to reduce the number and overhead of false hits 
+the resolution of the summary depends on two 
+parametersthe interval over which summaries of the data are constructed and 
+transmitted to the proxy as well as the size of the 
+applicationspecific summary our focus in this paper is on the interval over 
+which the summary is constructed changing the size of the data 
+summary can be performed in an application-specific manner e g 
+using wavelet compression techniques as in and is beyond the 
+scope of this paper currently tsar employs a simple 
+summarization scheme that computes the ratio of false and true hits and 
+decreases increases the interval between summaries whenever this 
+ratio increases decreases beyond a threshold 
+ tsar implementation 
+we have implemented a prototype of tsar on a multi-tier 
+sensor network testbed our prototype employs crossbow stargate 
+nodes to implement the proxy tier each stargate node employs a 
+ mhz intel xscale processor with mb ram and runs the 
+linux kernel and emstar release the proxy nodes 
+are equipped with two wireless radios a cisco aironet -based 
+ b radio and a hostmote bridge to the mica sensor nodes 
+using the emstar transceiver the b wireless network is 
+used for inter-proxy communication within the proxy tier while 
+the wireless bridge enables sensor-proxy communication the 
+sensor tier consists of crossbow mica s and mica dots each 
+consisting of a mhz cc radio a bmac protocol stack a mb 
+on-board flash memory and an atmega l processor the 
+sensor nodes run tinyos in addition to the on-board flash the 
+sensor nodes can be equipped with external mmc sd flash cards 
+using a custom connector the proxy nodes can be equipped with 
+external storage such as high-capacity compact flash up to gb 
+ gb micro-drives or up to gb inch mobile disk drives 
+since sensor nodes may be several hops away from the nearest 
+proxy the sensor tier employs multi-hop routing to communicate 
+with the proxy tier in addition to reduce the power consumption 
+of the radio while still making the sensor node available for queries 
+low power listening is enabled in which the radio receiver is 
+periodically powered up for a short interval to sense the channel for 
+transmissions and the packet preamble is extended to account for 
+the latency until the next interval when the receiving radio wakes 
+up our prototype employs the multihoplepsm routing protocol 
+with the bmac layer configured in the low-power mode with a 
+ duty cycle one of the default bmac parameters 
+our tsar implementation on the mote involves a data 
+gathering task that periodically obtains sensor readings and logs these 
+reading to flash memory the flash memory is assumed to be a 
+circular append-only store and the format of the logged data is 
+depicted in figure the mote sends a report to the proxy every n 
+readings summarizing the observed data the report contains i 
+the address of the mote ii a handle that contains an offset and the 
+length of the region in flash memory containing data referred to by 
+the summary iii an interval t t over which this report is 
+generated iv a tuple low high representing the minimum and the 
+maximum values observed at the sensor in the interval and v a 
+sequence number the sensor updates are used to construct a sparse 
+interval skip graph that is distributed across proxies via network 
+messages between proxies over the b wireless network 
+our current implementation supports queries that request records 
+matching a time interval t t or a value range v v spatial 
+constraints are specified using sensor ids given a list of matching 
+intervals from the skip graph tsar supports two types of 
+messages to query the sensor lookup and fetch a lookup message 
+triggers a search within the corresponding region in flash memory 
+and returns the number of matching records in that memory region 
+ but does not retrieve data in contrast a fetch message not only 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+index size entries 
+insert skipgraph 
+insert sparse skipgraph 
+initial lookup 
+ a james reserve data 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+index size entries 
+insert skipgraph 
+insert sparse skipgraph 
+initial lookup 
+ b synthetic data 
+figure skip graph insert performance 
+triggers a search but also returns all matching data records to the 
+proxy lookup messages are useful for polling a sensor for 
+instance to determine if a query matches too many records 
+ experimental evaluation 
+in this section we evaluate the efficacy of tsar using our 
+prototype and simulations the testbed for our experiments consists 
+of four stargate proxies and twelve mica and mica dot sensors 
+three sensors each are assigned to each proxy given the limited 
+size of our testbed we employ simulations to evaluate the 
+behavior of tsar in larger settings our simulation employs the emtos 
+emulator which enables us to run the same code in simulation 
+and the hardware platform 
+rather than using live data from a real sensor to ensure 
+repeatable experiments we seed each sensor node with a dataset 
+ i e a trace that dictates the values reported by that node to the 
+proxy one section of the flash memory on each sensor node is 
+programmed with data points from the trace these observations 
+are then replayed during an experiment logged to the local archive 
+ located in flash memory as well and reported to the proxy the 
+first dataset used to evaluate tsar is a temperature dataset from 
+james reserve that includes data from eleven temperature 
+sensor nodes over a period of days the second dataset is 
+synthetically generated the trace for each sensor is generated using a 
+uniformly distributed random walk though the value space 
+our experimental evaluation has four parts first we run 
+emtos simulations to evaluate the lookup update and delete overhead 
+for sparse interval skip graphs using the real and synthetic datasets 
+second we provide summary results from micro-benchmarks of 
+the storage component of tsar which include empirical 
+characterization of the energy costs and latency of reads and writes for the 
+flash memory chip as well as the whole mote platform and 
+comparisons to published numbers for other storage and 
+communication technologies these micro-benchmarks form the basis for our 
+full-scale evaluation of tsar on a testbed of four stargate proxies 
+and twelve motes we measure the end-to-end query latency in our 
+multi-hop testbed as well as the query processing overhead at the 
+mote tier finally we demonstrate the adaptive summarization 
+capability at each sensor node the remainder of this section presents 
+our experimental results 
+ sparse interval skip graph performance 
+this section evaluates the performance of sparse interval skip 
+graphs by quantifying insert lookup and delete overheads 
+we assume a proxy tier with proxies and construct sparse 
+interval skip graphs of various sizes using our datasets for each skip 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+index size entries 
+initial lookup 
+traversal 
+ a james reserve data 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+index size entries 
+initial lookup 
+traversal 
+ b synthetic data 
+figure skip graph lookup performance 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+number of proxies 
+skipgraph insert 
+sparse skipgraph insert 
+initial lookup 
+ a impact of number of 
+proxies 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessages 
+index size entries 
+insert redundant 
+insert non-redundant 
+lookup redundant 
+lookup non-redundant 
+ b impact of redundant 
+summaries 
+figure skip graph overheads 
+graph we evaluate the cost of inserting a new value into the index 
+each entry was deleted after its insertion enabling us to quantify 
+the delete overhead as well figure a and b quantify the insert 
+overhead for our two datasets each insert entails an initial traversal 
+that incurs log n messages followed by neighbor pointer update at 
+increasing levels incurring a cost of log n messages our results 
+demonstrate this behavior and show as well that performance of 
+delete-which also involves an initial traversal followed by pointer 
+updates at each level-incurs a similar cost 
+next we evaluate the lookup performance of the index 
+structure again we construct skip graphs of various sizes using our 
+datasets and evaluate the cost of a lookup on the index structure 
+figures a and b depict our results there are two components 
+for each lookup-the lookup of the first interval that matches the 
+query and in the case of overlapping intervals the subsequent 
+linear traversal to identify all matching intervals the initial lookup 
+can be seen to takes log n messages as expected the costs of 
+the subsequent linear traversal however are highly data dependent 
+for instance temperature values for the james reserve data exhibit 
+significant spatial correlations resulting in significant overlap 
+between different intervals and variable high traversal cost see 
+figure a the synthetic data however has less overlap and incurs 
+lower traversal overhead as shown in figure b 
+since the previous experiments assumed proxies we evaluate 
+the impact of the number of proxies on skip graph performance we 
+vary the number of proxies from to and distribute a skip graph 
+with entries among these proxies we construct regular 
+interval skip graphs as well as sparse interval skip graphs using these 
+entries and measure the overhead of inserts and lookups thus the 
+experiment also seeks to demonstrate the benefits of sparse skip 
+graphs over regular skip graphs figure a depicts our results 
+in regular skip graphs the complexity of insert is o log n in the 
+ 
+expected case and o n in the worst case where n is the number 
+of elements this complexity is unaffected by changing the 
+number of proxies as indicated by the flat line in the figure sparse 
+skip graphs require fewer pointer updates however their overhead 
+is dependent on the number of proxies and is o log np in the 
+expected case independent of n this can be seen to result in 
+significant reduction in overhead when the number of proxies is small 
+which decreases as the number of proxies increases 
+failure handling is an important issue in a multi-tier sensor 
+architecture since it relies on many components-proxies sensor nodes 
+and routing nodes can fail and wireless links can fade handling 
+of many of these failure modes is outside the scope of this 
+paper however we consider the case of resilience of skip graphs 
+to proxy failures in this case skip graph search and subsequent 
+repair operations can follow any one of the other links from a 
+root element since a sparse skip graph has search trees rooted 
+at each node searching can then resume once the lookup request 
+has routed around the failure together these two properties 
+ensure that even if a proxy fails the remaining entries in the skip 
+graph will be reachable with high probability-only the entries on 
+the failed proxy and the corresponding data at the sensors becomes 
+inaccessible 
+to ensure that all data on sensors remains accessible even in the 
+event of failure of a proxy holding index entries for that data we 
+incorporate redundant index entries tsar employs a simple 
+redundancy scheme where additional coarse-grain summaries are used 
+to protect regular summaries each sensor sends summary data 
+periodically to its local proxy but less frequently sends a 
+lowerresolution summary to a backup proxy-the backup summary 
+represents all of the data represented by the finer-grained summaries 
+but in a lossier fashion thus resulting in higher read overhead due 
+to false hits if the backup summary is used the cost of 
+implementing this in our system is low - figure b shows the overhead of 
+such a redundancy scheme where a single coarse summary is send 
+to a backup for every two summaries sent to the primary proxy 
+since a redundant summary is sent for every two summaries the 
+insert cost is times the cost in the normal case however these 
+redundant entries result in only a negligible increase in lookup 
+overhead due the logarithmic dependence of lookup cost on the index 
+size while providing full resilience to any single proxy failure 
+ storage microbenchmarks 
+since sensors are resource-constrained the energy consumption 
+and the latency at this tier are important measures for evaluating the 
+performance of a storage architecture before performing an 
+endto-end evaluation of our system we provide more detailed 
+information on the energy consumption of the storage component used 
+to implement the tsar local archive based on empirical 
+measurements in addition we compare these figures to those for other 
+local storage technologies as well as to the energy consumption of 
+wireless communication using information from the literature for 
+empirical measurements we measure energy usage for the storage 
+component itself i e current drawn by the flash chip as well as 
+for the entire mica mote 
+the power measurements in table were performed for the 
+at db flash memory on a mica mote which is an older 
+nor flash device the most promising technology for low-energy 
+storage on sensing devices is nand flash such as the samsung 
+k k g u m device published power numbers for this 
+device are provided in the table published energy requirements for 
+wireless transmission using the chipcon cc radio used 
+in micaz and telos motes are provided for comparison assuming 
+energy energy byte 
+mote flash 
+read byte page µj 
+ µj total 
+ µj 
+write byte page µj 
+ µj total 
+ µj 
+nand flash 
+read byte page µj nj 
+write byte page µj nj 
+erase k byte sector µj nj 
+cc radio 
+transmit bits 
+ - dbm 
+ µj µj 
+receive bits µj µj 
+mote avr processor 
+in-memory search 
+ bytes 
+ µj nj 
+table storage and communication energy costs measured 
+values 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency ms 
+number of hops 
+ a multi-hop query 
+performance 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency ms 
+index size entries 
+sensor communication 
+proxy communication 
+sensor lookup processing 
+ b query performance 
+figure query processing latency 
+zero network and protocol overhead comparing the total energy 
+cost for writing flash erase write to the total cost for 
+communication transmit receive we find that the nand flash is almost 
+ times more efficient than radio communication even assuming 
+perfect network protocols 
+ prototype evaluation 
+this section reports results from an end-to-end evaluation of the 
+tsar prototype involving both tiers in our setup there are four 
+proxies connected via links and three sensors per proxy the 
+multi-hop topology was preconfigured such that sensor nodes were 
+connected in a line to each proxy forming a minimal tree of depth 
+ 
+ 
+ 
+ 
+ 
+ 
+retrievallatency ms 
+archived data retrieved bytes 
+ a data query and fetch 
+time 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency ms 
+number of -byte records searched 
+ b sensor query 
+processing delay 
+figure query latency components 
+ 
+ due to resource constraints we were unable to perform 
+experiments with dozens of sensor nodes however this topology ensured 
+that the network diameter was as large as for a typical network of 
+significantly larger size 
+our evaluation metric is the end-to-end latency of query 
+processing a query posed on tsar first incurs the latency of a sparse 
+skip graph lookup followed by routing to the appropriate sensor 
+node s the sensor node reads the required page s from its local 
+archive processes the query on the page that is read and transmits 
+the response to the proxy which then forwards it to the user we 
+first measure query latency for different sensors in our multi-hop 
+topology depending on which of the sensors is queried the total 
+latency increases almost linearly from about ms to second as 
+the number of hops increases from to see figure a 
+figure b provides a breakdown of the various components 
+of the end-to-end latency the dominant component of the total 
+latency is the communication over one or more hops the 
+typical time to communicate over one hop is approximately ms 
+this large latency is primarily due to the use of a duty-cycled mac 
+layer the latency will be larger if the duty cycle is reduced e g 
+the setting as opposed to the setting used in this 
+experiment and will conversely decrease if the duty cycle is increased 
+the figure also shows the latency for varying index sizes as 
+expected the latency of inter-proxy communication and skip graph 
+lookups increases logarithmically with index size not surprisingly 
+the overhead seen at the sensor is independent of the index size 
+the latency also depends on the number of packets transmitted 
+in response to a query-the larger the amount of data retrieved by a 
+query the greater the latency this result is shown in figure a 
+the step function is due to packetization in tinyos tinyos sends 
+one packet so long as the payload is smaller than bytes and splits 
+the response into multiple packets for larger payloads as the data 
+retrieved by a query is increased the latency increases in steps 
+where each step denotes the overhead of an additional packet 
+finally figure b shows the impact of searching and 
+processing flash memory regions of increasing sizes on a sensor each 
+summary represents a collection of records in flash memory and 
+all of these records need to be retrieved and processed if that 
+summary matches a query the coarser the summary the larger the 
+memory region that needs to be accessed for the search sizes 
+examined amortization of overhead when searching multiple flash 
+pages and archival records as well as within the flash chip and its 
+associated driver results in the appearance of sub-linear increase 
+in latency with search size in addition the operation can be seen 
+to have very low latency in part due to the simplicity of our query 
+processing requiring only a compare operation with each stored 
+element more complex operations however will of course incur 
+greater latency 
+ adaptive summarization 
+when data is summarized by the sensor before being reported 
+to the proxy information is lost with the interval summarization 
+method we are using this information loss will never cause the 
+proxy to believe that a sensor node does not hold a value which it in 
+fact does as all archived values will be contained within the interval 
+reported however it does cause the proxy to believe that the sensor 
+may hold values which it does not and forward query messages to 
+the sensor for these values these false positives constitute the cost 
+of the summarization mechanism and need to be balanced against 
+the savings achieved by reducing the number of reports the goal 
+of adaptive summarization is to dynamically vary the summary size 
+so that these two costs are balanced 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionoftruehits 
+summary size number of records 
+ a impact of summary 
+size 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+summarizationsize num records 
+normalized time units 
+query rate 
+query rate 
+query rate 
+ b adaptation to query 
+rate 
+figure impact of summarization granularity 
+figure a demonstrates the impact of summary granularity 
+on false hits as the number of records included in a summary 
+is increased the fraction of queries forwarded to the sensor which 
+match data held on that sensor true positives decreases next 
+in figure b we run the a emtos simulation with our 
+adaptive summarization algorithm enabled the adaptive algorithm 
+increases the summary granularity defined as the number of records 
+per summary when cost updates 
+cost falsehits 
+ and reduces it if 
+cost updates 
+cost falsehits 
+ − where is a small constant to 
+demonstrate the adaptive nature of our technique we plot a time series 
+of the summarization granularity we begin with a query rate of 
+query per samples decrease it to every samples and then 
+increase it again to query every samples as shown in 
+figure b the adaptive technique adjusts accordingly by sending 
+more fine-grain summaries at higher query rates in response to the 
+higher false hit rate and fewer coarse-grain summaries at lower 
+query rates 
+ related work 
+in this section we review prior work on storage and indexing 
+techniques for sensor networks while our work addresses both 
+problems jointly much prior work has considered them in isolation 
+the problem of archival storage of sensor data has received 
+limited attention in sensor network literature elf is a 
+logstructured file system for local storage on flash memory that 
+provides load leveling and matchbox is a simple file system that is 
+packaged with the tinyos distribution both these systems 
+focus on local storage whereas our focus is both on storage at the 
+remote sensors as well as providing a unified view of distributed 
+data across all such local archives multi-resolution storage is 
+intended for in-network storage and search in systems where there 
+is significant data in comparison to storage resources in contrast 
+tsar addresses the problem of archival storage in two-tier systems 
+where sufficient resources can be placed at the edge sensors the 
+rise platform being developed as part of the node project 
+at ucr addresses the issues of hardware platform support for large 
+amounts of storage in remote sensor nodes but not the indexing 
+and querying of this data 
+in order to efficiently access a distributed sensor store an index 
+needs to be constructed of the data early work on sensor networks 
+such as directed diffusion assumes a system where all useful 
+sensor data was stored locally at each sensor and spatially scoped 
+queries are routed using geographic co-ordinates to locations where 
+the data is stored sources publish the events that they detect and 
+sinks with interest in specific events can subscribe to these events 
+the directed diffusion substrate routes queries to specific locations 
+ 
+if the query has geographic information embedded in it e g find 
+temperature in the south-west quadrant and if not the query is 
+flooded throughout the network 
+these schemes had the drawback that for queries that are not 
+geographically scoped search cost o n for a network of n nodes 
+may be prohibitive in large networks with frequent queries 
+local storage with in-network indexing approaches address this 
+issue by constructing indexes using frameworks such as geographic 
+hash tables and quad trees recent research has seen 
+a growing body of work on data indexing schemes for sensor 
+networks one such scheme is dcs which provides 
+a hash function for mapping from event name to location dcs 
+constructs a distributed structure that groups events together 
+spatially by their named type distributed index of features in 
+sensornets difs and multi-dimensional range queries in sensor 
+networks dim extend the data-centric storage approach to 
+provide spatially distributed hierarchies of indexes to data 
+while these approaches advocate in-network indexing for sensor 
+networks we believe that indexing is a task that is far too 
+complicated to be performed at the remote sensor nodes since it involves 
+maintaining significant state and large tables tsar provides a 
+better match between resource requirements of storage and indexing 
+and the availability of resources at different tiers thus complex 
+operations such as indexing and managing metadata are performed 
+at the proxies while storage at the sensor remains simple 
+in addition to storage and indexing techniques specific to sensor 
+networks many distributed peer-to-peer and spatio-temporal index 
+structures are relevant to our work dhts can be used for 
+indexing events based on their type quad-tree variants such as 
+rtrees can be used for optimizing spatial searches and k-d 
+trees can be used for multi-attribute search while this paper 
+focuses on building an ordered index structure for range queries we 
+will explore the use of other index structures for alternate queries 
+over sensor data 
+ conclusions 
+in this paper we argued that existing sensor storage systems 
+are designed primarily for flat hierarchies of homogeneous sensor 
+nodes and do not fully exploit the multi-tier nature of emerging 
+sensor networks we presented the design of tsar a fundamentally 
+different storage architecture that envisions separation of data from 
+metadata by employing local storage at the sensors and distributed 
+indexing at the proxies at the proxy tier tsar employs a novel 
+multi-resolution ordered distributed index structure the sparse 
+interval skip graph for efficiently supporting spatio-temporal and 
+range queries at the sensor tier tsar supports energy-aware 
+adaptive summarization that can trade-off the energy cost of 
+transmitting metadata to the proxies against the overhead of false hits 
+resulting from querying a coarser resolution index structure we 
+implemented tsar in a two-tier sensor testbed comprising 
+stargatebased proxies and mote-based sensors our experimental 
+evaluation of tsar demonstrated the benefits and feasibility of 
+employing our energy-efficient low-latency distributed storage architecture 
+in multi-tier sensor networks 
+ references 
+ james aspnes and gauri shah skip graphs in fourteenth annual acm-siam 
+symposium on discrete algorithms pages - baltimore md usa 
+ - january 
+ jon louis bentley multidimensional binary search trees used for associative 
+searching commun acm - 
+ philippe bonnet j e gehrke and praveen seshadri towards sensor database 
+systems in proceedings of the second international conference on mobile 
+data management january 
+ chipcon cc ghz ieee zigbee-ready rf transceiver 
+ thomas h cormen charles e leiserson ronald l rivest and clifford stein 
+introduction to algorithms the mit press and mcgraw-hill second edition 
+edition 
+ adina crainiceanu prakash linga johannes gehrke and jayavel 
+shanmugasundaram querying peer-to-peer networks using p-trees 
+technical report tr - cornell university 
+ hui dai michael neufeld and richard han elf an efficient log-structured 
+flash file system for micro sensor nodes in sensys proceedings of the nd 
+international conference on embedded networked sensor systems pages 
+ - new york ny usa acm press 
+ peter desnoyers deepak ganesan huan li and prashant shenoy presto a 
+predictive storage architecture for sensor networks in tenth workshop on hot 
+topics in operating systems hotos x june 
+ deepak ganesan ben greenstein denis perelyubskiy deborah estrin and 
+john heidemann an evaluation of multi-resolution storage in sensor networks 
+in proceedings of the first acm conference on embedded networked sensor 
+systems sensys 
+ l girod t stathopoulos n ramanathan j elson d estrin e osterweil 
+and t schoellhammer a system for simulation emulation and deployment of 
+heterogeneous sensor networks in proceedings of the second acm conference 
+on embedded networked sensor systems baltimore md 
+ b greenstein d estrin r govindan s ratnasamy and s shenker difs a 
+distributed index for features in sensor networks elsevier journal of ad-hoc 
+networks 
+ antonin guttman r-trees a dynamic index structure for spatial searching in 
+sigmod proceedings of the acm sigmod international 
+conference on management of data pages - new york ny usa 
+acm press 
+ nicholas harvey michael b jones stefan saroiu marvin theimer and alec 
+wolman skipnet a scalable overlay network with practical locality properties 
+in in proceedings of the th usenix symposium on internet technologies and 
+systems usits seattle wa march 
+ jason hill robert szewczyk alec woo seth hollar david culler and 
+kristofer pister system architecture directions for networked sensors in 
+proceedings of the ninth international conference on architectural support for 
+programming languages and operating systems asplos-ix pages - 
+cambridge ma usa november acm 
+ atmel inc -megabit -volt or -volt dataflash at db b 
+ samsung semiconductor inc k w g u m k k g u m m x bit 
+ g x bit nand flash memory 
+ chalermek intanagonwiwat ramesh govindan and deborah estrin directed 
+diffusion a scalable and robust communication paradigm for sensor networks 
+in proceedings of the sixth annual international conference on mobile 
+computing and networking pages - boston ma august acm 
+press 
+ xin li young-jin kim ramesh govindan and wei hong multi-dimensional 
+range queries in sensor networks in proceedings of the first acm conference 
+on embedded networked sensor systems sensys to appear 
+ witold litwin marie-anne neimat and donovan a schneider rp a family 
+of order preserving scalable distributed data structures in vldb 
+proceedings of the th international conference on very large data bases 
+pages - san francisco ca usa 
+ samuel madden michael franklin joseph hellerstein and wei hong tag a 
+tiny aggregation service for ad-hoc sensor networks in osdi boston ma 
+ 
+ a mitra a banerjee w najjar d zeinalipour-yazti d gunopulos and 
+v kalogeraki high performance low power sensor platforms featuring 
+gigabyte scale storage in senmetrics third international workshop on 
+measurement modeling and performance analysis of wireless sensor 
+networks july 
+ j polastre j hill and d culler versatile low power media access for wireless 
+sensor networks in proceedings of the second acm conference on embedded 
+networked sensor systems sensys november 
+ william pugh skip lists a probabilistic alternative to balanced trees commun 
+acm - 
+ s ratnasamy d estrin r govindan b karp l yin s shenker and f yu 
+data-centric storage in sensornets in acm first workshop on hot topics in 
+networks 
+ s ratnasamy p francis m handley r karp and s shenker a scalable 
+content addressable network in proceedings of the acm sigcomm 
+conference 
+ s ratnasamy b karp l yin f yu d estrin r govindan and s shenker 
+ght - a geographic hash-table for data-centric storage in first acm 
+international workshop on wireless sensor networks and their applications 
+ 
+ n xu e osterweil m hamilton and d estrin 
+http www lecs cs ucla edu ˜nxu ess james reserve data 
+ 

@@ -1,0 +1,1591 @@
+buddycache high-performance object storage 
+for collaborative strong-consistency applications 
+in a wan 
+ 
+magnus e bjornsson and liuba shrira 
+department of computer science 
+brandeis university 
+waltham ma - 
+ magnus liuba  cs brandeis edu 
+abstract 
+collaborative applications provide a shared work 
+environment for groups of networked clients collaborating on a 
+common task they require strong consistency for shared 
+persistent data and efficient access to fine-grained objects these 
+properties are difficult to provide in wide-area networks 
+because of high network latency 
+buddycache is a new transactional caching approach that 
+improves the latency of access to shared persistent objects 
+for collaborative strong-consistency applications in 
+high-latency network environments the challenge is to improve 
+performance while providing the correctness and availability 
+properties of a transactional caching protocol in the presence 
+of node failures and slow peers 
+we have implemented a buddycache prototype and 
+evaluated its performance analytical results confirmed by 
+measurements of the buddycache prototype using the 
+multiuser benchmark indicate that for typical internet 
+latencies e g ranging from to milliseconds round trip time 
+to the storage server peers using buddycache can reduce by 
+up to the latency of access to shared objects compared 
+to accessing the remote servers directly 
+categories and subject descriptors 
+c computer systems organization distributed 
+systems 
+general terms 
+design performance 
+ introduction 
+improvements in network connectivity erode the 
+distinction between local and wide-area computing and 
+increasingly users expect their work environment to follow them 
+wherever they go nevertheless distributed applications 
+may perform poorly in wide-area network environments 
+network bandwidth problems will improve in the foreseeable 
+future but improvement in network latency is fundamentally 
+limited buddycache is a new object caching technique that 
+addresses the network latency problem for collaborative 
+applications in wide-area network environment 
+collaborative applications provide a shared work 
+environment for groups of networked users collaborating on a 
+common task for example a team of engineers jointly 
+overseeing a construction project strong-consistency collaborative 
+applications for example cad systems use client server 
+transactional object storage systems to ensure consistent 
+access to shared persistent data up to now however users 
+have rarely considered running consistent network storage 
+systems over wide-area networks as performance would be 
+unacceptable for transactional storage systems the 
+high cost of wide-area network interactions to maintain data 
+consistency is the main cost limiting the performance and 
+therefore in wide-area network environments collaborative 
+applications have been adapted to use weaker consistency 
+storage systems adapting an application to use weak 
+consistency storage system requires significant effort since 
+the application needs to be rewritten to deal with a 
+different storage system semantics if shared persistent objects 
+could be accessed with low-latency a new field of distributed 
+strong-consistency applications could be opened 
+cooperative web caching is a well-known 
+approach to reducing client interaction with a server by 
+allowing one client to obtain missing objects from a another client 
+instead of the server collaborative applications seem a 
+particularly good match to benefit from this approach since one 
+of the hard problems namely determining what objects are 
+cached where becomes easy in small groups typical of 
+collaborative settings however cooperative web caching 
+techniques do not provide two important properties needed by 
+collaborative applications strong consistency and efficient 
+ 
+access to fine-grained objects cooperative object caching 
+systems provide these properties however they rely on 
+interaction with the server to provide fine-grain cache 
+coherence that avoids the problem of false sharing when accesses 
+to unrelated objects appear to conflict because they occur 
+on the same physical page interaction with the server 
+increases latency the contribution of this work is extending 
+cooperative caching techniques to provide strong consistency 
+and efficient access to fine-grain objects in wide-area 
+environments 
+consider a team of engineers employed by a construction 
+company overseeing a remote project and working in a shed 
+at the construction site the engineers use a collaborative 
+cad application to revise and update complex project 
+design documents the shared documents are stored in 
+transactional repository servers at the company home site the 
+engineers use workstations running repository clients the 
+workstations are interconnected by a fast local ethernet but 
+the network connection to the home repository servers is 
+slow to improve access latency clients fetch objects from 
+repository servers and cache and access them locally a 
+coherence protocol ensures that client caches remain 
+consistent when objects are modified the performance problem 
+facing the collaborative application is coordinating with the 
+servers consistent access to shared objects 
+with buddycache a group of close-by collaborating clients 
+connected to storage repository via a high-latency link can 
+avoid interactions with the server if needed objects updates 
+or coherency information are available in some client in the 
+group 
+buddycache presents two main technical challenges one 
+challenge is how to provide efficient access to shared 
+finegrained objects in the collaborative group without imposing 
+performance overhead on the entire caching system the 
+other challenge is to support fine-grain cache coherence in 
+the presence of slow and failed nodes 
+buddycache uses a redirection approach similar to one 
+used in cooperative web caching systems a 
+redirector server interposed between the clients and the remote 
+servers runs on the same network as the collaborating group 
+and when possible replaces the function of the remote 
+servers if the client request can not be served locally the 
+redirector forwards it to a remote server when one of the 
+clients in the group fetches a shared object from the 
+repository the object is likely to be needed by other clients 
+buddycache redirects subsequent requests for this object to the 
+caching client similarly when a client creates or modifies 
+a shared object the new data is likely to be of potential 
+interest to all group members buddycache uses 
+redirection to support peer update a lightweight application-level 
+multicast technique that provides group members with 
+consistent access to the new data committed within the 
+collaborating group without imposing extra overhead outside the 
+group 
+nevertheless in a transactional system redirection 
+interferes with shared object availability solo commit is a 
+validation technique used by buddycache to avoid the 
+undesirable client dependencies that reduce object availability 
+when some client nodes in the group are slow or clients fail 
+independently a salient feature of solo commit is 
+supporting fine-grained validation using inexpensive coarse-grained 
+coherence information 
+since redirection supports the performance benefits of 
+reducing interaction with the server but introduces extra 
+processing cost due to availability mechanisms and request 
+forwarding this raises the question is the cure worse than the 
+disease we designed and implemented a buddycache 
+prototype and studied its performance benefits and costs 
+using analytical modeling and system measurements we 
+compared the storage system performance with and without 
+buddycache and considered how the cost-benefit balance is 
+affected by network latency 
+analytical results supported by measurements based on 
+the multi-user benchmark indicate that for typical 
+internet latencies buddycache provides significant performance 
+benefits e g for latencies ranging from to milliseconds 
+round trip time clients using the buddycache can reduce 
+by up to the latency of access to shared objects 
+compared to the clients accessing the repository directly these 
+strong performance gains could make transactional object 
+storage systems more attractive for collaborative 
+applications in wide-area environments 
+ related work 
+cooperative caching techniques provide 
+access to client caches to avoid high disk access latency in 
+an environment where servers and clients run on a fast local 
+area network these techniques use the server to provide 
+redirection and do not consider issues of high network 
+latency 
+multiprocessor systems and distributed shared memory 
+systems use fine-grain coherence techniques 
+to avoid the performance penalty of false sharing but do not 
+address issues of availability when nodes fail 
+cooperative web caching techniques e g 
+investigate issues of maintaining a directory of objects cached 
+in nearby proxy caches in wide-area environment using 
+distributed directory protocols for tracking cache changes this 
+work does not consider issues of consistent concurrent 
+updates to shared fine-grained objects 
+cheriton and li propose mmo a hybrid web 
+coherence protocol that combines invalidations with updates 
+using multicast delivery channels and receiver-reliable 
+protocol exploiting locality in a way similar to buddycache 
+this multicast transport level solution is geared to the single 
+writer semantics of web objects in contrast buddycache 
+uses application level multicast and a sender-reliable 
+coherence protocol to provide similar access latency 
+improvements for transactional objects application level multicast 
+solution in a middle-ware system was described by 
+pendarakis shi and verma in the schema supports small 
+multi-sender groups appropriate for collaborative 
+applications and considers coherence issues in the presence of 
+failures but does not support strong consistency or fine-grained 
+sharing 
+yin alvisi dahlin and lin present a 
+hierarchical wan cache coherence scheme the protocol uses 
+leases to provide fault-tolerant call-backs and takes 
+advantage of nearby caches to reduce the cost of lease extensions 
+the study uses simulation to investigate latency and fault 
+tolerance issues in hierarchical avoidance-based coherence 
+scheme in contrast our work uses implementation and 
+analysis to evaluate the costs and benefits of redirection 
+and fine grained updates in an optimistic system 
+anderson eastham and vahdat in webfs present a global 
+file system coherence protocol that allows clients to choose 
+ 
+on per file basis between receiving updates or invalidations 
+updates and invalidations are multicast on separate 
+channels and clients subscribe to one of the channels the 
+protocol exploits application specific methods e g last-writer-wins 
+policy for broadcast applications to deal with concurrent 
+updates but is limited to file systems 
+mazieres studies a bandwidth saving technique to 
+detect and avoid repeated file fragment transfers across a wan 
+when fragments are available in a local cache buddycache 
+provides similar bandwidth improvements when objects are 
+available in the group cache 
+ buddycache 
+high network latency imposes performance penalty for 
+transactional applications accessing shared persistent 
+objects in wide-area network environment this section 
+describes the buddycache approach for reducing the network 
+latency penalty in collaborative applications and explains 
+the main design decisions 
+we consider a system in which a distributed transactional 
+object repository stores objects in highly reliable servers 
+perhaps outsourced in data-centers connected via 
+high-bandwidth reliable networks collaborating clients interconnected 
+via a fast local network connect via high-latency possibly 
+satellite links to the servers at the data-centers to access 
+shared persistent objects the servers provide disk storage 
+for the persistent objects a persistent object is owned by 
+a single server objects may be small order of bytes 
+for programming language objects to amortize the 
+cost of disk and network transfer objects are grouped into 
+physical pages 
+to improve object access latency clients fetch the objects 
+from the servers and cache and access them locally a 
+transactional cache coherence protocol runs at clients and servers 
+to ensure that client caches remain consistent when objects 
+are modified the performance problem facing the 
+collaborating client group is the high latency of coordinating 
+consistent access to the shared objects 
+buddycache architecture is based on a request 
+redirection server interposed between the clients and the remote 
+servers the interposed server the redirector runs on the 
+same network as the collaborative group and when possible 
+replaces the function of the remote servers if the client 
+request can be served locally the interaction with the server is 
+avoided if the client request can not be served locally 
+redirector forwards it to a remote server redirection approach 
+has been used to improve the performance of web caching 
+protocols buddycache redirector supports the correctness 
+availability and fault-tolerance properties of transactional 
+caching protocol the correctness property ensures 
+onecopy serializability of the objects committed by the client 
+transactions the availability and fault-tolerance properties 
+ensure that a crashed or slow client does not disrupt any 
+other client s access to persistent objects 
+the three types of client server interactions in a 
+transactional caching protocol are the commit of a transaction the 
+fetch of an object missing in a client cache and the exchange 
+of cache coherence information buddycache avoids 
+interactions with the server when a missing object or cache 
+coherence information needed by a client is available within the 
+collaborating group the redirector always interacts with 
+the servers at commit time because only storage servers 
+provide transaction durability in a way that ensures committed 
+client 
+redirector 
+client 
+client 
+buddy group 
+client 
+redirector 
+client 
+client 
+buddy group 
+servers 
+figure buddycache 
+data remains available in the presence of client or redirector 
+failures figure shows the overall buddycache 
+architecture 
+ cache coherence 
+the redirector maintains a directory of pages cached at 
+each client to provide cooperative caching 
+ redirecting a client fetch request to another client that 
+caches the requested object in addition redirector manages 
+cache coherence 
+several efficient transactional cache coherence protocols 
+exist for persistent object storage systems protocols make 
+different choices in granularity of data transfers and 
+granularity of cache consistency the current best-performing 
+protocols use page granularity transfers when clients fetch 
+missing objects from a server and object granularity 
+coherence to avoid false page-level conflicts the 
+transactional caching taxonomy proposed by carey franklin 
+and livny classifies the coherence protocols into two main 
+categories according to whether a protocol avoids or detects 
+access to stale objects in the client cache the buddycache 
+approach could be applied to both categories with different 
+performance costs and benefits in each category 
+we chose to investigate buddycache in the context of 
+occ the current best performing detection-based 
+protocol we chose occ because it is simple performs well in 
+high-latency networks has been implemented and we had 
+access to the implementation we are investigating 
+buddycache with psaa the best performing 
+avoidancebased protocol below we outline the occ protocol the 
+occ protocol uses object-level coherence when a client 
+requests a missing object the server transfers the containing 
+page transaction can read and update locally cached 
+objects without server intervention however before a 
+transaction commits it must be validated the server must make 
+sure the validating transaction has not read a stale version 
+of some object that was updated by a successfully 
+committed or validated transaction if validation fails the 
+transaction is aborted to reduce the number and cost of aborts 
+ 
+helper requester 
+a p 
+fetch ppeer fetch p 
+page p 
+redirector 
+figure peer fetch 
+a server sends background object invalidation messages to 
+clients caching the containing pages when clients receive 
+invalidations they remove stale objects from the cache and 
+send background acknowledgments to let server know about 
+this 
+since invalidations remove stale objects from the client 
+cache invalidation acknowledgment indicates to the server 
+that a client with no outstanding invalidations has read 
+upto-date objects an unacknowledged invalidation indicates 
+a stale object may have been accessed in the client cache 
+the validation procedure at the server aborts a client 
+transaction if a client reads an object while an invalidation is 
+outstanding 
+the acknowledged invalidation mechanism supports 
+object-level cache coherence without object-based directories 
+or per-object version numbers avoiding per-object 
+overheads is very important to reduce performance penalties 
+of managing many small objects since typical objects are 
+small an important buddycache design goal is to 
+maintain this benefit 
+since in buddycache a page can be fetched into a client 
+cache without server intervention as illustrated in figure 
+cache directories at the servers keep track of pages cached in 
+each collaborating group rather than each client redirector 
+keeps track of pages cached in each client in a group servers 
+send to the redirector invalidations for pages cached in the 
+entire group the redirector propagates invalidations from 
+servers to affected clients when all affected clients 
+acknowledge invalidations redirector can propagate the group 
+acknowledgment to the server 
+ light-weight peer update 
+when one of the clients in the collaborative group creates 
+or modifies shared objects the copies cached by any other 
+client become stale but the new data is likely to be of 
+potential interest to the group members the goal in buddycache 
+is to provide group members with efficient and consistent 
+access to updates committed within the group without 
+imposing extra overhead on other parts of the storage system 
+the two possible approaches to deal with stale data are 
+cache invalidations and cache updates cache coherence 
+studies in web systems e g dsm systems e g 
+and transactional object systems e g compare the 
+benefits of update and invalidation the studies show the 
+committing 
+client 
+server 
+redirector 
+x store x 
+ update x 
+ commit x 
+ commit ok 
+ commit ok commit x 
+figure peer update 
+benefits are strongly workload-dependent in general 
+invalidation-based coherence protocols are efficient since 
+invalidations are small batched and piggybacked on other 
+messages moreover invalidation protocols match the 
+current hardware trend for increasing client cache sizes larger 
+caches are likely to contain much more data than is actively 
+used update-based protocols that propagate updates to 
+low-interest objects in a wide-area network would be 
+wasteful nevertheless invalidation-based coherence protocols 
+can perform poorly in high-latency networks if the 
+object s new value is likely to be of interest to another group 
+member with an invalidation-based protocol one 
+member s update will invalidate another member s cached copy 
+causing the latter to perform a high-latency fetch of the new 
+value from the server 
+buddycache circumvents this well-known bandwidth vs 
+latency trade-off imposed by update and invalidation 
+protocols in wide-area network environments it avoids the 
+latency penalty of invalidations by using the redirector to 
+retain and propagate updates committed by one client to 
+other clients within the group this avoids the bandwidth 
+penalty of updates because servers propagate invalidations 
+to the redirectors as far as we know this use of localized 
+multicast in buddycache redirector is new and has not been 
+used in earlier caching systems 
+the peer update works as follows an update commit 
+request from a client arriving at the redirector contains the 
+object updates redirector retains the updates and 
+propagates the request to the coordinating server after the 
+transaction commits the coordinator server sends a commit reply 
+to the redirector of the committing client group the 
+redirector forwards the reply to the committing client and also 
+propagates the retained committed updates to the clients 
+caching the modified pages see figure since the groups 
+outside the buddycache propagate invalidations there is no 
+extra overhead outside the committing group 
+ solo commit 
+in the occ protocol clients acknowledge server 
+invalidations or updates to indicate removal of stale data the 
+straightforward group acknowledgement protocol where 
+redirector collects and propagates a collective 
+acknowledge 
+redirector 
+commit ok 
+abort 
+client client server 
+commit p x 
+commit p x 
+ok inv p x 
+inv p x 
+commit p x 
+commit p x 
+ack p x 
+ack p x 
+figure validation with slow peers 
+ment to the server interferes with the availability property 
+of the transactional caching protocol since a client that 
+is slow to acknowledge an invalidation or has failed can 
+delay a group acknowledgement and prevent another client in 
+the group from committing a transaction e g an engineer 
+that commits a repeated revision to the same shared design 
+object and therefore holds the latest version of the object 
+may need to abort if the group acknowledgement has not 
+propagated to the server 
+consider a situation depicted in figure where client 
+commits a transaction t that reads the latest version of 
+an object x on page p recently modified by client if the 
+commit request for t reaches the server before the collective 
+acknowledgement from client for the last modification of x 
+arrives at the server the occ validation procedure 
+considers x to be stale and aborts t because as explained above 
+an invalidation unacknowledged by a client acts as 
+indication to the server that the cached object value is stale at the 
+client 
+note that while invalidations are not required for the 
+correctness of the occ protocol they are very important for 
+the performance since they reduce the performance 
+penalties of aborts and false sharing the asynchronous 
+invalidations are an important part of the reason occ has 
+competitive performance with psaa the best performing 
+avoidance-based protocol 
+nevertheless since invalidations are sent and processed 
+asynchronously invalidation processing may be arbitrarily 
+delayed at a client lease-based schemes time-out based 
+have been proposed to improve the availability of 
+hierarchical callback-based coherence protocols but the 
+asynchronous nature of invalidations makes the lease-based 
+approaches inappropriate for asynchronous invalidations 
+the solo commit validation protocol allows a client with 
+up-to-date objects to commit a transaction even if the group 
+acknowledgement is delayed due to slow or crashed peers 
+the protocol requires clients to include extra information 
+with the transaction read sets in the commit message to 
+indicate to the server the objects read by the transaction 
+are up-to-date 
+object version numbers could provide a simple way to 
+track up-to-date objects but as mentioned above 
+maintaining per object version numbers imposes unacceptably high 
+overheads in disk storage i o costs and directory size on 
+the entire object system when objects are small 
+instead solo commit uses coarse-grain page version numbers 
+to identify fine-grain object versions a page version number 
+is incremented at a server when at transaction that modifies 
+objects on the page commits updates committed by a 
+single transaction and corresponding invalidations are therefore 
+uniquely identified by the modified page version number 
+page version numbers are propagated to clients in fetch 
+replies commit replies and with invalidations and clients 
+include page version numbers in commit requests sent to 
+the servers if a transaction fails validation due to missing 
+group acknowledgement the server checks page version 
+numbers of the objects in the transaction read set and allows 
+the transaction to commit if the client has read from the 
+latest page version 
+the page version numbers enable independent commits 
+but page version checks only detect page-level conflicts to 
+detect object-level conflicts and avoid the problem of false 
+sharing we need the acknowledged invalidations section 
+describes the details of the implementation of solo commit 
+support for fine-grain sharing 
+ group configuration 
+the buddycache architecture supports multiple 
+concurrent peer groups potentially it may be faster to access 
+data cached in another peer group than to access a remote 
+server in such case extending buddycache protocols to 
+support multi-level peer caching could be worthwhile we 
+have not pursued this possibility for several reasons 
+in web caching workloads simply increasing the 
+population of clients in a proxy cache often increases the 
+overall cache hit rate in buddycache applications 
+however we expect sharing to result mainly from explicit client 
+interaction and collaboration suggesting that inter-group 
+fetching is unlikely to occur moreover measurements from 
+multi-level web caching systems indicate that a 
+multilevel system may not be advantageous unless the network 
+connection between the peer groups is very fast we are 
+primarily interested in environments where closely 
+collaborating peers have fast close-range connectivity but the 
+connection between peer groups may be slow as a result we 
+decided that support for inter-group fetching in buddycache 
+is not a high priority right now 
+to support heterogenous resource-rich and resource-poor 
+peers the buddycache redirector can be configured to run 
+either in one of the peer nodes or when available in a 
+separate node within the site infrastructure moreover in a 
+resource-rich infrastructure node the redirector can be 
+configured as a stand-by peer cache to receive pages fetched by 
+other peers emulating a central cache somewhat similar to 
+a regional web proxy cache from the buddycache cache 
+coherence protocol point of view however such a stand-by 
+peer cache is equivalent to a regular peer cache and therefore 
+we do not consider this case separately in the discussion in 
+this paper 
+ implementation 
+in this section we provide the details of the buddycache 
+implementation we have implemented buddycache in the 
+thor client server object-oriented database thor 
+supports high performance access to distributed objects and 
+therefore provides a good test platform to investigate 
+buddycache performance 
+ 
+ base storage system 
+thor servers provide persistent storage for objects and 
+clients cache copies of these objects applications run at 
+the clients and interact with the system by making calls on 
+methods of cached objects all method calls occur within 
+atomic transactions clients communicate with servers to 
+fetch pages or to commit a transaction 
+the servers have a disk for storing persistent objects a 
+stable transaction log and volatile memory the disk is 
+organized as a collection of pages which are the units of 
+disk access the stable log holds commit information and 
+object modifications for committed transactions the server 
+memory contains cache directory and a recoverable modified 
+object cache called the mob the directory keeps track of 
+which pages are cached by which clients the mob holds 
+recently modified objects that have not yet been written 
+back to their pages on disk as mob fills up a background 
+process propagates modified objects to the disk 
+ base cache coherence 
+transactions are serialized using optimistic concurrency 
+control occ described in section we provide some 
+of the relevant occ protocol implementation details the 
+client keeps track of objects that are read and modified by its 
+transaction it sends this information along with new copies 
+of modified objects to the servers when it tries to commit 
+the transaction the servers determine whether the commit 
+is possible using a two-phase commit protocol if the 
+transaction used objects at multiple servers if the transaction 
+commits the new copies of modified objects are appended 
+to the log and also inserted in the mob the mob is 
+recoverable i e if the server crashes the mob is reconstructed 
+at recovery by scanning the log 
+since objects are not locked before being used a 
+transaction commit can cause caches to contain obsolete objects 
+servers will abort a transaction that used obsolete objects 
+however to reduce the probability of aborts servers notify 
+clients when their objects become obsolete by sending them 
+invalidation messages a server uses its directory and the 
+information about the committing transaction to determine 
+what invalidation messages to send invalidation messages 
+are small because they simply identify obsolete objects 
+furthermore they are sent in the background batched and 
+piggybacked on other messages 
+when a client receives an invalidation message it removes 
+obsolete objects from its cache and aborts the current 
+transaction if it used them the client continues to retain pages 
+containing invalidated objects these pages are now 
+incomplete with holes in place of the invalidated objects 
+performing invalidation on an object basis means that false 
+sharing does not cause unnecessary aborts keeping 
+incomplete pages in the client cache means that false sharing does 
+not lead to unnecessary cache misses clients acknowledge 
+invalidations to indicate removal of stale data as explained in 
+section invalidation messages prevent some aborts and 
+accelerate those that must happen - thus wasting less work 
+and oﬄoading detection of aborts from servers to clients 
+when a transaction aborts its client restores the cached 
+copies of modified objects to the state they had before the 
+transaction started this is possible because a client makes 
+a copy of an object the first time it is modified by a 
+transaction 
+ redirection 
+the redirector runs on the same local network as the peer 
+group in one of the peer nodes or in a special node within 
+the infrastructure it maintains a directory of pages 
+available in the peer group and provides fast centralized fetch 
+redirection see figure between the peer caches to 
+improve performance clients inform the redirector when they 
+evict pages or objects by piggybacking that information on 
+messages sent to the redirector 
+to ensure up-to-date objects are fetched from the group 
+cache the redirector tracks the status of the pages a cached 
+page is either complete in which case it contains consistent 
+values for all the objects or incomplete in which case some 
+of the objects on a page are marked invalid only complete 
+pages are used by the peer fetch the protocol for 
+maintaining page status when pages are updated and invalidated is 
+described in section 
+when a client request has to be processed at the servers 
+e g a complete requested page is unavailable in the peer 
+group or a peer needs to commit a transaction the redirector 
+acts as a server proxy it forwards the request to the server 
+and then forwards the reply back to the client in addition 
+in response to invalidations sent by a server the redirector 
+distributes the update or invalidation information to clients 
+caching the modified page and after all clients acknowledge 
+propagates the group acknowledgment back to the server 
+ see figure the redirector-server protocol is in effect the 
+client-server protocol used in the base thor storage system 
+where the combined peer group cache is playing the role of 
+a single client cache in the base system 
+ peer update 
+the peer update is implemented as follows an update 
+commit request from a client arriving at the redirector 
+contains the object updates redirector retains the updates 
+and propagates the request to the coordinator server after 
+a transaction commits using a two phase commit if needed 
+the coordinator server sends a commit reply to the redirector 
+of the committing client group the redirector forwards the 
+reply to the committing client it waits for the invalidations 
+to arrive to propagate corresponding retained committed 
+updates to the clients caching the modified pages see 
+figure 
+participating servers that are home to objects modified by 
+the transaction generate object invalidations for each cache 
+group that caches pages containing the modified objects 
+ including the committing group the invalidations are sent 
+lazily to the redirectors to ensure that all the clients in the 
+groups caching the modified objects get rid of the stale data 
+in cache groups other than the committing group 
+redirectors propagates the invalidations to all the clients caching 
+the modified pages collect the client acknowledgments and 
+after completing the collection propagate collective 
+acknowledgments back to the server 
+within the committing client group the arriving 
+invalidations are not propagated instead updates are sent to clients 
+caching those objects pages the updates are acknowledged 
+by the client and the collective acknowledgment is 
+propagated to the server 
+an invalidation renders a cached page unavailable for peer 
+fetch changing the status of a complete page p into an 
+incomplete in contrast an update of a complete page 
+preserves the complete page status as shown by studies of the 
+ 
+fragment reconstruction such update propagation allows 
+to avoid the performance penalties of false sharing that is 
+when clients within a group modify different objects on the 
+same page the page retains its complete status and remains 
+available for peer fetch therefore the effect of peer update 
+is similar to eager fragment reconstruction 
+we have also considered the possibility of allowing a peer 
+to fetch an incomplete page with invalid objects marked 
+accordingly but decided against this possibility because of 
+the extra complexity involved in tracking invalid objects 
+ vcache 
+the solo commit validation protocol allows clients with 
+up-to-date objects to commit independently of slower or 
+failed group members as explained in section the solo 
+commit protocol allows a transaction t to pass validation if 
+extra coherence information supplied by the client indicates 
+that transaction t has read up-to-date objects clients use 
+page version numbers to provide this extra coherence 
+information that is a client includes the page version number 
+corresponding to each object in the read object set sent in 
+the commit request to the server since a unique page 
+version number corresponds to each committed object update 
+the page version number associated with an object allows 
+the validation procedure at the server to check if the client 
+transaction has read up-to-date objects 
+the use of coarse-grain page versions to identify object 
+versions avoids the high penalty of maintaining persistent 
+object versions for small objects but requires an extra 
+protocol at the client to maintain the mapping from a cached 
+object to the identifying page version objecttoversion the 
+main implementation issue is concerned with maintaining 
+this mapping efficiently 
+at the server side when modifications commit servers 
+associate page version numbers with the invalidations at 
+validation time if an unacknowledged invalidation is 
+pending for an object x read by a transaction t the validation 
+procedure checks if the version number for x in t s read set 
+matches the version number for highest pending invalidation 
+for x in which case the object value is current otherwise t 
+fails validation 
+we note again that the page version number-based checks 
+and the invalidation acknowledgment-based checks are 
+complimentary in the solo commit validation and both are needed 
+the page version number check allows the validation to 
+proceed before invalidation acknowledgments arrive but by itself 
+a page version number check detects page-level conflicts and 
+is not sufficient to support fine-grain coherence without the 
+object-level invalidations 
+we now describe how the client manages the mapping 
+objecttoversion the client maintains a page version number 
+for each cached page the version number satisfies the 
+following invariant v p about the state of objects on a page 
+if a cached page p has a version number v then the value 
+of an object o on a cached page p is either invalid or it 
+reflects at least the modifications committed by transactions 
+preceding the transaction that set p s version number to v 
+new object values and new page version numbers arrive 
+when a client fetches a page or when a commit reply or 
+invalidations arrive for this page the new object values modify 
+the page and therefore the page version number needs to 
+be updated to maintain the invariant v p a page version 
+number that arrives when a client fetches a page replaces 
+object version 
+x 
+redirector server client 
+com p x q y 
+com p x q y 
+ok p x q y 
+ok p x q y 
+inv q s 
+inv q s 
+inv p r 
+inv p r 
+server 
+figure reordered invalidations 
+the page version number for this page such an update 
+preserves the invariant v p similarly an in-sequence page 
+version number arriving at the client in a commit or 
+invalidation message advances the version number for the entire 
+cached page without violating v p however invalidations 
+or updates and their corresponding page version numbers 
+can also arrive at the client out of sequence in which case 
+updating the page version number could violate v p for 
+example a commit reply for a transaction that updates 
+object x on page p in server s and object y on page q in 
+server s may deliver a new version number for p from the 
+transaction coordinator s before an invalidation generated 
+for an earlier transaction that has modified object r on page 
+p arrives from s as shown in figure 
+the cache update protocol ensures that the value of any 
+object o in a cached page p reflects the update or 
+invalidation with the highest observed version number that is 
+obsolete updates or invalidations received out of sequence 
+do not affect the value of an object 
+to maintain the objecttoversion mapping and the 
+invariant v p in the presence of out-of-sequence arrival of page 
+version numbers the client manages a small version number 
+cache vcache that maintains the mapping from an object into 
+its corresponding page version number for all reordered 
+version number updates until a complete page version number 
+sequence is assembled when the missing version numbers 
+for the page arrive and complete a sequence the version 
+number for the entire page is advanced 
+the objecttoversion mapping including the vcache and 
+page version numbers is used at transaction commit time to 
+provide version numbers for the read object set as follows 
+if the read object has an entry in the vcache its version 
+number is equal to the highest version number in the vcache 
+for this object if the object is not present in the vcache its 
+version number is equal the version number of its containing 
+cached page figure shows the objecttoversion mapping 
+in the client cache including the page version numbers for 
+pages and the vcache 
+client can limit vcache size as needed since re-fetching a 
+page removes all reordered page version numbers from the 
+vcache however we expect version number reordering to 
+be uncommon and therefore expect the vcache to be very 
+small 
+ buddycache failover 
+a client group contains multiple client nodes and a 
+redi 
+versionpageobject version 
+vcache 
+client cache 
+client 
+page cache 
+figure objecttoversion map with vcache 
+rector that can fail independently the goal of the failover 
+protocol is to reconfigure the buddycache in the case of a 
+node failure so that the failure of one node does not disrupt 
+other clients from accessing shared objects moreover the 
+failure of the redirector should allow unaffected clients to 
+keep their caches intact 
+we have designed a failover protocols for buddycache 
+but have not implemented it yet the appendix outlines the 
+protocol 
+ performance evaluation 
+buddycache redirection supports the performance 
+benefits of avoiding communication with the servers but 
+introduces extra processing cost due to availability mechanisms 
+and request forwarding is the cure worse then the 
+disease to answer the question we have implemented a 
+buddycache prototype for the occ protocol and conducted 
+experiments to analyze the performance benefits and costs over 
+a range of network latencies 
+ analysis 
+the performance benefits of peer fetch and peer update 
+are due to avoided server interactions this section presents 
+a simple analytical performance model for this benefit the 
+avoided server interactions correspond to different types of 
+client cache misses these can be cold misses invalidation 
+misses and capacity misses our analysis focuses on cold 
+misses and invalidation misses since the benefit of avoiding 
+capacity misses can be derived from the cold misses 
+moreover technology trends indicate that memory and storage 
+capacity will continue to grow and therefore a typical 
+buddycache configuration is likely not to be cache limited 
+the client cache misses are determined by several 
+variables including the workload and the cache configuration 
+our analysis tries as much as possible to separate these 
+variables so they can be controlled in the validation 
+experiments 
+to study the benefit of avoiding cold misses we consider 
+cold cache performance in a read-only workload no 
+invalidation misses we expect peer fetch to improve the latency 
+cost for client cold cache misses by fetching objects from 
+nearby cache we evaluate how the redirection cost affects 
+this benefit by comparing and analyzing the performance 
+of an application running in a storage system with 
+buddycache and without called base 
+to study the benefit of avoiding invalidation misses we 
+consider hot cache performance in a workload with 
+modifications with no cold misses in hot caches we expect 
+buddycache to provide two complementary benefits both 
+of which reduce the latency of access to shared modified 
+objects peer update lets a client access an object modified by 
+a nearby collaborating peer without the delay imposed by 
+invalidation-only protocols in groups where peers share a 
+read-only interest in the modified objects peer fetch allows 
+a client to access a modified object as soon as a collaborating 
+peer has it which avoids the delay of server fetch without 
+the high cost imposed by the update-only protocols 
+technology trends indicate that both benefits will remain 
+important in the foreseeable future the trend toward 
+increase in available network bandwidth decreases the cost 
+of the update-only protocols however the trend toward 
+increasingly large caches that are updated when cached 
+objects are modified makes invalidation-base protocols more 
+attractive 
+to evaluate these two benefits we consider the 
+performance of an application running without buddycache with 
+an application running buddycache in two configurations 
+one where a peer in the group modifies the objects and 
+another where the objects are modified by a peer outside 
+the group 
+peer update can also avoid invalidation misses due to 
+false-sharing introduced when multiple peers update 
+different objects on the same page concurrently we do not 
+analyze this benefit demonstrated by earlier work because 
+our benchmarks do not allow us to control object layout 
+and also because this benefit can be derived given the cache 
+hit rate and workload contention 
+ the model 
+the model considers how the time to complete an 
+execution with and without buddycache is affected by 
+invalidation misses and cold misses 
+consider k clients running concurrently accessing uniformly 
+a shared set of n pages in buddycache bc and base let 
+tfetch s tredirect s tcommit s and tcompute s be the 
+time it takes a client to respectively fetch from server peer 
+fetch commit a transaction and compute in a transaction 
+in a system s where s is either a system with buddycache 
+ bc or without base for simplicity our model assumes 
+the fetch and commit times are constant in general they 
+may vary with the server load e g they depend on the total 
+number of clients in the system 
+the number of misses avoided by peer fetch depends on k 
+the number of clients in the buddycache and on the client 
+co-interest in the shared data in a specific buddycache 
+execution it is modeled by the variable r defined as a number 
+of fetches arriving at the redirector for a given version of 
+page p i e until an object on the page is invalidated 
+consider an execution with cold misses a client starts 
+with a cold cache and runs read-only workload until it 
+accesses all n pages while committing l transactions we 
+assume there are no capacity misses i e the client cache is 
+large enough to hold n pages in bc r cold misses for 
+page p reach the redirector the first of the misses fetches 
+p from the server and the subsequent r − misses are 
+redirected since each client accesses the entire shared set r k 
+let tcold base and tcold bc be the time it takes to 
+complete the l transactions in base and bc 
+ 
+tcold base n tfetch base 
+ tcompute tcommit base l 
+tcold bc 
+n 
+ 
+k 
+ tfetch bc − 
+ 
+k 
+ tredirect 
+ tcompute tcommit bc l 
+consider next an execution with invalidation misses a 
+client starts with a hot cache containing the working set of n 
+pages we focus on a simple case where one client writer 
+runs a workload with modifications and the other clients 
+ readers run a read-only workload 
+in a group containing the writer bcw peer update 
+eliminates all invalidation misses in a group containing 
+only readers bcr during a steady state execution with 
+uniform updates a client transaction has missinv 
+invalidation misses consider the sequence of r client misses on 
+page p that arrive at the redirector in bcr between two 
+consequent invalidations of page p the first miss goes to 
+the server and the r − subsequent misses are redirected 
+unlike with cold misses r ≤ k because the second 
+invalidation disables redirection for p until the next miss on p 
+causes a server fetch 
+assuming uniform access a client invalidation miss has a 
+chance of r to be the first miss resulting in server fetch 
+and a chance of − r to be redirected 
+let tinval base tinval bcr and tinval bcw be the 
+time it takes to complete a single transaction in the base 
+bcr and bcw systems 
+tinval base missinv tfetch base 
+ tcompute tcommit base 
+tinval bcr missinv 
+ 
+r 
+ tfetch bcr 
+ − 
+ 
+r 
+ tredirect bcr 
+ tcompute tcommit bcr 
+tinval bcw tcompute tcommit bcw 
+in the experiments described below we measure the 
+parameters n r missinv tfetch s tredirect s tcommit s 
+and tcompute s we compute the completion times derived 
+using the above model and derive the benefits we then 
+validate the model by comparing the derived values to the 
+completion times and benefits measured directly in the 
+experiments 
+ experimental setup 
+before presenting our results we describe our experimental 
+setup we use two systems in our experiments the base 
+system runs thor distributed object storage system with 
+clients connecting directly to the servers the buddy system 
+runs our implementation of buddycache prototype in thor 
+supporting peer fetch peer update and solo commit but 
+not the failover 
+our workloads are based on the multi-user oo 
+benchmark this benchmark is intended to capture the 
+characteristics of many different multi-user cad cam case 
+applications but does not model any specific application we 
+use oo because it is a standard benchmark for measuring 
+object storage system performance the oo database 
+contains a tree of assembly objects with leaves pointing to three 
+composite parts chosen randomly from among such 
+objects each composite part contains a graph of atomic parts 
+linked by connection objects each atomic part has 
+outgoing connections we use a medium database that has 
+atomic parts per composite part the multi-user database 
+allocates for each client a private module consisting of one 
+tree of assembly objects and adds an extra shared module 
+that scales proportionally to the number of clients 
+we expect a typical buddycache configuration not to be 
+cache limited and therefore focus on workloads where the 
+objects in the client working set fit in the cache since the 
+goal of our study is to evaluate how effectively our 
+techniques deal with access to shared objects in our study we 
+limit client access to shared data only this allows us to 
+study the effect our techniques have on cold cache and cache 
+consistency misses and isolate as much as possible the effect 
+of cache capacity misses 
+to keep the length of our experiments reasonable we use 
+small caches the oo benchmark generates database 
+modules of predefined size in our implementation of oo the 
+private module size is about mb to make sure that the 
+entire working set fits into the cache we use a single private 
+module and choose a cache size of mb for each client the 
+oo database is generated with modules for clients only 
+one of which is used in our experiments as we explain above 
+the objects in the database are clustered in k pages which 
+are also the unit of transfer in the fetch requests 
+we consider two types of transaction workloads in our 
+analysis read-only and read-write in oo benchmark 
+read-only transactions use the t traversal that performs 
+a depth-first traversal of entire composite part graph write 
+transactions use the t b traversal that is identical to t 
+except that it modifies all the atomic parts in a single 
+composite a single transaction includes one traversal and there 
+is no sleep time between transactions both read-only and 
+read-write transactions always work with data from the same 
+module clients running read-write transactions don t 
+modify in every transaction instead they have a probability 
+of running read-only transactions 
+the database was stored by a server on a gb ibm 
+ rpm hard drive with a average seek time and 
+mb sec data transfer rates in base system clients 
+connect directly to the database in buddy system clients 
+connect to the redirector that connects to the database we 
+run the experiments with - clients in base and one or 
+two - client groups in buddy the server the clients 
+and the redirectors ran on a mhz intel pentium iii 
+processor based pc mb of memory and linux red hat 
+ they were connected by a mb s ethernet the 
+server was configured with a mb cache of which mb 
+were used for the modified object buffer the client had a 
+ mb cache the experiments ran in utah experimental 
+testbed emulab net 
+ 
+latency ms 
+base buddy 
+ group group group group 
+fetch 
+commit 
+table commit and server fetch 
+operation latency ms 
+peerfetch - 
+−alerthelper - 
+−copyunswizzle 
+−crossredirector 
+table peer fetch 
+ basic costs 
+this section analyzes the basic cost of the requests in the 
+buddy system during the oo runs 
+ redirection 
+fetch and commit requests in the buddycache cross the 
+redirector a cost not incurred in the base system for a 
+request redirected to the server server fetch the extra cost 
+of redirection includes a local request from the client to 
+redirector on the way to and from the server we evaluate this 
+latency overhead indirectly by comparing the measured 
+latency of the buddy system server fetch or commit request 
+with the measured latency of the corresponding request in 
+the base system 
+table shows the latency for the commit and server fetch 
+requests in the base and buddy system for client and 
+client groups in a fast local area network all the numbers 
+were computed by averaging measured request latency over 
+ requests the measurements show that the redirection 
+cost of crossing the redirector in not very high even in a 
+local area network the commit cost increases with the 
+number of clients since commits are processed sequentially 
+the fetch cost does not increase as much because the server 
+cache reduces this cost in a large system with many groups 
+however the server cache becomes less efficient 
+to evaluate the overheads of the peer fetch we measure 
+the peer fetch latency peerfetch at the requesting client 
+and break down its component costs in peer fetch the cost 
+of the redirection includes in addition to the local network 
+request cost the cpu processing latency of crossing the 
+redirector and crossing the helper the latter including the 
+time to process the help request and the time to copy and 
+unswizzle the requested page 
+we directly measured the time to copy and unswizzle the 
+requested page at the helper copyunswizzle and timed 
+the crossing times using a null crossing request table 
+summarizes the latencies that allows us to break down the 
+peer fetch costs crossredirector includes the cpu latency 
+of crossing the redirector plus a local network round-trip 
+and is measured by timing a round-trip null request issued 
+by a client to the redirector alerthelper includes the time 
+for the helper to notice the request plus a network 
+roundtrip and is measured by timing a round-trip null request 
+issued from an auxiliary client to the helper client the 
+local network latency is fixed and less than ms 
+the alerthelper latency which includes the elapsed time 
+from the help request arrival until the start of help request 
+processing is highly variable and therefore contributes to 
+the high variability of the peerfetch time this is because 
+the client in buddy system is currently single threaded and 
+therefore only starts processing a help request when blocked 
+waiting for a fetch- or commit reply this overhead is not 
+inherent to the buddycache architecture and could be 
+mitigated by a multi-threaded implementation in a system with 
+pre-emptive scheduling 
+ version cache 
+the solo commit allows a fast client modifying an object 
+to commit independently of a slow peer the solo 
+commit mechanism introduces extra processing at the server 
+at transaction validation time and extra processing at the 
+client at transaction commit time and at update or 
+invalidation processing time 
+the server side overheads are minimal and consist of a 
+page version number update at commit time and a version 
+number comparison at transaction validation time 
+the version cache has an entry only when invalidations or 
+updates arrive out of order this may happen when a 
+transaction accesses objects in multiple servers our experiments 
+run in a single server system and therefore the commit time 
+overhead of version cache management at the client does not 
+contribute in the results presented in the section below to 
+gauge these client side overheads in a multiple server 
+system we instrumented the version cache implementation to 
+run with a workload trace that included reordered 
+invalidations and timed the basic operations 
+the extra client commit time processing includes a version 
+cache lookup operation for each object read by the 
+transaction at commit request preparation time and a version 
+cache insert operation for each object updated by a 
+transaction at commit reply processing time but only if the 
+updated page is missing some earlier invalidations or updates 
+it is important that the extra commit time costs are kept 
+to a minimum since client is synchronously waiting for the 
+commit completion the measurements show that in the 
+worst case when a large number of invalidations arrive out 
+of order and about half of the objects modified by t a 
+objects reside on reordered pages the cost of updating the 
+version cache is ms the invalidation time cost are 
+comparable but since invalidations and updates are processed 
+in the background this cost is less important for the overall 
+performance we are currently working on optimizing the 
+version cache implementation to further reduce these costs 
+ overall performance 
+this section examines the performance gains seen by an 
+application running oo benchmark with a buddycache in 
+a wide area network 
+ cold misses 
+to evaluate the performance gains from avoiding cold 
+misses we compare the cold cache performance of oo 
+benchmark running read-only workload in the buddy and base 
+systems we derive the times by timing the execution of the 
+systems in the local area network environment and 
+substituting ms and ms delays for the requests crossing the 
+redirector and the server to estimate the performance in the 
+wide-area-network figures and show the overall time to 
+complete cold cache transactions the numbers were 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+base buddy base buddy base buddy 
+ clients clients clients 
+ ms 
+cpu commit server fetch peer fetch 
+figure breakdown for cold read-only ms rtt 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+base buddy base buddy base buddy 
+ clients clients clients 
+ ms 
+cpu commit server fetch peer fetch 
+figure breakdown for cold read-only ms rtt 
+obtained by averaging the overall time of each client in the 
+group 
+the results show that in a ms network buddy 
+system reduces significantly the overall time compared to the 
+base system providing a improvement in a three client 
+group improvement in the five client group and 
+improvement in the ten client case 
+the overall time includes time spent performing client 
+computation direct fetch requests peer fetches and commit 
+requests 
+in the three client group buddy and base incur almost 
+the same commit cost and therefore the entire performance 
+benefit of buddy is due to peer fetch avoiding direct fetches 
+in the five and ten client group the server fetch cost for 
+individual client decreases because with more clients faulting 
+in a fixed size shared module into buddycache each client 
+needs to perform less server fetches 
+figure shows the overall time and cost break down in 
+the ms network the buddycache provides similar 
+performance improvements as with the ms network higher 
+network latency increases the relative performance 
+advantage provided by peer fetch relative to direct fetch but this 
+benefit is offset by the increased commit times 
+figure shows the relative latency improvement provided 
+by buddycache computed as the overall measured time 
+difference between buddy and base relative to base as a 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency ms 
+ clients clients perf model clients 
+ clients perf model clients fes perf model 
+figure cold miss benefit 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+base buddy reader buddy writer 
+ ms 
+cpu commit server fetch peer fetch 
+figure breakdown for hot read-write ms rtt 
+function of network latency with a fixed server load the 
+cost of the extra mechanism dominates buddycache benefit 
+when network latency is low at typical internet latencies 
+ ms- ms the benefit increases with latency and levels off 
+around ms with significant up to for ten clients 
+improvement 
+figure includes both the measured improvement and the 
+improvement derived using the analytical model remarkably 
+the analytical results predict the measured improvement 
+very closely albeit being somewhat higher than the 
+empirical values the main reason why the simplified model works 
+well is it captures the dominant performance component 
+network latency cost 
+ invalidation misses 
+to evaluate the performance benefits provided by 
+buddycache due to avoided invalidation misses we compared the 
+hot cache performance of the base system with two 
+different buddy system configurations one of the buddy system 
+configurations represents a collaborating peer group 
+modifying shared objects writer group the other represents a 
+group where the peers share a read-only interest in the 
+modified objects reader group and the writer resides outside 
+the buddycache group 
+in each of the three systems a single client runs a 
+readwrite workload writer and three other clients run read-only 
+workload readers buddy system with one group 
+contain 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+base buddy reader buddy writer 
+ ms 
+cpu commit server fetch peer fetch 
+figure breakdown for hot read-write ms rtt 
+ing a single reader and another group containing two readers 
+and one writer models the writer group buddy system with 
+one group containing a single writer and another group 
+running three readers models the reader group in base one 
+writer and three readers access the server directly this 
+simple configuration is sufficient to show the impact of 
+buddycache techniques 
+figures and show the overall time to complete 
+hot cache oo read-only transactions we obtain the 
+numbers by running transactions to filter out cold misses 
+and then time the next transactions here again the 
+reported numbers are derived from the local area network 
+experiment results 
+the results show that the buddycache reduces 
+significantly the completion time compared to the base system 
+in a ms network the overall time in the writer group 
+improves by compared to base this benefit is due 
+to peer update that avoids all misses due to updates the 
+overall time in the reader group improves by and is 
+due to peer fetch that allows a client to access an 
+invalidated object at the cost of a local fetch avoiding the delay 
+of fetching from the server the latter is an important 
+benefit because it shows that on workloads with updates peer 
+fetch allows an invalidation-based protocol to provide some 
+of the benefits of update-based protocol 
+note that the performance benefit delivered by the peer 
+fetch in the reader group is approximately less than the 
+performance benefit delivered by peer update in the writer 
+group this difference is similar in ms network 
+figure shows the relative latency improvement 
+provided by buddycache in buddy reader and buddy writer 
+configurations computed as the overall time difference 
+between buddyreader and base relative to base and buddy 
+writer and base relative to base in a hot cache experiment 
+as a function of increasing network latency for fixed server 
+load 
+the peer update benefit dominates overhead in writer 
+configuration even in low-latency network peer update 
+incurs minimal overhead and offers significant - 
+improvement for entire latency range 
+the figure includes both the measured improvement and 
+the improvement derived using the analytical model as 
+in cold cache experiments here the analytical results 
+predict the measured improvement closely the difference is 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency ms 
+benefits 
+buddy reader buddy reader perf model 
+buddy writer buddy writer perf model 
+figure invalidation miss benefit 
+minimal in the writer group and somewhat higher in the 
+ reader group consistent with the results in the cold cache 
+experiments as in cold cache case the reason why the 
+simplified analytical model works well is because it captures the 
+costs of network latency the dominant performance cost 
+ conclusion 
+collaborative applications provide a shared work 
+environment for groups of networked clients collaborating on a 
+common task they require strong consistency for shared 
+persistent data and efficient access to fine-grained objects these 
+properties are difficult to provide in wide-area network 
+because of high network latency 
+this paper described buddycache a new transactional 
+cooperative caching technique that improves 
+the latency of access to shared persistent objects for 
+collaborative strong-consistency applications in high-latency 
+network environments the technique improves performance 
+yet provides strong correctness and availability properties 
+in the presence of node failures and slow clients 
+buddycache uses redirection to fetch missing objects 
+directly from group members caches and to support peer 
+update a new lightweight application-level multicast 
+technique that gives group members consistent access to the new 
+data committed within the collaborating group without 
+imposing extra overhead outside the group redirection 
+however can interfere with object availability solo commit is 
+a new validation technique that allows a client in a group 
+to commit independently of slow or failed peers it 
+provides fine-grained validation using inexpensive coarse-grain 
+version information 
+we have designed and implemented buddycache 
+prototype in thor distributed transactional object storage 
+system and evaluated the benefits and costs of the system 
+over a range of network latencies analytical results 
+supported by the system measurements using the multi-user 
+benchmark indicate that for typical internet latencies 
+buddycache provides significant performance benefits e g for 
+latencies ranging from to milliseconds round trip time 
+clients using the buddycache can reduce by up to the 
+latency of access to shared objects compared to the clients 
+accessing the repository directly 
+the main contributions of the paper are 
+ extending cooperative caching techniques to support 
+ 
+fine-grain strong-consistency access in high-latency 
+environments 
+ an implementation of the system prototype that yields 
+strong performance gains over the base system 
+ analytical and measurement based performance 
+evaluation of the costs and benefits of the new techniques 
+capturing the dominant performance cost high 
+network latency 
+ acknowledgments 
+we are grateful to jay lepreau and the staff of utah 
+experimental testbed emulab net especially leigh stoller 
+for hosting the experiments and the help with the testbed 
+we also thank jeff chase maurice herlihy butler lampson 
+and the oopsla reviewers for the useful comments that 
+improved this paper 
+ references 
+ emulab net the utah network emulation facility 
+http www emulab net 
+ a adya m castro b liskov u maheshwari and 
+l shrira fragment reconstruction providing global 
+cache coherence in a transactional storage system 
+proceedings of the international conference on 
+distributed computing systems may 
+ a adya r gruber b liskov and u maheshwari 
+efficient optimistic concurrencty control using loosely 
+synchronized clocks in proceedings of the acm 
+sigmod international conference on management of 
+data may 
+ c amza a l cox s dwarkadas p keleher h lu 
+r rajamony w yu and w zwaenepoel 
+treadmarks shared memory computing on networks 
+of workstations ieee computer february 
+ 
+ c anderson and a karlin two adaptive hybrid 
+cache coherency protocols in proceedings of the nd 
+ieee symposium on high-performance computer 
+architecture hpca february 
+ m baker fast crash recovery in distributed file 
+systems phd thesis university of california at 
+berkeley 
+ p cao and c liu maintaining strong cache 
+consistency in the world wide web in th 
+international conference on distributed computing 
+systems april 
+ m carey d j dewitt c kant and j f naughton 
+a status report on the oo oodbms benchmarking 
+effort in proceedings of oopsla october 
+ a chankhunthod m schwartz p danzig 
+k worrell and c neerdaels a hierarchical internet 
+object cache in usenix annual technical 
+conference january 
+ j chase s gadde and m rabinovich directory 
+structures for scalable internet caches technical 
+report cs- - dept of computer science duke 
+university november 
+ j chase s gadde and m rabinovich not all hits 
+are created equal cooperative proxy caching over 
+a wide-area network in third international www 
+caching workshop june 
+ d r cheriton and d li scalable web caching of 
+frequently updated objects using reliable multicast 
+ nd usenix symposium on internet technologies 
+and systems october 
+ m d dahlin r y wang t e anderson and d a 
+patterson cooperative caching using remote client 
+memory to improve file system performance 
+proceedings of the usenix conference on operating 
+systems design and implementation november 
+ s dwarkadas h lu a l cox r rajamony and 
+w zwaenepoel combining compile-time and 
+run-time support for efficient software distributed 
+shared memory in proceedings of ieee special issue 
+on distributed shared memory march 
+ li fan pei cao jussara almeida and andrei broder 
+summary cache a scalable wide-area web cache 
+sharing protocol in proceedings of acm sigcomm 
+september 
+ m feeley w morgan f pighin a karlin and 
+h levy implementing global memory management 
+in a workstation cluster proceedings of the th 
+acm symposium on operating systems principles 
+december 
+ m j feeley j s chase v r narasayya and h m 
+levy integrating coherency and recoverablity in 
+distributed systems in proceedings of the first 
+usenix symposium on operating sustems design and 
+implementation may 
+ p ferreira and m shapiro et al perdis design 
+implementation and use of a persistent distributed 
+store in recent advances in distributed systems 
+lncs springer-verlag 
+ m j franklin m carey and m livny transactional 
+client-server cache consistency alternatives and 
+performance in acm transactions on database 
+systems volume pages - september 
+ michael franklin michael carey and miron livny 
+global memory management for client-server dbms 
+architectures in proceedings of the th intl 
+conference on very large data bases vldb 
+august 
+ s ghemawat the modified object buffer a storage 
+management technique for object-oriented 
+databases phd thesis massachusetts institute of 
+technology 
+ l kawell s beckhardt t halvorsen r ozzie and 
+i greif replicated document management in a group 
+communication system in proceedings of the acm 
+cscw conference september 
+ b liskov m castro l shrira and a adya 
+providing persistent objects in distributed systems 
+in proceedings of the th european conference on 
+object-oriented programming ecoop june 
+ 
+ a muthitacharoen b chen and d mazieres a 
+low-bandwidth network file system in th acm 
+symposium on operating systems principles october 
+ 
+ b oki and b liskov viewstamped replication a 
+new primary copy method to support 
+highly-available distributed systems in proc of 
+acm symposium on principles of distributed 
+ 
+computing august 
+ j o toole and l shrira opportunistic log efficient 
+installation reads in a reliable object server in 
+usenix symposium on operation systems design and 
+implementation november 
+ d pendarakis s shi and d verma almi an 
+application level multicast infrastructure in rd 
+usenix symposium on internet technologies and 
+systems march 
+ p sarkar and j hartman efficient cooperative 
+caching using hints in usenix symposium on 
+operation systems design and implementation 
+october 
+ a m vahdat p c eastham and t e anderson 
+webfs a global cache coherent file system 
+technical report university of california berkeley 
+ 
+ a wolman g voelker n sharma n cardwell 
+a karlin and h levy on the scale and performance 
+of cooperative web proxy caching in th acm 
+symposium on operating systems principles 
+december 
+ j yin l alvisi m dahlin and c lin hierarchical 
+cache consistency in a wan in usenix symposium 
+on internet technologies and systems october 
+ j yin l alvisi m dahlin and c lin volume 
+leases for consistency in large-scale systems ieee 
+transactions on knowledge and data engineering 
+ july august 
+ m zaharioudakis m j carey and m j franklin 
+adaptive fine-grained sharing in a client-server 
+oodbms a callback-based approach acm 
+transactions on database systems - 
+december 
+ appendix 
+this appendix outlines the buddycache failover protocol 
+to accommodate heterogeneous clients including 
+resourcepoor hand-helds we do not require the availability of 
+persistent storage in the buddycache peer group the 
+buddycache design assumes that the client caches and the 
+redirector data structures do not survive node failures 
+a failure of a client or a redirector is detected by a 
+membership protocol that exchanges periodic i am alive 
+messages between group members and initiates a failover 
+protocol the failover determines the active group participants 
+re-elects a redirector if needed reinitializes the buddycache 
+data structures in the new configuration and restarts the 
+protocol the group reconfiguration protocol is similar to 
+the one presented in here we describe how the failover 
+manages the buddycache state 
+to restart the buddycache protocol the failover needs 
+to resynchronize the redirector page directory and 
+clientserver request forwarding so that active clients can continue 
+running transactions using their caches in the case of a 
+client failure the failover removes the crashed client pages 
+from the directory any response to an earlier request 
+initiated by the failed client is ignored except a commit reply in 
+which case the redirector distributes the retained committed 
+updates to active clients caching the modified pages 
+in the case of a redirector failure the failover protocol 
+reinitializes sessions with the servers and clients and 
+rebuilds the page directory using a protocol similar to one 
+in the newly restarted redirector asks the active group 
+members for the list of pages they are caching and the 
+status of these pages i e whether the pages are complete or 
+incomplete 
+requests outstanding at the redirector at the time of the 
+crash may be lost a lost fetch request will time out at the 
+client and will be retransmitted a transaction running at 
+the client during a failover and committing after the failover 
+is treated as a regular transaction a transaction trying to 
+commit during a failover is aborted by the failover 
+protocol a client will restart the transaction and the commit 
+request will be retransmitted after the failover 
+invalidations updates or collected update acknowledgements lost at 
+the crashed redirector could prevent the garbage collection 
+of pending invalidations at the servers or the vcache in the 
+clients therefore servers detecting a redirector crash 
+retransmit unacknowledged invalidations and commit replies 
+unique version numbers in invalidations and updates ensure 
+that duplicate retransmitted requests are detected and 
+discarded 
+since the transaction validation procedure depends on the 
+cache coherence protocol to ensure that transactions do not 
+read stale data we now need to argue that buddycache 
+failover protocol does not compromise the correctness of the 
+validation procedure recall that buddycache transaction 
+validation uses two complementary mechanisms page 
+version numbers and invalidation acknowledgements from the 
+clients to check that a transaction has read up-to-date data 
+the redirector-based invalidation and update 
+acknowledgement propagation ensures the following invariant when 
+a server receives an acknowledgement for an object o 
+modification invalidation or update from a client group any 
+client in the group caching the object o has either installed 
+the latest value of object o or has invalidated o 
+therefore if a server receives a commit request from a client for a 
+transaction t reading an object o after a failover in the client 
+group and the server has no unacknowledged invalidation 
+for o pending for this group the version of the object read 
+by the transaction t is up-to-date independently of client 
+or redirector failures 
+now consider the validation using version numbers the 
+transaction commit record contains a version number for 
+each object read by the transaction the version number 
+protocol maintains the invariant v p that ensures that the 
+value of object o read by the transaction corresponds to the 
+highest version number for o received by the client the 
+invariant holds since the client never applies an earlier 
+modification after a later modification has been received 
+retransmition of invalidations and updates maintains this invariant 
+the validation procedure checks that the version number in 
+the commit record matches the version number in the 
+unacknowledged outstanding invalidation it is straightforward 
+to see that since this check is an end-to-end client-server 
+check it is unaffected by client or redirector failure 
+the failover protocol has not been implemented yet 
+ 

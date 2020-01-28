@@ -1,0 +1,1503 @@
+complexity of iterated dominance 
+vincent conitzer 
+carnegie mellon university 
+ forbes avenue 
+pittsburgh pa usa 
+conitzer cs cmu edu 
+tuomas sandholm 
+carnegie mellon university 
+ forbes avenue 
+pittsburgh pa usa 
+sandholm cs cmu edu 
+abstract 
+we study various computational aspects of solving games 
+using dominance and iterated dominance we first study 
+both strict and weak dominance not iterated and show 
+that checking whether a given strategy is dominated by 
+some mixed strategy can be done in polynomial time using 
+a single linear program solve we then move on to 
+iterated dominance we show that determining whether there 
+is some path that eliminates a given strategy is np-complete 
+with iterated weak dominance this allows us to also show 
+that determining whether there is a path that leads to a 
+unique solution is np-complete both of these results hold 
+both with and without dominance by mixed strategies a 
+weaker version of the second result only without dominance 
+by mixed strategies was already known iterated strict 
+dominance on the other hand is path-independent both 
+with and without dominance by mixed strategies and can 
+therefore be done in polynomial time 
+we then study what happens when the dominating 
+strategy is allowed to place positive probability on only a few 
+pure strategies first we show that finding the dominating 
+strategy with minimum support size is np-complete both 
+for strict and weak dominance then we show that 
+iterated strict dominance becomes path-dependent when there 
+is a limit on the support size of the dominating strategies 
+and that deciding whether a given strategy can be 
+eliminated by iterated strict dominance under this restriction is 
+np-complete even when the limit on the support size is 
+finally we study bayesian games we show that unlike in 
+normal form games deciding whether a given pure strategy 
+is dominated by another pure strategy in a bayesian game is 
+np-complete both with strict and weak dominance 
+however deciding whether a strategy is dominated by some 
+mixed strategy can still be done in polynomial time with 
+a single linear program solve both with strict and weak 
+ 
+this material is based upon work supported by the 
+national science foundation under itr grants iis- 
+and iis- and a sloan fellowship 
+dominance finally we show that iterated dominance 
+using pure strategies can require an exponential number of 
+iterations in a bayesian game both with strict and weak 
+dominance 
+categories and subject descriptors 
+f theory of computation analysis of algorithms 
+and problem complexity j computer applications 
+social and behavioral sciences-economics 
+general terms 
+algorithms economics theory 
+ introduction 
+in multiagent systems with self-interested agents the 
+optimal action for one agent may depend on the actions taken 
+by other agents in such settings the agents require tools 
+from game theory to rationally decide on an action game 
+theory offers various formal models of strategic settings-the 
+best-known of which is a game in normal or matrix form 
+specifying a utility payoff for each agent for each 
+combination of strategies that the agents choose-as well as 
+solution concepts which given a game specify which outcomes 
+are reasonable under various assumptions of rationality and 
+common knowledge 
+probably the best-known and certainly the most-studied 
+solution concept is that of nash equilibrium a nash 
+equilibrium specifies a strategy for each player in such a way that 
+no player has an incentive to unilaterally deviate from the 
+prescribed strategy recently numerous papers have 
+studied computing nash equilibria in various settings 
+ and the complexity of constructing a nash 
+equilibrium in normal form games has been labeled one of the 
+two most important open problems on the boundary of p 
+today 
+the problem of computing solutions according to the 
+perhaps more elementary solution concepts of dominance and 
+iterated dominance has received much less attention after 
+an early short paper on an easy case the main 
+computational study of these concepts has actually taken place 
+in a paper in the game theory community 
+ a strategy 
+strictly dominates another strategy if it performs strictly 
+ 
+this is not to say that computer scientists have ignored 
+ 
+better against all vectors of opponent strategies and weakly 
+dominates it if it performs at least as well against all vectors 
+of opponent strategies and strictly better against at least 
+one the idea is that dominated strategies can be eliminated 
+from consideration in iterated dominance the elimination 
+proceeds in rounds and becomes easier as more strategies 
+are eliminated in any given round the dominating 
+strategy no longer needs to perform better than or as well as the 
+dominated strategy against opponent strategies that were 
+eliminated in earlier rounds computing solutions 
+according to iterated dominance is important for at least the 
+following reasons it can be computationally easier than 
+computing for instance a nash equilibrium and therefore 
+it can be useful as a preprocessing step in computing a nash 
+equilibrium and iterated dominance requires a weaker 
+rationality assumption on the players than for instance 
+nash equilibrium and therefore solutions derived according 
+to it are more likely to occur 
+in this paper we study some fundamental computational 
+questions concerning dominance and iterated dominance 
+including how hard it is to check whether a given strategy can 
+be eliminated by each of the variants of these notions the 
+rest of the paper is organized as follows in section we 
+briefly review definitions and basic properties of normal form 
+games strict and weak dominance and iterated strict and 
+weak dominance in the remaining sections we study 
+computational aspects of dominance and iterated dominance in 
+section we study one-shot not iterated dominance in 
+section we study iterated dominance in section we 
+study dominance and iterated dominance when the 
+dominating strategy can only place probability on a few pure 
+strategies finally in section we study dominance and 
+iterated dominance in bayesian games 
+ definitions and basic properties 
+in this section we briefly review normal form games as 
+well as dominance and iterated dominance both strict and 
+weak an n-player normal form game is defined as follows 
+definition a normal form game is given by a set of 
+players n and for each player i a finite set of 
+pure strategies σi and a utility function ui σ × σ × × 
+σn → r where ui σ σ σn denotes player i s utility 
+when each player j plays action σj 
+the two main notions of dominance are defined as follows 
+definition player i s strategy σi is said to be strictly 
+dominated by player i s strategy σi if for any vector of 
+strategies σ−i for the other players ui σi σ−i ui σi σ−i 
+player i s strategy σi is said to be weakly dominated by 
+player i s strategy σi if for any vector of strategies σ−i for the 
+other players ui σi σ−i ≥ ui σi σ−i and for at least one 
+vector of strategies σ−i for the other players ui σi σ−i 
+ui σi σ−i 
+in this definition it is sometimes allowed for the 
+dominating strategy σi to be a mixed strategy that is a probability 
+distribution over pure strategies in this case the utilities in 
+dominance altogether for example simple dominance 
+checks are sometimes used as a subroutine in searching for 
+nash equilibria 
+the definition are the expected utilities 
+there are other 
+notions of dominance such as very weak dominance in which 
+no strict inequality is required so two strategies can 
+dominate each other but we will not study them here when we 
+are looking at the dominance relations for player i the other 
+players −i can be thought of as a single player 
+ 
+therefore in the rest of the paper when we study one-shot not 
+iterated dominance we will focus without loss of generality 
+on two-player games 
+in two-player games we will 
+generally refer to the players as r row and c column rather 
+than and 
+in iterated dominance dominated strategies are removed 
+from the game and no longer have any effect on future 
+dominance relations iterated dominance can eliminate more 
+strategies than dominance as follows σr may originally 
+not dominate σr because the latter performs better against 
+σc but then once σc is removed because it is dominated by 
+σc σr dominates σr and the latter can be removed for 
+example in the following game r can be removed first after 
+which d is dominated 
+l r 
+u 
+d 
+either strict or weak dominance can be used in the 
+definition of iterated dominance we note that the process of 
+iterated dominance is never helped by removing a dominated 
+mixed strategy for the following reason if σi gives player i 
+a higher utility than σi against mixed strategy σj for player 
+j i and strategies σ− i j for the other players then for 
+at least one pure strategy σj that σj places positive 
+probability on σi must perform better than σi against σj and 
+strategies σ− i j for the other players thus removing the 
+mixed strategy σj does not introduce any new dominances 
+more detailed discussions and examples can be found in 
+standard texts on microeconomics or game theory 
+we are now ready to move on to the core of this paper 
+ dominance not iterated 
+in this section we study the notion of one-shot not 
+iterated dominance as a first observation checking whether a 
+given strategy is strictly weakly dominated by some pure 
+strategy is straightforward by checking for every pure 
+strategy for that player whether the latter strategy performs 
+strictly better against all the opponent s strategies at least 
+as well against all the opponent s strategies and strictly 
+ 
+the dominated strategy σi is of course also allowed to be 
+mixed but this has no technical implications for the paper 
+when we study one-shot dominance we ask whether a given 
+strategy is dominated and it does not matter whether the 
+given strategy is pure or mixed when we study iterated 
+dominance there is no use in eliminating mixed strategies 
+as we will see shortly 
+ 
+this player may have a very large strategy space one pure 
+strategy for every vector of pure strategies for the players 
+that are being replaced nevertheless this will not result in 
+an increase in our representation size because the original 
+representation already had to specify utilities for each of 
+these vectors 
+ 
+we note that a restriction to two-player games would not 
+be without loss of generality for iterated dominance this 
+is because for iterated dominance we need to look at the 
+dominated strategies of each individual player so we cannot 
+merge any players 
+ 
+better against at least one 
+next we show that 
+checking whether a given strategy is dominated by some mixed 
+strategy can be done in polynomial time by solving a single 
+linear program similar linear programs have been given 
+before we present the result here for completeness and 
+because we will build on the linear programs given below in 
+theorem 
+proposition given the row player s utilities a 
+subset dr of the row player s pure strategies σr and a 
+distinguished strategy σ 
+r for the row player we can check in time 
+polynomial in the size of the game by solving a single linear 
+program of polynomial size whether there exists some mixed 
+strategy σr that places positive probability only on strategies 
+in dr and dominates σ 
+r both for strict and for weak 
+dominance 
+proof let pdr be the probability that σr places on dr ∈ 
+dr we will solve a single linear program in each of our 
+algorithms linear programs can be solved in polynomial 
+time for strict dominance the question is whether the 
+pdr can be set so that for every pure strategy for the column 
+player σc ∈ σc 
+dr∈dr 
+pdr ur dr σc ur σ 
+r σc because 
+the inequality must be strict we cannot solve this directly 
+by linear programming we proceed as follows because the 
+game is finite we may assume without loss of generality that 
+all utilities are positive if not simply add a constant to all 
+utilities solve the following linear program 
+minimize 
+dr∈dr 
+pdr 
+such that 
+for any σc ∈ σc 
+dr∈dr 
+pdr ur dr σc ≥ ur σ 
+r σc 
+if σ 
+r is strictly dominated by some mixed strategy this 
+linear program has a solution with objective value 
+ the dominating strategy is a feasible solution with 
+objective value exactly because no constraint is binding for this 
+solution we can reduce one of the probabilities slightly 
+without affecting feasibility thereby obtaining a solution with 
+objective value moreover if this linear program has a 
+solution with objective value there is a mixed strategy 
+strictly dominating σ 
+r which can be obtained by taking the 
+lp solution and adding the remaining probability to any 
+strategy because all the utilities are positive this will add 
+to the left side of any inequality so all inequalities will 
+become strict 
+for weak dominance we can solve the following linear 
+program 
+maximize 
+σc∈σc 
+ 
+dr∈dr 
+pdr ur dr σc − ur σ 
+r σc 
+such that 
+for any σc ∈ σc 
+dr∈dr 
+pdr ur dr σc ≥ ur σ 
+r σc 
+dr∈dr 
+pdr 
+if σ 
+r is weakly dominated by some mixed strategy then 
+that mixed strategy is a feasible solution to this program 
+with objective value because for at least one strategy 
+σc ∈ σc we have 
+dr∈dr 
+pdr ur dr σc − ur σ 
+r σc on 
+the other hand if this program has a solution with 
+objective value then for at least one strategy σc ∈ σc we 
+ 
+recall that the assumption of a single opponent that is 
+the assumption of two players is without loss of generality 
+for one-shot dominance 
+must have 
+dr∈dr 
+pdr ur dr σc − ur σ 
+r σc and thus 
+the linear program s solution is a weakly dominating mixed 
+strategy 
+ iterated dominance 
+we now move on to iterated dominance it is well-known 
+that iterated strict dominance is path-independent 
+ that is if we remove dominated strategies until no more 
+dominated strategies remain in the end the remaining 
+strategies for each player will be the same regardless of the 
+order in which strategies are removed because of this to 
+see whether a given strategy can be eliminated by iterated 
+strict dominance all that needs to be done is to 
+repeatedly remove strategies that are strictly dominated until no 
+more dominated strategies remain because we can check in 
+polynomial time whether any given strategy is dominated 
+ whether or not dominance by mixed strategies is allowed 
+as described in section this whole procedure takes only 
+polynomial time in the case of iterated dominance by pure 
+strategies with two players knuth et al slightly 
+improve on speed up the straightforward implementation of 
+this procedure by keeping track of for each ordered pair of 
+strategies for a player the number of opponent strategies 
+that prevent the first strategy from dominating the second 
+hereby the runtime for an m × n game is reduced from 
+o m n 
+ to o m n 
+ actually they only study 
+very weak dominance for which no strict inequalities are 
+required but the approach is easily extended 
+in contrast iterated weak dominance is known to be 
+pathdependent 
+for example in the following game using 
+iterated weak dominance we can eliminate m first and then 
+d or r first and then u 
+l m r 
+u 
+d 
+therefore while the procedure of removing weakly 
+dominated strategies until no more weakly dominated strategies 
+remain can certainly be executed in polynomial time which 
+strategies survive in the end depends on the order in which 
+we remove the dominated strategies we will investigate 
+two questions for iterated weak dominance whether a given 
+strategy is eliminated in some path and whether there is a 
+path to a unique solution one pure strategy left per player 
+we will show that both of these problems are 
+computationally hard 
+definition given a game in normal form and a 
+distinguished strategy σ 
+ iwd-strategy-elimination 
+asks whether there is some path of iterated weak dominance 
+that eliminates σ 
+ given a game in normal form 
+iwdunique-solution asks whether there is some path of 
+iterated weak dominance that leads to a unique solution one 
+strategy left per player 
+the following lemma shows a special case of normal form 
+games in which allowing for weak dominance by mixed 
+strategies in addition to weak dominance by pure strategies does 
+ 
+there is however a restriction of weak dominance called 
+nice weak dominance which is path-independent for 
+an overview of path-independence results see apt 
+ 
+not help we will prove the hardness results in this setting 
+so that they will hold whether or not dominance by mixed 
+strategies is allowed 
+lemma suppose that all the utilities in a game are in 
+ then every pure strategy that is weakly dominated by 
+a mixed strategy is also weakly dominated by a pure strategy 
+proof suppose pure strategy σ is weakly dominated by 
+mixed strategy σ 
+ if σ gets a utility of against some 
+opponent strategy or vector of opponent strategies if there 
+are more than players then all the pure strategies that 
+σ 
+places positive probability on must also get a utility of 
+against that opponent strategy or else the expected utility 
+would be smaller than moreover at least one of the 
+pure strategies that σ 
+places positive probability on must 
+get a utility of against an opponent strategy that σ gets 
+ against or else the inequality would never be strict it 
+follows that this pure strategy weakly dominates σ 
+we are now ready to prove the main results of this section 
+theorem iwd-strategy-elimination is 
+npcomplete even with players and with and being the 
+only utilities occurring in the matrix-whether or not 
+dominance by mixed strategies is allowed 
+proof the problem is in np because given a sequence 
+of strategies to be eliminated we can easily check whether 
+this is a valid sequence of eliminations even when 
+dominance by mixed strategies is allowed using proposition 
+to show that the problem is np-hard we reduce an 
+arbitrary satisfiability instance given by a nonempty set of 
+clauses c over a nonempty set of variables v with 
+corresponding literals l v v ∈ v ∪ −v v ∈ v to the 
+following iwd-strategy-elimination instance in 
+this instance we will specify that certain strategies are 
+uneliminable a strategy σr can be made uneliminable even 
+when and are the only allowed utilities by adding 
+another strategy σr and another opponent strategy σc so that 
+ σr and σr are the only strategies that give the row player 
+a utility of against σc σr and σr always give the row 
+player the same utility σc is the only strategy that gives 
+the column player a utility of against σr but otherwise 
+σc always gives the column player utility this makes it 
+impossible to eliminate any of these three strategies we 
+will not explicitly specify the additional strategies to make 
+the proof more legible 
+in this proof we will denote row player strategies by s and 
+column player strategies by t to improve legibility let the 
+row player s pure strategy set be given as follows for every 
+variable v ∈ v the row player has corresponding strategies 
+s 
+ v s 
+ v s 
+−v s 
+−v additionally the row player has the 
+following strategies s 
+ and s 
+ where s 
+ σ 
+r that is it is 
+the strategy we seek to eliminate finally for every clause 
+c ∈ c the row player has corresponding strategies s 
+c 
+ uneliminable and s 
+c let the column player s pure strategy set 
+be given as follows for every variable v ∈ v the column 
+player has a corresponding strategy tv for every clause 
+c ∈ c the column player has a corresponding strategy tc 
+and additionally for every literal l ∈ l that occurs in c a 
+strategy tc l for every variable v ∈ v the column player 
+has corresponding strategies t v t−v both uneliminable 
+finally the column player has three additional strategies 
+t 
+ uneliminable t 
+ and t 
+the utility function for the row player is given as follows 
+ ur s 
+ v tv for all v ∈ v 
+ ur s 
+ v tv for all v ∈ v 
+ ur s 
+−v tv for all v ∈ v 
+ ur s 
+−v tv for all v ∈ v 
+ ur s 
+ v t for all v ∈ v 
+ ur s 
+ v t for all v ∈ v 
+ ur s 
+−v t for all v ∈ v 
+ ur s 
+−v t for all v ∈ v 
+ ur sb 
+ v t v for all v ∈ v and b ∈ 
+ ur sb 
+−v t−v for all v ∈ v and b ∈ 
+ ur sl t otherwise for all l ∈ l and t ∈ s 
+ ur s 
+ tc for all c ∈ c 
+ ur s 
+ tc for all c ∈ c 
+ ur sb 
+ t 
+ for all b ∈ 
+ ur s 
+ t 
+ 
+ ur s 
+ t 
+ 
+ ur sb 
+ t otherwise for all b ∈ and t ∈ s 
+ ur sb 
+c t otherwise for all c ∈ c and b ∈ 
+and the row player s utility is in every other case the 
+utility function for the column player is given as follows 
+ uc s tv for all v ∈ v and s ∈ s 
+ uc s t for all s ∈ s 
+ uc s 
+l tc for all c ∈ c and l ∈ l where l ∈ c 
+ literal l occurs in clause c 
+ uc s 
+l 
+ tc l for all c ∈ c and l l ∈ l l l 
+where l ∈ c 
+ uc s 
+c tc for all c ∈ c 
+ uc s 
+c tc for all c ∈ c 
+ uc sb 
+c tc l for all c ∈ c l ∈ l and b ∈ 
+ uc s tc uc s tc l otherwise for all c ∈ c and 
+l ∈ l 
+and the column player s utility is in every other case we 
+now show that the two instances are equivalent 
+first suppose there is a solution to the satisfiability 
+instance that is a truth-value assignment to the variables in 
+v such that all clauses are satisfied then consider the 
+following sequence of eliminations in our game for every 
+variable v that is set to true in the assignment eliminate 
+tv which gives the column player utility everywhere 
+then for every variable v that is set to true in the 
+assignment eliminate s 
+ v using s 
+ v which is possible because tv 
+has been eliminated and because t has not been eliminated 
+ yet now eliminate t which gives the column player 
+utility everywhere next for every variable v that is set 
+to false in the assignment eliminate s 
+−v using s 
+−v which 
+is possible because t has been eliminated and because tv 
+has not been eliminated yet for every clause c which 
+has the variable corresponding to one of its positive literals 
+l v set to true in the assignment eliminate tc using tc l 
+ which is possible because s 
+l has been eliminated and s 
+c 
+has not been eliminated yet for every clause c which 
+has the variable corresponding to one of its negative literals 
+l −v set to false in the assignment eliminate tc using tc l 
+ 
+ which is possible because s 
+l has been eliminated and s 
+c has 
+not been eliminated yet because the assignment 
+satisfied the formula all the tc have now been eliminated thus 
+we can eliminate s 
+ σ 
+r using s 
+ it follows that there is a 
+solution to the iwd-strategy-elimination instance 
+now suppose there is a solution to the 
+iwd-strategyelimination instance by lemma we can assume that 
+all the dominances are by pure strategies we first observe 
+that only s 
+ can eliminate s 
+ σ 
+r because it is the only 
+other strategy that gets the row player a utility of against 
+t 
+ and t 
+ is uneliminable however because s 
+ performs 
+better than s 
+ against the tc strategies it follows that all of 
+the tc strategies must be eliminated for each c ∈ c the 
+strategy tc can only be eliminated by one of the strategies tc l 
+ with the same c because these are the only other strategies 
+that get the column player a utility of against s 
+c and s 
+c is 
+uneliminable but in order for some tc l to eliminate tc s 
+l 
+must be eliminated first only s 
+l can eliminate s 
+l because 
+it is the only other strategy that gets the row player a utility 
+of against tl and tl is uneliminable we next show that for 
+every v ∈ v only one of s 
+ v s 
+−v can be eliminated this 
+is because in order for s 
+ v to eliminate s 
+ v tv needs to 
+have been eliminated and t not so tv must be eliminated 
+before t but in order for s 
+−v to eliminate s 
+−v t needs to 
+have been eliminated and tv not so t must be eliminated 
+before tv so set v to true if s 
+ v is eliminated and to false 
+otherwise because by the above for every clause c one of 
+the s 
+l with l ∈ c must be eliminated it follows that this is 
+a satisfying assignment to the satisfiability instance 
+using theorem it is now relatively easy to show that 
+iwd-unique-solution is also np-complete under the 
+same restrictions 
+theorem iwd-unique-solution is np-complete 
+even with players and with and being the only 
+utilities occurring in the matrix-whether or not dominance by 
+mixed strategies is allowed 
+proof again the problem is in np because we can 
+nondeterministically choose the sequence of eliminations and 
+verify whether it is correct to show np-hardness we reduce 
+an arbitrary iwd-strategy-elimination instance to 
+the following iwd-unique-solution instance let all 
+the strategies for each player from the original instance 
+remain part of the new instance and let the utilities resulting 
+from the players playing a pair of these strategies be the 
+same we add three additional strategies σ 
+r σ 
+r σ 
+r for the 
+row player and three additional strategies σ 
+c σ 
+c σ 
+c for the 
+column player let the additional utilities be as follows 
+ ur σr σj 
+c for all σr ∈ σ 
+r σ 
+r σ 
+r and j ∈ 
+ ur σi 
+r σc for all i ∈ and σc ∈ σ 
+c σ 
+c 
+ ur σi 
+r σ 
+c for all i ∈ 
+ ur σ 
+r σ 
+c 
+ and the row player s utility is in all other cases 
+involving a new strategy 
+ uc σ 
+r σc for all σc ∈ σ 
+c σ 
+c σ 
+c 
+ uc σ 
+r σj 
+c for all j ∈ σ 
+r is the strategy to 
+be eliminated in the original instance 
+ uc σi 
+r σ 
+c for all i ∈ 
+ ur σ 
+r σ 
+c 
+ ur σ 
+r σ 
+c 
+ and the column player s utility is in all other cases 
+involving a new strategy 
+we proceed to show that the two instances are equivalent 
+first suppose there exists a solution to the original 
+iwdstrategy-elimination instance then perform the 
+same sequence of eliminations to eliminate σ 
+r in the new 
+iwd-unique-solution instance this is possible 
+because at any stage any weak dominance for the row player 
+in the original instance is still a weak dominance in the new 
+instance because the two strategies utilities for the row 
+player are the same when the column player plays one of the 
+new strategies and the same is true for the column player 
+once σ 
+r is eliminated let σ 
+c eliminate σ 
+c it performs 
+better against σ 
+r then let σ 
+r eliminate all the other 
+remaining strategies for the row player it always performs 
+better against either σ 
+c or σ 
+c finally σ 
+c is the unique best 
+response against σ 
+r among the column player s remaining 
+strategies so let it eliminate all the other remaining 
+strategies for the column player thus there exists a solution to 
+the iwd-unique-solution instance 
+now suppose there exists a solution to the 
+iwd-uniquesolution instance by lemma we can assume that all 
+the dominances are by pure strategies we will show that 
+none of the new strategies σ 
+r σ 
+r σ 
+r σ 
+c σ 
+c σ 
+c can either 
+eliminate another strategy or be eliminated before σ 
+r is 
+eliminated thus there must be a sequence of eliminations 
+ending in the elimination of σ 
+r which does not involve any of 
+the new strategies and is therefore a valid sequence of 
+eliminations in the original game because all original strategies 
+perform the same against each new strategy we now show 
+that this is true by exhausting all possibilities for the first 
+elimination before σ 
+r is eliminated that involves a new 
+strategy none of the σi 
+r can be eliminated by a σr ∈ σ 
+r σ 
+r σ 
+r 
+because the σi 
+r perform better against σ 
+c σ 
+r cannot 
+eliminate any other strategy because it always performs poorer 
+against σ 
+c σ 
+r and σ 
+r are equivalent from the row player s 
+perspective and thus cannot eliminate each other and 
+cannot eliminate any other strategy because they always 
+perform poorer against σ 
+c none of the σj 
+c can be eliminated 
+by a σc ∈ σ 
+c σ 
+c σ 
+c because the σj 
+c always perform 
+better against either σ 
+r or σ 
+r σ 
+c cannot eliminate any other 
+strategy because it always performs poorer against either 
+σ 
+r or σ 
+r σ 
+c cannot eliminate any other strategy because 
+it always performs poorer against σ 
+r or σ 
+r σ 
+c cannot 
+eliminate any other strategy because it always performs poorer 
+against σ 
+r or σ 
+r thus there exists a solution to the 
+iwdstrategy-elimination instance 
+a slightly weaker version of the part of theorem 
+concerning dominance by pure strategies only is the main result 
+of gilboa et al besides not proving the result for 
+dominance by mixed strategies the original result was weaker 
+because it required utilities rather than 
+just and because of this our lemma cannot be 
+applied to it to get the result for mixed strategies 
+ iterated dominance using 
+mixed strategies with small 
+supports 
+when showing that a strategy is dominated by a mixed 
+strategy there are several reasons to prefer exhibiting a 
+ 
+dominating strategy that places positive probability on as 
+few pure strategies as possible first this will reduce the 
+number of bits required to specify the dominating 
+strategy and thus the proof of dominance can be communicated 
+quicker if the dominating mixed strategy places positive 
+probability on only k strategies then it can be specified 
+using k real numbers for the probabilities plus k log m where 
+m is the number of strategies for the player under 
+consideration bits to indicate which strategies are used second 
+the proof of dominance will be cleaner for a dominating 
+mixed strategy it is typically always in the case of strict 
+dominance possible to spread some of the probability onto 
+any unused pure strategy and still have a dominating 
+strategy but this obscures which pure strategies are the ones that 
+are key in making the mixed strategy dominating third 
+because by the previous the argument for eliminating the 
+dominated strategy is simpler and easier to understand it is 
+more likely to be accepted fourth the level of risk 
+neutrality required for the argument to work is reduced at least in 
+the extreme case where dominance by a single pure strategy 
+can be exhibited no risk neutrality is required here 
+this motivates the following problem 
+definition minimum-dominating-set we 
+are given the row player s utilities of a game in normal form 
+a distinguished strategy σ 
+for the row player a specification 
+of whether the dominance should be strict or weak and a 
+number k we are asked whether there exists a mixed 
+strategy σ for the row player that places positive probability on 
+at most k pure strategies and dominates σ 
+in the required 
+sense 
+unfortunately this problem is np-complete 
+theorem minimum-dominating-set is 
+npcomplete both for strict and for weak dominance 
+proof the problem is in np because we can 
+nondeterministically choose a set of at most k strategies to give 
+positive probability and decide whether we can dominate 
+σ 
+with these k strategies as described in proposition to 
+show np-hardness we reduce an arbitrary set-cover 
+instance given a set s subsets s s sr and a number 
+t can all of s be covered by at most t of the subsets 
+to the following minimum-dominating-set instance 
+for every element s ∈ s there is a pure strategy σs for 
+the column player for every subset si there is a pure 
+strategy σsi for the row player finally there is the 
+distinguished pure strategy σ 
+for the row player the row 
+player s utilities are as follows ur σsi σs t if s ∈ si 
+ur σsi σs if s ∈ si ur σ 
+ σs for all s ∈ s 
+finally we let k t we now proceed to show that the two 
+instances are equivalent 
+first suppose there exists a solution to the set-cover 
+instance without loss of generality we can assume that 
+there are exactly k subsets in the cover then for every 
+si that is in the cover let the dominating strategy σ place 
+exactly 
+k 
+probability on the corresponding pure strategy 
+σsi now if we let n s be the number of subsets in the cover 
+containing s we observe that that n s ≥ then for every 
+strategy σs for the column player the row player s expected 
+utility for playing σ when the column player is playing σs is 
+u σ σs n s 
+k 
+ k ≥ k 
+k 
+ u σ 
+ σs so σ strictly 
+ and thus also weakly dominates σ 
+ and there exists a 
+solution to the minimum-dominating-set instance 
+now suppose there exists a solution to the 
+minimumdominating-set instance consider the at most k 
+pure strategies of the form σsi on which the dominating 
+mixed strategy σ places positive probability and let t be 
+the collection of the corresponding subsets si we claim that 
+t is a cover for suppose there is some s ∈ s that is not in 
+any of the subsets in t then if the column player plays σs 
+the row player when playing σ will always receive utility 
+ -as opposed to the utility of the row player would receive 
+for playing σ 
+ contradicting the fact that σ dominates σ 
+ whether this dominance is weak or strict it follows that 
+there exists a solution to the set-cover instance 
+on the other hand if we require that the dominating 
+strategy only places positive probability on a very small 
+number of pure strategies then it once again becomes easy 
+to check whether a strategy is dominated specifically to 
+find out whether player i s strategy σ 
+is dominated by 
+a strategy that places positive probability on only k pure 
+strategies we can simply check for every subset of k of 
+player i s pure strategies whether there is a strategy that 
+places positive probability only on these k strategies and 
+dominates σ 
+ using proposition this requires only 
+o σi k 
+ such checks thus if k is a constant this 
+constitutes a polynomial-time algorithm 
+a natural question to ask next is whether iterated strict 
+dominance remains computationally easy when dominating 
+strategies are required to place positive probability on at 
+most k pure strategies where k is a small constant we 
+have already shown in section that iterated weak 
+dominance is hard even when k that is only dominance by 
+pure strategies is allowed of course if iterated strict 
+dominance were path-independent under this restriction 
+computational easiness would follow as it did in section 
+however it turns out that this is not the case 
+observation if we restrict the dominating strategies 
+to place positive probability on at most two pure strategies 
+iterated strict dominance becomes path-dependent 
+proof consider the following game 
+ 
+ 
+ 
+ 
+ 
+let i j denote the outcome in which the row player plays 
+the ith row and the column player plays the jth column 
+because and are all nash equilibria none 
+of the column player s pure strategies will ever be eliminated 
+and neither will rows and we now observe that 
+randomizing uniformly over rows and dominates row 
+and randomizing uniformly over rows and dominates row 
+ however if we eliminate row first it becomes impossible 
+to dominate row without randomizing over at least pure 
+strategies 
+indeed iterated strict dominance turns out to be hard 
+even when k 
+theorem if we restrict the dominating strategies to 
+place positive probability on at most three pure strategies it 
+becomes np-complete to decide whether a given strategy can 
+be eliminated using iterated strict dominance 
+ 
+proof the problem is in np because given a sequence 
+of strategies to be eliminated we can check in polynomial 
+time whether this is a valid sequence of eliminations for any 
+strategy to be eliminated we can check for every subset of 
+three other strategies whether there is a strategy placing 
+positive probability on only these three strategies that 
+dominates the strategy to be eliminated using proposition 
+to show that the problem is np-hard we reduce an 
+arbitrary satisfiability instance given by a nonempty set of 
+clauses c over a nonempty set of variables v with 
+corresponding literals l v v ∈ v ∪ −v v ∈ v to the 
+following two-player game 
+for every variable v ∈ v the row player has strategies 
+s v s−v s 
+v s 
+v s 
+v s 
+v and the column player has strategies 
+t 
+v t 
+v t 
+v t 
+v for every clause c ∈ c the row player has a 
+strategy sc and the column player has a strategy tc as well 
+as for every literal l occurring in c an additional strategy 
+tl 
+c the row player has two additional strategies s and s 
+ s is the strategy that we are seeking to eliminate finally 
+the column player has one additional strategy t 
+the utility function for the row player is given as follows 
+ where is some sufficiently small number 
+ ur s v tj 
+v if j ∈ for all v ∈ v 
+ ur s v tj 
+v if j ∈ for all v ∈ v 
+ ur s−v tj 
+v if j ∈ for all v ∈ v 
+ ur s−v tj 
+v if j ∈ for all v ∈ v 
+ ur s v t ur s−v t for all v ∈ v and t ∈ 
+ t 
+v t 
+v t 
+v t 
+v 
+ ur si 
+v ti 
+v for all v ∈ v and i ∈ 
+ ur si 
+v t for all v ∈ v i ∈ and t ti 
+v 
+ ur sc tc for all c ∈ c 
+ ur sc t for all c ∈ c and t tc 
+ ur s t 
+ ur s t for all t t 
+ ur s t 
+ ur s tc for all c ∈ c 
+ ur s t for all t ∈ t ∪ tc c ∈ c 
+the utility function for the column player is given as 
+follows 
+ uc si 
+v ti 
+v for all v ∈ v and i ∈ 
+ uc s ti 
+v for all v ∈ v i ∈ and s si 
+v 
+ uc sc tc for all c ∈ c 
+ uc sl tc for all c ∈ c and l ∈ l occurring in c 
+ uc s tc for all c ∈ c and s ∈ sc ∪ sl l ∈ c 
+ uc sc tl 
+c for all c ∈ c 
+ uc sl tl 
+c for all c ∈ c and l l occurring in 
+c 
+ uc s tl 
+c for all c ∈ c and s ∈ sc ∪ sl l ∈ 
+c l l 
+ uc s t 
+ uc s t for all s s 
+we now show that the two instances are equivalent first 
+suppose that there is a solution to the satisfiability instance 
+then consider the following sequence of eliminations in our 
+game for every variable v that is set to true in the 
+satisfying assignment eliminate s v with the mixed strategy σr 
+that places probability on s−v probability on s 
+v 
+and probability on s 
+v the expected utility of 
+playing σr against t 
+v or t 
+v is against t 
+v or t 
+v it is 
+ and against anything else it is hence the 
+dominance is valid similarly for every variable v that 
+is set to false in the satisfying assignment eliminate s−v 
+with the mixed strategy σr that places probability on 
+s v probability on s 
+v and probability on s 
+v the 
+expected utility of playing σr against t 
+v or t 
+v is 
+against t 
+v or t 
+v it is and against anything else it 
+is hence the dominance is valid for every 
+c ∈ c eliminate tc with any tl 
+c for which l was set to true 
+in the satisfying assignment this is a valid dominance 
+because tl 
+c performs better than tc against any strategy other 
+than sl and we eliminated sl in step or in step 
+finally eliminate s with s this is a valid dominance 
+because s performs better than s against any strategy other 
+than those in tc c ∈ c which we eliminated in step 
+hence there is an elimination path that eliminates s 
+now suppose that there is an elimination path that 
+eliminates s the strategy that eventually dominates s must 
+place most of its probability on s because s is the only 
+other strategy that performs well against t which cannot 
+be eliminated before s but s performs significantly worse 
+than s against any strategy tc with c ∈ c so it follows that 
+all these strategies must be eliminated first each strategy 
+tc can only be eliminated by a strategy that places most 
+of its weight on the corresponding strategies tl 
+c with l ∈ c 
+because they are the only other strategies that perform well 
+against sc which cannot be eliminated before tc but each 
+strategy tl 
+c performs significantly worse than tc against sl 
+so it follows that for every clause c for one of the literals 
+l occurring in it sl must be eliminated first now 
+strategies of the form tj 
+v will never be eliminated because they are 
+the unique best responses to the corresponding strategies sj 
+v 
+ which are in turn the best responses to the corresponding 
+tj 
+v as a result if strategy s v respectively s−v is 
+eliminated then its opposite strategy s−v respectively s v can 
+no longer be eliminated for the following reason there is no 
+other pure strategy remaining that gets a significant utility 
+against more than one of the strategies t 
+v t 
+v t 
+v t 
+v but s−v 
+ respectively s v gets significant utility against all and 
+therefore cannot be dominated by a mixed strategy placing 
+positive probability on at most strategies it follows that 
+for each v ∈ v at most one of the strategies s v s−v is 
+eliminated in such a way that for every clause c for one 
+of the literals l occurring in it sl must be eliminated but 
+then setting all the literals l such that sl is eliminated to 
+true constitutes a solution to the satisfiability instance 
+in the next section we return to the setting where there 
+is no restriction on the number of pure strategies on which 
+a dominating mixed strategy can place positive probability 
+ iterated dominance in 
+bayesian games 
+so far we have focused on normal form games that are 
+flatly represented that is every matrix entry is given 
+ex 
+plicitly however for many games the flat representation 
+is too large to write down explicitly and instead some 
+representation that exploits the structure of the game needs to 
+be used bayesian games besides being of interest in their 
+own right can be thought of as a useful structured 
+representation of normal form games and we will study them in 
+this section 
+in a bayesian game each player first receives privately 
+held preference information the player s type from a 
+distribution which determines the utility that that player receives 
+for every outcome of that is vector of actions played in the 
+game after receiving this type the player plays an action 
+based on it 
+definition a bayesian game is given by a set of 
+players n and for each player i a finite set of 
+actions ai a finite type space θi with a probability 
+distribution πi over it and a utility function ui θi × a × a × 
+ × an → r where ui θi a a an denotes player 
+i s utility when i s type is θi and each player j plays action 
+aj a pure strategy in a bayesian game is a mapping from 
+types to actions σi θi → ai where σi θi denotes the 
+action that player i plays for type θi 
+any vector of pure strategies in a bayesian game defines 
+an expected utility for each player and therefore we can 
+translate a bayesian game into a normal form game in this 
+normal form game the notions of dominance and iterated 
+dominance are defined as before however the normal form 
+representation of the game is exponentially larger than the 
+bayesian representation because each player i has ai θi 
+distinct pure strategies thus any algorithm for bayesian 
+games that relies on expanding the game to its normal form 
+will require exponential time specifically our easiness 
+results for normal form games do not directly transfer to this 
+setting in fact it turns out that checking whether a 
+strategy is dominated by a pure strategy is hard in bayesian 
+games 
+theorem in a bayesian game it is np-complete to 
+decide whether a given pure strategy σr θr → ar is 
+dominated by some other pure strategy both for strict and weak 
+dominance even when the row player s distribution over 
+types is uniform 
+proof the problem is in np because it is easy to verify 
+whether a candidate dominating strategy is indeed a 
+dominating strategy to show that the problem is np-hard we 
+reduce an arbitrary satisfiability instance given by a set of 
+clauses c using variables from v to the following bayesian 
+game let the row player s action set be ar t f and 
+let the column player s action set be ac ac c ∈ c 
+let the row player s type set be θr θv v ∈ v with a 
+distribution πr that is uniform let the row player s utility 
+function be as follows 
+ ur θv ac for all v ∈ v and c ∈ c 
+ ur θv b ac v for all v ∈ v c ∈ c and b ∈ t f 
+such that setting v to b satisfies c 
+ ur θv b ac − for all v ∈ v c ∈ c and b ∈ t f 
+such that setting v to b does not satisfy c 
+ 
+in general a player can also receive a signal about the other 
+players preferences but we will not concern ourselves with 
+that here 
+let the pure strategy to be dominated be the one that 
+plays for every type we show that the strategy is 
+dominated by a pure strategy if and only if there is a solution to 
+the satisfiability instance 
+first suppose there is a solution to the satisfiability 
+instance then let σd 
+r be given by σd 
+r θv t if v is set 
+to true in the solution to the satisfiability instance and 
+σd 
+r θv f otherwise then against any action ac by the 
+column player there is at least one type θv such that either 
+ v ∈ c and σd 
+r θv t or −v ∈ c and σd 
+r θv f thus 
+the row player s expected utility against action ac is at least 
+ v 
+ v 
+− v − 
+ v 
+ 
+ v 
+ so σd 
+r is a dominating strategy 
+now suppose there is a dominating pure strategy σd 
+r 
+this dominating strategy must play t or f for at least one 
+type thus against any ac by the column player there must 
+at least be some type θv for which ur θv σd 
+r θv ac 
+that is there must be at least one variable v such that 
+setting v to σd 
+r θv satifies c but then setting each v to σd 
+r θv 
+must satisfy all the clauses so a satisfying assignment 
+exists 
+however it turns out that we can modify the linear 
+programs from proposition to obtain a polynomial time 
+algorithm for checking whether a strategy is dominated by a 
+mixed strategy in bayesian games 
+theorem in a bayesian game it can be decided in 
+polynomial time whether a given possibly mixed strategy 
+σr is dominated by some other mixed strategy using linear 
+programming both for strict and weak dominance 
+proof we can modify the linear programs presented in 
+proposition as follows for strict dominance again 
+assuming without loss of generality that all the utilities in 
+the game are positive use the following linear program in 
+which pσr 
+r θr ar is the probability that σr the strategy to 
+be dominated places on ar for type θr 
+minimize 
+θr∈θr ar∈ar 
+pr ar 
+such that 
+for any ac ∈ ac 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pr θr ar ≥ 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pσr 
+r θr ar 
+for any θr ∈ θr 
+ar∈ar 
+pr θr ar ≤ 
+assuming that π θr for all θr ∈ θr this program 
+will return an objective value smaller than θr if and only 
+if σr is strictly dominated by reasoning similar to that done 
+in proposition 
+for weak dominance use the following linear program 
+maximize 
+ac∈ac 
+ 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pr θr ar − 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pσr 
+r θr ar 
+such that 
+for any ac ∈ ac 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pr θr ar ≥ 
+θr∈θr ar∈ar 
+π θr ur θr ar ac pσr 
+r θr ar 
+for any θr ∈ θr 
+ar∈ar 
+pr θr ar 
+this program will return an objective value greater than 
+ if and only if σr is weakly dominated by reasoning similar 
+to that done in proposition 
+we now turn to iterated dominance in bayesian games 
+na¨ıvely one might argue that iterated dominance in bayesian 
+ 
+games always requires an exponential number of steps when 
+a significant fraction of the game s pure strategies can be 
+eliminated because there are exponentially many pure 
+strategies however this is not a very strong argument because 
+oftentimes we can eliminate exponentially many pure 
+strategies in one step for example if for some type θr ∈ θr we 
+have for all ac ∈ ac that u θr a 
+r ac u θr a 
+r ac then 
+any pure strategy for the row player which plays action a 
+r 
+for type θr is dominated by the strategy that plays 
+action a 
+r for type θr instead -and there are exponentially 
+many ar θr − 
+ such strategies it is therefore 
+conceivable that we need only polynomially many eliminations of 
+collections of a player s strategies however the following 
+theorem shows that this is not the case by giving an 
+example where an exponential number of iterations that is 
+alternations between the players in eliminating strategies 
+is required we emphasize that this is not a result about 
+computational complexity 
+theorem even in symmetric -player bayesian games 
+iterated dominance by pure strategies can require an 
+exponential number of iterations both for strict and weak 
+dominance even with only three actions per player 
+proof let each player i ∈ have n types 
+θ 
+i θ 
+i θn 
+i let each player i have actions ai bi ci 
+and let the utility function of each player be defined as 
+follows in the below i and i are shorthand for 
+i mod and i mod when used as player indices 
+also −∞ can be replaced by a sufficiently negative 
+number finally δ and should be chosen to be very small even 
+compared to − n 
+ and should be more than twice as 
+large as δ 
+ ui θ 
+i ai ci ci − 
+ ui θ 
+i ai si si for si ci or si ci 
+ ui θ 
+i bi si si − for si ai and si 
+ai 
+ ui θ 
+i bi si si −∞ for si ai or si 
+ai 
+ ui θ 
+i ci si si −∞ for all si si 
+ ui θj 
+i ai si si −∞ for all si si when j 
+ 
+ ui θj 
+i bi si si − for all si si when j 
+ ui θj 
+i ci si ci δ − − for all si when 
+j 
+ ui θj 
+i ci si si δ− for all si and si ci 
+when j 
+let the distribution over each player s types be given by 
+p θj 
+i −j 
+ with the exception that p θ 
+i − 
+ − n 
+ 
+we will be interested in eliminating strategies of the 
+following form play bi for type θ 
+i and play one of bi or ci 
+otherwise because the utility function is the same for any 
+type θj 
+i with j these strategies are effectively defined 
+by the total probability that they place on ci 
+which is 
+t 
+i − 
+ − n 
+ n 
+j tj 
+i −j 
+where tj 
+i if player i 
+ 
+note that the strategies are still pure strategies the 
+probability placed on an action by a strategy here is simply the 
+sum of the probabilities of the types for which the strategy 
+chooses that action 
+plays ci for type θj 
+i and otherwise this probability is 
+different for any two different strategies of the given form 
+and we have exponentially many different strategies of the 
+given form for any probability q which can be expressed 
+as t − 
+ − n 
+ n 
+j tj −j 
+ with all tj ∈ 
+let σi q denote the unique strategy of the given form for 
+player i which places a total probability of q on ci any 
+strategy that plays ci for type θ 
+i or ai for some type θj 
+i 
+with j can immediately be eliminated we will show 
+that after that we must eliminate the strategies σi q with 
+high q first slowly working down to those with lower q 
+claim if σi q and σi q have not yet been 
+eliminated and q q then σi q cannot yet be eliminated 
+proof first we show that no strategy σi q can 
+eliminate σi q against σi q σi q the utility of 
+playing σi p is − p · δ − p · q thus when q it is 
+best to set p as high as possible and we note that σi 
+and σi have not been eliminated but when q it 
+is best to set p as low as possible because δ q thus 
+whether q q or q q σi q will always do strictly 
+better than σi q against some remaining opponent 
+strategies hence no strategy σi q can eliminate σi q the 
+only other pure strategies that could dominate σi q are 
+strategies that play ai for type θ 
+i and bi or ci for all other 
+types let us take such a strategy and suppose that it plays 
+c with probability p against σi q σi q which have 
+not yet been eliminated the utility of playing this 
+strategy is − q 
+ − p · δ − p · q on the other hand 
+playing σi q gives − q · δ − q · q because q q we 
+have − q 
+ −q · q and because δ and are small 
+it follows that σi q receives a higher utility therefore no 
+strategy dominates σi q proving the claim 
+claim if for all q q σi q and σi q have been 
+eliminated then σi q can be eliminated proof consider 
+the strategy for player i that plays ai for type θ 
+i and bi for 
+all other types call this strategy σi we claim σi dominates 
+σi q first if either of the other players k plays ak for θ 
+k 
+then σi performs better than σi q which receives −∞ in 
+some cases because the strategies for player k that play 
+ck for type θ 
+k or ak for some type θj 
+k with j have 
+already been eliminated all that remains to check is that σi 
+performs better than σi q whenever both of the other two 
+players play strategies of the following form play bk for type 
+θ 
+k and play one of bk or ck otherwise we note that among 
+these strategies there are none left that place probability 
+greater than q on ck letting qk denote the probability with 
+which player k plays ck the expected utility of playing σi 
+is −qi · qi − on the other hand the utility of 
+playing σi q is − q · δ − q · qi because qi ≤ q the 
+difference between these two expressions is at least − δ 
+which is positive it follows that σi dominates σi q 
+from claim it follows that all strategies of the form 
+σi q will eventually be eliminated however claim shows 
+that we cannot go ahead and eliminate multiple such 
+strategies for one player unless at least one other player 
+simultaneously keeps up in the eliminated strategies every time 
+a σi q is eliminated such that σi q and σi q have 
+not yet been eliminated we need to eliminate one of the 
+latter two strategies before any σi q with q q can be 
+eliminated-that is we need to alternate between players 
+because there are exponentially many strategies of the form 
+σi q it follows that iterated elimination will require 
+exponentially many iterations to complete 
+ 
+it follows that an efficient algorithm for iterated 
+dominance strict or weak by pure strategies in bayesian games 
+if it exists must somehow be able to perform at least part 
+of many iterations in a single step of the algorithm because 
+if each step only performed a single iteration we would need 
+exponentially many steps interestingly knuth et al 
+argue that iterated dominance appears to be an inherently 
+sequential problem in light of their result that iterated very 
+weak dominance is p-complete that is apparently not 
+efficiently parallelizable suggesting that aggregating many 
+iterations may be difficult 
+ conclusions 
+while the nash equilibrium solution concept is studied 
+more and more intensely in our community the perhaps 
+more elementary concept of iterated dominance has 
+received much less attention in this paper we studied various 
+computational aspects of this concept 
+we first studied both strict and weak dominance not 
+iterated and showed that checking whether a given strategy 
+is dominated by some mixed strategy can be done in 
+polynomial time using a single linear program solve we then 
+moved on to iterated dominance we showed that 
+determining whether there is some path that eliminates a given 
+strategy is np-complete with iterated weak dominance this 
+allowed us to also show that determining whether there is a 
+path that leads to a unique solution is np-complete both 
+of these results hold both with and without dominance by 
+mixed strategies a weaker version of the second result 
+ only without dominance by mixed strategies was already 
+known iterated strict dominance on the other hand 
+is path-independent both with and without dominance by 
+mixed strategies and can therefore be done in polynomial 
+time 
+we then studied what happens when the dominating 
+strategy is allowed to place positive probability on only a few pure 
+strategies first we showed that finding the dominating 
+strategy with minimum support size is np-complete both 
+for strict and weak dominance then we showed that 
+iterated strict dominance becomes path-dependent when there 
+is a limit on the support size of the dominating strategies 
+and that deciding whether a given strategy can be 
+eliminated by iterated strict dominance under this restriction is 
+np-complete even when the limit on the support size is 
+finally we studied dominance and iterated dominance in 
+bayesian games as an example of a concise representation 
+language for normal form games that is interesting in its own 
+right we showed that unlike in normal form games 
+deciding whether a given pure strategy is dominated by another 
+pure strategy in a bayesian game is np-complete both with 
+strict and weak dominance however deciding whether a 
+strategy is dominated by some mixed strategy can still be 
+done in polynomial time with a single linear program solve 
+ both with strict and weak dominance finally we showed 
+that iterated dominance using pure strategies can require an 
+exponential number of iterations in a bayesian game both 
+with strict and weak dominance 
+there are various avenues for future research first there 
+is the open question of whether it is possible to complete 
+iterated dominance in bayesian games in polynomial time 
+ even though we showed that an exponential number of 
+alternations between the players in eliminating strategies is 
+sometimes required second we can study computational 
+aspects of iterated dominance in concise representations 
+of normal form games other than bayesian games-for 
+example in graphical games or local-effect action graph 
+games how to efficiently perform iterated very weak 
+dominance has already been studied for partially observable 
+stochastic games finally we can ask whether some of 
+the algorithms we described such as the one for iterated 
+strict dominance with mixed strategies can be made faster 
+ references 
+ krzysztof r apt uniform proofs of order independence for 
+various strategy elimination procedures contributions to 
+theoretical economics 
+ nivan a r bhat and kevin leyton-brown computing 
+nash equilibria of action-graph games in uai 
+ ben blum christian r shelton and daphne koller a 
+continuation method for nash equilibria in structured 
+games in ijcai 
+ vincent conitzer and tuomas sandholm complexity 
+results about nash equilibria in ijcai pages - 
+ 
+ drew fudenberg and jean tirole game theory mit 
+press 
+ itzhak gilboa ehud kalai and eitan zemel on the order 
+of eliminating dominated strategies operations research 
+letters - 
+ itzhak gilboa ehud kalai and eitan zemel the 
+complexity of eliminating dominated strategies 
+mathematics of operation research - 
+ eric a hansen daniel s bernstein and shlomo 
+zilberstein dynamic programming for partially observable 
+stochastic games in aaai pages - 
+ michael kearns michael littman and satinder singh 
+graphical models for game theory in uai 
+ leonid khachiyan a polynomial algorithm in linear 
+programming soviet math doklady - 
+ donald e knuth christos h papadimitriou and john n 
+tsitsiklis a note on strategy elimination in bimatrix 
+games operations research letters - 
+ kevin leyton-brown and moshe tennenholtz local-effect 
+games in ijcai 
+ richard lipton evangelos markakis and aranyak mehta 
+playing large games using simple strategies in acm-ec 
+pages - 
+ michael littman and peter stone a polynomial-time nash 
+equilibrium algorithm for repeated games in acm-ec 
+pages - 
+ leslie m marx and jeroen m swinkels order 
+independence for iterated weak dominance games and 
+economic behavior - 
+ leslie m marx and jeroen m swinkels corrigendum 
+order independence for iterated weak dominance games 
+and economic behavior - 
+ andreu mas-colell michael whinston and jerry r green 
+microeconomic theory oxford university press 
+ roger myerson game theory analysis of conflict 
+harvard university press cambridge 
+ martin j osborne and ariel rubinstein a course in 
+game theory mit press 
+ christos papadimitriou algorithms games and the 
+internet in stoc pages - 
+ ryan porter eugene nudelman and yoav shoham simple 
+search methods for finding a nash equilibrium in aaai 
+pages - 
+ 

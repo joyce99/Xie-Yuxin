@@ -1,0 +1,928 @@
+graphical models for online solutions to interactive 
+pomdps 
+prashant doshi 
+dept of computer science 
+university of georgia 
+athens ga usa 
+pdoshi cs uga edu 
+yifeng zeng 
+dept of computer science 
+aalborg university 
+dk- aalborg denmark 
+yfzeng cs aau edu 
+qiongyu chen 
+dept of computer science 
+national univ of singapore 
+ singapore 
+chenqy comp nus edu sg 
+abstract 
+we develop a new graphical representation for interactive partially 
+observable markov decision processes i-pomdps that is 
+significantly more transparent and semantically clear than the previous 
+representation these graphical models called interactive dynamic 
+influence diagrams i-dids seek to explicitly model the structure 
+that is often present in real-world problems by decomposing the 
+situation into chance and decision variables and the dependencies 
+between the variables i-dids generalize dids which may be viewed 
+as graphical representations of pomdps to multiagent settings in 
+the same way that i-pomdps generalize pomdps i-dids may be 
+used to compute the policy of an agent online as the agent acts and 
+observes in a setting that is populated by other interacting agents 
+using several examples we show how i-dids may be applied and 
+demonstrate their usefulness 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent systems 
+general terms 
+theory 
+ introduction 
+interactive partially observable markov decision processes 
+ ipomdps provide a framework for sequential decision-making 
+in partially observable multiagent environments they generalize 
+pomdps to multiagent settings by including the other agents 
+computable models in the state space along with the states of the 
+physical environment the models encompass all information 
+influencing the agents behaviors including their preferences 
+capabilities and beliefs and are thus analogous to types in bayesian 
+games i-pomdps adopt a subjective approach to 
+understanding strategic behavior rooted in a decision-theoretic framework that 
+takes a decision-maker s perspective in the interaction 
+in polich and gmytrasiewicz introduced interactive 
+dynamic influence diagrams i-dids as the computational 
+representations of i-pomdps i-dids generalize dids which may 
+be viewed as computational counterparts of pomdps to 
+multiagents settings in the same way that i-pomdps generalize pomdps 
+i-dids contribute to a growing line of work that includes 
+multi-agent influence diagrams maids and more recently 
+networks of influence diagrams nids these formalisms seek 
+to explicitly model the structure that is often present in real-world 
+problems by decomposing the situation into chance and decision 
+variables and the dependencies between the variables maids 
+provide an alternative to normal and extensive game forms using 
+a graphical formalism to represent games of imperfect information 
+with a decision node for each agent s actions and chance nodes 
+capturing the agent s private information maids objectively 
+analyze the game efficiently computing the nash equilibrium profile 
+by exploiting the independence structure nids extend maids to 
+include agents uncertainty over the game being played and over 
+models of the other agents each model is a maid and the network 
+of maids is collapsed bottom up into a single maid for 
+computing the equilibrium of the game keeping in mind the different 
+models of each agent graphical formalisms such as maids and nids 
+open up a promising area of research that aims to represent 
+multiagent interactions more transparently however maids provide an 
+analysis of the game from an external viewpoint and the 
+applicability of both is limited to static single play games matters are more 
+complex when we consider interactions that are extended over time 
+where predictions about others future actions must be made using 
+models that change as the agents act and observe i-dids address 
+this gap by allowing the representation of other agents models as 
+the values of a special model node both other agents models and 
+the original agent s beliefs over these models are updated over time 
+using special-purpose implementations 
+in this paper we improve on the previous preliminary 
+representation of the i-did shown in by using the insight that the static 
+i-id is a type of nid thus we may utilize nid-specific language 
+constructs such as multiplexers to represent the model node and 
+subsequently the i-id more transparently furthermore we clarify 
+the semantics of the special purpose policy link introduced in the 
+representation of i-did by and show that it could be replaced 
+by traditional dependency links in the previous representation of 
+the i-did the update of the agent s belief over the models of others 
+as the agents act and receive observations was denoted using a 
+special link called the model update link that connected the model 
+nodes over time we explicate the semantics of this link by 
+showing how it can be implemented using the traditional dependency 
+links between the chance nodes that constitute the model nodes 
+the net result is a representation of i-did that is significantly more 
+transparent semantically clear and capable of being implemented 
+using the standard algorithms for solving dids we show how 
+idids may be used to model an agent s uncertainty over others 
+models that may themselves be i-dids solution to the i-did is 
+a policy that prescribes what the agent should do over time given 
+its beliefs over the physical state and others models analogous to 
+dids i-dids may be used to compute the policy of an agent online 
+as the agent acts and observes in a setting that is populated by other 
+interacting agents 
+ background finitely nested 
+ipomdps 
+interactive pomdps generalize pomdps to multiagent settings 
+by including other agents models as part of the state space 
+since other agents may also reason about others the interactive 
+state space is strategically nested it contains beliefs about other 
+agents models and their beliefs about others for simplicity of 
+presentation we consider an agent i that is interacting with one 
+other agent j 
+a finitely nested i-pomdp of agent i with a strategy level l is 
+defined as the tuple 
+i-pomdpi l isi l a ti ωi oi ri 
+where isi l denotes a set of interactive states defined as isi l 
+s × mj l− where mj l− θj l− ∪ smj for l ≥ and 
+isi s where s is the set of states of the physical 
+environment θj l− is the set of computable intentional models of agent 
+j θj l− bj l− ˆθj where the frame ˆθj a ωj tj oj rj 
+ocj here j is bayes rational and ocj is j s optimality criterion 
+smj is the set of subintentional models of j simple examples of 
+subintentional models include a no-information model and a 
+fictitious play model both of which are history independent 
+we give a recursive bottom-up construction of the interactive state 
+space below 
+isi s θj bj ˆθj bj ∈ δ isj 
+isi s × θj ∪ smj θj bj ˆθj bj ∈ δ isj 
+ 
+ 
+ 
+ 
+ 
+ 
+isi l s × θj l− ∪ smj θj l bj l ˆθj bj l ∈ δ isj l 
+similar formulations of nested spaces have appeared in 
+ a ai × aj is the set of joint actions of all agents in the 
+environment ti s ×a×s → describes the effect of the 
+joint actions on the physical states of the environment ωi is the 
+set of observations of agent i oi s × a × ωi → gives 
+the likelihood of the observations given the physical state and joint 
+action ri isi × a → r describes agent i s preferences over 
+its interactive states usually only the physical states will matter 
+agent i s policy is the mapping ω 
+i → δ ai where ω 
+i is 
+the set of all observation histories of agent i since belief over the 
+interactive states forms a sufficient statistic the policy can also 
+be represented as a mapping from the set of all beliefs of agent i to 
+a distribution over its actions δ isi → δ ai 
+ belief update 
+analogous to pomdps an agent within the i-pomdp 
+framework updates its belief as it acts and observes however there are 
+two differences that complicate the belief update in multiagent 
+settings when compared to single agent ones first since the state of 
+the physical environment depends on the actions of both agents i s 
+prediction of how the physical state changes has to be made based 
+on its prediction of j s actions second changes in j s models have 
+to be included in i s belief update specifically if j is intentional 
+then an update of j s beliefs due to its action and observation has 
+to be included in other words i has to update its belief based on 
+its prediction of what j would observe and how j would update 
+its belief if j s model is subintentional then j s probable 
+observations are appended to the observation history contained in the 
+model formally we have 
+pr ist 
+ at− 
+i bt− 
+i l β ist− mt− 
+j θt 
+j 
+bt− 
+i l ist− 
+ 
+× at− 
+j 
+pr at− 
+j θt− 
+j l− oi st 
+ at− 
+i at− 
+j ot 
+i 
+×ti st− 
+ at− 
+i at− 
+j st 
+ ot 
+j 
+oj st 
+ at− 
+i at− 
+j ot 
+j 
+×τ seθt 
+j 
+ bt− 
+j l− at− 
+j ot 
+j − bt 
+j l− 
+ 
+where β is the normalizing constant τ is if its argument is 
+otherwise it is pr at− 
+j θt− 
+j l− is the probability that at− 
+j is 
+bayes rational for the agent described by model θt− 
+j l− and se · 
+is an abbreviation for the belief update for a version of the belief 
+update when j s model is subintentional see 
+if agent j is also modeled as an i-pomdp then i s belief update 
+invokes j s belief update via the term seθt 
+j 
+ bt− 
+j l− at− 
+j ot 
+j 
+which in turn could invoke i s belief update and so on this 
+recursion in belief nesting bottoms out at the th 
+level at this level the 
+belief update of the agent reduces to a pomdp belief update 
+for 
+illustrations of the belief update additional details on i-pomdps 
+and how they compare with other multiagent frameworks see 
+ value iteration 
+each belief state in a finitely nested i-pomdp has an associated 
+value reflecting the maximum payoff the agent can expect in this 
+belief state 
+un 
+ bi l θi max 
+ai∈ai is∈isi l 
+eri is ai bi l is 
+γ 
+oi∈ωi 
+pr oi ai bi l un− 
+ seθi 
+ bi l ai oi θi 
+ 
+where eri is ai aj 
+ri is ai aj pr aj mj l− since 
+is s mj l− eq is a basis for value iteration in i-pomdps 
+agent i s optimal action a 
+i for the case of finite horizon with 
+discounting is an element of the set of optimal actions for the belief 
+state opt θi defined as 
+opt bi l θi argmax 
+ai∈ai is∈isi l 
+eri is ai bi l is 
+ γ 
+oi∈ωi 
+pr oi ai bi l un 
+ seθi 
+ bi l ai oi θi 
+ 
+ interactiveinfluencediagrams 
+a naive extension of influence diagrams ids to settings 
+populated by multiple agents is possible by treating other agents as 
+automatons represented using chance nodes however this approach 
+assumes that the agents actions are controlled using a probability 
+distribution that does not change over time interactive influence 
+diagrams i-ids adopt a more sophisticated approach by 
+generalizing ids to make them applicable to settings shared with other 
+agents who may act and observe and update their beliefs 
+ syntax 
+in addition to the usual chance decision and utility nodes 
+iids include a new type of node called the model node we show a 
+general level l i-id in fig a where the model node mj l− is 
+denoted using a hexagon we note that the probability distribution 
+over the chance node s and the model node together represents 
+agent i s belief over its interactive states in addition to the model 
+ 
+the th 
+level model is a pomdp other agent s actions are treated 
+as exogenous events and folded into the t o and r functions 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure a a generic level l i-id for agent i situated with one other agent j the hexagon is the model node mj l− whose structure we show in 
+ b members of the model node are i-ids themselves m 
+j l− m 
+j l− diagrams not shown here for simplicity whose decision nodes are mapped to 
+the corresponding chance nodes a 
+j a 
+j depending on the value of the node mod mj the distribution of each of the chance nodes is assigned to 
+the node aj c the transformed i-id with the model node replaced by the chance nodes and the relationships between them 
+node i-ids differ from ids by having a dashed link called the 
+policy link in between the model node and a chance node 
+aj that represents the distribution over the other agent s actions 
+given its model in the absence of other agents the model node and 
+the chance node aj vanish and i-ids collapse into traditional ids 
+the model node contains the alternative computational models 
+ascribed by i to the other agent from the set θj l− ∪ smj where 
+θj l− and smj were defined previously in section thus a 
+model in the model node may itself be an i-id or id and the 
+recursion terminates when a model is an id or subintentional because 
+the model node contains the alternative models of the other agent 
+as its values its representation is not trivial in particular some of 
+the models within the node are i-ids that when solved generate the 
+agent s optimal policy in their decision nodes each decision node 
+is mapped to the corresponding chance node say a 
+j in the 
+following way if opt is the set of optimal actions obtained by solving 
+the i-id or id then pr aj ∈ a 
+j 
+ op t 
+if aj ∈ opt 
+otherwise 
+borrowing insights from previous work we observe that the 
+model node and the dashed policy link that connects it to the 
+chance node aj could be represented as shown in fig b the 
+decision node of each level l − i-id is transformed into a chance 
+node as we mentioned previously so that the actions with the 
+largest value in the decision node are assigned uniform 
+probabilities in the chance node while the rest are assigned zero probability 
+the different chance nodes a 
+j a 
+j one for each model and 
+additionally the chance node labeled mod mj form the parents of the 
+chance node aj thus there are as many action nodes a 
+j a 
+j 
+in mj l− as the number of models in the support of agent i s 
+beliefs the conditional probability table of the chance node aj 
+is a multiplexer that assumes the distribution of each of the action 
+nodes a 
+j a 
+j depending on the value of mod mj the values of 
+mod mj denote the different models of j in other words when 
+mod mj has the value m 
+j l− the chance node aj assumes the 
+distribution of the node a 
+j and aj assumes the distribution of a 
+j 
+when mod mj has the value m 
+j l− the distribution over the 
+node mod mj is the agent i s belief over the models of j given a 
+physical state for more agents we will have as many model nodes 
+as there are agents notice that fig b clarifies the semantics of 
+the policy link and shows how it can be represented using the 
+traditional dependency links 
+in fig c we show the transformed i-id when the model node 
+is replaced by the chance nodes and relationships between them in 
+contrast to the representation in there are no special-purpose 
+policy links rather the i-id is composed of only those types of 
+nodes that are found in traditional ids and dependency 
+relationships between the nodes this allows i-ids to be represented and 
+implemented using conventional application tools that target ids 
+note that we may view the level l i-id as a nid specifically each 
+of the level l − models within the model node are blocks in the 
+nid see fig if the level l each block is a traditional id 
+otherwise if l each block within the nid may itself be a nid 
+note that within the i-ids or ids at each level there is only a 
+single decision node thus our nid does not contain any maids 
+figure a level l i-id represented as a nid the probabilities 
+assigned to the blocks of the nid are i s beliefs over j s models 
+conditioned on a physical state 
+ solution 
+the solution of an i-id proceeds in a bottom-up manner and is 
+implemented recursively we start by solving the level models 
+which if intentional are traditional ids their solutions provide 
+probability distributions over the other agents actions which are 
+entered in the corresponding chance nodes found in the model node 
+of the level i-id the mapping from the level models decision 
+nodes to the chance nodes is carried out so that actions with the 
+largest value in the decision node are assigned uniform 
+probabilities in the chance node while the rest are assigned zero probability 
+given the distributions over the actions within the different chance 
+nodes one for each model of the other agent the level i-id is 
+transformed as shown in fig c during the transformation the 
+conditional probability table cpt of the node aj is populated 
+such that the node assumes the distribution of each of the chance 
+nodes depending on the value of the node mod mj as we 
+mentioned previously the values of the node mod mj denote the 
+different models of the other agent and its distribution is the agent i s 
+belief over the models of j conditioned on the physical state the 
+transformed level i-id is a traditional id that may be solved 
+us the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ a b 
+figure a a generic two time-slice level l i-did for agent i in a setting with one other agent j notice the dotted model update link that denotes 
+the update of the models of j and the distribution over the models over time b the semantics of the model update link 
+ing the standard expected utility maximization method this 
+procedure is carried out up to the level l i-id whose solution gives 
+the non-empty set of optimal actions that the agent should perform 
+given its belief notice that analogous to ids i-ids are suitable for 
+online decision-making when the agent s current belief is known 
+ interactive dynamic influence 
+diagrams 
+interactive dynamic influence diagrams i-dids extend i-ids 
+ and nids to allow sequential decision-making over several time 
+steps just as dids are structured graphical representations of pomdps 
+i-dids are the graphical online analogs for finitely nested i-pomdps 
+i-dids may be used to optimize over a finite look-ahead given 
+initial beliefs while interacting with other possibly similar agents 
+ syntax 
+we depict a general two time-slice i-did in fig a in 
+addition to the model nodes and the dashed policy link what 
+differentiates an i-did from a did is the model update link shown as a 
+dotted arrow in fig a we explained the semantics of the model 
+node and the policy link in the previous section we describe the 
+model updates next 
+the update of the model node over time involves two steps first 
+given the models at time t we identify the updated set of models 
+that reside in the model node at time t recall from section 
+that an agent s intentional model includes its belief because the 
+agents act and receive observations their models are updated to 
+reflect their changed beliefs since the set of optimal actions for 
+a model could include all the actions and the agent may receive 
+any one of ωj possible observations the updated set at time step 
+t will have at most mt 
+j l− aj ωj models here mt 
+j l− 
+is the number of models at time step t aj and ωj are the largest 
+spaces of actions and observations respectively among all the 
+models second we compute the new distribution over the updated 
+models given the original distribution and the probability of the 
+agent performing the action and receiving the observation that led 
+to the updated model these steps are a part of agent i s belief 
+update formalized using eq 
+in fig b we show how the dotted model update link is 
+implemented in the i-did if each of the two level l − models 
+ascribed to j at time step t results in one action and j could make 
+one of two possible observations then the model node at time step 
+t contains four updated models mt 
+j l− mt 
+j l− mt 
+j l− and 
+mt 
+j l− these models differ in their initial beliefs each of which 
+is the result of j updating its beliefs due to its action and a possible 
+observation the decision nodes in each of the i-dids or dids that 
+represent the lower level models are mapped to the corresponding 
+figure transformed i-did with the model nodes and model update 
+link replaced with the chance nodes and the relationships in bold 
+chance nodes as mentioned previously next we describe how the 
+distribution over the updated set of models the distribution over the 
+chance node mod mt 
+j in mt 
+j l− is computed the probability 
+that j s updated model is say mt 
+j l− depends on the probability 
+of j performing the action and receiving the observation that led to 
+this model and the prior distribution over the models at time step 
+t because the chance node at 
+j assumes the distribution of each 
+of the action nodes based on the value of mod mt 
+j the 
+probability of the action is given by this chance node in order to obtain 
+the probability of j s possible observation we introduce the chance 
+node oj which depending on the value of mod mt 
+j assumes the 
+distribution of the observation node in the lower level model 
+denoted by mod mt 
+j because the probability of j s observations 
+depends on the physical state and the joint actions of both agents 
+the node oj is linked with st 
+ at 
+j and at 
+i 
+analogous to at 
+j 
+the conditional probability table of oj is also a multiplexer 
+modulated by mod mt 
+j finally the distribution over the prior models 
+at time t is obtained from the chance node mod mt 
+j in mt 
+j l− 
+consequently the chance nodes mod mt 
+j at 
+j and oj form the 
+parents of mod mt 
+j in mt 
+j l− notice that the model update 
+link may be replaced by the dependency links between the chance 
+nodes that constitute the model nodes in the two time slices in 
+fig we show the two time-slice i-did with the model nodes 
+replaced by the chance nodes and the relationships between them 
+chance nodes and dependency links that not in bold are standard 
+usually found in dids 
+expansion of the i-did over more time steps requires the 
+repetition of the two steps of updating the set of models that form the 
+ 
+note that oj represents j s observation at time t 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+values of the model node and adding the relationships between the 
+chance nodes as many times as there are model update links we 
+note that the possible set of models of the other agent j grows 
+exponentially with the number of time steps for example after t steps 
+there may be at most mt 
+j l− aj ωj t − 
+candidate models 
+residing in the model node 
+ solution 
+analogous to i-ids the solution to a level l i-did for agent i 
+expanded over t time steps may be carried out recursively for the 
+purpose of illustration let l and t the solution method uses 
+the standard look-ahead technique projecting the agent s action 
+and observation sequences forward from the current belief state 
+and finding the possible beliefs that i could have in the next time 
+step because agent i has a belief over j s models as well the 
+lookahead includes finding out the possible models that j could have in 
+the future consequently each of j s subintentional or level 
+models represented using a standard did in the first time step must be 
+solved to obtain its optimal set of actions these actions are 
+combined with the set of possible observations that j could make in that 
+model resulting in an updated set of candidate models that include 
+the updated beliefs that could describe the behavior of j beliefs 
+over this updated set of candidate models are calculated using the 
+standard inference methods using the dependency relationships 
+between the model nodes as shown in fig b we note the recursive 
+nature of this solution in solving agent i s level i-did j s level 
+dids must be solved if the nesting of models is deeper all models 
+at all levels starting from are solved in a bottom-up manner 
+we briefly outline the recursive algorithm for solving agent i s 
+algorithm for solving i-did 
+input level l ≥ i-id or level id t 
+expansion phase 
+ for t from to t − do 
+ if l ≥ then 
+populate mt 
+j l− 
+ for each mt 
+j in range mt 
+j l− do 
+ recursively call algorithm with the l − i-id or id 
+that represents mt 
+j and the horizon t − t 
+ map the decision node of the solved i-id or id 
+opt mt 
+j to a chance node aj 
+ for each aj in opt mt 
+j do 
+ for each oj in oj part of mt 
+j do 
+ update j s belief bt 
+j ← se bt 
+j aj oj 
+ mt 
+j ← new i-id or id with bt 
+j as the 
+initial belief 
+ range mt 
+j l− 
+∪ 
+← mt 
+j 
+ add the model node mt 
+j l− and the dependency links 
+between mt 
+j l− and mt 
+j l− shown in fig b 
+ add the chance decision and utility nodes for t time 
+slice and the dependency links between them 
+ establish the cpts for each chance node and utility node 
+look-ahead phase 
+ apply the standard look-ahead and backup method to solve 
+the expanded i-did 
+figure algorithm for solving a level l ≥ i-did 
+level l i-did expanded over t time steps with one other agent j in 
+fig we adopt a two-phase approach given an i-id of level l 
+ described previously in section with all lower level models also 
+represented as i-ids or ids if level the first step is to expand 
+the level l i-id over t time steps adding the dependency links and 
+the conditional probability tables for each node we particularly 
+focus on establishing and populating the model nodes lines - 
+note that range · returns the values lower level models of the 
+random variable given as input model node in the second phase 
+we use a standard look-ahead technique projecting the action and 
+observation sequences over t time steps in the future and backing 
+up the utility values of the reachable beliefs similar to i-ids the 
+i-dids reduce to dids in the absence of other agents 
+as we mentioned previously the -th level models are the 
+traditional dids their solutions provide probability distributions over 
+actions of the agent modeled at that level to i-dids at level given 
+probability distributions over other agent s actions the level 
+idids can themselves be solved as dids and provide probability 
+distributions to yet higher level models assume that the number 
+of models considered at each level is bound by a number m 
+solving an i-did of level l in then equivalent to solving o ml 
+ dids 
+ example applications 
+to illustrate the usefulness of i-dids we apply them to three 
+problem domains we describe in particular the formulation of 
+the i-did and the optimal prescriptions obtained on solving it 
+ followership-leadership in the multiagent 
+tiger problem 
+we begin our illustrations of using i-ids and i-dids with a slightly 
+modified version of the multiagent tiger problem discussed in 
+the problem has two agents each of which can open the right door 
+ or the left door ol or listen l in addition to hearing growls 
+ from the left gl or from the right gr when they listen the 
+agents also hear creaks from the left cl from the right cr or 
+no creaks s which noisily indicate the other agent s opening one 
+of the doors when any door is opened the tiger persists in its 
+original location with a probability of agent i hears growls with 
+a reliability of and creaks with a reliability of agent j 
+on the other hand hears growls with a reliability of thus 
+the setting is such that agent i hears agent j opening doors more 
+reliably than the tiger s growls this suggests that i could use j s 
+actions as an indication of the location of the tiger as we discuss 
+below each agent s preferences are as in the single agent game 
+discussed in the transition observation and reward 
+functions are shown in 
+a good indicator of the usefulness of normative methods for 
+decision-making like i-dids is the emergence of realistic social 
+behaviors in their prescriptions in settings of the persistent 
+multiagent tiger problem that reflect real world situations we demonstrate 
+followership between the agents and as shown in deception 
+among agents who believe that they are in a follower-leader type 
+of relationship in particular we analyze the situational and 
+epistemological conditions sufficient for their emergence the 
+followership behavior for example results from the agent knowing its own 
+weaknesses assessing the strengths preferences and possible 
+behaviors of the other and realizing that its best for it to follow the 
+other s actions in order to maximize its payoffs 
+let us consider a particular setting of the tiger problem in which 
+agent i believes that j s preferences are aligned with its own - both 
+of them just want to get the gold - and j s hearing is more reliable 
+in comparison to itself as an example suppose that j on listening 
+can discern the tiger s location of the times compared to i s 
+ accuracy additionally agent i does not have any initial 
+information about the tiger s location in other words i s single-level 
+nested belief bi assigns to each of the two locations of the 
+tiger in addition i considers two models of j which differ in j s 
+flat level initial beliefs this is represented in the level i-id 
+shown in fig a according to one model j assigns a 
+probability of that the tiger is behind the left door while the other 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure a level i-id of agent i b two level ids of agent j 
+whose decision nodes are mapped to the chance nodes a 
+j a 
+j in a 
+model assigns to that location see fig b agent i is 
+undecided on these two models of j if we vary i s hearing ability 
+and solve the corresponding level i-id expanded over three time 
+steps we obtain the normative behavioral policies shown in fig 
+that exhibit followership behavior if i s probability of correctly 
+hearing the growls is then as shown in the policy in fig a 
+i begins to conditionally follow j s actions i opens the same door 
+that j opened previously iff i s own assessment of the tiger s 
+location confirms j s pick if i loses the ability to correctly interpret 
+the growls completely it blindly follows j and opens the same door 
+that j opened previously fig b 
+figure emergence of a conditional followership and b blind 
+followership in the tiger problem behaviors of interest are in bold is 
+a wildcard and denotes any one of the observations 
+we observed that a single level of belief nesting - beliefs about 
+the other s models - was sufficient for followership to emerge in the 
+tiger problem however the epistemological requirements for the 
+emergence of leadership are more complex for an agent say j to 
+emerge as a leader followership must first emerge in the other agent 
+i as we mentioned previously if i is certain that its preferences 
+are identical to those of j and believes that j has a better sense 
+of hearing i will follow j s actions over time agent j emerges 
+as a leader if it believes that i will follow it which implies that 
+j s belief must be nested two levels deep to enable it to recognize 
+its leadership role realizing that i will follow presents j with an 
+opportunity to influence i s actions in the benefit of the collective 
+good or its self-interest alone for example in the tiger problem 
+let us consider a setting in which if both i and j open the correct 
+door then each gets a payoff of that is double the original if 
+j alone selects the correct door it gets the payoff of on the 
+other hand if both agents pick the wrong door their penalties are 
+cut in half in this setting it is in both j s best interest as well as the 
+collective betterment for j to use its expertise in selecting the 
+correct door and thus be a good leader however consider a slightly 
+different problem in which j gains from i s loss and is penalized 
+if i gains specifically let i s payoff be subtracted from j s 
+indicating that j is antagonistic toward i - if j picks the correct door 
+and i the wrong one then i s loss of becomes j s gain agent 
+j believes that i incorrectly thinks that j s preferences are those 
+that promote the collective good and that it starts off by believing 
+with confidence where the tiger is because i believes that its 
+preferences are similar to those of j and that j starts by believing 
+almost surely that one of the two is the correct location two level 
+ models of j i will start by following j s actions we show i s 
+normative policy on solving its singly-nested i-did over three time 
+steps in fig a the policy demonstrates that i will blindly 
+follow j s actions since the tiger persists in its original location with 
+a probability of i will select the same door again if j begins 
+the game with a probability that the tiger is on the right 
+solving j s i-did nested two levels deep results in the policy shown in 
+fig b even though j is almost certain that ol is the correct 
+action it will start by selecting or followed by ol agent j s 
+intention is to deceive i who it believes will follow j s actions so 
+as to gain in the second time step which is more than what j 
+would gain if it were to be honest 
+figure emergence of deception between agents in the tiger 
+problem behaviors of interest are in bold denotes as before a agent 
+i s policy demonstrating that it will blindly follow j s actions b even 
+though j is almost certain that the tiger is on the right it will start by 
+selecting or followed by ol in order to deceive i 
+ altruism and reciprocity in the public 
+good problem 
+the public good pg problem consists of a group of m 
+agents each of whom must either contribute some resource to a 
+public pot or keep it for themselves since resources contributed to 
+the public pot are shared among all the agents they are less 
+valuable to the agent when in the public pot however if all agents 
+choose to contribute their resources then the payoff to each agent 
+is more than if no one contributes since an agent gets its share of 
+the public pot irrespective of whether it has contributed or not the 
+dominating action is for each agent to not contribute and instead 
+free ride on others contributions however behaviors of human 
+players in empirical simulations of the pg problem differ from the 
+normative predictions the experiments reveal that many players 
+initially contribute a large amount to the public pot and continue 
+to contribute when the pg problem is played repeatedly though 
+in decreasing amounts many of these experiments report 
+that a small core group of players persistently contributes to the 
+public pot even when all others are defecting these experiments 
+also reveal that players who persistently contribute have altruistic 
+or reciprocal preferences matching expected cooperation of others 
+for simplicity we assume that the game is played between m 
+ agents i and j let each agent be initially endowed with xt 
+amount of resources while the classical pg game formulation 
+permits each agent to contribute any quantity of resources ≤ xt to 
+the public pot we simplify the action space by allowing two 
+possible actions each agent may choose to either contribute c a fixed 
+amount of the resources or not contribute the latter action is 
+dethe sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+noted as defect d we assume that the actions are not observable 
+to others the value of resources in the public pot is discounted 
+by ci for each agent i where ci is the marginal private return we 
+assume that ci so that the agent does not benefit enough that 
+it contributes to the public pot for private gain simultaneously 
+cim making collective contribution pareto optimal 
+i j c d 
+c cixt cjxt cixt − cp xt cjxt − p 
+d xt cixt − p cjxt − cp xt xt 
+table the one-shot pg game with punishment 
+in order to encourage contributions the contributing agents 
+punish free riders but incur a small cost for administering the 
+punishment let p be the punishment meted out to the defecting agent 
+and cp the non-zero cost of punishing for the contributing agent 
+for simplicity we assume that the cost of punishing is same for 
+both the agents the one-shot pg game with punishment is shown 
+in table let ci cj cp and if p xt − cixt then 
+defection is no longer a dominating action if p xt − cixt then 
+defection is the dominating action for both if p xt − cixt 
+then the game is not dominance-solvable 
+figure a level i-id of agent i b level ids of agent j with 
+decision nodes mapped to the chance nodes a 
+j and a 
+j in a 
+we formulate a sequential version of the pg problem with 
+punishment from the perspective of agent i though in the repeated pg 
+game the quantity in the public pot is revealed to all the agents after 
+each round of actions we assume in our formulation that it is 
+hidden from the agents each agent may contribute a fixed amount xc 
+or defect an agent on performing an action receives an observation 
+of plenty py or meager mr symbolizing the state of the 
+public pot notice that the observations are also indirectly indicative of 
+agent j s actions because the state of the public pot is influenced by 
+them the amount of resources in agent i s private pot is perfectly 
+observable to i the payoffs are analogous to table 
+borrowing from the empirical investigations of the pg problem we 
+construct level ids for j that model altruistic and non-altruistic 
+types fig b specifically our altruistic agent has a high 
+marginal private return cj is close to and does not punish others 
+who defect let xc and the level agent be punished half the 
+times it defects with one action remaining both types of agents 
+choose to contribute to avoid being punished with two actions 
+to go the altruistic type chooses to contribute while the other 
+defects this is because cj for the altruistic type is close to thus the 
+expected punishment p − cj which the altruistic type 
+avoids because cj for the non-altruistic type is less it prefers not 
+to contribute with three steps to go the altruistic agent contributes 
+to avoid punishment p − cj and the non-altruistic 
+type defects for greater than three steps while the altruistic agent 
+continues to contribute to the public pot depending on how close 
+its marginal private return is to the non-altruistic type prescribes 
+defection 
+we analyzed the decisions of an altruistic agent i modeled using 
+a level i-did expanded over time steps i ascribes the two level 
+ models mentioned previously to j see fig if i believes with 
+a probability that j is altruistic i chooses to contribute for each of 
+the three steps this behavior persists when i is unaware of whether 
+j is altruistic fig a and when i assigns a high probability to 
+j being the non-altruistic type however when i believes with a 
+probability that j is non-altruistic and will thus surely defect i 
+chooses to defect to avoid being punished and because its marginal 
+private return is less than these results demonstrate that the 
+behavior of our altruistic type resembles that found experimentally 
+the non-altruistic level agent chooses to defect regardless of how 
+likely it believes the other agent to be altruistic we analyzed the 
+behavior of a reciprocal agent type that matches expected 
+cooperation or defection the reciprocal type s marginal private return 
+is similar to that of the non-altruistic type however it obtains a 
+greater payoff when its action is similar to that of the other we 
+consider the case when the reciprocal agent i is unsure of whether 
+j is altruistic and believes that the public pot is likely to be half 
+full for this prior belief i chooses to defect on receiving an 
+observation of plenty i decides to contribute while an observation of 
+meager makes it defect fig b this is because an 
+observation of plenty signals that the pot is likely to be greater than half 
+full which results from j s action to contribute thus among the 
+two models ascribed to j its type is likely to be altruistic making 
+it likely that j will contribute again in the next time step agent i 
+therefore chooses to contribute to reciprocate j s action an 
+analogous reasoning leads i to defect when it observes a meager pot 
+with one action to go i believing that j contributes will choose to 
+contribute too to avoid punishment regardless of its observations 
+figure a an altruistic level agent always contributes b a 
+reciprocal agent i starts off by defecting followed by choosing to 
+contribute or defect based on its observation of plenty indicating that j is 
+likely altruistic or meager j is non-altruistic 
+ strategies in two-player poker 
+poker is a popular zero sum card game that has received much 
+attention among the ai research community as a testbed poker is 
+played among m ≥ players in which each player receives a hand 
+of cards from a deck while several flavors of poker with 
+varying complexity exist we consider a simple version in which each 
+player has three plys during which the player may either exchange 
+a card e keep the existing hand k fold f and withdraw from 
+the game or call c requiring all players to show their hands to 
+keep matters simple let m and each player receive a hand 
+consisting of a single card drawn from the same suit thus during 
+a showdown the player who has the numerically larger card is 
+the lowest ace is the highest wins the pot during an exchange of 
+cards the discarded card is placed either in the l pile indicating to 
+the other agent that it was a low numbered card less than or in the 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+h pile indicating that the card had a rank greater than or equal to 
+ notice that for example if a lower numbered card is discarded 
+the probability of receiving a low card in exchange is now reduced 
+we show the level i-id for the simplified two-player poker in 
+fig we considered two models personality types of agent j 
+the conservative type believes that it is likely that its opponent has 
+a high numbered card in its hand on the other hand the 
+aggressive agent j believes with a high probability that its opponent has 
+a lower numbered card thus the two types differ in their beliefs 
+over their opponent s hand in both these level models the 
+opponent is assumed to perform its actions following a fixed uniform 
+distribution with three actions to go regardless of its hand 
+ unless it is an ace the aggressive agent chooses to exchange its card 
+with the intent of improving on its current hand this is because it 
+believes the other to have a low card which improves its chances 
+of getting a high card during the exchange the conservative agent 
+chooses to keep its card no matter its hand because its chances of 
+getting a high card are slim as it believes that its opponent has one 
+figure a level i-id of agent i the observation reveals 
+information about j s hand of the previous time step b level ids of agent 
+j whose decision nodes are mapped to the chance nodes a 
+j a 
+j in a 
+the policy of a level agent i who believes that each card 
+except its own has an equal likelihood of being in j s hand neutral 
+personality type and j could be either an aggressive or 
+conservative type is shown in fig i s own hand contains the card 
+numbered the agent starts by keeping its card on seeing that 
+j did not exchange a card n i believes with probability that j 
+is conservative and hence will keep its cards i responds by either 
+keeping its card or exchanging it because j is equally likely to have 
+a lower or higher card if i observes that j discarded its card into 
+the l or h pile i believes that j is aggressive on observing l 
+i realizes that j had a low card and is likely to have a high card 
+after its exchange because the probability of receiving a low card 
+is high now i chooses to keep its card on observing h 
+believing that the probability of receiving a high numbered card is high 
+i chooses to exchange its card in the final step i chooses to call 
+regardless of its observation history because its belief that j has a 
+higher card is not sufficiently high to conclude that its better to fold 
+and relinquish the payoff this is partly due to the fact that an 
+observation of say l resets the agent i s previous time step beliefs 
+over j s hand to the low numbered cards only 
+ discussion 
+we showed how dids may be extended to i-dids that enable 
+online sequential decision-making in uncertain multiagent settings 
+our graphical representation of i-dids improves on the previous 
+figure a level agent i s three step policy in the poker problem 
+i starts by believing that j is equally likely to be aggressive or 
+conservative and could have any card in its hand with equal probability 
+work significantly by being more transparent semantically clear 
+and capable of being solved using standard algorithms that target 
+dids i-dids extend nids to allow sequential decision-making 
+over multiple time steps in the presence of other interacting agents 
+i-dids may be seen as concise graphical representations for 
+ipomdps providing a way to exploit problem structure and carry 
+out online decision-making as the agent acts and observes given its 
+prior beliefs we are currently investigating ways to solve i-dids 
+approximately with provable bounds on the solution quality 
+acknowledgment we thank piotr gmytrasiewicz for some 
+useful discussions related to this work the first author would like 
+to acknowledge the support of a ugarf grant 
+ references 
+ r j aumann interactive epistemology i knowledge international 
+journal of game theory - 
+ d billings a davidson j schaeffer and d szafron the challenge 
+of poker aij 
+ a brandenburger and e dekel hierarchies of beliefs and common 
+knowledge journal of economic theory - 
+ c camerer behavioral game theory experiments in strategic 
+interaction princeton university press 
+ e fehr and s gachter cooperation and punishment in public goods 
+experiments american economic review - 
+ d fudenberg and d k levine the theory of learning in games 
+mit press 
+ d fudenberg and j tirole game theory mit press 
+ y gal and a pfeffer a language for modeling agent s 
+decision-making processes in games in aamas 
+ p gmytrasiewicz and p doshi a framework for sequential planning 
+in multiagent settings jair - 
+ p gmytrasiewicz and e durfee rational coordination in 
+multi-agent environments jaamas - 
+ j c harsanyi games with incomplete information played by 
+bayesian players management science - 
+ r a howard and j e matheson influence diagrams in r a 
+howard and j e matheson editors the principles and applications 
+of decision analysis strategic decisions group menlo park ca 
+ 
+ l kaelbling m littman and a cassandra planning and acting in 
+partially observable stochastic domains artificial intelligence 
+journal 
+ d koller and b milch multi-agent influence diagrams for 
+representing and solving games in ijcai pages - 
+ k polich and p gmytrasiewicz interactive dynamic influence 
+diagrams in gtdt workshop aamas 
+ b rathnas p doshi and p j gmytrasiewicz exact solutions to 
+interactive pomdps using behavioral equivalence in autonomous 
+agents and multi-agent systems conference aamas 
+ s russell and p norvig artificial intelligence a modern approach 
+ second edition prentice hall 
+ r d shachter evaluating influence diagrams operations research 
+ - 
+ d suryadi and p gmytrasiewicz learning models of other agents 
+using influence diagrams in um 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

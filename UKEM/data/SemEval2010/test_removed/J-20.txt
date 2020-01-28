@@ -1,0 +1,1174 @@
+clearing algorithms for barter exchange markets 
+enabling nationwide kidney exchanges 
+david j abraham 
+computer science 
+department 
+carnegie mellon university 
+dabraham cs cmu edu 
+avrim blum 
+computer science 
+department 
+carnegie mellon university 
+avrim cs cmu edu 
+tuomas sandholm 
+computer science 
+department 
+carnegie mellon university 
+sandholm cs cmu edu 
+abstract 
+in barter-exchange markets agents seek to swap their items 
+with one another in order to improve their own utilities 
+these swaps consist of cycles of agents with each agent 
+receiving the item of the next agent in the cycle we 
+focus mainly on the upcoming national kidney-exchange 
+market where patients with kidney disease can obtain 
+compatible donors by swapping their own willing but incompatible 
+donors with over patients already waiting for a 
+cadaver kidney in the us this market is seen as the only 
+ethical way to significantly reduce the deaths per year 
+attributed to kidney disease 
+the clearing problem involves finding a social welfare 
+maximizing exchange when the maximum length of a cycle is 
+fixed long cycles are forbidden since for incentive reasons 
+all transplants in a cycle must be performed simultaneously 
+also in barter-exchanges generally more agents are affected 
+if one drops out of a longer cycle we prove that the clearing 
+problem with this cycle-length constraint is np-hard 
+solving it exactly is one of the main challenges in establishing a 
+national kidney exchange 
+we present the first algorithm capable of clearing these 
+markets on a nationwide scale the key is incremental 
+problem formulation we adapt two paradigms for the task 
+constraint generation and column generation for each we 
+develop techniques that dramatically improve both runtime 
+and memory usage we conclude that column generation 
+scales drastically better than constraint generation our 
+algorithm also supports several generalizations as demanded 
+by real-world kidney exchanges 
+our algorithm replaced cplex as the clearing algorithm 
+of the alliance for paired donation one of the leading 
+kidney exchanges the match runs are conducted every two 
+weeks and transplants based on our optimizations have 
+already been conducted 
+categories and subject descriptors 
+j computer applications social and behavioral 
+sciences-economics f analysis of algorithms and 
+problem complexity general 
+general terms 
+algorithms economics 
+ introduction 
+the role of kidneys is to filter waste from blood kidney 
+failure results in accumulation of this waste which leads 
+to death in months one treatment option is dialysis in 
+which the patient goes to a hospital to have his her blood 
+filtered by an external machine several visits are required 
+per week and each takes several hours the quality of life 
+on dialysis can be extremely low and in fact many patients 
+opt to withdraw from dialysis leading to a natural death 
+only of dialysis patients survive years 
+instead the preferred treatment is a kidney transplant 
+kidney transplants are by far the most common transplant 
+unfortunately the demand for kidneys far outstrips supply 
+in the united states in people died waiting for 
+a life-saving kidney transplant during this time almost 
+ people were added to the national waiting list while 
+only people left the list after receiving a 
+deceaseddonor kidney the waiting list currently has over 
+people and the median waiting time ranges from to 
+years depending on blood type 
+for many patients with kidney disease the best option is 
+to find a living donor that is a healthy person willing to 
+donate one of his her two kidneys although there are 
+marketplaces for buying and selling living-donor kidneys the 
+commercialization of human organs is almost universally 
+regarded as unethical and the practice is often explicitly 
+illegal such as in the us however in most countries live 
+donation is legal provided it occurs as a gift with no 
+financial compensation in there were live donations 
+in the us 
+the number of live donations would have been much higher 
+if it were not for the fact that frequently a potential donor 
+ 
+data from the united network for organ sharing 
+ 
+and his intended recipient are blood-type or tissue-type 
+incompatible in the past the incompatible donor was sent 
+home leaving the patient to wait for a deceased-donor 
+kidney however there are now a few regional kidney exchanges 
+in the united states in which patients can swap their 
+incompatible donors with each other in order to each obtain 
+a compatible donor 
+these markets are examples of barter exchanges in a 
+barter-exchange market agents patients seek to swap their 
+items incompatible donors with each other these swaps 
+consist of cycles of agents with each agent receiving the 
+item of the next agent in the cycle barter exchanges are 
+ubiquitous examples include peerflix dvds read it 
+swap it books and intervac holiday houses for 
+many years there has even been a large shoe exchange in 
+the united states people with different-sized feet use 
+this to avoid having to buy two pairs of shoes leg amputees 
+have a separate exchange to share the cost of buying a single 
+pair of shoes 
+we can encode a barter exchange market as a directed 
+graph g v e in the following way construct one vertex 
+for each agent add a weighted edge e from one agent vi to 
+another vj if vi wants the item of vj the weight we of e 
+represents the utility to vi of obtaining vj s item a cycle c 
+in this graph represents a possible swap with each agent in 
+the cycle obtaining the item of the next agent the weight 
+wc of a cycle c is the sum of its edge weights an exchange 
+is a collection of disjoint cycles the weight of an exchange 
+is the sum of its cycle weights a social welfare maximizing 
+exchange is one with maximum weight 
+figure illustrates an example market with agents 
+ v v v in which all edges have weight the 
+market has cycles c v v c v v c v v 
+and c v v v v v and two inclusion maximal 
+exchanges namely m c and m c c exchange 
+m has both maximum weight and maximum cardinality 
+ i e it includes the most edges vertices 
+v v v v 
+v 
+e e e 
+c c c 
+e 
+e 
+e e e 
+c 
+figure example barter exchange market 
+the clearing problem is to find a maximum-weight 
+exchange consisting of cycles with length at most some small 
+constant l this cycle-length constraint arises naturally 
+for several reasons for example in a kidney exchange all 
+operations in a cycle have to be performed simultaneously 
+otherwise a donor might back out after his incompatible 
+partner has received a kidney one cannot write a binding 
+contract to donate an organ this gives rise to a logistical 
+constraint on cycle size even if all the donors are operated 
+on first and the same personnel and facilities are used to 
+then operate on the donees a k-cycle requires between k 
+and k doctors around k nurses and almost k operating 
+rooms 
+due to such resource constraints the upcoming national 
+kidney exchange market will likely allow only cycles of length 
+ and another motivation for short cycles is that if the 
+cycle fails to exchange fewer agents are affected for 
+example last-minute testing in a kidney exchange often reveals 
+new incompatibilities that were not detected in the initial 
+testing based on which the compatibility graph was 
+constructed more generally an agent may drop out of a cycle 
+if his preferences have changed or he she simply fails to 
+fulfill his obligations such as sending a book to another agent 
+in the cycle due to forgetfulness 
+in section we show that the decision version of the 
+clearing problem is np-complete for l ≥ one approach 
+then might be to look for a good heuristic or 
+approximation algorithm however for two reasons we aim for an 
+exact algorithm based on an integer-linear program ilp 
+formulation which we solve using specialized tree search 
+ first any loss of optimality could lead to unnecessary 
+patient deaths 
+ second an attractive feature of using an ilp 
+formulation is that it allows one to easily model a number of 
+variations on the objective and to add additional 
+constraints to the problem for example if -cycles are 
+believed to be more likely to fail than -cycles then 
+one can simply give them a weight that is 
+appropriately lower than the weight of a -cycle or if 
+for various e g ethical reasons one requires a 
+maximum cardinality exchange one can at least in a second 
+pass find the solution out of all maximum cardinality 
+solutions that has the fewest -cycles other 
+variations one can solve for include finding various forms of 
+fault tolerant non-disjoint collections of cycles in 
+the event that certain pairs that were thought to be 
+compatible turn out to be incompatible after all 
+in this paper we present the first algorithm capable of 
+clearing these markets on a nationwide scale straight-forward 
+ilp encodings are too large to even construct on current 
+hardware - not to talk about solving them the key then 
+is incremental problem formulation we adapt two 
+paradigms for the task constraint generation and column 
+generation for each we develop a host of mainly 
+problemspecific techniques that dramatically improve both runtime 
+and memory usage 
+ prior work 
+several recent papers have used simulations and 
+marketclearing algorithms to explore the impact of a national 
+kidney exchange for example 
+using edmond s maximum-matching algorithm shows 
+that a national pairwise-exchange market using length- 
+cycles only would result in more transplants reduced waiting 
+time and savings of million in heath care costs over 
+years those results are conservative in two ways firstly 
+the simulated market contained only initial patients 
+with patients added every months it has been 
+reported to us that the market could be almost double this 
+size secondly the exchanges were restricted to length- 
+cycles because that is all that can be modeled as maximum 
+matching and solved using edmonds s algorithm 
+allowing length- cycles leads to additional significant gains this 
+has been demonstrated on kidney exchange markets with 
+ patients by using cplex to solve an integer-program 
+encoding of the clearing problem in this paper we 
+ 
+present an alternative algorithm for this integer program 
+that can clear markets with over patients and that 
+same number of willing donors 
+allowing cycles of length more than often leads to no 
+improvement in the size of the exchange furthermore 
+in a simplified theoretical model any kidney exchange can 
+be converted into one with cycles of length at most 
+whilst this does not hold for general barter exchanges or 
+even for all kidney exchange markets in section we 
+make use of the observation that short cycles suffice to 
+dramatically increase the speed of our algorithm 
+at a high-level the clearing problem for barter exchanges 
+is similar to the clearing problem aka winner 
+determination problem in combinatorial auctions in both settings 
+the idea is to gather all the pertinent information about the 
+agents into a central clearing point and to run a centralized 
+clearing algorithm to determine the allocation both 
+problems are np-hard both are best solved using tree search 
+techniques since significant work has been done in 
+computer science and operations research on faster optimal 
+tree search algorithms for clearing combinatorial auctions 
+ for a recent review see however the kidney 
+exchange clearing problem with a limit of or more on 
+cycle size is different from the combinatorial auction clearing 
+problem in significant ways the most important difference 
+is that the natural formulations of the combinatorial 
+auction problem tend to easily fit in memory so time is the 
+bottleneck in practice in contrast the natural formulations 
+of the kidney exchange problem with l take at least 
+cubic space in the number of patients to even model and 
+therefore memory becomes a bottleneck much before time 
+does when using standard tree search such as 
+branch-andcut in cplex to tackle the problem on a gb computer 
+and a realistic standard instance generator discussed later 
+cplex runs out of memory on five of the ten 
+ patient instances and ten of the ten -patient instances 
+that we generated therefore the approaches that have 
+been developed for combinatorial auctions cannot handle 
+the kidney exchange problem 
+ paper outline 
+the rest of the paper is organized as follows section 
+discusses the process by which we generate realistic kidney 
+exchange market data in order to benchmark the clearing 
+algorithms section contains a proof that the market 
+clearing decision problem is np-complete sections and each 
+contain an ilp formulation of the clearing problem we also 
+detail in those sections our techniques used to solve those 
+programs on large instances section presents experiments 
+on the various techniques section discusses recent 
+fielding of our algorithm finally we present our conclusions in 
+section and suggest future research directions 
+ market characteristics and 
+instance generator 
+we test the algorithms on simulated kidney exchange 
+markets which are generated by a process described in saidman 
+et al this process is based on the extensive nationwide 
+data maintained by the united network for organ sharing 
+ unos so it generates a realistic instance 
+distribution several papers have used variations of this process to 
+demonstrate the effectiveness of a national kidney exchange 
+ extrapolating from small instances or restricting the 
+clearing to -cycles 
+briefly the process involves generating patients with a 
+random blood type sex and probability of being tissue-type 
+incompatible with a randomly chosen donor these 
+probabilities are based on actual real-world population data each 
+patient is assigned a potential donor with a random blood 
+type and relation to the patient if the patient and potential 
+donor are incompatible the two are entered into the 
+market blood type and tissue type information is then used to 
+decide on which patients and donors are compatible one 
+complication handled by the generator is that if the 
+patient is female and she has had a child with her potential 
+donor then the probability that the two are incompatible 
+increases this is because the mother develops antibodies 
+to her partner during pregnancy finally although our 
+algorithms can handle more general weight functions patients 
+have a utility of for compatible donors since their survival 
+probability is not affected by the choice of donor this 
+means that the maximum-weight exchange has maximum 
+cardinality 
+table gives lower and upper bounds on the size of a 
+maximum-cardinality exchange in the kidney-exchange 
+market the lower bounds were found by clearing the market 
+with length- cycles only while the upper bounds had no 
+restriction on cycle length for each market size the bounds 
+were computed over randomly generated markets note 
+that there can be a large amount of variability in the 
+markets - in one patient market less than patients 
+were in the maximum-cardinality exchange 
+maximum exchange size 
+length- cycles only arbitrary cycles 
+patients mean max mean max 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+table upper and lower bounds on exchange size 
+table gives additional characteristics of the kidney-exchange 
+market note that a market with patients can already 
+have more than million cycles of length and 
+edges length cycles 
+patients mean max mean max 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e e e 
+ e e 
+ e e 
+ e e 
+ e e 
+ e e 
+table market characteristics 
+ 
+ problem complexity 
+in this section we prove that the decision version of the 
+market clearing problem with short cycles is np-complete 
+theorem given a graph g v e and an integer 
+l ≥ the problem of deciding if g admits a perfect cycle 
+cover containing cycles of length at most l is np-complete 
+proof it is clear that this problem is in np for 
+nphardness we reduce from d-matching which is the 
+problem of given disjoint sets x y and z of size q and a set of 
+triples t ⊆ x × y × z deciding if there is a disjoint subset 
+m of t with size q 
+one straightforward idea is to construct a tripartite graph 
+with vertex sets x ∪ y ∪ z and directed edges xa yb 
+ yb zc and zc xa for each triple ti xa yb zc ∈ t 
+however it is not too hard to see that this encoding fails 
+because a perfect cycle cover may include a cycle with no 
+corresponding triple 
+instead then we use the following reduction given an 
+instance of d-matching construct one vertex for each 
+element in x y and z for each triple ti xa yb zc 
+construct the gadget in figure which is a similar to one 
+in garey and johnson pp - note that the gadgets 
+intersect only on vertices in x ∪ y ∪ z it is clear that this 
+construction can be done in polynomial time 
+ 
+ 
+ 
+y b 
+ 
+ 
+z c 
+y b i z c i 
+l− l− l− 
+x a i 
+x a 
+ 
+ 
+figure np-completeness gadget for triple ti and 
+maximum cycle length l 
+let m be a perfect d-matching we will show the 
+construction admits a perfect cycle cover by short cycles if 
+ti xa yb zc ∈ m add from ti s gadget the three 
+lengthl cycles containing xa yb and zc respectively also add the 
+cycle 
+ª 
+xi 
+a yi 
+b zi 
+c 
+ 
+ otherwise if ti ∈ m add the three 
+lengthl cycles containing xi 
+a yi 
+b and zi 
+c respectively it is clear that 
+all vertices are covered since m partitions x × y × z 
+conversely suppose we have a perfect cover by short 
+cycles note that the construction only has short cycles of 
+lengths and l and no short cycle involves distinct 
+vertices from two different gadgets it is easy to see then that 
+in a perfect cover each gadget ti contributes cycles 
+according to the cases above ti ∈ m or ti ∈ m hence there 
+exists a perfect d-matching in the original instance 
+ solution approaches based on 
+an edge formulation 
+in this section we consider a formulation of the clearing 
+problem as an ilp with one variable for each edge this 
+encoding is based on the following classical algorithm for 
+solving the directed cycle cover problem with no cycle-length 
+constraints 
+given a market g v e construct a bipartite graph 
+with one vertex for each agent and one vertex for each item 
+add an edge ev with weight between each agent v and its 
+own item at this point the encoding is a perfect matching 
+now for each edge e vi vj in the original market add 
+an edge e with weight we between agent vi and the item of 
+vj perfect matchings in this encoding correspond exactly 
+with cycle covers since whenever an agent s item is taken 
+it must receive some other agent s item it follows that the 
+unrestricted clearing problem can be solved in polynomial 
+time by finding a maximum-weight perfect matching 
+figure contains the bipartite graph encoding of the example 
+market from figure the weight- edges are encoded by 
+dashed lines while the market edges are in bold 
+items 
+agents 
+v v v v v 
+e e e 
+e 
+v v v v v 
+e e 
+e 
+e 
+figure perfect matching encoding of the market 
+in figure 
+alternatively we can solve the problem by encoding it 
+as an ilp with one variable for each edge in the original 
+market graph g this ilp given below has the advantage 
+that it can be extended naturally to deal with cycle length 
+constraints therefore for the rest of this section this is 
+the approach we will pursue 
+max 
+e∈e 
+wee 
+such that for all vi ∈ v the conservation constraint 
+eout vi vj 
+eout − 
+ein vj vi 
+ein 
+and capacity constraint 
+eout vi vj 
+eout ≤ 
+are satisfied 
+if cycles are allowed to have length at most l it is easy 
+to see that we only need to make the following changes 
+to the ilp for each length-l path throughout the 
+paper we do not include cycles in the definition of path 
+p ep ep epl add a constraint 
+ep ep epl ≤ l − 
+which precludes path p from being in any feasible solution 
+unfortunately in a market with only patients the 
+number of length- paths is in excess of million and so 
+we cannot even construct this ilp without running out of 
+memory 
+therefore we use a tree search with an incremental 
+formulation approach specifically we use cplex though 
+ 
+we add constraints as cutting planes during the tree search 
+process we begin with only a small subset of the constraints 
+in the ilp since this ilp is small cplex can solve its lp 
+relaxation we then check whether any of the missing 
+constraints are violated by the fractional solution if so we 
+generate a set of these constraints add them to the ilp 
+and repeat even once all constraints are satisfied there 
+may be no integral solution matching the fractional upper 
+bound and even if there were the lp solver might not find 
+it 
+in these cases cplex branches on a variable we used 
+cplex s default branching strategy and generates one 
+new search node corresponding to each of the children at 
+each node of the search tree that is visited this process of 
+solving the lp and adding constraints is repeated clearly 
+this approach yields an optimal solution once the tree search 
+finishes 
+we still need to explain the details of the constraint seeder 
+ i e selecting which constraints to begin with and the 
+constraint generation i e selecting which violated constraints 
+to include we describe these briefly in the next two 
+subsections respectively 
+ constraint seeder 
+the main constraint seeder we developed forbids any path 
+of length l − that does not have an edge closing the cycle 
+from its head to its tail while it is computationally 
+expensive to find these constraints their addition focuses the 
+search away from paths that cannot be in the final solution 
+we also tried seeding the lp with a random collection of 
+constraints from the ilp 
+ constraint generation 
+we experimented with several constraint generators in 
+each given a fractional solution we construct the subgraph 
+of edges with positive value this graph is much smaller 
+than the original graph so we can perform the following 
+computations efficiently 
+in our first constraint generator we simply search for 
+length-l paths with value sum more than l − for any 
+such path we restrict its sum to be at most l − note 
+that if there is a cycle c with length c l it could contain 
+as many as c violating paths 
+in our second constraint generator we only add one 
+constraint for such cycles the sum of edges in the cycle can be 
+at most c l − l 
+this generator made the algorithm slower so we went 
+in the other direction in developing our final generator it 
+adds one constraint per violating path p and furthermore 
+it adds a constraint for each path with the same interior 
+vertices not counting the endpoints as p this improved 
+the overall speed 
+ experimental performance 
+it turned out that even with these improvements the edge 
+formulation approach cannot clear a kidney exchange with 
+ vertices in the time the cycle formulation described 
+later in section can clear one with vertices in 
+other words column generation based approaches turned 
+out to be drastically better than constraint generation based 
+approaches therefore in the rest of the paper we will focus 
+on the cycle formulation and the column generation based 
+approaches 
+ solution approaches based on a 
+cycle formulation 
+in this section we consider a formulation of the clearing 
+problem as an ilp with one variable for each cycle this 
+encoding is based on the following classical algorithm for 
+solving the directed cycle cover problem when cycles have 
+length 
+given a market g v e construct a new graph on 
+v with a weight wc edge for each cycle c of length it is 
+easy to see that matchings in this new graph correspond 
+to cycle covers by length- cycles in the original market 
+graph hence the market clearing problem with l can 
+be solved in polynomial time by finding a maximum-weight 
+matching 
+c 
+v v v v 
+c c 
+figure maximum-weight matching encoding of 
+the market in figure 
+we can generalize this encoding for arbitrary l let c l 
+be the set of all cycles of g with length at most l then 
+the following ilp finds the maximum-weight cycle cover by 
+c l cycles 
+max 
+c∈c l 
+wcc 
+subject to 
+c vi∈c 
+c ≤ ∀vi ∈ v 
+with c ∈ ∀c ∈ c l 
+ edge vs cycle formulation 
+in this section we consider the merits of the edge 
+formulation and cycle formulation the edge formulation can 
+be solved in polynomial time when there are no constraints 
+on the cycle size the cycle formulation can be solved in 
+polynomial time when the cycle size is at most 
+we now consider the case of short cycles of length at most 
+l where l ≥ our tree search algorithms use the lp 
+relaxation of these formulations to provide upper bounds on 
+the optimal solution these bounds help prune subtrees and 
+guide the search in the usual ways 
+theorem the lp relaxation of the cycle formulation 
+weakly dominates the lp relaxation of the edge formulation 
+proof consider an optimal solution to the lp 
+relaxation of the cycle formulation we show how to construct 
+an equivalent solution in the edge formulation for each 
+edge in the graph set its value as the sum of values of all 
+the cycles of which it is a member also define the value 
+of a vertex in the same manner because of the cycle 
+constraints the conservation and capacity constraints of the 
+edge encoding are clearly satisfied it remains to show that 
+none of the path constraints are violated 
+let p be any length-l path in the graph since p has l− 
+interior vertices not counting the endpoints the value sum 
+of these interior vertices is at most l− now for any cycle 
+c of length at most l the number of edges it has in p which 
+we denote by ec p is at most the number of interior vertices 
+it has in p which we denote by vc p hence 
+è 
+e∈p e 
+è 
+c∈c l c ec p ≤ 
+è 
+c∈c l c vc p 
+è 
+v∈p v l− 
+ 
+the converse of this theorem is not true consider a graph 
+which is simply a cycle with n edges clearly the lp 
+relaxation of the cycle formulation has optimal value since 
+there are no cycles of size at most l however the edge 
+formulation has a solution of size n with each edge having 
+value 
+hence the cycle formulation is tighter than the edge 
+formulation additionally for a graph with m edges the edge 
+formulation requires o m 
+ constraints while the cycle 
+formulation requires only o m 
+ 
+ column generation for the lp 
+table shows how the number of cycles of length at most 
+ grows with the size of the market with one variable per 
+cycle in the cycle formulation cplex cannot even clear 
+markets with patients without running out of 
+memory see figure to address this problem we used an 
+incremental formulation approach 
+the first step in lp-guided tree search is to solve the 
+lp relaxation since the cycle formulation does not fit in 
+memory this lp stage would fail immediately without an 
+incremental formulation approach however motivated by 
+the observation that an exchange solution can include only 
+a tiny fraction of the cycles we explored the approach of 
+using column i e cycle generation 
+the idea of column generation is to start with a restricted 
+lp containing only a small number of columns variables 
+i e cycles and then to repeatedly add columns until an 
+optimal solution to this partially formulated lp is an 
+optimal solution to the original aka master lp we explain 
+this further by way of an example 
+consider the market in figure with l figure 
+gives the corresponding master lp p and its dual d 
+primal p 
+max c c c 
+s t c ≤ v 
+c c ≤ v 
+ c c ≤ v 
+ c ≤ v 
+with c c c ≥ 
+dual d 
+min v v v v 
+s t v v ≥ c 
+ v v ≥ c 
+ v v ≥ c 
+with v v v v ≥ 
+figure cycle formulation 
+let p be the restriction of p containing columns c and c 
+only let d be the dual of p that is d is just d without 
+the constraint c because p and d are small we can solve 
+them to obtain opt p opt d with cop t p 
+c c and vop t d v v v v 
+while cop t p must be a feasible solution of p it turns 
+out fortunately that vop t d is feasible for d so that 
+opt d ≥ opt d we can verify this by checking that 
+vop t d satisfies the constraints of d not already in 
+di e constraint c it follows that opt p opt d ≥ 
+opt d opt p and so vop t p is provably an 
+optimal solution for p even though p is contains a only strict 
+subset of the columns of p 
+of course it may turn out unfortunately that vop t d 
+is not feasible for d this can happen above if vop t d 
+v v v v although we can still see 
+that opt d opt d in general we cannot prove this 
+because d and p are too large to solve instead because 
+constraint c is violated we add column c to p update 
+d and repeat the problem of finding a violated constraint 
+is called the pricing problem here the price of a column 
+ cycle in our setting is the difference between its weight and 
+the dual-value sum of the cycle s vertices if any column of p 
+has a positive price its corresponding constraint is violated 
+and we have not yet proven optimality in this case we must 
+continue generating columns to add to p 
+ pricing problem 
+for smaller instances we can maintain an explicit 
+collection of all feasible cycles this makes the pricing problem 
+easy and efficient to solve we simply traverse the collection 
+of cycles and look for cycles with positive price we can 
+even find cycles with the most positive price which are the 
+ones most likely to improve the objective value of restricted 
+lp this approach does not scale however a market 
+with patients can have as many as million cycles 
+of length at most see table this is too many cycles 
+to keep in memory 
+hence for larger instances we have to generate feasible 
+cycles while looking for one with a positive price we do this 
+using a depth-first search algorithm on the market graph 
+ see figure in order to make this search faster we 
+explore vertices in non-decreasing value order as these vertices 
+are more likely to belong to cycles with positive weight we 
+also use several pruning rules to determine if the current 
+search path can lead to a positive weight cycle for 
+example at a given vertex in the search we can prune based on 
+the fact that every vertex we visit from this point onwards 
+will have value at least as great the current vertex 
+even with these pruning rules column generation is a 
+bottleneck hence we also implemented the following 
+optimizations 
+whenever the search exhaustively proves that a vertex 
+belongs to no positive price cycle we mark the vertex and 
+do not use it as the root of a depth-first search until its 
+dual value decreases in this way we avoid unnecessarily 
+repeating our computational efforts from a previous column 
+generation iteration 
+finally it can sometimes be beneficial for column 
+generation to include several positive-price columns in one 
+iteration since it may be faster to generate a second column 
+once the first one is found however we avoid this for the 
+following reason if we attempt to find more positive-price 
+columns than there are to be found or if the columns are 
+far apart in the search space we end up having to generate 
+and check a large part of the collection of feasible cycles in 
+our experiments we have seen this occur in markets with 
+hundreds of millions of cycles resulting in prohibitively 
+expensive computation costs 
+ column seeding 
+even if there is only a small gap to the master lp 
+relaxation column generation requires many iterations to 
+improve the objective value of the restricted lp each of these 
+ 
+iterations is expensive as we must solve the pricing problem 
+and re-solve the restricted lp hence although we could 
+begin with no columns in the restricted lp it is much faster 
+to seed the lp with enough columns that the optimal 
+objective value is not too far from the master lp of course we 
+cannot include so many columns that we run out of memory 
+we experimented with several column seeders in one 
+class of seeder we use a heuristic to find an exchange and 
+then add the cycles of that exchange to the initial restricted 
+lp we implemented two heuristics the first is a greedy 
+algorithm for each vertex in a random order if it is 
+uncovered we attempt to include a cycle containing it and 
+other uncovered vertices the other heuristic uses 
+specialized maximum-weight matching code to find an optimal 
+cover by length- cycles 
+these heuristics perform extremely well especially 
+taking into account the fact that they only add a small 
+number of columns for example table shows that an 
+optimal cover by length- cycles has almost as much weight 
+as the exchange with unrestricted cycle size however we 
+have enough memory to include hundreds-of-thousands of 
+additional columns and thereby get closer still to the upper 
+bound 
+our best column seeder constructs a random collection of 
+feasible cycles since a market with patients can have 
+as many as million feasible cycles it takes too long to 
+generate and traverse all feasible cycles and so we do not 
+include a uniformly random collection instead we perform 
+a random walk on the market graph see for example figure 
+ in which after each step of the walk we test whether 
+there is an edge back onto our path that forms a feasible 
+cycle if we find a cycle it is included in the restricted lp 
+and we start a new walk from a random vertex in our 
+experiments see section we use this algorithm to seed 
+the lp with cycles 
+this last approach outperforms the heuristic seeders 
+described above however in our algorithm we use a 
+combination that takes the union of all columns from all three 
+seeders in figure we compare the performance of the 
+combination seeder against the combination without the random 
+collection seeder we do not plot the performance of the 
+algorithm without any seeder at all because it can take hours 
+to clear markets we can otherwise clear in a few minutes 
+ proving optimality 
+recall that our aim is to find an optimal solution to the 
+master lp relaxation using column generation we can 
+prove that a restricted-primal solution is optimal once all 
+columns have non-positive prices unfortunately though 
+our clearing problem has the so-called tailing-off effect 
+section in which even though the restricted primal is 
+optimal in hindsight a large number of additional iterations 
+are required in order to prove optimality i e eliminate all 
+positive-price columns there is no good general solution 
+to the tailing-off effect 
+however to mitigate this effect we take advantage of 
+the following problem-specific observation recall from 
+section that almost always a maximum-weight exchange 
+with cycles of length at most has the same weight as an 
+unrestricted maximum-weight exchange this does not mean 
+that the solver for the unrestricted case will find a 
+solution with short cycles however furthermore the 
+unrestricted clearing problem can be solved in polynomial time 
+ recall section hence we can efficiently compute an 
+upper bound on the master lp relaxation and whenever 
+the restricted primal achieves this upper bound we have 
+proven optimality without necessarily having to eliminate 
+all positive-price columns 
+in order for this to improve the running time of the overall 
+algorithm we need to be able to clear the unrestricted 
+market in less time than it takes column generation to eliminate 
+all the positive-price cycles even though the first 
+problem is polynomial-time solvable this is not trivial for large 
+instances for example for a market with patients 
+and million edges specialized maximum-weight 
+matching code was too slow and cplex ran out of memory 
+on the edge formulation encoding from section to make 
+this idea work then we used column generation to solve the 
+edge formulation 
+this involves starting with a small random subset of the 
+edges and then adding positive price edges one-by-one until 
+none remain we conduct this secondary column 
+generation not in the original market graph g but in the perfect 
+matching bipartite graph of figure we do this so that we 
+only need to solve the lp not the ilp since the integrality 
+gap in the perfect matching bipartite graph is -i e there 
+always exists an integral solution that achieves the fractional 
+upper bound 
+the resulting speedup to the overall algorithm is 
+dramatic as can be seen in figure 
+ column management 
+if the optimal value of the initial restricted lp p is far 
+from the the master lp p then a large number of columns 
+are generated before the gap is closed this leads to 
+memory problems on markets with as few as patients also 
+even before memory becomes an issue the column 
+generation iterations become slow because of the additional 
+overhead of solving a larger lp 
+to address these issues we implemented a column 
+management scheme to limit the size of the restricted lp 
+whenever we add columns to the lp we check to see if it contains 
+more than a threshold number of columns if this is the 
+case we selectively remove columns until it is again below 
+the threshold 
+ as we discussed earlier only a tiny 
+fraction of all the cycles will end up in the final solution it 
+is unlikely that we delete such a cycle and even if we do 
+it can always be generated again of course we must not 
+be too aggressive with the threshold because doing so may 
+offset the per-iteration performance gains by significantly 
+increasing the number of iterations required to get a suitable 
+column set in the lp at the same time 
+there are some columns we never delete for example 
+those we have branched on see section or those with 
+a non-zero lp value amongst the rest we delete those with 
+the lowest price since those correspond to the dual 
+constraints that are most satisfied this column management 
+scheme works well and has enabled us to clear markets with 
+ patients as seen in figure 
+ branch-and-price search for the ilp 
+given a large market clearing problem we can 
+successfully solve its lp relaxation to optimality by using the 
+column generation enhancements described above however 
+the solutions we find are usually fractional thus the next 
+ 
+based on memory size we set the threshold at 
+ 
+step involves performing a branch-and-price tree search 
+to find an optimal integral solution 
+briefly this is the idea of branch-and-price whenever we 
+set a fractional variable to or branch both the master 
+lp and the restriction we are working with are changed 
+ constrained by default then we need to perform column 
+generation go through the effort of pricing at each node of 
+the search tree to prove that the constrained restriction is 
+optimal for constrained master lp however as discussed 
+in section we compute the integral upper bound for 
+the root node based on relaxing the cycle length constraint 
+completely and whenever any node s lp in the tree achieves 
+that value we do not need to continue pricing columns at 
+that node 
+for the clearing problem with cycles of length at most 
+we have found that there is rarely a gap between the optimal 
+integral and fractional solutions this means we can largely 
+avoid the expensive per node pricing step whenever the 
+constrained restricted lp has the same optimal value as its 
+parent in the tree search we can prove lp optimality as 
+in section without having to include any additional 
+columns in the restricted lp 
+although cplex can solve ilps it does not support 
+branch-and-price for example because there can be 
+problemspecific complications involving the interaction between the 
+branching rule and the pricing problem hence we 
+implemented our own branch-and-price algorithm which explores 
+the search tree in depth-first order we also experimented 
+with the a node selection order however this search 
+strategy requires significantly more memory which we found 
+was better employed in making the column generation phase 
+faster see section the remaining major components 
+of the algorithm are described in the next two subsections 
+ primal heuristics 
+before branching on a fractional variable we use primal 
+heuristics to construct a feasible integral solution these 
+solutions are lower bounds on the final optimal integral 
+solutions hence whenever a restricted fractional solution is 
+no better than the best integral solution found so far we 
+prune the current subtree a primal heuristic is effective if 
+it is efficient and constructs tight lower bounds 
+we experimented with two primal heuristics the first 
+is a simple rounding algorithm include all cycles with 
+fractional value at least and then ensuring feasibility 
+greedily add the remaining cycles whilst this heuristic is 
+efficient we found that the lower bounds it constructs rarely 
+enable much pruning 
+we also tried using cplex as a primal heuristic at 
+any given node of the search tree we can convert the 
+restricted lp relaxation back to an ilp by reintroducing the 
+integrality constraints cplex has several built-in primal 
+heuristics which we can apply to this ilp moreover we can 
+use cplex s own tree search to find an optimal integral 
+solution in general this tree search is much faster than our 
+own 
+if cplex finds an integral solution that matches the 
+fractional upper bound at the root node we are done 
+otherwise no such integral solution exists or we don t yet have 
+the right combination of cycles in the restricted lp for 
+kidney-exchange markets it is usually the second reason 
+that applies see sections and hence at some 
+point in the tree search once more columns have been 
+generated as a result of branching the cplex heuristic will 
+find an optimal integral solution 
+although cplex tree search is faster than our own it is 
+not so fast that we can apply it to every node in our search 
+tree hence we make the following optimizations firstly 
+we add a constraint that requires the objective value of the 
+ilp to be as large as the fractional target if this is not 
+the case we want to abort and proceed to generate more 
+columns with our branch-and-price search secondly we 
+limit the number of nodes in cplex s search tree this is 
+because we have observed that no integral solution exists 
+cplex can take a very long time to prove that finally 
+we only apply the cplex heuristic at a node if it has a 
+sufficiently different set of cycles from its parent 
+using cplex as a primal heuristic has a large impact 
+because it makes the search tree smaller so all the 
+computationally expensive pricing work is avoided at nodes that 
+are not generated in this smaller tree 
+ cycle brancher 
+we experimented with two branching strategies both of 
+which select one variable per node the first strategy 
+branching by certainty randomly selects a variable from those 
+whose lp value is closest to the second strategy 
+branching by uncertainty randomly selects a variable whose lp 
+value is closest to in either case two children of the 
+node are generated corresponding to two subtrees one in 
+which the variable is set to the other in which it is set 
+to our depth-first search always chooses to explore first 
+the subtree in which the value of the variable is closest to 
+its fractional value 
+for our clearing problem with cycles of length at most 
+ we found branching by uncertainty to be superior rarely 
+requiring any backtracking 
+ experimental results 
+all our experiments were performed in linux red hat 
+ using a dell pc with a ghz intel pentium 
+processor and gb of ram wherever we used cplex e g in 
+solving the lp and as a primal heuristic as discussed in the 
+previous sections we used cplex 
+figure shows the runtime performance of four clearing 
+algorithms for each market size listed we randomly 
+generated markets and attempted to clear them using each 
+of the algorithms 
+the first algorithm is cplex on the full cycle 
+formulation this algorithm fails to clear any markets with 
+patients or more also its running time on markets smaller 
+than this is significantly worse than the other algorithms 
+the other algorithms are variations of the incremental 
+column generation approach described in section we begin 
+with the following settings all optimizations are switched 
+on 
+category setting 
+column seeder combination of greedy exchange 
+and maximum-weight matching 
+heuristics and random walk 
+seeder cycles 
+column generation one column at a time 
+column management on with column limit 
+optimality prover on 
+primal heuristic rounding cplex tree search 
+branching rule uncertainty 
+ 
+the combination of these optimizations allows us to easily 
+clear markets with over patients in each of the next 
+two algorithms we turn one of these optimizations off to 
+highlight its effectiveness 
+first we restrict the seeder so that it only begins with 
+ cycles this setting is faster for smaller instances 
+since the lp relaxations are smaller and faster to solve 
+however at vertices this effect starts to be offset by 
+the additional column generation that must be performed 
+for larger instance this restricted seeder is clearly worse 
+finally we restore the seeder to its optimized setting but 
+this time remove the optimality prover described in 
+section as in many column generation problems the 
+tailing-off effect is substantial by taking advantage of the 
+properties of our problem we manage to clear a market with 
+ patients in about the same time it would otherwise 
+have taken to clear a patient market 
+ fielding the technology 
+our algorithm and implementation replaced cplex as 
+the clearing algorithm of the alliance for paired donation 
+one of the leading kidney exchanges in december we 
+conduct a match run every two weeks and the first 
+transplants based on our solutions have already been conducted 
+while there are for political inter-personal reasons at 
+least four kidney exchanges in the us currently everyone 
+understands that a unified unfragmented national exchange 
+would save more lives we are in discussions with additional 
+kidney exchanges that are interested in adopting our 
+technology this way our technology and the processes around 
+it will hopefully serve as a substrate that will eventually 
+help in unifying the exchanges at least computational 
+scalability is no longer an obstacle 
+ conclusionandfutureresearch 
+in this work we have developed the most scalable exact 
+algorithms for barter exchanges to date with special focus 
+on the upcoming national kidney-exchange market in which 
+patients with kidney disease will be matched with 
+compatible donors by swapping their own willing but incompatible 
+donors with over patients already waiting for a 
+cadaver kidney in the us this market is seen as the only 
+ethical way to significantly reduce the deaths per year 
+attributed to kidney disease 
+our work presents the first algorithm capable of clearing 
+these markets on a nationwide scale it optimally solves 
+the kidney exchange clearing problem with 
+donordonee pairs thus there is no need to resort to approximate 
+solutions the best prior technology vanilla cplex 
+cannot handle instances beyond about donor-donee pairs 
+because it runs out of memory the key to our 
+improvement is incremental problem formulation we adapted two 
+paradigms for the task constraint generation and column 
+generation for each we developed a host of techniques 
+that substantially improve both runtime and memory 
+usage some of the techniques use domain-specific 
+observations while others are domain independent we conclude 
+that column generation scales dramatically better than 
+constraint generation for column generation in the lp our 
+enhancements include pricing techniques column seeding 
+techniques techniques for proving optimality without 
+having to bring in all positive-price columns and using another 
+column-generation process in a different formulation to do 
+so and column removal techniques for the 
+branch-andprice search in the integer program that surrounds the lp 
+our enhancements include primal heuristics and we also 
+compared branching strategies undoubtedly further 
+parameter tuning and perhaps additional speed improvement 
+techniques could be used to make the algorithm even faster 
+our algorithm also supports several generalizations as 
+desired by real-world kidney exchanges these include 
+multiple alternative donors per patient weighted edges in the 
+market graph to encode differences in expected life years 
+added based on degrees of compatibility patient age and 
+weight etc as well as the probability of last-minute 
+incompatibility angel-triggered chains chains of transplants 
+triggered by altruistic donors who do not have patients 
+associated with them each chain ending with a left-over kidney 
+and additional issues such as different scores for saving 
+different altruistic donors or left-over kidneys for future match 
+runs based on blood type tissue type and likelihood that 
+the organ would not disappear from the market by the donor 
+getting second thoughts because we use an ilp 
+methodology we can also support a variety of side constraints which 
+often play an important role in markets in practice we 
+can also support forcing part of the allocation for example 
+this acutely sick teenager has to get a kidney if possible 
+our work has treated the kidney exchange as a batch 
+problem with full information at least in the short run 
+kidney exchanges will most likely continue to run in batch mode 
+every so often two important directions for future work 
+are to explicitly address both online and limited-information 
+aspects of the problem 
+the online aspect is that donees and donors will be 
+arriving into the system over time and it may be best to not 
+execute the myopically optimal exchange now but rather 
+save part of the current market for later matches in fact 
+some work has been done on this in certain restricted 
+settings 
+the limited-information aspect is that even in batch mode 
+the graph provided as input is not completely correct a 
+number of donor-donee pairs believed to be compatible turn 
+out to be incompatible when more expensive last-minute 
+tests are performed therefore it would be desirable to 
+perform an optimization with this in mind such as outputting 
+a low-degree robust subgraph to be tested before the final 
+match is produced or to output a contingency plan in case 
+of failure we are currently exploring a number of 
+questions along these lines but there is certainly much more to 
+be done 
+acknowledgments 
+we thank economists al roth and utku unver as well as 
+kidney transplant surgeon michael rees for alerting us to 
+the fact that prior technology was inadequate for the 
+clearing problem on a national scale supplying initial data sets 
+and discussions on details of the kidney exchange process 
+we also thank don sheehy for bringing to our attention the 
+idea of shoe exchange this work was supported in part by 
+the national science foundation under grants iis- 
+and ccf- 
+ references 
+ c barnhart e l johnson g l nemhauser 
+m w p savelsbergh and p h vance 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+clearingtime seconds 
+number of patients 
+our algorithm 
+our algorithm with restricted column seeder 
+our algorithm with no optimality prover 
+cplex cycle formulation 
+figure experimental results average runtime with standard deviation bars 
+branch-and-price column generation for solving huge 
+integer programs operations research - 
+may-june 
+ r dechter and j pearl generalized best-first search 
+strategies and the optimality of a journal of the 
+acm - 
+ f l delmonico exchanging kidneys - advances in 
+living-donor transplantation new england journal of 
+medicine - 
+ j edmonds path trees and flowers canadian 
+journal of mathematics - 
+ m r garey and d s johnson computers and 
+intractability a guide to the theory of 
+np-completeness 
+ s e gentry d l segev and r a montgomery a 
+comparison of populations served by kidney paired 
+donation and list paired donation american journal 
+of transplantation - august 
+ p hart n nilsson and b raphael a formal basis 
+for the heuristic determination of minimum cost 
+paths ieee transactions on systems science and 
+cybernetics - 
+ k hoffman and m padberg solving airline 
+crew-scheduling problems by branch-and-cut 
+management science - 
+ intervac http intervac-online com 
+ national odd shoe exchange http www oddshoe org 
+ peerflix http www peerflix com 
+ read it swap it http www readitswapit co uk 
+ a e roth t sonmez and m u unver kidney 
+exchange quarterly journal of economics 
+ - may 
+ a e roth t sonmez and m u unver a kidney 
+exchange clearinghouse in new england american 
+economic review - may 
+ a e roth t sonmez and m u unver efficient 
+kidney exchange coincidence of wants in a market 
+with compatibility-based preferences american 
+economic review forthcoming 
+ e rothberg gabow s n 
+maximum-weight matching 
+algorithm an implementation the first dimacs 
+implementation challenge 
+ s l saidman a e roth t snmez m u unver 
+and f l delmonico increasing the opportunity of 
+live kidney donation by matching for two and three 
+way exchanges transplantation - 
+ t sandholm optimal winner determination 
+algorithms in combinatorial auctions cramton 
+shoham and steinberg eds mit press 
+ t sandholm and s suri side constraints and 
+non-price attributes in markets in ijcai- 
+workshop on distributed constraint reasoning pages 
+ - seattle wa to appear in games and 
+economic behavior 
+ d l segev s e gentry d s warren b reeb and 
+r a montgomery kidney paired donation and 
+optimizing the use of live donor organs journal of the 
+american medical association - 
+april 
+ united network for organ sharing unos 
+http www unos org 
+ m u unver dynamic kidney exchange working 
+paper 
+ united states renal data system usrds 
+http www usrds org 
+ s a zenios optimal control of a paired-kidney 
+exchange program management science 
+ - march 
+ 

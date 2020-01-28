@@ -1,0 +1,1194 @@
+robust solutions for combinatorial auctions 
+ 
+alan holland 
+cork constraint computation centre 
+department of computer science 
+university college cork ireland 
+a holland  c ucc ie 
+barry o sullivan 
+cork constraint computation centre 
+department of computer science 
+university college cork ireland 
+b osullivan  c ucc ie 
+abstract 
+bids submitted in auctions are usually treated as enforceable 
+commitments in most bidding and auction theory literature in reality 
+bidders often withdraw winning bids before the transaction when 
+it is in their best interests to do so given a bid withdrawal in a 
+combinatorial auction finding an alternative repair solution of 
+adequate revenue without causing undue disturbance to the 
+remaining winning bids in the original solution may be difficult or even 
+impossible we have called this the bid-taker s exposure 
+problem when faced with such unreliable bidders it is preferable for 
+the bid-taker to preempt such uncertainty by having a solution that 
+is robust to bid withdrawal and provides a guarantee that possible 
+withdrawals may be repaired easily with a bounded loss in revenue 
+in this paper we propose an approach to addressing the 
+bidtaker s exposure problem firstly we use the weighted super 
+solutions framework from the field of constraint programming 
+to solve the problem of finding a robust solution a weighted super 
+solution guarantees that any subset of bids likely to be withdrawn 
+can be repaired to form a new solution of at least a given revenue by 
+making limited changes secondly we introduce an auction model 
+that uses a form of leveled commitment contract which 
+we have called mutual bid bonds to improve solution reparability 
+by facilitating backtracking on winning bids by the bid-taker we 
+then examine the trade-off between robustness and revenue in 
+different economically motivated auction scenarios for different 
+constraints on the revenue of repair solutions we also demonstrate 
+experimentally that fewer winning bids partake in robust solutions 
+thereby reducing any associated overhead in dealing with extra 
+bidders robust solutions can also provide a means of selectively 
+discriminating against distrusted bidders in a measured manner 
+categories and subject descriptors 
+j social and behavioral sciences economics k computers 
+ this work has received support from science foundation 
+ireland under grant number pi c the authors wish to thank 
+brahim hnich and the anonymous reviewers for their helpful 
+comments 
+and society electronic commerce i artificial intelligence 
+problem solving control methods and search 
+general terms 
+algorithms economics reliability 
+ introduction 
+a combinatorial auction ca provides an efficient means of 
+allocating multiple distinguishable items amongst bidders whose 
+perceived valuations for combinations of items differ such 
+auctions are gaining in popularity and there is a proliferation in their 
+usage across various industries such as telecoms b b procurement 
+and transportation 
+revenue is the most obvious optimization criterion for such 
+auctions but another desirable attribute is solution robustness in terms 
+of combinatorial auctions a robust solution is one that can 
+withstand bid withdrawal a break by making changes easily to form 
+a repair solution of adequate revenue a brittle solution to a ca 
+is one in which an unacceptable loss in revenue is unavoidable if 
+a winning bid is withdrawn in such situations the bid-taker may 
+be left with a set of items deemed to be of low value by all other 
+bidders these bidders may associate a higher value for these items 
+if they were combined with items already awarded to others hence 
+the bid-taker is left in an undesirable local optimum in which a form 
+of backtracking is required to reallocate the items in a manner that 
+results in sufficient revenue we have called this the bid-taker s 
+exposure problem that bears similarities to the exposure 
+problem faced by bidders seeking multiple items in separate single-unit 
+auctions but holding little or no value for a subset of those items 
+however reallocating items may be regarded as disruptive to a 
+solution in many real-life scenarios consider a scenario where 
+procurement for a business is conducted using a ca it would be 
+highly undesirable to retract contracts from a group of suppliers 
+because of the failure of a third party a robust solution that is 
+tolerant of such breaks is preferable robustness may be regarded as a 
+preventative measure protecting against future uncertainty by 
+sacrificing revenue in place of solution stability and reparability we 
+assume a probabilistic approach whereby the bid-taker has 
+knowledge of the reliability of bidders from which the likelihood of an 
+incomplete transaction may be inferred 
+repair solutions are required for bids that are seen as brittle 
+ i e likely to break repairs may also be required for sets of 
+bids deemed brittle we propose the use of the weighted super 
+ 
+solutions wss framework for constraint programming that 
+is ideal for establishing such robust solutions as we shall see 
+this framework can enforce constraints on solutions so that 
+possible breakages are reparable 
+this paper is organized as follows section presents the 
+winner determination problem wdp for combinatorial auctions 
+outlines some possible reasons for bid withdrawal and shows how 
+simply maximizing expected revenue can lead to intolerable revenue 
+losses for risk-averse bid-takers this motivates the use of robust 
+solutions and section introduces a constraint programming cp 
+framework weighted super solutions that finds such 
+solutions we then propose an auction model in section that enhances 
+reparability by introducing mandatory mutual bid bonds that may 
+be seen as a form of leveled commitment contract 
+section presents an extensive empirical evaluation of the approach 
+presented in this paper in the context of a number of well-known 
+combinatorial auction distributions with very encouraging results 
+section discusses possible extensions and questions raised by our 
+research that deserve future work finally in section a number 
+of concluding remarks are made 
+ combinatorial auctions 
+before presenting the technical details of our solution to the 
+bid-taker s exposure problem we shall present a brief survey 
+of combinatorial auctions and existing techniques for handling bid 
+withdrawal 
+combinatorial auctions involve a single bid-taker allocating 
+multiple distinguishable items amongst a group of bidders the 
+bidtaker has a set of m items for sale m m and 
+bidders submit a set of bids b b b bn a bid is a tuple 
+bj sj pj where sj ⊆ m is a subset of the items for sale and 
+pj ≥ is a price the wdp for a ca is to label all bids as either 
+winning or losing so as to maximize the revenue from winning bids 
+without allocating any item to more than one bid the following is 
+the integer programming formulation for the wdp 
+max 
+n 
+j 
+pjxj s t 
+j i∈sj 
+xj ≤ ∀i ∈ m xj ∈ 
+this problem is np-complete and inapproximable 
+and is otherwise known as the set packing problem the above 
+problem formulation assumes the notion of free disposal this 
+means that the optimal solution need not necessarily sell all of the 
+items if the auction rules stipulate that all items must be sold the 
+problem becomes a set partition problem the wdp has been 
+extensively studied in recent years the fastest search algorithms 
+that find optimal solutions e g cabob can in practice 
+solve very large problems involving thousands of bids very quickly 
+ the problem of bid withdrawal 
+we assume an auction protocol with a three stage process 
+involving the submission of bids winner determination and finally 
+a transaction phase we are interested in bid withdrawals that 
+occur between the announcement of winning bids and the end of the 
+transaction phase all bids are valid until the transaction is 
+complete so we anticipate an expedient transaction process 
+ 
+ 
+in some instances the transaction period may be so lengthy that 
+consideration of non-winning bids as still being valid may not be 
+fair breaks that occur during a lengthy transaction phase are more 
+difficult to remedy and may require a subsequent auction for 
+example if the item is a service contract for a given period of time and 
+the break occurs after partial fulfilment of this contract the other 
+an example of a winning bid withdrawal occurred in an fcc 
+spectrum auction withdrawals or breaks may occur for 
+various reasons bid withdrawal may be instigated by the bid-taker 
+when quality of service agreements are broken or payment 
+deadlines are not met we refer to bid withdrawal by the bid-taker as 
+item withdrawal in this paper to distinguish between the actions 
+of a bidder and the bid-taker harstad and rothkopf outlined 
+several possibilities for breaks in single item auctions that include 
+ an erroneous initial valuation bid 
+ unexpected events outside the winning bidder s control 
+ a desire to have the second-best bid honored 
+ information obtained or events that occurred after the auction 
+but before the transaction that reduces the value of an item 
+ the revelation of competing bidders valuations infers reduced 
+profitability a problem known as the winner s curse 
+kastner et al examined how to handle perturbations given 
+a solution whilst minimizing necessary changes to that solution 
+these perturbations may include bid withdrawals change of 
+valuation items of a bid or the submission of a new bid they looked at 
+the problem of finding incremental solutions to restructure a 
+supply chain whose formation is determined using combinatorial 
+auctions following a perturbation in the optimal solution they 
+proceed to impose involuntary item withdrawals from winning 
+bidders they formulated an incremental integer linear program ilp 
+that sought to maximize the valuation of the repair solution whilst 
+preserving the previous solution as much as possible 
+ being proactive against bid withdrawal 
+when a bid is withdrawn there may be constraints on how the 
+solution can be repaired if the bid-taker was freely able to revoke 
+the awarding of items to other bidders then the solution could be 
+repaired easily by reassigning all the items to the optimal solution 
+without the withdrawn bid alternatively the bidder who reneged 
+upon a bid may have all his other bids disqualified and the items 
+could be reassigned based on the optimum solution without that 
+bidder present however the bid-taker is often unable to freely 
+reassign the items already awarded to other bidders when items 
+cannot be withdrawn from winning bidders following the failure of 
+another bidder to honor his bid repair solutions are restricted to the 
+set of bids whose items only include those in the bid s that were 
+reneged upon we are free to award items to any of the previously 
+unsuccessful bids when finding a repair solution 
+when faced with uncertainty over the reliability of bidders a 
+possible approach is to maximize expected revenue this approach 
+does not make allowances for risk-averse bid-takers who may view 
+a small possibility of very low revenue as unacceptable 
+consider the example in table and the optimal expected 
+revenue in the situation where a single bid may be withdrawn there 
+are three submitted bids for items a and b the third being a 
+combination bid for the pair of items at a value of the optimal 
+solution has a value of with the first and second bids as 
+winners when we consider the probabilities of failure in the fourth 
+column the problem of which solution to choose becomes more 
+difficult 
+computing the expected revenue for the solution with the first 
+and second bids winning the items denoted gives 
+ × × × × × × × 
+bidders valuations for the item may have decreased in a non-linear 
+fashion 
+ 
+table example combinatorial auction 
+items 
+bids a b ab withdrawal prob 
+x 
+x 
+x 
+if a single bid is withdrawn there is probability of of a revenue 
+of given the fact that we cannot withdraw an item from the 
+other winning bidder the expected revenue for is 
+ × × 
+we can therefore surmise that the second solution is preferable to 
+the first based on expected revenue 
+determining the maximum expected revenue in the presence of 
+such uncertainty becomes computationally infeasible however as 
+the number of brittle bids grows a wdp needs to be solved for all 
+possible combinations of bids that may fail the possible loss in 
+revenue for breaks is also not tightly bounded using this approach 
+therefore a large loss may be possible for a small number of breaks 
+consider the previous example where the bid amount for x 
+becomes the expected revenue of becomes 
+greater than that of there are some bid-takers 
+who may prefer the latter solution because the revenue is never less 
+than but the former solution returns revenue of only with 
+probability a risk-averse bid-taker may not tolerate such a 
+possibility preferring to sacrifice revenue for reduced risk 
+if we modify our repair search so that a solution of at least a 
+given revenue is guaranteed the search for a repair solution 
+becomes a satisfiability test rather than an optimization problem the 
+approaches described above are in contrast to that which we 
+propose in the next section our approach can be seen as preventative 
+in that we find an initial allocation of items to bidders which is 
+robust to bid withdrawal possible losses in revenue are bounded by 
+a fixed percentage of the true optimal allocation perturbations to 
+the original solution are also limited so as to minimize disruption 
+we regard this as the ideal approach for real-world combinatorial 
+auctions 
+definition robust solution for a ca a robust 
+solution for a combinatorial auction is one where any subset of 
+successful bids whose probability of withdrawal is greater than or 
+equal to α can be repaired by reassigning items at a cost of at most 
+β to other previously losing bids to form a repair solution 
+constraints on acceptable revenue e g being a minimum 
+percentage of the optimum are defined in the problem model and are 
+thus satisfied by all solutions the maximum cost of repair β may 
+be a fixed value that may be thought of as a fund for 
+compensating winning bidders whose items are withdrawn from them when 
+creating a repair solution alternatively β may be a function of 
+the bids that were withdrawn section will give an example of 
+such a mechanism in the following section we describe an ideal 
+constraint-based framework for the establishment of such robust 
+solutions 
+ finding robust solutions 
+in constraint programming cp a constraint satisfaction 
+problem csp is modeled as a set of n variables x x xn 
+a set of domains d d x d xn where d xi is 
+the set of finite possible values for variable xi and a set c 
+ c cm of constraints each restricting the assignments of 
+some subset of the variables in x constraint satisfaction involves 
+finding values for each of the problem variables such that all 
+constraints are satisfied its main advantages are its declarative nature 
+and flexibility in tackling problems with arbitrary side constraints 
+constraint optimization seeks to find a solution to a csp that 
+optimizes some objective function a common technique for solving 
+constraint optimization problems is to use branch-and-bound 
+techniques that avoid exploring sub-trees that are known not to contain 
+a better solution than the best found so far an initial bound can be 
+determined by finding a solution that satisfies all constraints in c 
+or by using some heuristic methods 
+a classical super solution ss is a solution to a csp in which 
+if a small number of variables lose their values repair solutions 
+are guaranteed with only a few changes thus providing solution 
+robustness it is a generalization of both fault tolerance in 
+cp and supermodels in propositional satisfiability sat 
+an a b -super solution is one in which if at most a variables lose 
+their values a repair solution can be found by changing at most b 
+other variables 
+super solutions for combinatorial auctions minimize the number 
+of bids whose status needs to be changed when forming a repair 
+solution only a particular set of variables in the solution may 
+be subject to change and these are said to be members of the 
+breakset for each combination of brittle assignments in the break-set a 
+repair-set is required that comprises the set of variables whose 
+values must change to provide another solution the cardinality of the 
+repair set is used to measure the cost of repair in reality 
+changing some variable assignments in a repair solution incurs a lower 
+cost than others thereby motivating the use of a different metric for 
+determining the legality of repair sets 
+the weighted super solution wss framework considers 
+the cost of repair required rather than simply the number of 
+assignments modified to form an alternative solution for cas this 
+may be a measure of the compensation penalties paid to winning 
+bidders to break existing agreements robust solutions are 
+particularly desirable for applications where unreliability is a problem 
+and potential breakages may incur severe penalties weighted 
+super solutions offer a means of expressing which variables are 
+easily re-assigned and those that incur a heavy cost hebrard et 
+al describe how some variables may fail such as machines in a 
+job-shop problem and others may not a wss generalizes this 
+approach so that there is a probability of failure associated with each 
+assignment and sets of variables whose assignments have 
+probabilities of failure greater than or equal to a threshold value α require 
+repair solutions 
+a wss measures the cost of repairing or reassigning other 
+variables using inertia as a metric inertia is a measure of a variable s 
+aversion to change and depends on its current assignment future 
+assignment and the breakage variable s 
+it may be desirable to reassign items to different bidders in order 
+to find a repair solution of satisfactory revenue compensation may 
+have to be paid to bidders who lose items during the formation of a 
+repair solution the inertia of a bid reflects the cost of changing its 
+state for winning bids this may reflect the necessary compensation 
+penalty for the bid-taker to break the agreement if such breaches 
+are permitted whereas for previously losing bids this is a free 
+operation the total amount of compensation payable to bidders may 
+depend upon other factors such as the cause of the break there is 
+a limit to how much these overall repair costs should be and this is 
+given by the value β this value may not be known in advance and 
+ 
+algorithm wss int level double α double β boolean 
+begin 
+if level number of variables then return true 
+choose unassigned variable x 
+foreach value v in the domain of x do 
+assign x v 
+if problem is consistent then 
+foreach combination of brittle assignments a do 
+if ¬reparable a β then return false 
+if wss level then return true 
+unassign x 
+return false 
+end 
+may depend upon the break therefore β may be viewed as the 
+fund used to compensate winning bidders for the unilateral 
+withdrawal of their bids by the bid-taker in summary an α β -wss 
+allows any set of variables whose probability of breaking is greater 
+than or equal to α be repaired with changes to the original robust 
+solution with a cost of at most β 
+the depth-first search for a wss see pseudo-code description 
+in algorithm maintains arc-consistency at each node of the 
+tree as search progresses the reparability of each previous 
+assignment is verified at each node by extending a partial repair 
+solution to the same depth as the current partial solution this may 
+be thought of as maintaining concurrent search trees for repairs 
+a repair solution is provided for every possible set of break 
+variables a the wss algorithm attempts to extend the current partial 
+assignment by choosing a variable and assigning it a value 
+backtracking may then occur for one of two reasons we cannot extend 
+the assignment to satisfy the given constraints or the current 
+partial assignment cannot be associated with a repair solution whose 
+cost of repair is less than β should a break occur the procedure 
+reparable searches for partial repair solutions using 
+backtracking and attempts to extend the last repair found just as in 
+ b super solutions the differences being that a repair is provided 
+for a set of breakage variables rather than a single variable and the 
+cost of repair is considered a summation operator is used to 
+determine the overall cost of repair if a fixed bound upon the size of 
+any potential break-set can be formed the wss algorithm is 
+npcomplete for a more detailed description of the wss search 
+algorithm the reader is referred to since a complete description of 
+the algorithm is beyond the scope of this paper 
+example we shall step through the example given in 
+table when searching for a wss each bid is represented by a 
+single variable with domain values of and the former representing 
+bid-failure and the latter bid-success the probability of failure of 
+the variables are when they are assigned to and 
+otherwise the problem is initially solved using an ilp solver such as 
+lp solve or cplex and the optimal revenue is found to be 
+ a fixed percentage of this revenue can be used as a threshold 
+value for a robust solution and its repairs the bid-taker wishes to 
+have a robust solution so that if a single winning bid is withdrawn 
+a repair solution can be formed without withdrawing items from 
+any other winning bidder this example may be seen as searching 
+for a -weighted super solution β is because no funds are 
+available to compensate the withdrawal of items from winning 
+bidders the bid-taker is willing to compromise on revenue but only 
+by say of the optimal value 
+bids and cannot both succeed since they both require item 
+a so a constraint is added precluding the assignment in which both 
+variables take the value similarly bids and cannot both win 
+so another constraint is added between these two variables 
+therefore in this example the set of csp variables is v x x x 
+whose domains are all the constraints are x x ≤ 
+x x ≤ and xi∈v aixi ≥ where ai reflects the 
+relevant bid-amounts for the respective bid variables in order to find a 
+robust solution of optimal revenue we seek to maximize the sum of 
+these amounts max xi∈v aixi 
+when all variables are set to see figure a branch this is 
+not a solution because the minimum revenue of has not been 
+met so we try assigning bid to branch this is a valid 
+solution but this variable is brittle because there is a chance that 
+this bid may be withdrawn see table therefore we need to 
+determine if a repair can be formed should it break the search for a 
+repair begins at the first node see figure b notice that value 
+has been removed from bid because this search tree is simulating 
+the withdrawal of this bid when bid is set to branch the 
+maximum revenue solution in the remaining subtree has revenue of 
+only therefore search is discontinued at that node of the tree 
+bid and bid are both assigned to branches and and 
+the total cost of both these changes is still because no 
+compensation needs to be paid for bids that change from losing to winning 
+with bid now losing branch this gives a repair solution of 
+ hence is reparable and therefore a wss we continue 
+our search in figure a however because we are seeking a robust 
+solution of optimal revenue 
+when bid is assigned to branch we seek a partial repair 
+for this variable breaking branch is not considered since it offers 
+insufficient revenue the repair search sets bid to in a separate 
+search tree not shown and control is returned to the search for 
+a wss bid is set to branch but this solution would not 
+produce sufficient revenue so bid is then set to branch we 
+then attempt to extend the repair for bid not shown this fails 
+because the repair for bid cannot assign bid to because the 
+cost of repairing such an assignment would be ∞ given that the 
+auction rules do not permit the withdrawal of items from winning 
+bids a repair for bid breaking is therefore not possible because 
+items have already been awarded to bid a repair solution with 
+bid assigned to does not produce sufficient revenue when bid 
+is assigned to the inability to withdraw items from winning bids 
+implies that is an irreparable solution when the minimum 
+tolerable revenue is greater than the italicized comments and 
+dashed line in figure a illustrate the search path for a wss if 
+both of these bids were deemed reparable 
+section introduces an alternative auction model that will allow 
+the bid-taker to receive compensation for breakages and in turn use 
+this payment to compensate other bidders for withdrawal of items 
+from winning bids this will enable the reallocation of items and 
+permit the establishment of as a second wss for this 
+example 
+ mutual bid bonds a 
+backtracking mechanism 
+some auction solutions are inherently brittle and it may be 
+impossible to find a robust solution if we can alter the rules of an 
+auction so that the bid-taker can retract items from winning 
+bidders then the reparability of solutions to such auctions may be 
+improved in this section we propose an auction model that permits 
+bid and item withdrawal by the bidders and bid-taker respectively 
+we propose a model that incorporates mutual bid bonds to enable 
+solution reparability for the bid-taker a form of insurance against 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+insufficient 
+revenue 
+find repair solution 
+for bid breakage 
+find partial repair for 
+bid breakage 
+insufficient 
+revenue 
+ a extend partial repair 
+for bid breakage 
+ b find partial repair 
+for bid breakage 
+bid 
+bid 
+bid 
+find repair solutions for 
+bid breakages 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+insufficient 
+revenue 
+ a search for wss 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+insufficient 
+revenue 
+insufficient 
+revenue 
+bid 
+bid 
+bid 
+inertia 
+inertia 
+inertia 
+ 
+ 
+ 
+ b search for a repair for bid breakage 
+figure search tree for a wss without item withdrawal 
+the winner s curse for the bidder whilst also compensating bidders 
+in the case of item withdrawal from winning bids we propose that 
+such winner s curse bid-taker s exposure insurance comprise 
+a fixed percentage κ of the bid amount for all bids such mutual 
+bid bonds are mandatory for each bid in our model 
+ the conditions 
+attached to the bid bonds are that the bid-taker be allowed to annul 
+winning bids item withdrawal when repairing breaks elsewhere 
+in the solution in the interests of fairness compensation is paid 
+to bidders from whom items are withdrawn and is equivalent to the 
+penalty that would have been imposed on the bidder should he have 
+withdrawn the bid 
+combinatorial auctions impose a heavy computational burden 
+on the bidder so it is important that the hedging of risk should be 
+a simple and transparent operation for the bidder so as not to 
+further increase this burden unnecessarily we also contend that it 
+is imperative that the bidder knows the potential penalty for 
+withdrawal in advance of bid submission this information is essential 
+for bidders when determining how aggressive they should be in 
+their bidding strategy bid bonds are commonplace in procurement 
+for construction projects usually they are mandatory for all bids 
+are a fixed percentage κ of the bid amount and are unidirectional 
+in that item withdrawal by the bid-taker is not permitted mutual 
+bid bonds may be seen as a form of leveled commitment contract 
+in which both parties may break the contract for the same fixed 
+penalty such contracts permit unilateral decommitment for 
+prespecified penalties sandholm et al showed that this can increase 
+the expected payoffs of all parties and enables deals that would be 
+impossible under full commitment 
+in practice a bid bond typically ranges between and of the 
+ 
+making the insurance optional may be beneficial in some 
+instances if a bidder does not agree to the insurance it may be 
+inferred that he may have accurately determined the valuation for the 
+items and therefore less likely to fall victim to the winner s curse 
+the probability of such a bid being withdrawn may be less so a 
+repair solution may be deemed unnecessary for this bid on the other 
+hand it decreases the reparability of solutions 
+bid amount if the decommitment penalties are the same 
+for both parties in all bids κ does not influence the reparability of 
+a given set of bids it merely influences the levels of penalties and 
+compensation transacted by agents low values of κ incur low bid 
+withdrawal penalties and simulate a dictatorial bid-taker who does 
+not adequately compensate bidders for item withdrawal andersson 
+and sandholm found that myopic agents reach a higher social 
+welfare quicker if they act selfishly rather than cooperatively when 
+penalties in leveled commitment contracts are low increased levels 
+of bid withdrawal are likely when the penalties are low also 
+high values of κ tend towards full-commitment and reduce the 
+advantages of such winner s curse bid-taker s exposure 
+insurance the penalties paid are used to fund a reassignment of 
+items to form a repair solution of sufficient revenue by 
+compensating previously successful bidders for withdrawal of the items from 
+them 
+example consider the example given in table once more 
+where the bids also comprise a mutual bid bond of of the bid 
+amount if a bid is withdrawn the bidder forfeits this amount and 
+the bid-taker can then compensate winning bidders whose items are 
+withdrawn when trying to form a repair solution later the search 
+for repair solutions for breaks to bid and bid appear in figures 
+ a and b respectively 
+ 
+when bid breaks there is a compensation penalty paid to the 
+bid-taker equal to that can be used to fund a reassignment of the 
+items we therefore set β to and this becomes the maximum 
+expenditure allowed to withdraw items from winning bidders β 
+may also be viewed as the size of the fund available to facilitate 
+backtracking by the bid-taker when we extend the partial repair 
+for bid so that bid loses an item branch the overall cost of 
+repair increases to due to this item withdrawal by the bid-taker 
+ 
+the actual implementation of wss search checks previous 
+solutions to see if they can repair breaks before searching for a new 
+repair solution is a solution that has already been found 
+so the search for a repair in this example is not strictly necessary 
+but is described for pedagogical reasons 
+ 
+ 
+ 
+ 
+ 
+ 
+bid 
+bid 
+bid 
+insufficient revenue 
+inertia 
+ 
+inertia 
+ 
+inertia 
+ 
+ 
+ 
+ 
+ 
+ 
+ a search for a repair for bid breakage 
+ 
+ 
+ 
+ 
+ 
+bid 
+bid 
+bid 
+insufficient revenue 
+inertia 
+ 
+inertia 
+ 
+inertia 
+ 
+ 
+ 
+ 
+ 
+ 
+ b search for a repair for bid breakage 
+figure repair search tree for breaks and κ 
+and is just within the limit given by β in figure a the search path 
+follows the dashed line and sets bid to be branch the repair 
+solutions for bids and can be extended further by assigning bid 
+to branches and therefore may be considered 
+a robust solution recall that previously this was not the case 
+using mutual bid bonds thus increases reparability and allows a 
+robust solution of revenue as opposed to as was previously 
+the case 
+ experiments 
+we have used the combinatorial auction test suite cats 
+to generate sample auction data we generated instances of 
+problems in which there are items for sale and - bids 
+that may be dominated in some instances 
+ such dominated bids 
+can participate in repair solutions although they do not feature in 
+optimal solutions cats uses economically motivated bidding 
+patterns to generate auction data in various scenarios to motivate the 
+research presented in this paper we use sensitivity analysis to 
+examine the brittleness of optimal solutions and hence determine the 
+types of auctions most likely to benefit from a robust solution we 
+then establish robust solutions for cas using the wss framework 
+ sensitivity analysis for the wdp 
+we have performed sensitivity analysis of the following four 
+distributions airport take-off landing slots matching electronic 
+components arbitrary property spectrum-rights regions 
+and transportation paths these distributions were chosen 
+because they describe a broad array of bidding patterns in different 
+application domains 
+the method used is as follows we first of all determined the 
+optimal solution using lp solve a mixed integer linear program 
+solver we then simulated a single bid withdrawal and re-solved 
+the problem with the other winning bids remaining fixed i e there 
+were no involuntary dropouts the optimal repair solution was 
+then determined this process is repeated for all winning bids in 
+the overall optimal solution thus assuming that all bids are brittle 
+figure shows the average revenue of such repair solutions as a 
+percentage of the optimum also shown is the average worst-case 
+scenario over auctions we also implemented an auction rule 
+that disallows bids from the reneging bidder participate in a repair 
+ 
+figure a illustrates how the paths distribution is inherently 
+the most robust distribution since when any winning bid is 
+withdrawn the solution can be repaired to achieve over of the 
+ 
+the cats flags included int prices with the bid alpha parameter 
+set to 
+ 
+we assumed that all bids in a given xor bid with the same 
+dummy item were from the same bidder 
+optimal revenue on average for auctions with more than bids 
+there are some cases however when such withdrawals result in 
+solutions whose revenue is significantly lower than optimum even 
+in auctions with as many as bids there are occasions when a 
+single bid withdrawal can result in a drop in revenue of over 
+although the average worst-case drop in revenue is only 
+figure b shows how the matching distribution is more brittle on 
+average than paths and also has an inferior worst-case revenue on 
+average this trend continues as the regions-npv figure c 
+and arbitrary-npv figure d distributions are more 
+brittle still these distributions are clearly sensitive to bid withdrawal 
+when no other winning bids in the solution may be involuntarily 
+withdrawn by the bid-taker 
+ robust solutions using wss 
+in this section we focus upon both the arbitrary-npv and 
+regions-npv distributions because the sensitivity analysis 
+indicated that these types of auctions produce optimal solutions that 
+tend to be most brittle and therefore stand to benefit most from 
+solution robustness we ignore the auctions with bids because 
+the sensitivity analysis has indicated that these auctions are 
+inherently robust with a very low average drop in revenue following a bid 
+withdrawal they would also be very computationally expensive 
+given the extra complexity of finding robust solutions 
+a pure cp approach needs to be augmented with global 
+constraints that incorporate operations research techniques to increase 
+pruning sufficiently so that thousands of bids may be examined 
+global constraints exploit special-purpose filtering algorithms to 
+improve performance there are a number of ways to speed 
+up the search for a weighted super solution in a ca although this 
+is not the main focus of our current work polynomial matching 
+algorithms may be used in auctions whose bid length is short such 
+as those for airport landing take-off slots for example the integer 
+programming formulation of the wdp stipulates that a bid either 
+loses or wins if we relax this constraint so that bids can partially 
+win this corresponds to the linear relaxation of the problem and is 
+solvable in polynomial time at each node of the search tree we 
+can quickly solve the linear relaxation of the remaining problem in 
+the subtree below the current node to establish an upper bound on 
+remaining revenue if this upper bound plus revenue in the parent 
+tree is less than the current lower bound on revenue search at that 
+node can cease the continuous lp relaxation thus provides a 
+vital speed-up in the search for weighted super solutions which we 
+have exploited in our implementation the lp formulation is as 
+follows 
+max 
+xi∈v 
+aixi 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+average repair solution revenue 
+worst-case repair solution revenue 
+ a paths 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+average repair solution revenue 
+worst-case repair solution revenue 
+ b matching 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+average repair solution revenue 
+worst-case repair solution revenue 
+ c regions-npv 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+average repair solution revenue 
+worst-case repair solution revenue 
+ d arbitrary-npv 
+figure sensitivity of bid distributions to single bid withdrawal 
+s t 
+j i∈sj 
+xj ≤ ∀i ∈ m xj ≥ xj ∈ r 
+additional techniques that are outlined in can aid the 
+scalability of a cp approach but our main aim in these experiments is 
+to examine the robustness of various auction distributions and 
+consider the tradeoff between robustness and revenue the wss solver 
+we have developed is an extension of the super solution solver 
+presented in this solver is in turn based upon the efc 
+constraint solver 
+combinatorial auctions are easily modeled as a constraint 
+optimization problems we have chosen the branch-on-bids 
+formulation because in tests it worked faster than a branch-on-items 
+formulation for the arbitrary-npv and regions-npv 
+distributions all variables are binary and our search mechanism uses a 
+reverse lexicographic value ordering heuristic this complements our 
+dynamic variable ordering heuristic that selects the most promising 
+unassigned variable as the next one in the search tree we use the 
+product of the solution of the lp relaxation and the degree of a 
+variable to determine the likelihood of its participation in a robust 
+solution high values in the lp solution are a strong indication of 
+variables most likely to form a high revenue solution whilst the a 
+variable s degree reflects the number of other bids that overlap in 
+terms of desired items bids for large numbers of items tend to be 
+more robust which is why we weight our robust solution search in 
+this manner we found this heuristic to be slightly more effective 
+than the lp solution alone as the number of bids in the auction 
+increases however there is an increase in the inherent robustness 
+of solutions so the degree of a variable loses significance as the 
+auction size increases 
+ results 
+our experiments simulate three different constraints on repair 
+solutions the first is that no winning bids are withdrawn by the 
+bid-taker and a repair solution must return a revenue of at least 
+of the optimal overall solution secondly we relaxed the revenue 
+constraint to of optimum thirdly we allowed backtracking 
+by the bid-taker on winning bids using mutual bid bonds but 
+maintaining the revenue constraint at of optimum 
+prior to finding a robust solution we solved the wdp optimally 
+using lp solve we then set the minimum tolerable revenue 
+for a solution to be then of the revenue of this 
+optimal solution we assumed that all bids were brittle thus a repair 
+solution is required for every bid in the solution initially we 
+assume that no backtracking was permitted on assignments of items 
+to other winning bids given a bid withdrawal elsewhere in the 
+solution table shows the percentage of optimal solutions that are 
+robust for minimum revenue constraints for repair solutions of 
+and of optimal revenue relaxing the revenue constraint on 
+repair solutions to of the optimum revenue greatly increases the 
+number of optimal solutions that are robust we also conducted 
+experiments on the same auctions in which backtracking by the 
+bid-taker is permitted using mutual bid bonds this significantly 
+improves the reparability of optimal solutions whilst still 
+maintaining repair solutions of of optimum an interesting feature 
+of the arbitrary-npv distribution is that optimal solutions can 
+become more brittle as the number of bids increases the reason 
+for this is that optimal solutions for larger auctions have more 
+winning bids some of the optimal solutions for the smallest auctions 
+with bids have only one winning bidder if this bid is 
+withdrawn it is usually easy to find a new repair solution within of 
+the previous optimal revenue also repair solutions for bids that 
+contain a small number of items may be made difficult by the fact 
+that a reduced number of bids cover only a subset of those items a 
+mitigating factor is that such bids form a smaller percentage of the 
+revenue of the optimal solution on average 
+we also implemented a rule stipulating that any losing bids from 
+ 
+table optimal solutions that are inherently robust 
+ bids 
+min revenue 
+arbitrary-npv 
+repair ≥ 
+repair ≥ 
+mbb repair ≥ ≥ 
+regions-npv 
+repair ≥ 
+repair ≥ 
+mbb repair ≥ ≥ 
+table occurrence of robust solutions 
+ bids 
+min revenue 
+arbitrary-npv 
+repair ≥ 
+repair ≥ 
+mbb repair ≥ 
+regions-npv 
+repair ≥ 
+repair ≥ 
+mbb repair ≥ 
+a withdrawing bidder cannot participate in a repair solution this 
+acts as a disincentive for strategic withdrawal and was also used 
+previously in the sensitivity analysis in some auctions a robust 
+solution may not exist table shows the percentage of auctions that 
+support robust solutions for the arbitrary-npv and regions 
+-npv distributions it is clear that finding robust solutions for the 
+former distribution is particularly difficult for auctions with and 
+ bids when revenue constraints are of optimum this 
+difficulty was previously alluded to by the low percentage of optimal 
+solutions that were robust for these auctions relaxing the revenue 
+constraint helps increase the percentage of auctions in which robust 
+solutions are achievable to and respectively this 
+improves the reparability of all solutions thereby increasing the 
+average revenue of the optimal robust solution it is somewhat 
+counterintuitive to expect a reduction in reparability of auction solutions as 
+the number of bids increases because there tends to be an increased 
+number of solutions above a revenue threshold in larger auctions 
+the mbb auction model performs very well however and ensures 
+that robust solutions are achievable for such inherently brittle 
+auctions without sacrificing over of optimal revenue to achieve 
+repair solutions 
+figure shows the average revenue of the optimal robust 
+solution as a percentage of the overall optimum repair solutions found 
+for a wss provide a lower bound on possible revenue following a 
+bid withdrawal note that in some instances it is possible for a 
+repair solution to have higher revenue than the original solution 
+when backtracking on winning bids by the bid-taker is disallowed 
+this can only happen when the repair solution includes two or more 
+bids that were not in the original otherwise the repair bids would 
+participate in the optimal robust solution in place of the bid that 
+was withdrawn a wss guarantees minimum levels of revenue for 
+repair solutions but this is not to say that repair solutions cannot be 
+improved upon it is possible to use an incremental algorithm to 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+repair revenue min optimal 
+repair revenue min optimal 
+mbb repair revenue min optimal 
+ a regions-npv 
+ 
+ 
+ 
+ 
+ 
+ 
+revenue ofoptimum 
+bids 
+repair revenue min optimal 
+repair revenue min optimal 
+mbb repair revenue min optimal 
+ b arbitrary-npv 
+figure revenue of optimal robust solutions 
+determine an optimal repair solution following a break whilst safe 
+in the knowledge that in advance of any possible bid withdrawal 
+we can establish a lower bound on the revenue of a repair kastner 
+et al have provided such an incremental ilp formulation 
+mutual bid bonds facilitate backtracking by the bid-taker on 
+already assigned items this improves the reparability of all 
+possible solutions thus increasing the revenue of the optimal robust 
+solution on average figure shows the increase in revenue of 
+robust solutions in such instances the revenues of repair 
+solutions are bounded by at least of the optimum in our 
+experiments thereby allowing a direct comparison with robust solutions 
+already found using the same revenue constraint but not providing 
+for backtracking it is immediately obvious that such a mechanism 
+can significantly increase revenue whilst still maintaining solution 
+robustness 
+table shows the number of winning bids participating in 
+optimal and optimal robust solutions given the three different 
+constraints on repairing solutions listed at the beginning of this 
+section as the number of bids increases more of the optimal overall 
+solutions are robust this leads to a convergence in the number of 
+winning bids the numbers in brackets are derived from the 
+sensitivity analysis of optimal solutions that reveals the fact that almost 
+all optimal solutions for auctions of bids are robust we can 
+therefore infer that the average number of winning bids in 
+revenuemaximizing robust solutions converges towards that of the optimal 
+overall solutions 
+a notable side-effect of robust solutions is that fewer bids 
+participate in the solutions it can be clearly seen from table that when 
+revenue constraints on repair solutions are tight there are fewer 
+winning bids in the optimal robust solution on average this is 
+particularly pronounced for smaller auctions in both distributions 
+this can win benefits for the bid-taker such as reduced overheads in 
+dealing with fewer suppliers although mbbs aid solution 
+repara 
+table number of winning bids 
+ bids 
+solution 
+arbitrary-npv 
+optimal 
+repair ≥ ≈ 
+repair ≥ 
+mbb ≥ ≈ 
+regions-npv 
+optimal 
+repair ≥ ≈ 
+repair ≥ 
+mbb ≥ ≈ 
+bility the number of bids in the solutions increases on average 
+this is to be expected because a greater fraction of these solutions 
+are in fact optimal as we saw in table 
+ discussion and future work 
+bidding strategies can become complex in 
+non-incentive-compatible mechanisms where winner determination is no longer 
+necessarily optimal the perceived reparability of a bid may influence the 
+bid amount with reparable bids reaching a lower equilibrium point 
+and perceived irreparable bids being more aggressive 
+penalty payments for bid withdrawal also create an incentive for 
+more aggressive bidding by providing a form of insurance against 
+the winner s curse if a winning bidder s revised valuation for 
+a set of items drops by more than the penalty for withdrawal of 
+the bid then it is in his best interests to forfeit the item s and pay 
+the penalty should the auction rules state that the bid-taker will 
+refuse to sell the items to any of the remaining bidders in the event 
+of a withdrawal then insurance against potential losses will 
+stimulate more aggressive bidding however in our case we are seeking 
+to repair the solution with the given bids a side-effect of such a 
+policy is to offset the increased aggressiveness by incentivizing 
+reduced valuations in expectation that another bidder s successful bid 
+is withdrawn harstad and rothkopf examined the conditions 
+required to ensure an equilibrium position in which bidding was at 
+least as aggressive as if no bid withdrawal was permitted given this 
+countervailing incentive to under-estimate a valuation three 
+major results arose from their study of bid withdrawal in a single item 
+auction 
+ equilibrium bidding is more aggressive with withdrawal for 
+sufficiently small probabilities of an award to the second 
+highest bidder in the event of a bid withdrawal 
+ equilibrium bidding is more aggressive with withdrawal if 
+the number of bidders is large enough 
+ for many distributions of costs and estimates equilibrium 
+bidding is more aggressive with withdrawal if the variability 
+of the estimating distribution is sufficiently large 
+it is important that mutual bid bonds do not result in depressed 
+bidding in equilibrium an analysis of the resultant behavior of 
+bidders must incorporate the possibility of a bidder winning an item 
+and having it withdrawn in order for the bid-taker to formulate a 
+repair solution after a break elsewhere harstad and rothkopf have 
+analyzed bidder aggressiveness using a strictly game-theoretic 
+model in which the only reason for bid withdrawal is the winner s 
+curse they assumed all bidders were risk-neutral but surmised 
+that it is entirely possible for the bid-taker to collect a risk premium 
+from risk-averse bidders with the offer of such insurance 
+combinatorial auctions with mutual bid bonds add an extra incentive to 
+bid aggressively because of the possibility of being compensated 
+for having a winning bid withdrawn by a bid-taker this is militated 
+against by the increased probability of not having items withdrawn 
+in a repair solution we leave an in-depth analysis of the sufficient 
+conditions for more aggressive bidding for future work 
+whilst the wss framework provides ample flexibility and 
+expressiveness scalability becomes a problem for larger auctions 
+although solutions to larger auctions tend to be naturally more 
+robust some bid-takers in such auctions may require robustness a 
+possible extension of our work in this paper may be to examine the 
+feasibility of reformulating integer linear programs so that the 
+solutions are robust hebrard et al examined reformulation of 
+csps for finding super solutions alternatively it may be 
+possible to use a top-down approach by looking at the k-best solutions 
+sequentially in terms of revenue and performing sensitivity 
+analysis upon each solution until a robust one is found in procurement 
+settings the principle of free disposal is often discounted and all 
+items must be sold this reduces the number of potential solutions 
+and thereby reduces the reparability of each solution the impact 
+of such a constraint on revenue of robust solutions is also left for 
+future work 
+there is another interesting direction this work may take namely 
+robust mechanism design porter et al introduced the notion of 
+fault tolerant mechanism design in which agents have private 
+information regarding costs for task completion but also their 
+probabilities of failure when the bid-taker has combinatorial 
+valuations for task completions it may be desirable to assign the same 
+task to multiple agents to ensure solution robustness it is desirable 
+to minimize such potentially redundant task assignments but not to 
+the detriment of completed task valuations this problem could be 
+modeled using the wss framework in a similar manner to that of 
+combinatorial auctions 
+in the case where no robust solutions are found it is possible 
+to optimize robustness instead of revenue by finding a solution 
+of at least a given revenue that minimizes the probability of an 
+irreparable break in this manner the least brittle solution of adequate 
+revenue may be chosen 
+ conclusion 
+fairness is often cited as a reason for choosing the optimal 
+solution in terms of revenue only robust solutions militate against 
+bids deemed brittle therefore bidders must earn a reputation for 
+being reliable to relax the reparability constraint attached to their 
+bids this may be seen as being fair to long-standing business 
+partners whose reliability is unquestioned internet-based auctions 
+are often seen as unwelcome price-gouging exercises by suppliers 
+in many sectors traditional business partnerships are 
+being severed by increased competition amongst suppliers quality 
+of service can suffer because of the increased focus on short-term 
+profitability to the detriment of the bid-taker in the long-term 
+robust solutions can provide a means of selectively discriminating 
+against distrusted bidders in a measured manner as 
+combinatorial auction deployment moves from large value auctions with a 
+small pool of trusted bidders e g spectrum-rights sales towards 
+lower value auctions with potentially unknown bidders e g 
+supply chain management solution robustness becomes more 
+relevant as well as being used to ensure that the bid-taker is not 
+left vulnerable to bid withdrawal it may also be used to cement 
+relationships with preferred possibly incumbent suppliers 
+ 
+we have shown that it is possible to attain robust solutions for 
+cas with only a small loss in revenue we have also illustrated 
+how such solutions tend to have fewer winning bids than overall 
+optimal solutions thereby reducing any overheads associated with 
+dealing with more bidders we have also demonstrated that 
+introducing mutual bid bonds a form of leveled commitment contract 
+can significantly increase the revenue of optimal robust solutions 
+by improving reparability we contend that robust solutions 
+using such a mechanism can allow a bid-taker to offer the possibility 
+of bid withdrawal to bidders whilst remaining confident about 
+postrepair revenue and also facilitating increased bidder aggressiveness 
+ references 
+ martin andersson and tuomas sandholm leveled 
+commitment contracts with myopic and strategic agents 
+journal of economic dynamics and control - 
+ special issue on agent-based computational 
+economics 
+ fahiem bacchus and george katsirelos efc solver 
+www cs toronto edu ˜gkatsi efc efc html 
+ michael berkelaar kjell eikland and peter notebaert 
+lp solve version 
+http groups yahoo com group lp solve 
+ rina dechter constraint processing morgan kaufmann 
+ 
+ sven devries and rakesh vohra combinatorial auctions a 
+survey informs journal on computing pages - 
+ 
+ jim ericson reverse auctions bad idea line sept 
+ matthew l ginsberg andrew j parkes and amitabha roy 
+supermodels and robustness in proceedings of aaai- 
+pages - madison wi 
+ ronald m harstad and michael h rothkopf withdrawable 
+bids as winner s curse insurance operations research 
+ - november-december 
+ emmanuel hebrard brahim hnich and toby walsh robust 
+solutions for constraint satisfaction and optimization in 
+proceedings of the european conference on artificial 
+intelligence pages - 
+ emmanuel hebrard brahim hnich and toby walsh super 
+solutions in constraint programming in proceedings of 
+cp-ai-or pages - 
+ gail hohner john rich ed ng grant reid andrew j 
+davenport jayant r kalagnanam ho soo lee and chae 
+an combinatorial and quantity-discount procurement 
+auctions benefit mars incorporated and its suppliers 
+interfaces - 
+ alan holland and barry o sullivan super solutions for 
+combinatorial auctions in ercim-colognet constraints 
+workshop csclp springer lnai lausanne 
+switzerland 
+ alan holland and barry o sullivan weighted super 
+solutions for constraint programs december technical 
+report no ucc-cs- - - 
+ selective insurance business insurance 
+http www selectiveinsurance com psapps 
+ business ins bonds asp bc 
+ ryan kastner christina hsieh miodrag potkonjak and 
+majid sarrafzadeh on the sensitivity of incremental 
+algorithms for combinatorial auctions in wecwis pages 
+ - june 
+ kevin leyton-brown mark pearson and yoav shoham 
+towards a universal test suite for combinatorial auction 
+algorithms in acm conference on electronic commerce 
+pages - 
+ associated general contractors of america associated 
+general contractors of america white paper on reverse 
+auctions for procurement of construction 
+http www agc org content public pdf 
+ member resources 
+reverseauctionwhitepaper pdf 
+ national society of professional engineers a basic guide to 
+surety bonds http www nspe org pracdiv 
+ - surebond asp 
+ martin pesendorfer and estelle cantillon combination 
+bidding in multi-unit auctions harvard business school 
+working draft 
+ ryan porter amir ronen yoav shoham and moshe 
+tennenholtz mechanism design with execution uncertainty 
+in proceedings of uai- pages - 
+ jean-charles r´egin global constraints and filtering 
+algorithms in constraint and integer 
+programmingtowards a unified methodology chapter pages - 
+kluwer academic publishers 
+ michael h rothkopf and aleksandar peke˘c combinatorial 
+auction design management science - 
+november 
+ michael h rothkopf aleksandar peke˘c and ronald m 
+harstad computationally manageable combinatorial 
+auctions management science - 
+ daniel sabin and eugene c freuder contradicting 
+conventional wisdom in constraint satisfaction in a cohn 
+editor proceedings of ecai- pages - 
+ tuomas sandholm algorithm for optimal winner 
+determination in combinatorial auctions artificial 
+intelligence - - 
+ tuomas sandholm and victor lesser leveled commitment 
+contracts and strategic breach games and economic 
+behavior - january 
+ tuomas sandholm and victor lesser leveled commitment 
+contracting a backtracking instrument for multiagent 
+systems ai magazine - 
+ tuomas sandholm sandeep sikka and samphel norden 
+algorithms for optimizing leveled commitment contracts in 
+proceedings of the ijcai- pages - morgan 
+kaufmann publishers inc 
+ tuomas sandholm and yunhong zhou surplus equivalence 
+of leveled commitment contracts artificial intelligence 
+ - 
+ william e walsh michael p wellman and fredrik ygge 
+combinatorial auctions for supply chain formation in acm 
+conference on electronic commerce pages - 
+ rainier weigel and christian bliek on reformulation of 
+constraint satisfaction problems in proceedings of ecai- 
+pages - 
+ margaret w wiener access spectrum bid withdrawal 
+http wireless fcc gov auctions 
+ releases da pdf july 
+ 

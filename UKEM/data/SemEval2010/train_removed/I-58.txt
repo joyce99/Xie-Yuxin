@@ -1,0 +1,1066 @@
+an efficient heuristic approach for security against 
+multiple adversaries 
+praveen paruchuri jonathan p pearce 
+milind tambe fernando ordonez 
+university of southern california 
+los angeles ca 
+ paruchur jppearce tambe fordon  usc edu 
+sarit kraus 
+bar-ilan university 
+ramat-gan israel 
+sarit cs biu ac il 
+abstract 
+in adversarial multiagent domains security commonly defined as 
+the ability to deal with intentional threats from other agents is a 
+critical issue this paper focuses on domains where these threats 
+come from unknown adversaries these domains can be modeled 
+as bayesian games much work has been done on finding equilibria 
+for such games however it is often the case in multiagent security 
+domains that one agent can commit to a mixed strategy which its 
+adversaries observe before choosing their own strategies in this 
+case the agent can maximize reward by finding an optimal 
+strategy without requiring equilibrium previous work has shown this 
+problem of optimal strategy selection to be np-hard therefore 
+we present a heuristic called asap with three key advantages to 
+address the problem first asap searches for the highest-reward 
+strategy rather than a bayes-nash equilibrium allowing it to find 
+feasible strategies that exploit the natural first-mover advantage of 
+the game second it provides strategies which are simple to 
+understand represent and implement third it operates directly on the 
+compact bayesian game representation without requiring 
+conversion to normal form we provide an efficient mixed integer linear 
+program milp implementation for asap along with 
+experimental results illustrating significant speedups and higher rewards over 
+other approaches 
+categories and subject descriptors 
+i computing methodologies artificial intelligence 
+distributed artificial intelligence - intelligent agents 
+general terms 
+security design theory 
+ introduction 
+in many multiagent domains agents must act in order to 
+provide security against attacks by adversaries a common issue that 
+agents face in such security domains is uncertainty about the 
+adversaries they may be facing for example a security robot may 
+need to make a choice about which areas to patrol and how often 
+ however it will not know in advance exactly where a robber 
+will choose to strike a team of unmanned aerial vehicles uavs 
+ monitoring a region undergoing a humanitarian crisis may also 
+need to choose a patrolling policy they must make this decision 
+without knowing in advance whether terrorists or other adversaries 
+may be waiting to disrupt the mission at a given location it may 
+indeed be possible to model the motivations of types of adversaries 
+the agent or agent team is likely to face in order to target these 
+adversaries more closely however in both cases the security robot 
+or uav team will not know exactly which kinds of adversaries may 
+be active on any given day 
+a common approach for choosing a policy for agents in such 
+scenarios is to model the scenarios as bayesian games a bayesian 
+game is a game in which agents may belong to one or more types 
+the type of an agent determines its possible actions and payoffs 
+the distribution of adversary types that an agent will face may 
+be known or inferred from historical data usually these games 
+are analyzed according to the solution concept of a bayes-nash 
+equilibrium an extension of the nash equilibrium for bayesian 
+games however in many settings a nash or bayes-nash 
+equilibrium is not an appropriate solution concept since it assumes that 
+the agents strategies are chosen simultaneously 
+in some settings one player can or must commit to a strategy 
+before the other players choose their strategies these scenarios are 
+known as stackelberg games in a stackelberg game a leader 
+commits to a strategy first and then a follower or group of 
+followers selfishly optimize their own rewards considering the action 
+chosen by the leader for example the security agent leader must 
+first commit to a strategy for patrolling various areas this strategy 
+could be a mixed strategy in order to be unpredictable to the 
+robbers followers the robbers after observing the pattern of patrols 
+over time can then choose their strategy which location to rob 
+often the leader in a stackelberg game can attain a higher 
+reward than if the strategies were chosen simultaneously to see the 
+advantage of being the leader in a stackelberg game consider a 
+simple game with the payoff table as shown in table the leader 
+is the row player and the follower is the column player here the 
+leader s payoff is listed first 
+ 
+ 
+ 
+table payoff table for example normal form game 
+the only nash equilibrium for this game is when the leader plays 
+ and the follower plays which gives the leader a payoff of 
+ 
+ - - - - rps c ifaamas 
+however if the leader commits to a uniform mixed strategy of 
+playing and with equal probability the follower s best 
+response is to play to get an expected payoff of and with 
+equal probability the leader s payoff would then be and 
+with equal probability in this case the leader now has an 
+incentive to deviate and choose a pure strategy of to get a payoff of 
+ however this would cause the follower to deviate to strategy 
+ as well resulting in the nash equilibrium thus by committing 
+to a strategy that is observed by the follower and by avoiding the 
+temptation to deviate the leader manages to obtain a reward higher 
+than that of the best nash equilibrium 
+the problem of choosing an optimal strategy for the leader to 
+commit to in a stackelberg game is analyzed in and found to 
+be np-hard in the case of a bayesian game with multiple types of 
+followers thus efficient heuristic techniques for choosing 
+highreward strategies in these games is an important open issue 
+methods for finding optimal leader strategies for non-bayesian games 
+ can be applied to this problem by converting the bayesian game 
+into a normal-form game by the harsanyi transformation if on 
+the other hand we wish to compute the highest-reward nash 
+equilibrium new methods using mixed-integer linear programs milps 
+ may be used since the highest-reward bayes-nash 
+equilibrium is equivalent to the corresponding nash equilibrium in the 
+transformed game however by transforming the game the 
+compact structure of the bayesian game is lost in addition since the 
+nash equilibrium assumes a simultaneous choice of strategies the 
+advantages of being the leader are not considered 
+this paper introduces an efficient heuristic method for 
+approximating the optimal leader strategy for security domains known as 
+asap agent security via approximate policies this method has 
+three key advantages first it directly searches for an optimal 
+strategy rather than a nash or bayes-nash equilibrium thus allowing 
+it to find high-reward non-equilibrium strategies like the one in the 
+above example second it generates policies with a support which 
+can be expressed as a uniform distribution over a multiset of fixed 
+size as proposed in this allows for policies that are simple 
+to understand and represent as well as a tunable parameter 
+ the size of the multiset that controls the simplicity of the policy 
+third the method allows for a bayes-nash game to be expressed 
+compactly without conversion to a normal-form game allowing for 
+large speedups over existing nash methods such as and 
+the rest of the paper is organized as follows in section we 
+fully describe the patrolling domain and its properties section 
+introduces the bayesian game the harsanyi transformation and 
+existing methods for finding an optimal leader s strategy in a 
+stackelberg game then in section the asap algorithm is presented 
+for normal-form games and in section we show how it can be 
+adapted to the structure of bayesian games with uncertain 
+adversaries experimental results showing higher reward and faster 
+policy computation over existing nash methods are shown in section 
+ and we conclude with a discussion of related work in section 
+ the patrolling domain 
+in most security patrolling domains the security agents like 
+uavs or security robots cannot feasibly patrol all areas all 
+the time instead they must choose a policy by which they patrol 
+various routes at different times taking into account factors such as 
+the likelihood of crime in different areas possible targets for crime 
+and the security agents own resources number of security agents 
+amount of available time fuel etc it is usually beneficial for 
+this policy to be nondeterministic so that robbers cannot safely rob 
+certain locations knowing that they will be safe from the security 
+agents to demonstrate the utility of our algorithm we use a 
+simplified version of such a domain expressed as a game 
+the most basic version of our game consists of two players the 
+security agent the leader and the robber the follower in a world 
+consisting of m houses m the security agent s set of pure 
+strategies consists of possible routes of d houses to patrol in an 
+order the security agent can choose a mixed strategy so that the 
+robber will be unsure of exactly where the security agent may 
+patrol but the robber will know the mixed strategy the security agent 
+has chosen for example the robber can observe over time how 
+often the security agent patrols each area with this knowledge the 
+robber must choose a single house to rob we assume that the 
+robber generally takes a long time to rob a house if the house chosen 
+by the robber is not on the security agent s route then the robber 
+successfully robs it otherwise if it is on the security agent s route 
+then the earlier the house is on the route the easier it is for the 
+security agent to catch the robber before he finishes robbing it 
+we model the payoffs for this game with the following variables 
+ vl x value of the goods in house l to the security agent 
+ vl q value of the goods in house l to the robber 
+ cx reward to the security agent of catching the robber 
+ cq cost to the robber of getting caught 
+ pl probability that the security agent can catch the robber at 
+the lth house in the patrol pl pl ⇐⇒ l l 
+the security agent s set of possible pure strategies patrol routes 
+is denoted by x and includes all d-tuples i w w wd 
+with w wd m where no two elements are equal the 
+agent is not allowed to return to the same house the robber s 
+set of possible pure strategies houses to rob is denoted by q and 
+includes all integers j m the payoffs security agent 
+robber for pure strategies i j are 
+ −vl x vl q for j l ∈ i 
+ plcx −pl −vl x −plcq −pl vl q for j l ∈ i 
+with this structure it is possible to model many different types 
+of robbers who have differing motivations for example one robber 
+may have a lower cost of getting caught than another or may value 
+the goods in the various houses differently if the distribution of 
+different robber types is known or inferred from historical data 
+then the game can be modeled as a bayesian game 
+ bayesian games 
+a bayesian game contains a set of n agents and each agent n 
+must be one of a given set of types θn for our patrolling domain 
+we have two agents the security agent and the robber θ is the set 
+of security agent types and θ is the set of robber types since there 
+is only one type of security agent θ contains only one element 
+during the game the robber knows its type but the security agent 
+does not know the robber s type for each agent the security agent 
+or the robber n there is a set of strategies σn and a utility function 
+un θ × θ × σ × σ → 
+a bayesian game can be transformed into a normal-form game 
+using the harsanyi transformation once this is done new 
+linear-program lp -based methods for finding high-reward 
+strategies for normal-form games can be used to find a strategy in the 
+transformed game this strategy can then be used for the bayesian 
+game while methods exist for finding bayes-nash equilibria 
+directly without the harsanyi transformation they find only a 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+single equilibrium in the general case which may not be of high 
+reward recent work has led to efficient mixed-integer linear 
+program techniques to find the best nash equilibrium for a given 
+agent however these techniques do require a normal-form game 
+and so to compare the policies given by asap against the optimal 
+policy as well as against the highest-reward nash equilibrium we 
+must apply these techniques to the harsanyi-transformed matrix 
+the next two subsections elaborate on how this is done 
+ harsanyi transformation 
+the first step in solving bayesian games is to apply the harsanyi 
+transformation that converts the bayesian game into a normal 
+form game given that the harsanyi transformation is a standard 
+concept in game theory we explain it briefly through a simple 
+example in our patrolling domain without introducing the 
+mathematical formulations let us assume there are two robber types a and 
+b in the bayesian game robber a will be active with probability 
+α and robber b will be active with probability − α the rules 
+described in section allow us to construct simple payoff tables 
+assume that there are two houses in the world and and 
+hence there are two patrol routes pure strategies for the agent 
+ and the robber can rob either house or house 
+and hence he has two strategies denoted as l l for robber type 
+l since there are two types assumed denoted as a and b we 
+construct two payoff tables shown in table corresponding to 
+the security agent playing a separate game with each of the two 
+robber types with probabilities α and − α first consider robber 
+type a borrowing the notation from the domain section we assign 
+the following values to the variables v x v q v x 
+v q cx cq p p using these 
+values we construct a base payoff table as the payoff for the game 
+against robber type a for example if the security agent chooses 
+route when robber a is active and robber a chooses house 
+the robber receives a reward of - for being caught and the agent 
+receives a reward of for catching the robber the payoffs for the 
+game against robber type b are constructed using different values 
+security agent 
+robber a 
+ a - - 
+ a - - - 
+robber b 
+ b - - 
+ b - - - 
+table payoff tables security agent vs robbers a and b 
+using the harsanyi technique involves introducing a chance node 
+that determines the robber s type thus transforming the security 
+agent s incomplete information regarding the robber into imperfect 
+information the bayesian equilibrium of the game is then 
+precisely the nash equilibrium of the imperfect information game the 
+transformed normal-form game is shown in table in the 
+transformed game the security agent is the column player and the set 
+of all robber types together is the row player suppose that robber 
+type a robs house and robber type b robs house while the 
+security agent chooses patrol then the security agent and the 
+robber receive an expected payoff corresponding to their payoffs 
+from the agent encountering robber a at house with probability α 
+and robber b at house with probability − α 
+ finding an optimal strategy 
+although a nash equilibrium is the standard solution concept for 
+games in which agents choose strategies simultaneously in our 
+security domain the security agent the leader can gain an advantage 
+by committing to a mixed strategy in advance since the followers 
+ the robbers will know the leader s strategy the optimal response 
+for the followers will be a pure strategy given the common 
+assumption taken in in the case where followers are indifferent 
+they will choose the strategy that benefits the leader there must 
+exist a guaranteed optimal strategy for the leader 
+from the bayesian game in table we constructed the harsanyi 
+transformed bimatrix in table the strategies for each player 
+ security agent or robber in the transformed game correspond to all 
+combinations of possible strategies taken by each of that player s 
+types therefore we denote x σθ 
+ σ and q σθ 
+ as the 
+index sets of the security agent and robbers pure strategies 
+respectively with r and c as the corresponding payoff matrices rij is 
+the reward of the security agent and cij is the reward of the 
+robbers when the security agent takes pure strategy i and the robbers 
+take pure strategy j a mixed strategy for the security agent is a 
+probability distribution over its set of pure strategies and will be 
+represented by a vector x px px px x where pxi ≥ 
+and 
+p 
+pxi here pxi is the probability that the security agent 
+will choose its ith pure strategy 
+the optimal mixed strategy for the security agent can be found 
+in time polynomial in the number of rows in the normal form game 
+using the following linear program formulation from 
+for every possible pure strategy j by the follower the set of all 
+robber types 
+max 
+p 
+i∈x pxirij 
+s t ∀j ∈ q 
+p 
+i∈σ 
+pxicij ≥ 
+p 
+i∈σ 
+pxicij 
+p 
+i∈x pxi 
+∀i∈x pxi 
+ 
+then for all feasible follower strategies j choose the one that 
+maximizes 
+p 
+i∈x pxirij the reward for the security agent leader 
+the pxi variables give the optimal strategy for the security agent 
+note that while this method is polynomial in the number of rows 
+in the transformed normal-form game the number of rows 
+increases exponentially with the number of robber types using this 
+method for a bayesian game thus requires running σ θ 
+ 
+separate linear programs this is no surprise since finding the leader s 
+optimal strategy in a bayesian stackelberg game is np-hard 
+ heuristic approaches 
+given that finding the optimal strategy for the leader is np-hard 
+we provide a heuristic approach in this heuristic we limit the 
+possible mixed strategies of the leader to select actions with 
+probabilities that are integer multiples of k for a predetermined integer 
+k previous work has shown that strategies with high entropy 
+are beneficial for security applications when opponents utilities 
+are completely unknown in our domain if utilities are not 
+considered this method will result in uniform-distribution strategies 
+one advantage of such strategies is that they are compact to 
+represent as fractions and simple to understand therefore they can 
+be efficiently implemented by real organizations we aim to 
+maintain the advantage provided by simple strategies for our security 
+application problem incorporating the effect of the robbers 
+rewards on the security agent s rewards thus the asap heuristic 
+will produce strategies which are k-uniform a mixed strategy is 
+denoted k-uniform if it is a uniform distribution on a multiset s of 
+pure strategies with s k a multiset is a set whose elements 
+may be repeated multiple times thus for example the mixed 
+strategy corresponding to the multiset would take strategy 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ a b − α − − α α − α − α − − α α − α 
+ a b − α − − α α − − α − α − − α α − α 
+ a b − α − − α − α − α − α − − α α − α 
+ a b − α − − α − α − − α − α − − α α − α 
+table harsanyi transformed payoff table 
+with probability and strategy with probability asap 
+allows the size of the multiset to be chosen in order to balance the 
+complexity of the strategy reached with the goal that the identified 
+strategy will yield a high reward 
+another advantage of the asap heuristic is that it operates 
+directly on the compact bayesian representation without requiring 
+the harsanyi transformation this is because the different follower 
+ robber types are independent of each other hence evaluating 
+the leader strategy against a harsanyi-transformed game matrix 
+is equivalent to evaluating against each of the game matrices for 
+the individual follower types this independence property is 
+exploited in asap to yield a decomposition scheme note that the lp 
+method introduced by to compute optimal stackelberg policies 
+is unlikely to be decomposable into a small number of games as it 
+was shown to be np-hard for bayes-nash problems finally note 
+that asap requires the solution of only one optimization problem 
+rather than solving a series of problems as in the lp method of 
+for a single follower type the algorithm works the following 
+way given a particular k for each possible mixed strategy x for the 
+leader that corresponds to a multiset of size k evaluate the leader s 
+payoff from x when the follower plays a reward-maximizing pure 
+strategy we then take the mixed strategy with the highest payoff 
+we need only to consider the reward-maximizing pure 
+strategies of the followers robbers since for a given fixed strategy x 
+of the security agent each robber type faces a problem with fixed 
+linear rewards if a mixed strategy is optimal for the robber then 
+so are all the pure strategies in the support of that mixed strategy 
+note also that because we limit the leader s strategies to take on 
+discrete values the assumption from section that the followers 
+will break ties in the leader s favor is not significant since ties will 
+be unlikely to arise this is because in domains where rewards are 
+drawn from any random distribution the probability of a follower 
+having more than one pure optimal response to a given leader 
+strategy approaches zero and the leader will have only a finite number 
+of possible mixed strategies 
+our approach to characterize the optimal strategy for the security 
+agent makes use of properties of linear programming we briefly 
+outline these results here for completeness for detailed discussion 
+and proofs see one of many references on the topic such as 
+every linear programming problem such as 
+max ct 
+x ax b x ≥ 
+has an associated dual linear program in this case 
+min bt 
+y at 
+y ≥ c 
+these primal dual pairs of problems satisfy weak duality for any x 
+and y primal and dual feasible solutions respectively ct 
+x ≤ bt 
+y 
+thus a pair of feasible solutions is optimal if ct 
+x bt 
+y and 
+the problems are said to satisfy strong duality in fact if a linear 
+program is feasible and has a bounded optimal solution then the 
+dual is also feasible and there is a pair x 
+ y 
+that satisfies ct 
+x 
+ 
+bt 
+y 
+ these optimal solutions are characterized with the following 
+optimality conditions as defined in 
+ primal feasibility ax b x ≥ 
+ dual feasibility at 
+y ≥ c 
+ complementary slackness xi at 
+y − c i for all i 
+note that this last condition implies that 
+ct 
+x xt 
+at 
+y bt 
+y 
+which proves optimality for primal dual feasible solutions x and y 
+in the following subsections we first define the problem in its 
+most intuititive form as a mixed-integer quadratic program miqp 
+and then show how this problem can be converted into a 
+mixedinteger linear program milp 
+ mixed-integer quadratic program 
+we begin with the case of a single type of follower let the 
+leader be the row player and the follower the column player we 
+denote by x the vector of strategies of the leader and q the vector 
+of strategies of the follower we also denote x and q the index 
+sets of the leader and follower s pure strategies respectively the 
+payoff matrices r and c correspond to rij is the reward of the 
+leader and cij is the reward of the follower when the leader takes 
+pure strategy i and the follower takes pure strategy j let k be the 
+size of the multiset 
+we first fix the policy of the leader to some k-uniform policy 
+x the value xi is the number of times pure strategy i is used in 
+the k-uniform policy which is selected with probability xi k we 
+formulate the optimization problem the follower solves to find its 
+optimal response to x as the following linear program 
+max 
+x 
+j∈q 
+x 
+i∈x 
+ 
+k 
+cijxi qj 
+s t 
+p 
+j∈q qj 
+q ≥ 
+ 
+the objective function maximizes the follower s expected reward 
+given x while the constraints make feasible any mixed strategy q 
+for the follower the dual to this linear programming problem is 
+the following 
+min a 
+s t a ≥ 
+x 
+i∈x 
+ 
+k 
+cijxi j ∈ q 
+from strong duality and complementary slackness we obtain that 
+the follower s maximum reward value a is the value of every pure 
+strategy with qj that is in the support of the optimal mixed 
+strategy therefore each of these pure strategies is optimal 
+optimal solutions to the follower s problem are characterized by linear 
+programming optimality conditions primal feasibility constraints 
+in dual feasibility constraints in and complementary 
+slackness 
+qj a − 
+x 
+i∈x 
+ 
+k 
+cijxi 
+ 
+ j ∈ q 
+these conditions must be included in the problem solved by the 
+leader in order to consider only best responses by the follower to 
+the k-uniform policy x 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the leader seeks the k-uniform solution x that maximizes its 
+own payoff given that the follower uses an optimal response q x 
+therefore the leader solves the following integer problem 
+max 
+x 
+i∈x 
+x 
+j∈q 
+ 
+k 
+rijq x j xi 
+s t 
+p 
+i∈x xi k 
+xi ∈ k 
+ 
+problem maximizes the leader s reward with the follower s best 
+response qj for fixed leader s policy x and hence denoted q x j 
+by selecting a uniform policy from a multiset of constant size k we 
+complete this problem by including the characterization of q x 
+through linear programming optimality conditions to simplify 
+writing the complementary slackness conditions we will constrain 
+q x to be only optimal pure strategies by just considering integer 
+solutions of q x the leader s problem becomes 
+maxx q 
+x 
+i∈x 
+x 
+j∈q 
+ 
+k 
+rijxiqj 
+s t 
+p 
+i xi kp 
+j∈q qj 
+ ≤ a − 
+p 
+i∈x 
+ 
+k 
+cijxi ≤ − qj m 
+xi ∈ k 
+qj ∈ 
+ 
+here the constant m is some large number the first and fourth 
+constraints enforce a k-uniform policy for the leader and the 
+second and fifth constraints enforce a feasible pure strategy for the 
+follower the third constraint enforces dual feasibility of the 
+follower s problem leftmost inequality and the complementary 
+slackness constraint for an optimal pure strategy q for the follower 
+ rightmost inequality in fact since only one pure strategy can be 
+selected by the follower say qh this last constraint enforces that 
+a 
+p 
+i∈x 
+ 
+k 
+cihxi imposing no additional constraint for all other 
+pure strategies which have qj 
+we conclude this subsection noting that problem is an 
+integer program with a non-convex quadratic objective in general 
+as the matrix r need not be positive-semi-definite efficient 
+solution methods for non-linear non-convex integer problems remains 
+a challenging research question in the next section we show a 
+reformulation of this problem as a linear integer programming 
+problem for which a number of efficient commercial solvers exist 
+ mixed-integer linear program 
+we can linearize the quadratic program of problem through the 
+change of variables zij xiqj obtaining the following problem 
+maxq z 
+p 
+i∈x 
+p 
+j∈q 
+ 
+k 
+rijzij 
+s t 
+p 
+i∈x 
+p 
+j∈q zij k 
+p 
+j∈q zij ≤ k 
+kqj ≤ 
+p 
+i∈x zij ≤ k 
+p 
+j∈q qj 
+ ≤ a − 
+p 
+i∈x 
+ 
+k 
+cij 
+p 
+h∈q zih ≤ − qj m 
+zij ∈ k 
+qj ∈ 
+ 
+proposition problems and are equivalent 
+proof consider x q a feasible solution of we will show 
+that q zij xiqj is a feasible solution of of same objective 
+function value the equivalence of the objective functions and 
+constraints and of are satisfied by construction the fact 
+that 
+p 
+j∈q zij xi as 
+p 
+j∈q qj explains constraints and 
+ of constraint of is satisfied because 
+p 
+i∈x zij kqj 
+let us now consider q z feasible for we will show that q and 
+xi 
+p 
+j∈q zij are feasible for with the same objective value 
+in fact all constraints of are readily satisfied by construction to 
+see that the objectives match notice that if qh then the third 
+constraint in implies that 
+p 
+i∈x zih k which means that 
+zij for all i ∈ x and all j h therefore 
+xiqj 
+x 
+l∈q 
+zilqj zihqj zij 
+this last equality is because both are when j h this shows 
+that the transformation preserves the objective function value 
+completing the proof 
+given this transformation to a mixed-integer linear program milp 
+we now show how we can apply our decomposition technique on 
+the milp to obtain significant speedups for bayesian games with 
+multiple follower types 
+ decomposition for multiple 
+adversaries 
+the milp developed in the previous section handles only one 
+follower since our security scenario contains multiple follower 
+ robber types we change the response function for the follower 
+from a pure strategy into a weighted combination over various pure 
+follower strategies where the weights are probabilities of 
+occurrence of each of the follower types 
+ decomposed miqp 
+to admit multiple adversaries in our framework we modify the 
+notation defined in the previous section to reason about multiple 
+follower types we denote by x the vector of strategies of the leader 
+and ql 
+the vector of strategies of follower l with l denoting the 
+index set of follower types we also denote by x and q the index 
+sets of leader and follower l s pure strategies respectively we also 
+index the payoff matrices on each follower l considering the 
+matrices rl 
+and cl 
+ 
+using this modified notation we characterize the optimal 
+solution of follower l s problem given the leaders k-uniform policy x 
+with the following optimality conditions 
+x 
+j∈q 
+ql 
+j 
+al 
+− 
+x 
+i∈x 
+ 
+k 
+cl 
+ijxi ≥ 
+ql 
+j al 
+− 
+x 
+i∈x 
+ 
+k 
+cl 
+ijxi 
+ql 
+j ≥ 
+again considering only optimal pure strategies for follower l s 
+problem we can linearize the complementarity constraint above 
+we incorporate these constraints on the leader s problem that 
+selects the optimal k-uniform policy therefore given a priori 
+probabilities pl 
+ with l ∈ l of facing each follower the leader solves 
+the following problem 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+maxx q 
+x 
+i∈x 
+x 
+l∈l 
+x 
+j∈q 
+pl 
+k 
+rl 
+ijxiql 
+j 
+s t 
+p 
+i xi kp 
+j∈q ql 
+j 
+ ≤ al 
+− 
+p 
+i∈x 
+ 
+k 
+cl 
+ijxi ≤ − ql 
+j m 
+xi ∈ k 
+ql 
+j ∈ 
+ 
+problem for a bayesian game with multiple follower types 
+is indeed equivalent to problem on the payoff matrix obtained 
+from the harsanyi transformation of the game in fact every pure 
+strategy j in problem corresponds to a sequence of pure 
+strategies jl one for each follower l ∈ l this means that qj if 
+and only if ql 
+jl 
+ for all l ∈ l in addition given the a 
+priori probabilities pl 
+of facing player l the reward in the harsanyi 
+transformation payoff table is rij 
+p 
+l∈l pl 
+rl 
+ijl 
+ the same 
+relation holds between c and cl 
+ these relations between a pure 
+strategy in the equivalent normal form game and pure strategies in 
+the individual games with each followers are key in showing these 
+problems are equivalent 
+ decomposed milp 
+we can linearize the quadratic programming problem through 
+the change of variables zl 
+ij xiql 
+j obtaining the following 
+problem 
+maxq z 
+p 
+i∈x 
+p 
+l∈l 
+p 
+j∈q 
+pl 
+k 
+rl 
+ijzl 
+ij 
+s t 
+p 
+i∈x 
+p 
+j∈q zl 
+ij k 
+p 
+j∈q zl 
+ij ≤ k 
+kql 
+j ≤ 
+p 
+i∈x zl 
+ij ≤ k 
+p 
+j∈q ql 
+j 
+ ≤ al 
+− 
+p 
+i∈x 
+ 
+k 
+cl 
+ij 
+p 
+h∈q zl 
+ih ≤ − ql 
+j m 
+p 
+j∈q zl 
+ij 
+p 
+j∈q z 
+ij 
+zl 
+ij ∈ k 
+ql 
+j ∈ 
+ 
+proposition problems and are equivalent 
+proof consider x ql 
+ al 
+with l ∈ l a feasible solution of 
+we will show that ql 
+ al 
+ zl 
+ij xiql 
+j is a feasible solution of 
+of same objective function value the equivalence of the objective 
+functions and constraints and of are satisfied by 
+construction the fact that 
+p 
+j∈q zl 
+ij xi as 
+p 
+j∈q ql 
+j explains 
+constraints and of constraint of is satisfied 
+because 
+p 
+i∈x zl 
+ij kql 
+j 
+lets now consider ql 
+ zl 
+ al 
+feasible for we will show that 
+ql 
+ al 
+and xi 
+p 
+j∈q z 
+ij are feasible for with the same 
+objective value in fact all constraints of are readily satisfied by 
+construction to see that the objectives match notice for each l 
+one ql 
+j must equal and the rest equal let us say that ql 
+jl 
+ 
+then the third constraint in implies that 
+p 
+i∈x zl 
+ijl 
+ k which 
+means that zl 
+ij for all i ∈ x and all j jl in particular this 
+implies that 
+xi 
+x 
+j∈q 
+z 
+ij z 
+ij 
+ zl 
+ijl 
+ 
+the last equality from constraint of therefore xiql 
+j zl 
+ijl 
+ql 
+j 
+zl 
+ij this last equality is because both are when j jl 
+effectively constraint ensures that all the adversaries are calculating 
+their best responses against a particular fixed policy of the agent 
+this shows that the transformation preserves the objective function 
+value completing the proof 
+we can therefore solve this equivalent linear integer program 
+with efficient integer programming packages which can handle 
+problems with thousands of integer variables we implemented the 
+decomposed milp and the results are shown in the following section 
+ experimental results 
+the patrolling domain and the payoffs for the associated game 
+are detailed in sections and we performed experiments for this 
+game in worlds of three and four houses with patrols consisting of 
+two houses the description given in section is used to generate 
+a base case for both the security agent and robber payoff functions 
+the payoff tables for additional robber types are constructed and 
+added to the game by adding a random distribution of varying size 
+to the payoffs in the base case all games are normalized so that 
+for each robber type the minimum and maximum payoffs to the 
+security agent and robber are and respectively 
+using the data generated we performed the experiments using 
+four methods for generating the security agent s strategy 
+ uniform randomization 
+ asap 
+ the multiple linear programs method from to find the true 
+optimal strategy 
+ the highest reward bayes-nash equilibrium found using the 
+mip-nash algorithm 
+the last three methods were applied using cplex because 
+the last two methods are designed for normal-form games rather 
+than bayesian games the games were first converted using the 
+harsanyi transformation the uniform randomization method is 
+simply choosing a uniform random policy over all possible patrol 
+routes we use this method as a simple baseline to measure the 
+performance of our heuristics we anticipated that the uniform policy 
+would perform reasonably well since maximum-entropy policies 
+have been shown to be effective in multiagent security domains 
+ the highest-reward bayes-nash equilibria were used in order 
+to demonstrate the higher reward gained by looking for an optimal 
+policy rather than an equilibria in stackelberg games such as our 
+security domain 
+based on our experiments we present three sets of graphs to 
+demonstrate the runtime of asap compared to other common 
+methods for finding a strategy the reward guaranteed by asap 
+compared to other methods and the effect of varying the 
+parameter k the size of the multiset on the performance of asap 
+in the first two sets of graphs asap is run using a multiset of 
+ elements in the third set this number is varied the first set of 
+graphs shown in figure shows the runtime graphs for three-house 
+ left column and four-house right column domains each of the 
+three rows of graphs corresponds to a different randomly-generated 
+scenario the x-axis shows the number of robber types the 
+security agent faces and the y-axis of the graph shows the runtime in 
+seconds all experiments that were not concluded in minutes 
+ seconds were cut off the runtime for the uniform policy 
+is always negligible irrespective of the number of adversaries and 
+hence is not shown 
+the asap algorithm clearly outperforms the optimal 
+multiplelp method as well as the mip-nash algorithm for finding the 
+highestreward bayes-nash equilibrium with respect to runtime for a 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure runtimes for various algorithms on problems of 
+and houses 
+domain of three houses the optimal method cannot reach a 
+solution for more than seven robber types and for four houses it 
+cannot solve for more than six types within the cutoff time in any of 
+the three scenarios mip-nash solves for even fewer robber types 
+within the cutoff time on the other hand asap runs much faster 
+and is able to solve for at least adversaries for the three-house 
+scenarios and for at least adversaries in the four-house 
+scenarios within the cutoff time the runtime of asap does not increase 
+strictly with the number of robber types for each scenario but in 
+general the addition of more types increases the runtime required 
+the second set of graphs figure shows the reward to the patrol 
+agent given by each method for three scenarios in the three-house 
+ left column and four-house right column domains this reward 
+is the utility received by the security agent in the patrolling game 
+and not as a percentage of the optimal reward since it was not 
+possible to obtain the optimal reward as the number of robber types 
+increased the uniform policy consistently provides the lowest 
+reward in both domains while the optimal method of course 
+produces the optimal reward the asap method remains consistently 
+close to the optimal even as the number of robber types increases 
+the highest-reward bayes-nash equilibria provided by the 
+mipnash method produced rewards higher than the uniform method 
+but lower than asap this difference clearly illustrates the gains in 
+the patrolling domain from committing to a strategy as the leader 
+in a stackelberg game rather than playing a standard bayes-nash 
+strategy 
+the third set of graphs shown in figure shows the effect of the 
+multiset size on runtime in seconds left column and reward right 
+column again expressed as the reward received by the security 
+agent in the patrolling game and not a percentage of the optimal 
+figure reward for various algorithms on problems of and 
+ houses 
+reward results here are for the three-house domain the trend is 
+that as as the multiset size is increased the runtime and reward level 
+both increase not surprisingly the reward increases monotonically 
+as the multiset size increases but what is interesting is that there is 
+relatively little benefit to using a large multiset in this domain in 
+all cases the reward given by a multiset of elements was within 
+at least of the reward given by an -element multiset the 
+runtime does not always increase strictly with the multiset size 
+indeed in one example scenario with robber types using a 
+multiset of elements took seconds while using elements 
+only took seconds in general runtime should increase since a 
+larger multiset means a larger domain for the variables in the milp 
+and thus a larger search space however an increase in the number 
+of variables can sometimes allow for a policy to be constructed 
+more quickly due to more flexibility in the problem 
+ summary and related work 
+this paper focuses on security for agents patrolling in hostile 
+environments in these environments intentional threats are caused 
+by adversaries about whom the security patrolling agents have 
+incomplete information specifically we deal with situations where 
+the adversaries actions and payoffs are known but the exact 
+adversary type is unknown to the security agent agents acting in the 
+real world quite frequently have such incomplete information about 
+other agents bayesian games have been a popular choice to model 
+such incomplete information games the gala toolkit is one 
+method for defining such games without requiring the game to 
+be represented in normal form via the harsanyi transformation 
+gala s guarantees are focused on fully competitive games much 
+work has been done on finding optimal bayes-nash equilbria for 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure reward for asap using multisets of and 
+elements 
+subclasses of bayesian games finding single bayes-nash 
+equilibria for general bayesian games or approximate bayes-nash 
+equilibria less attention has been paid to finding the optimal 
+strategy to commit to in a bayesian game the stackelberg scenario 
+ however the complexity of this problem was shown to be 
+np-hard in the general case which also provides algorithms for 
+this problem in the non-bayesian case 
+therefore we present a heuristic called asap with three key 
+advantages towards addressing this problem first asap searches 
+for the highest reward strategy rather than a bayes-nash 
+equilibrium allowing it to find feasible strategies that exploit the 
+natural first-mover advantage of the game second it provides 
+strategies which are simple to understand represent and implement 
+third it operates directly on the compact bayesian game 
+representation without requiring conversion to normal form we provide 
+an efficient mixed integer linear program milp implementation 
+for asap along with experimental results illustrating significant 
+speedups and higher rewards over other approaches 
+our k-uniform strategies are similar to the k-uniform strategies 
+of while that work provides epsilon error-bounds based on 
+the k-uniform strategies their solution concept is still that of a 
+nash equilibrium and they do not provide efficient algorithms for 
+obtaining such k-uniform strategies this contrasts with asap 
+where our emphasis is on a highly efficient heuristic approach that 
+is not focused on equilibrium solutions 
+finally the patrolling problem which motivated our work has 
+recently received growing attention from the multiagent community 
+due to its wide range of applications however most of this 
+work is focused on either limiting energy consumption involved in 
+patrolling or optimizing on criteria like the length of the path 
+traveled without reasoning about any explicit model of an 
+adversary 
+acknowledgments this research is supported by the united states 
+department of homeland security through center for risk and economic 
+analysis of terrorism events create it is also supported by the 
+defense advanced research projects agency darpa through the 
+department of the interior nbc acquisition services division under contract 
+no nbchd sarit kraus is also affiliated with umiacs 
+ references 
+ r w beard and t mclain multiple uav cooperative 
+search under collision avoidance and limited range 
+communication constraints in ieee cdc 
+ d bertsimas and j tsitsiklis introduction to linear 
+optimization athena scientific 
+ j brynielsson and s arnborg bayesian games for threat 
+prediction and situation analysis in fusion 
+ y chevaleyre theoretical analysis of multi-agent patrolling 
+problem in aamas 
+ v conitzer and t sandholm choosing the best strategy to 
+commit to in acm conference on electronic commerce 
+ 
+ d fudenberg and j tirole game theory mit press 
+ c gui and p mohapatra virtual patrol a new power 
+conservation design for surveillance using sensor networks 
+in ipsn 
+ j c harsanyi and r selten a generalized nash solution for 
+two-person bargaining games with incomplete information 
+management science - 
+ d koller and a pfeffer generating and solving imperfect 
+information games in ijcai pages - 
+ d koller and a pfeffer representations and solutions for 
+game-theoretic problems artificial intelligence 
+ - 
+ c lemke and j howson equilibrium points of bimatrix 
+games journal of the society for industrial and applied 
+mathematics - 
+ r j lipton e markakis and a mehta playing large 
+games using simple strategies in acm conference on 
+electronic commerce 
+ a machado g ramalho j d zucker and a drougoul 
+multi-agent patrolling an empirical analysis on alternative 
+architectures in mabs 
+ p paruchuri m tambe f ordonez and s kraus security 
+in multiagent systems by policy randomization in aamas 
+ 
+ t roughgarden stackelberg scheduling strategies in acm 
+symposium on toc 
+ s ruan c meirina f yu k r pattipati and r l popp 
+patrolling in a stochastic environment in th intl 
+command and control research symp 
+ t sandholm a gilpin and v conitzer mixed-integer 
+programming methods for finding nash equilibria in aaai 
+ 
+ s singh v soni and m wellman computing approximate 
+bayes-nash equilibria with tree-games of incomplete 
+information in acm conference on electronic commerce 
+ 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

@@ -1,0 +1,1027 @@
+personalized query expansion for the web 
+paul - alexandru chirita 
+l s research center 
+appelstr a 
+ hannover germany 
+chirita l s de 
+claudiu s firan 
+l s research center 
+appelstr a 
+ hannover germany 
+firan l s de 
+wolfgang nejdl 
+l s research center 
+appelstr a 
+ hannover germany 
+nejdl l s de 
+abstract 
+the inherent ambiguity of short keyword queries demands for 
+enhanced methods for web retrieval in this paper we propose to 
+improve such web queries by expanding them with terms collected 
+from each user s personal information repository thus implicitly 
+personalizing the search output we introduce five broad 
+techniques for generating the additional query keywords by analyzing 
+user data at increasing granularity levels ranging from term and 
+compound level analysis up to global co-occurrence statistics as 
+well as to using external thesauri our extensive empirical 
+analysis under four different scenarios shows some of these approaches 
+to perform very well especially on ambiguous queries producing 
+a very strong increase in the quality of the output rankings 
+subsequently we move this personalized search framework one step 
+further and propose to make the expansion process adaptive to 
+various features of each query a separate set of experiments indicates 
+the adaptive algorithms to bring an additional statistically 
+significant improvement over the best static expansion approach 
+categories and subject descriptors 
+h information storage and retrieval information search 
+and retrieval h information storage and retrieval 
+online information services-web-based services 
+general terms 
+algorithms experimentation measurement 
+ introduction 
+the booming popularity of search engines has determined 
+simple keyword search to become the only widely accepted user 
+interface for seeking information over the web yet keyword queries are 
+inherently ambiguous the query canon book for example covers 
+several different areas of interest religion photography literature 
+and music clearly one would prefer search output to be aligned 
+with user s topic s of interest rather than displaying a selection of 
+popular urls from each category studies have shown that more 
+than of the users would prefer to receive such personalized 
+search results instead of the currently generic ones 
+query expansion assists the user in formulating a better query 
+by appending additional keywords to the initial search request in 
+order to encapsulate her interests therein as well as to focus the 
+web search output accordingly it has been shown to perform very 
+well over large data sets especially with short input queries see 
+for example this is exactly the web search scenario 
+in this paper we propose to enhance web query reformulation 
+by exploiting the user s personal information repository pir 
+i e the personal collection of text documents emails cached web 
+pages etc several advantages arise when moving web search 
+personalization down to the desktop level note that by desktop we 
+refer to pir and we use the two terms interchangeably first is of 
+course the quality of personalization the local desktop is a rich 
+repository of information accurately describing most if not all 
+interests of the user second as all profile information is stored and 
+exploited locally on the personal machine another very important 
+benefit is privacy search engines should not be able to know about 
+a person s interests i e they should not be able to connect a 
+specific person with the queries she issued or worse with the output 
+urls she clicked within the search interface 
+ see volokh for 
+a discussion on privacy issues related to personalized web search 
+our algorithms expand web queries with keywords extracted 
+from user s pir thus implicitly personalizing the search output 
+after a discussion of previous works in section we first 
+investigate the analysis of local desktop query context in section 
+we propose several keyword expression and summary based 
+techniques for determining expansion terms from those personal 
+documents matching the web query best in section we move our 
+analysis to the global desktop collection and investigate expansions 
+based on co-occurrence metrics and external thesauri the 
+experiments presented in section show many of these approaches 
+to perform very well especially on ambiguous queries producing 
+ndcg improvements of up to in section we move 
+this algorithmic framework further and propose to make the 
+expansion process adaptive to the clarity level of the query this yields 
+an additional improvement of over the previously identified 
+best algorithm we conclude and discuss further work in section 
+ 
+search engines can map queries at least to ip addresses for example by 
+using cookies and mining the query logs however by moving the user 
+profile at the desktop level we ensure such information is not explicitly 
+associated to a particular user and stored on the search engine side 
+ previous work 
+this paper brings together two ir areas search personalization 
+and automatic query expansion there exists a vast amount of 
+algorithms for both domains however not much has been done 
+specifically aimed at combining them in this section we thus 
+present a separate analysis first introducing some approaches to 
+personalize search as this represents the main goal of our research 
+and then discussing several query expansion techniques and their 
+relationship to our algorithms 
+ personalized search 
+personalized search comprises two major components user 
+profiles and the actual search algorithm this section splits 
+the relevant background according to the focus of each article into 
+either one of these elements 
+approaches focused on the user profile sugiyama et al 
+analyzed surfing behavior and generated user profiles as features 
+ terms of the visited pages upon issuing a new query the search 
+results were ranked based on the similarity between each url and 
+the user profile qiu and cho used machine learning on the 
+past click history of the user in order to determine topic preference 
+vectors and then apply topic-sensitive pagerank user 
+profiling based on browsing history has the advantage of being rather 
+easy to obtain and process this is probably why it is also employed 
+by several industrial search engines e g yahoo myweb 
+ 
+however it is definitely not sufficient for gathering a thorough insight 
+into user s interests more it requires to store all personal 
+information at the server side which raises significant privacy concerns 
+only two other approaches enhanced web search using desktop 
+data yet both used different core ideas teevan et al 
+modified the query term weights from the bm weighting scheme to 
+incorporate user interests as captured by their desktop indexes 
+in chirita et al we focused on re-ranking the web search 
+output according to the cosine distance between each url and a set of 
+desktop terms describing user s interests moreover none of these 
+investigated the adaptive application of personalization 
+approaches focused on the personalization algorithm 
+effectively building the personalization aspect directly into 
+pagerank i e by biasing it on a target set of pages has 
+received much attention recently haveliwala computed a 
+topicoriented pagerank in which pagerank vectors biased on each 
+of the main topics of the open directory were initially calculated 
+off-line and then combined at run-time based on the similarity 
+between the user query and each of the topics more recently 
+nie et al modified the idea by distributing the pagerank of 
+a page across the topics it contains in order to generate topic 
+oriented rankings jeh and widom proposed an algorithm that 
+avoids the massive resources needed for storing one personalized 
+pagerank vector ppv per user by precomputing ppvs only for 
+a small set of pages and then applying linear combination as the 
+computation of ppvs for larger sets of pages was still quite 
+expensive several solutions have been investigated the most important 
+ones being those of fogaras and racz and sarlos et al 
+the latter using rounding and count-min sketching in order to fastly 
+obtain accurate enough approximations of the personalized scores 
+ automatic query expansion 
+automatic query expansion aims at deriving a better formulation 
+of the user query in order to enhance retrieval it is based on 
+exploiting various social or collection specific characteristics in order 
+to generate additional terms which are appended to the original 
+in 
+http myweb search yahoo com 
+put keywords before identifying the matching documents returned 
+as output in this section we survey some of the representative 
+query expansion works grouped according to the source employed 
+to generate additional terms relevance feedback 
+collection based co-occurrence statistics and thesaurus information 
+some other approaches are also addressed in the end of the section 
+relevance feedback techniques the main idea of relevance 
+feedback rf is that useful information can be extracted from the 
+relevant documents returned for the initial query first approaches 
+were manual in the sense that the user was the one choosing 
+the relevant results and then various methods were applied to 
+extract new terms related to the query and the selected documents 
+efthimiadis presented a comprehensive literature review and 
+proposed several simple methods to extract such new keywords 
+based on term frequency document frequency etc we used some 
+of these as inspiration for our desktop specific techniques chang 
+and hsu asked users to choose relevant clusters instead of 
+documents thus reducing the amount of interaction necessary rf has 
+also been shown to be effectively automatized by considering the 
+top ranked documents as relevant this is known as pseudo 
+rf lam and jones used summarization to extract 
+informative sentences from the top-ranked documents and appended them 
+to the user query carpineto et al maximized the divergence 
+between the language model defined by the top retrieved documents 
+and that defined by the entire collection finally yu et al 
+selected the expansion terms from vision-based segments of web 
+pages in order to cope with the multiple topics residing therein 
+co-occurrence based techniques terms highly co-occurring 
+with the issued keywords have been shown to increase precision 
+when appended to the query many statistical measures have 
+been developed to best assess term relationship levels either 
+analyzing entire documents lexical affinity relationships i e 
+pairs of closely related words which contain exactly one of the 
+initial query terms etc we have also investigated three such 
+approaches in order to identify query relevant keywords from the rich 
+yet rather complex personal information repository 
+thesaurus based techniques a broadly explored method is to 
+expand the user query with new terms whose meaning is closely 
+related to the input keywords such relationships are usually 
+extracted from large scale thesauri as wordnet in which 
+various sets of synonyms hypernyms etc are predefined just as for 
+the co-occurrence methods initial experiments with this approach 
+were controversial either reporting improvements or even 
+reductions in output quality recently as the experimental 
+collections grew larger and as the employed algorithms became more 
+complex better results have been obtained we also 
+use wordnet based expansion terms however we base this 
+process on analyzing the desktop level relationship between the 
+original query and the proposed new keywords 
+other techniques there are many other attempts to extract 
+expansion terms though orthogonal to our approach two works 
+are very relevant for the web environment cui et al 
+generated word correlations utilizing the probability for query terms to 
+appear in each document as computed over the search engine logs 
+kraft and zien showed that anchor text is very similar to user 
+queries and thus exploited it to acquire additional keywords 
+ query expansion using 
+desktop data 
+desktop data represents a very rich repository of profiling 
+information however this information comes in a very 
+unstructured way covering documents which are highly diverse in 
+format content and even language characteristics in this section we 
+first tackle this problem by proposing several lexical analysis 
+algorithms which exploit user s pir to extract keyword expansion terms 
+at various granularities ranging from term frequency within 
+desktop documents up to utilizing global co-occurrence statistics over 
+the personal information repository then in the second part of the 
+section we empirically analyze the performance of each approach 
+ algorithms 
+this section presents the five generic approaches for 
+analyzing user s desktop data in order to provide expansion terms for 
+web search in the proposed algorithms we gradually increase the 
+amount of personal information utilized thus in the first part we 
+investigate three local analysis techniques focused only on those 
+desktop documents matching user s query best we append to the 
+web query the most relevant terms compounds and sentence 
+summaries from these documents in the second part of the section we 
+move towards a global desktop analysis proposing to investigate 
+term co-occurrences as well as thesauri in the expansion process 
+ expanding with local desktop analysis 
+local desktop analysis is related to enhancing pseudo 
+relevance feedback to generate query expansion keywords from the 
+pir best hits for user s web query rather than from the top ranked 
+web search results we distinguish three granularity levels for this 
+process and we investigate each of them separately 
+term and document frequency as the simplest possible 
+measures tf and df have the advantage of being very fast to compute 
+previous experiments with small data sets have showed them to 
+yield very good results we thus independently associate a 
+score with each term based on each of the two statistics the tf 
+based one is obtained by multiplying the actual frequency of a term 
+with a position score descending as the term first appears closer 
+to the end of the document this is necessary especially for longer 
+documents because more informative terms tend to appear towards 
+their beginning the complete tf based keyword extraction 
+formula is as follows 
+termscore 
+ 
+ 
+ 
+ 
+ 
+· 
+nrwords − pos 
+nrwords 
+ 
+· log tf 
+where nrwords is the total number of terms in the document and 
+pos is the position of the first appearance of the term tf 
+represents the frequency of each term in the desktop document matching 
+user s web query 
+the identification of suitable expansion terms is even simpler 
+when using df given the set of top-k relevant desktop 
+documents generate their snippets as focused on the original search 
+request this query orientation is necessary since the df scores 
+are computed at the level of the entire pir and would produce too 
+noisy suggestions otherwise once the set of candidate terms has 
+been identified the selection proceeds by ordering them according 
+to the df scores they are associated with ties are resolved using 
+the corresponding tf scores 
+note that a hybrid tfxidf approach is not necessarily efficient 
+since one desktop term might have a high df on the desktop 
+while being quite rare in the web for example the term 
+pagerank would be quite frequent on the desktop of an ir scientist 
+thus achieving a low score with tfxidf however as it is rather 
+rare in the web it would make a good resolution of the query 
+towards the correct topic 
+lexical compounds anick and tipirneni defined the 
+lexical dispersion hypothesis according to which an expression s 
+lexical dispersion i e the number of different compounds it appears in 
+within a document or group of documents can be used to 
+automatically identify key concepts over the input document set although 
+several possible compound expressions are available it has been 
+shown that simple approaches based on noun analysis are almost 
+as good as highly complex part-of-speech pattern identification 
+algorithms we thus inspect the matching desktop documents for 
+all their lexical compounds of the following form 
+ adjective noun 
+all such compounds could be easily generated off-line at indexing 
+time for all the documents in the local repository moreover once 
+identified they can be further sorted depending on their dispersion 
+within each document in order to facilitate fast retrieval of the most 
+frequent compounds at run-time 
+sentence selection this technique builds upon sentence 
+oriented document summarization first the set of relevant desktop 
+documents is identified then a summary containing their most 
+important sentences is generated as output sentence selection is 
+the most comprehensive local analysis approach as it produces the 
+most detailed expansions i e sentences its downside is that 
+unlike with the first two algorithms its output cannot be stored 
+efficiently and consequently it cannot be computed off-line we 
+generate sentence based summaries by ranking the document sentences 
+according to their salience score as follows 
+sentencescore 
+sw 
+tw 
+ ps 
+tq 
+nq 
+the first term is the ratio between the square amount of significant 
+words within the sentence and the total number of words therein a 
+word is significant in a document if its frequency is above a 
+threshold as follows 
+tf ms 
+v 
+` 
+x 
+ − − ns if ns 
+ if ns ∈ 
+ ns − if ns 
+with ns being the total number of sentences in the document 
+ see for details the second term is a position score set to 
+ avg ns − sentenceindex avg 
+ ns for the first ten 
+sentences and to otherwise avg ns being the average number of 
+sentences over all desktop items this way short documents such 
+as emails are not affected which is correct since they usually do 
+not contain a summary in the very beginning however as longer 
+documents usually do include overall descriptive sentences in the 
+beginning these sentences are more likely to be relevant the 
+final term biases the summary towards the query it is the ratio 
+between the square number of query terms present in the sentence and 
+the total number of terms from the query it is based on the belief 
+that the more query terms contained in a sentence the more likely 
+will that sentence convey information highly related to the query 
+ expanding with global desktop analysis 
+in contrast to the previously presented approach global analysis 
+relies on information from across the entire personal desktop to 
+infer the new relevant query terms in this section we propose two 
+such techniques namely term co-occurrence statistics and filtering 
+the output of an external thesaurus 
+term co-occurrence statistics for each term we can easily 
+compute off-line those terms co-occurring with it most frequently 
+in a given collection i e pir in our case and then exploit this 
+information at run-time in order to infer keywords highly 
+correlated with the user query our generic co-occurrence based query 
+expansion algorithm is as follows 
+algorithm co-occurrence based keyword similarity search 
+off-line computation 
+ filter potential keywords k with df ∈ · n 
+ for each keyword ki 
+ for each keyword kj 
+ compute scki kj 
+ the similarity coefficient of ki kj 
+on-line computation 
+ let s be the set of keywords 
+potentially similar to an input expression e 
+ for each keyword k of e 
+ s ← s ∪ tsc k where tsc k contains the 
+top-k terms most similar to k 
+ for each term t of s 
+ a let score t ← 
+q 
+k∈e sct k 
+ b let score t ← desktophits e t 
+ select top-k terms of s with the highest scores 
+the off-line computation needs an initial trimming phase step 
+ for optimization purposes in addition we also restricted the 
+algorithm to computing co-occurrence levels across nouns only as 
+they contain by far the largest amount of conceptual information 
+and as this approach reduces the size of the co-occurrence matrix 
+considerably during the run-time phase having the terms most 
+correlated with each particular query keyword already identified 
+one more operation is necessary namely calculating the correlation 
+of every output term with the entire query two approaches are 
+possible using a product of the correlation between the term 
+and all keywords in the original expression step a or 
+simply counting the number of documents in which the proposed term 
+co-occurs with the entire user query step b we considered the 
+following formulas for similarity coefficients 
+ cosine similarity defined as 
+cs 
+dfx y 
+pdfx · dfy 
+ 
+ mutual information defined as 
+mi log 
+n · dfx y 
+dfx · dfy 
+ 
+ likelihood ratio defined in the paragraphs below 
+dfx is the document frequency of term x and dfx y is the 
+number of documents containing both x and y to further increase the 
+quality of the generated scores we limited the latter indicator to 
+cooccurrences within a window of w terms we set w to be the same 
+as the maximum amount of expansion keywords desired 
+dunning s likelihood ratio λ is a co-occurrence based 
+metric similar to χ 
+ it starts by attempting to reject the null 
+hypothesis according to which two terms a and b would appear in 
+text independently from each other this means that p a b 
+p a¬b p a where p a¬b is the probability that term a 
+is not followed by term b consequently the test for independence 
+of a and b can be performed by looking if the distribution of a 
+given that b is present is the same as the distribution of a given 
+that b is not present of course in reality we know these terms are 
+not independent in text and we only use the statistical metrics to 
+highlight terms which are frequently appearing together we 
+compare the two binomial processes by using likelihood ratios of their 
+associated hypotheses first let us define the likelihood ratio for 
+one hypothesis 
+λ 
+maxω∈ω 
+h ω k 
+maxω∈ω h ω k 
+ 
+where ω is a point in the parameter space ω ω is the particular 
+hypothesis being tested and k is a point in the space of observations 
+k if we assume that two binomial distributions have the same 
+underlying parameter i e p p p p we can write 
+λ 
+maxp h p p k k n n 
+maxp p 
+h p p k k n n 
+ 
+where h p p k k n n pk 
+ · − p n −k 
+· 
+ n 
+k 
+ 
+· 
+pk 
+ · − p n −k 
+· 
+ n 
+k 
+ 
+ since the maxima are obtained with 
+p k 
+n 
+ p k 
+n 
+ and p k k 
+n n 
+ we have 
+λ 
+maxp l p k n l p k n 
+maxp p l p k n l p k n 
+ 
+where l p k n pk 
+· − p n−k 
+ taking the logarithm of the 
+likelihood we obtain 
+− · log λ · log l p k n log l p k n − 
+log l p k n − log l p k n 
+where log l p k n k · log p n − k · log − p finally 
+if we write o p a b o p ¬a b o p a ¬b 
+and o p ¬a¬b then the co-occurrence likelihood of terms 
+a and b becomes 
+− · log λ · o · log p o · log − p 
+o · log p o · log − p − 
+ o o · log p − o o · log − p 
+where p 
+k 
+n 
+ 
+o 
+o o 
+ p 
+k 
+n 
+ 
+o 
+o o 
+ and p 
+k k 
+n n 
+thesaurus based expansion large scale thesauri encapsulate 
+global knowledge about term relationships thus we first identify 
+the set of terms closely related to each query keyword and then 
+we calculate the desktop co-occurrence level of each of these 
+possible expansion terms with the entire initial search request in the 
+end those suggestions with the highest frequencies are kept the 
+algorithm is as follows 
+algorithm filtered thesaurus based query expansion 
+ for each keyword k of an input query q 
+ select the following sets of related terms using wordnet 
+ a syn all synonyms 
+ b sub all sub-concepts residing one level below k 
+ c super all super-concepts residing one level above k 
+ for each set si of the above mentioned sets 
+ for each term t of si 
+ search the pir with q t i e 
+the original query as expanded with t 
+ let h be the number of hits of the above search 
+ i e the co-occurence level of t with q 
+ return top-k terms as ordered by their h values 
+we observe three types of term relationships steps a- c 
+synonyms sub-concepts namely hyponyms i e sub-classes 
+and meronyms i e sub-parts and super-concepts namely 
+hypernyms i e super-classes and holonyms i e super-parts 
+as they represent quite different types of association we 
+investigated them separately we limited the output expansion set 
+ step to contain only terms appearing at least t times on 
+the desktop in order to avoid noisy suggestions with t 
+min n 
+docspertopic 
+ mindocs we set docspertopic and 
+mindocs the latter one coping with the case of small pirs 
+ experiments 
+ experimental setup 
+we evaluated our algorithms with subjects ph d and 
+postdoc students in different areas of computer science and 
+education first they installed our lucene based search engine 
+and 
+ 
+clearly if one had already installed a desktop search application 
+then this overhead would not be present 
+indexed all their locally stored content files within user selected 
+paths emails and web cache without loss of generality we 
+focused the experiments on single-user machines then they chose 
+ queries related to their everyday activities as follows 
+ one very frequent altavista query as extracted from the top 
+ queries most issued to the search engine within a 
+million entries log from october in order to connect such 
+a query to each user s interests we added an off-line 
+preprocessing phase we generated the most frequent search 
+requests and then randomly selected a query with at least 
+hits on each subject s desktop to further ensure a real life 
+scenario users were allowed to reject the proposed query and 
+ask for a new one if they considered it totally outside their 
+interest areas 
+ one randomly selected log query filtered using the same 
+procedure as above 
+ one self-selected specific query which they thought to have 
+only one meaning 
+ one self-selected ambiguous query which they thought to 
+have at least three meanings 
+the average query lengths were and terms for the log 
+queries as well as and for the self-selected ones even 
+though our algorithms are mainly intended to enhance search when 
+using ambiguous query keywords we chose to investigate their 
+performance on a wide span of query types in order to see how they 
+perform in all situations the log queries evaluate real life requests 
+in contrast to the self-selected ones which target rather the 
+identification of top and bottom performances note that the former ones 
+were somewhat farther away from each subject s interest thus 
+being also more difficult to personalize on to gain an insight into the 
+relationship between each query type and user interests we asked 
+each person to rate the query itself with a score of to having the 
+following interpretations never heard of it do not know it 
+but heard of it know it partially know it well major 
+interest the obtained grades were for the top log queries 
+for the randomly selected ones for the self-selected specific 
+ones and for the self-selected ambiguous ones 
+for each query we collected the top- urls generated by 
+versions of the algorithms 
+presented in section these results 
+were then shuffled into one set containing usually between and 
+ urls thus each subject had to assess about documents 
+for all four queries being neither aware of the algorithm nor of 
+the ranking of each assessed url overall queries were issued 
+and over urls were evaluated during the experiment for 
+each of these urls the testers had to give a rating ranging from 
+ to dividing the relevant results in two categories relevant 
+and highly relevant finally the quality of each ranking was 
+assessed using the normalized version of discounted cumulative 
+gain dcg dcg is a rich measure as it gives more weight 
+to highly ranked documents while also incorporating different 
+relevance levels by giving them different gain values 
+dcg i 
+ 
+g if i 
+dcg i − g i log i otherwise 
+we used g i for relevant results and g i for highly 
+relevant ones as queries having more relevant output documents will 
+have a higher dcg we also normalized its value to a score between 
+ the worst possible dcg given the ratings and the best 
+possible dcg given the ratings to facilitate averaging over queries all 
+results were tested for statistical significance using t-tests 
+ 
+note that all desktop level parts of our algorithms were performed with 
+lucene using its predefined searching and ranking functions 
+algorithmic specific aspects the main parameter of our 
+algorithms is the number of generated expansion keywords for this 
+experiment we set it to terms for all techniques leaving an 
+analysis at this level for a subsequent investigation in order to optimize 
+the run-time computation speed we chose to limit the number of 
+output keywords per desktop document to the number of 
+expansion keywords desired i e four for all algorithms we also 
+investigated bigger limitations this allowed us to observe that the 
+lexical compounds method would perform better if only at most 
+one compound per document were selected we therefore chose 
+to experiment with this new approach as well for all other 
+techniques considering less than four terms per document did not seem 
+to consistently yield any additional qualitative gain we labeled the 
+algorithms we evaluated as follows 
+ google the actual google query output as returned by the 
+google api 
+ tf df term and document frequency 
+ lc lc o regular and optimized by considering only 
+one top compound per document lexical compounds 
+ ss sentence selection 
+ tc cs tc mi tc lr term co-occurrence statistics 
+using respectively cosine similarity mutual information 
+and likelihood ratio as similarity coefficients 
+ wn syn wn sub wn sup wordnet based 
+expansion with synonyms sub-concepts and super-concepts 
+respectively 
+except for the thesaurus based expansion in all cases we also 
+investigated the performance of our algorithms when exploiting only the 
+web browser cache to represent user s personal information this 
+is motivated by the fact that other personal documents such as for 
+example emails are known to have a somewhat different language 
+than that residing on the world wide web however as this 
+approach performed visibly poorer than using the entire desktop 
+data we omitted it from the subsequent analysis 
+ results 
+log queries we evaluated all variants of our algorithms using 
+ndcg for log queries the best performance was achieved with 
+tf lc o and tc lr the improvements they brought were up 
+to for top queries p and for randomly 
+selected queries p statistically significant both obtained 
+with lc o a summary of all results is depicted in table 
+both tf and lc o yielded very good results indicating that 
+simple keyword and expression oriented approaches might be 
+sufficient for the desktop based query expansion task lc o was much 
+better than lc ameliorating its quality with up to in the case 
+of randomly selected log queries improvement which was also 
+significant with p thus a selection of compounds spanning 
+over several desktop documents is more informative about user s 
+interests than the general approach in which there is no restriction 
+on the number of compounds produced from every personal item 
+the more complex desktop oriented approaches namely 
+sentence selection and all term co-occurrence based algorithms 
+showed a rather average performance with no visible 
+improvements except for tc lr also the thesaurus based expansion 
+usually produced very few suggestions possibly because of the 
+many technical queries employed by our subjects we observed 
+however that expanding with sub-concepts is very good for 
+everyday life terms e g car whereas the use of super-concepts is 
+valuable for compounds having at least one term with low 
+technicality e g document clustering as expected the synonym 
+based expansion performed generally well though in some very 
+algorithm ndcg signific ndcg signific 
+top vs google random vs google 
+google - 
+ tf p p 
+df - 
+ lc - 
+ lc o p p 
+ss - 
+ tc cs - 
+ tc mi - 
+ tc lr - p 
+wn syn - 
+ wn sub - 
+ wn sup - 
+ table normalized discounted cumulative gain at the first 
+ results when searching for top left and random right log 
+queries 
+algorithm ndcg signific ndcg signific 
+clear vs google ambiguous vs google 
+google - 
+ tf - p 
+df - 
+ lc - p 
+lc o - p 
+ss - p 
+tc cs - p 
+tc mi - p 
+tc lr - p 
+wn syn - 
+ wn sub - 
+ wn sup - 
+ table normalized discounted cumulative gain at the first 
+ results when searching for user selected clear left and 
+ambiguous right queries 
+technical cases it yielded rather general suggestions finally we 
+noticed google to be very optimized for some top frequent queries 
+however even within this harder scenario some of our 
+personalization algorithms produced statistically significant improvements 
+over regular search i e tf and lc o 
+self-selected queries the ndcg values obtained with 
+selfselected queries are depicted in table while our algorithms did 
+not enhance google for the clear search tasks they did produce 
+strong improvements of up to which were of course also 
+highly significant with p when utilized with ambiguous 
+queries in fact almost all our algorithms resulted in statistically 
+significant improvements over google for this query type 
+in general the relative differences between our algorithms were 
+similar to those observed for the log based queries as in the 
+previous analysis the simple desktop based term frequency and 
+lexical compounds metrics performed best nevertheless a very good 
+outcome was also obtained for desktop based sentence selection 
+and all term co-occurrence metrics there were no visible 
+differences between the behavior of the three different approaches to 
+cooccurrence calculation finally for the case of clear queries we 
+noticed that fewer expansion terms than might be less noisy and 
+thus helpful in bringing further improvements we thus pursued 
+this idea with the adaptive algorithms presented in the next section 
+ introducing adaptivity 
+in the previous section we have investigated the behavior of each 
+technique when adding a fixed number of keywords to the user 
+query however an optimal personalized query expansion 
+algorithm should automatically adapt itself to various aspects of each 
+query as well as to the particularities of the person using it in this 
+section we discuss the factors influencing the behavior of our 
+expansion algorithms which might be used as input for the adaptivity 
+process then in the second part we present some initial 
+experiments with one of them namely query clarity 
+ adaptivity factors 
+several indicators could assist the algorithm to automatically 
+tune the number of expansion terms we start by discussing 
+adaptation by analyzing the query clarity level then we briefly introduce 
+an approach to model the generic query formulation process in 
+order to tailor the search algorithm automatically and discuss some 
+other possible factors that might be of use for this task 
+query clarity the interest for analyzing query difficulty has 
+increased only recently and there are not many papers addressing 
+this topic yet it has been long known that query disambiguation 
+has a high potential of improving retrieval effectiveness for low 
+recall searches with very short queries which is exactly our 
+targeted scenario also the success of ir systems clearly varies 
+across different topics we thus propose to use an estimate number 
+expressing the calculated level of query clarity in order to 
+automatically tweak the amount of personalization fed into the algorithm 
+the following metrics are available 
+ the query length is expressed simply by the number of 
+words in the user query the solution is rather inefficient 
+as reported by he and ounis 
+ the query scope relates to the idf of the entire query as in 
+c log 
+ documentsincollection 
+ hits query 
+ 
+this metric performs well when used with document 
+collections covering a single topic but poor otherwise 
+ the query clarity seems to be the best as well as the 
+most applied technique so far it measures the divergence 
+between the language model associated to the user query and 
+the language model associated to the collection in a 
+simplified version i e without smoothing over the terms which 
+are not present in the query it can be expressed as follows 
+c 
+ 
+w∈query 
+pml w query · log 
+pml w query 
+pcoll w 
+ 
+where pml w query is the probability of the word w 
+within the submitted query and pcoll w is the probability 
+of w within the entire collection of documents 
+other solutions exist but we think they are too computationally 
+expensive for the huge amount of data that needs to be processed 
+within web applications we thus decided to investigate only c 
+and c first we analyzed their performance over a large set of 
+queries and split their clarity predictions in three categories 
+ small scope clear query c ∈ c ∈ ∞ 
+ medium scope semi-ambiguous query 
+c ∈ c ∈ 
+ large scope ambiguous query 
+c ∈ ∞ c ∈ 
+in order to limit the amount of experiments we analyzed only 
+the results produced when employing c for the pir and c for the 
+web as algorithmic basis we used lc o i e optimized lexical 
+compounds which was clearly the winning method in the previous 
+analysis as manual investigation showed it to slightly overfit the 
+expansion terms for clear queries we utilized a substitute for this 
+particular case two candidates were considered tf i e the 
+second best approach and wn syn as we observed that its 
+first and second expansion terms were often very good 
+desktop scope web clarity no of terms algorithm 
+large ambiguous lc o 
+large semi-ambig lc o 
+large clear lc o 
+medium ambiguous lc o 
+medium semi-ambig lc o 
+medium clear tf wn syn 
+small ambiguous tf wn syn 
+small semi-ambig tf wn syn 
+small clear 
+ table adaptive personalized query expansion 
+given the algorithms and clarity measures we implemented the 
+adaptivity procedure by tailoring the amount of expansion terms 
+added to the original query as a function of its ambiguity in the 
+web as well as within user s pir note that the ambiguity level is 
+related to the number of documents covering a certain query thus 
+to some extent it has different meanings on the web and within 
+pirs while a query deemed ambiguous on a large collection such 
+as the web will very likely indeed have a large number of meanings 
+this may not be the case for the desktop take for example the 
+query pagerank if the user is a link analysis expert many of 
+her documents might match this term and thus the query would 
+be classified as ambiguous however when analyzed against the 
+web this is definitely a clear query consequently we employed 
+more additional terms when the query was more ambiguous in the 
+web but also on the desktop put another way queries deemed 
+clear on the desktop were inherently not well covered within user s 
+pir and thus had fewer keywords appended to them the number 
+of expansion terms we utilized for each combination of scope and 
+clarity levels is depicted in table 
+query formulation process interactive query expansion has a 
+high potential for enhancing search we believe that modeling 
+its underlying process would be very helpful in producing 
+qualitative adaptive web search algorithms for example when the user is 
+adding a new term to her previously issued query she is basically 
+reformulating her original request thus the newly added terms 
+are more likely to convey information about her search goals for 
+a general non personalized retrieval engine this could correspond 
+to giving more weight to these new keywords within our 
+personalized scenario the generated expansions can similarly be biased 
+towards these terms nevertheless more investigations are 
+necessary in order to solve the challenges posed by this approach 
+other features the idea of adapting the retrieval process to 
+various aspects of the query of the user itself and even of the 
+employed algorithm has received only little attention in the literature 
+only some approaches have been investigated usually indirectly 
+there exist studies of query behaviors at different times of day or 
+of the topics spanned by the queries of various classes of users 
+etc however they generally do not discuss how these features can 
+be actually incorporated in the search process itself and they have 
+almost never been related to the task of web personalization 
+ experiments 
+we used exactly the same experimental setup as for our 
+previous analysis with two log-based queries and two self-selected ones 
+ all different from before in order to make sure there is no bias 
+on the new approaches evaluated with ndcg over the top- 
+results output by each algorithm the newly proposed adaptive 
+personalized query expansion algorithms are denoted as a lco tf 
+for the approach using tf with the clear desktop queries and as 
+a lco wn when wn syn was utilized instead of tf 
+the overall results were at least similar or better than google 
+for all kinds of log queries see table for top frequent queries 
+algorithm ndcg signific ndcg signific 
+top vs google random vs google 
+google - 
+ tf - p 
+lc o p p 
+wn syn - 
+ a lco tf p p 
+a lco wn p 
+ table normalized discounted cumulative gain at the first 
+results when using our adaptive personalized search algorithms 
+on top left and random right log queries 
+algorithm ndcg signific ndcg signific 
+clear vs google ambiguous vs google 
+google - 
+ tf - p 
+lc o - p 
+wn syn - 
+ a lco tf - p 
+a lco wn - p 
+table normalized discounted cumulative gain at the first 
+results when using our adaptive personalized search algorithms 
+on user selected clear left and ambiguous right queries 
+both adaptive algorithms a lco tf and a lco wn improve 
+with and respectively both differences being also 
+statistically significant with p ≤ they also achieve an 
+improvement of up to over the best performing static 
+algorithm lc o p for randomly selected queries even 
+though a lco tf yields significantly better results than google 
+ p both adaptive approaches fall behind the static 
+algorithms the major reason seems to be the imperfect selection 
+of the number of expansion terms as a function of query clarity 
+thus more experiments are needed in order to determine the 
+optimal number of generated expansion keywords as a function of the 
+query ambiguity level 
+the analysis of the self-selected queries shows that adaptivity 
+can bring even further improvements into web search 
+personalization see table for ambiguous queries the scores given 
+to google search are enhanced by through a lco tf 
+and by through a lco wn both strongly significant with 
+p adaptivity also brings another improvement over 
+the static personalization of lc o p even for clear 
+queries the newly proposed flexible algorithms perform slightly 
+better improving with and respectively 
+all results are depicted graphically in figure we notice that 
+a lco tf is the overall best algorithm performing better than 
+google for all types of queries either extracted from the search 
+engine log or self-selected the experiments presented in this section 
+confirm clearly that adaptivity is a necessary further step to take in 
+web search personalization 
+ conclusions and further work 
+in this paper we proposed to expand web search queries by 
+exploiting the user s personal information repository in order to 
+automatically extract additional keywords related both to the query 
+itself and to user s interests personalizing the search output in 
+this context the paper includes the following contributions 
+ we proposed five techniques for determining expansion 
+terms from personal documents each of them produces 
+additional query keywords by analyzing user s desktop at 
+increasing granularity levels ranging from term and expression 
+level analysis up to global co-occurrence statistics and 
+external thesauri 
+figure relative ndcg gain in for each algorithm 
+overall as well as separated per query category 
+ we provided a thorough empirical analysis of several 
+variants of our approaches under four different scenarios we 
+showed some of these approaches to perform very well 
+producing ndcg improvements of up to 
+ we moved this personalized search framework further and 
+proposed to make the expansion process adaptive to features 
+of each query a strong focus being put on its clarity level 
+ within a separate set of experiments we showed our adaptive 
+algorithms to provide an additional improvement of 
+over the previously identified best approach 
+we are currently performing investigations on the dependency 
+between various query features and the optimal number of 
+expansion terms we are also analyzing other types of approaches to 
+identify query expansion suggestions such as applying latent 
+semantic analysis on the desktop data finally we are designing 
+a set of more complex combinations of these metrics in order to 
+provide enhanced adaptivity to our algorithms 
+ acknowledgements 
+we thank ricardo baeza-yates vassilis plachouras carlos 
+castillo and vanessa murdock from yahoo for the interesting 
+discussions about the experimental setup and the algorithms we 
+presented we are grateful to fabrizio silvestri from cnr and to 
+ronny lempel from ibm for providing us the altavista query log 
+finally we thank our colleagues from l s for participating in the 
+time consuming experiments we performed as well as to the 
+european commission for the funding support project nepomuk th 
+framework programme ist contract no 
+ references 
+ j allan and h raghavan using part-of-speech patterns to reduce query 
+ambiguity in proc of the th intl acm sigir conf on research and 
+development in information retrieval 
+ p g anick and s tipirneni the paraphrase search assistant terminological 
+feedback for iterative information seeking in proc of the nd intl acm 
+sigir conf on research and development in information retrieval 
+ d carmel e farchi y petruschka and a soffer automatic query 
+wefinement using lexical affinities with maximal information gain in proc of 
+the th intl acm sigir conf on research and development in information 
+retrieval pages - 
+ c carpineto r de mori g romano and b bigi an information-theoretic 
+approach to automatic query expansion acm tois - 
+ c -h chang and c -c hsu integrating query expansion and conceptual 
+relevance feedback for personalized web information retrieval in proc of the 
+ th intl conf on world wide web 
+ p a chirita c firan and w nejdl summarizing local context to personalize 
+global web search in proc of the th intl cikm conf on information and 
+knowledge management 
+ s cronen-townsend y zhou and w b croft predicting query performance 
+in proc of the th intl acm sigir conf on research and development in 
+information retrieval 
+ h cui j -r wen j -y nie and w -y ma probabilistic query expansion using 
+query logs in proc of the th intl conf on world wide web 
+ t dunning accurate methods for the statistics of surprise and coincidence 
+computational linguistics - 
+ h p edmundson new methods in automatic extracting journal of the acm 
+ - 
+ e n efthimiadis user choices a new yardstick for the evaluation of ranking 
+algorithms for interactive query expansion information processing and 
+management - 
+ d fogaras and b racz scaling link based similarity search in proc of the 
+ th intl world wide web conf 
+ t haveliwala topic-sensitive pagerank in proc of the th intl world wide 
+web conf honolulu hawaii may 
+ b he and i ounis inferring query performance using pre-retrieval predictors 
+in proc of the th intl spire conf on string processing and information 
+retrieval 
+ k j¨arvelin and j keklinen ir evaluation methods for retrieving highly relevant 
+documents in proc of the th intl acm sigir conf on research and 
+development in information retrieval 
+ g jeh and j widom scaling personalized web search in proc of the th intl 
+world wide web conference 
+ m -c kim and k -s choi a comparison of collocation-based similarity 
+measures in query expansion inf proc and mgmt - 
+ s -b kim h -c seo and h -c rim information retrieval using word senses 
+root sense tagging approach in proc of the th intl acm sigir conf on 
+research and development in information retrieval 
+ r kraft and j zien mining anchor text for query refinement in proc of the 
+ th intl conf on world wide web 
+ r krovetz and w b croft lexical ambiguity and information retrieval acm 
+trans inf syst 
+ a m lam-adesina and g j f jones applying summarization techniques for 
+term selection in relevance feedback in proc of the th intl acm sigir 
+conf on research and development in information retrieval 
+ s liu f liu c yu and w meng an effective approach to document retrieval 
+via utilizing wordnet and recognizing phrases in proc of the th intl acm 
+sigir conf on research and development in information retrieval 
+ g miller wordnet an electronic lexical database communications of the 
+acm - 
+ l nie b davison and x qi topical link analysis for web search in proc of 
+the th intl acm sigir conf on res and development in inf retr 
+ l page s brin r motwani and t winograd the pagerank citation ranking 
+bringing order to the web technical report stanford univ 
+ f qiu and j cho automatic indentification of user interest for personalized 
+search in proc of the th intl www conf 
+ y qiu and h -p frei concept based query expansion in proc of the th intl 
+acm sigir conf on research and development in inf retr 
+ j rocchio relevance feedback in information retrieval the smart retrieval 
+system experiments in automatic document processing pages - 
+ i ruthven re-examining the potential effectiveness of interactive query 
+expansion in proc of the th intl acm sigir conf 
+ t sarlos a a benczur k csalogany d fogaras and b racz to randomize 
+or not to randomize space optimal summaries for hyperlink analysis in proc 
+of the th intl www conf 
+ c shah and w b croft evaluating high accuracy retrieval techniques in 
+proc of the th intl acm sigir conf on research and development in 
+information retrieval pages - 
+ k sugiyama k hatano and m yoshikawa adaptive web search based on 
+user profile constructed without any effort from users in proc of the th intl 
+world wide web conf 
+ d sullivan the older you are the more you want personalized search 
+http searchenginewatch com searchday article php 
+ j teevan s dumais and e horvitz personalizing search via automated 
+analysis of interests and activities in proc of the th intl acm sigir conf 
+on research and development in information retrieval 
+ e volokh personalization and privacy commun acm 
+ e m voorhees query expansion using lexical-semantic relations in proc of 
+the th intl acm sigir conf on res and development in inf retr 
+ j xu and w b croft query expansion using local and global document 
+analysis in proc of the th intl acm sigir conf on research and 
+development in information retrieval 
+ s yu d cai j -r wen and w -y ma improving pseudo-relevance feedback 
+in web information retrieval using web page segmentation in proc of the th 
+intl conf on world wide web 

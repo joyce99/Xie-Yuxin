@@ -1,0 +1,1600 @@
+multi-dimensional range queries in sensor networks 
+xin li 
+† 
+young jin kim 
+† 
+ramesh govindan 
+† 
+wei hong 
+‡ 
+abstract 
+in many sensor networks data or events are named by 
+attributes many of these attributes have scalar values so one 
+natural way to query events of interest is to use a 
+multidimensional range query an example is list all events 
+whose temperature lies between ◦ 
+and ◦ 
+ and whose 
+light levels lie between and such queries are useful 
+for correlating events occurring within the network 
+in this paper we describe the design of a distributed 
+index that scalably supports multi-dimensional range queries 
+our distributed index for multi-dimensional data or dim 
+uses a novel geographic embedding of a classical index data 
+structure and is built upon the gpsr geographic routing 
+algorithm our analysis reveals that under reasonable 
+assumptions about query distributions dims scale quite well 
+with network size both insertion and query costs scale as 
+o 
+√ 
+n in detailed simulations we show that in practice 
+the insertion and query costs of other alternatives are 
+sometimes an order of magnitude more than the costs of dims 
+even for moderately sized network finally experiments on 
+a small scale testbed validate the feasibility of dims 
+categories and subject descriptors 
+c computer communication networks distributed 
+systems c special-purpose and application-based 
+systems embedded systems 
+general terms 
+embedded systems sensor networks storage 
+ introduction 
+in wireless sensor networks data or events will be named 
+by attributes or represented as virtual relations in a 
+distributed database many of these attributes will 
+have scalar values e g temperature and light levels soil 
+moisture conditions etc in these systems we argue one 
+natural way to query for events of interest will be to use 
+multi-dimensional range queries on these attributes for 
+example scientists analyzing the growth of marine 
+microorganisms might be interested in events that occurred within 
+certain temperature and light conditions list all events 
+that have temperatures between ◦ 
+f and ◦ 
+f and light 
+levels between and 
+such range queries can be used in two distinct ways they 
+can help users efficiently drill-down their search for events of 
+interest the query described above illustrates this where 
+the scientist is presumably interested in discovering and 
+perhaps mapping the combined effect of temperature and 
+light on the growth of marine micro-organisms more 
+importantly they can be used by application software running 
+within a sensor network for correlating events and triggering 
+actions for example if in a habitat monitoring application 
+a bird alighting on its nest is indicated by a certain range 
+of thermopile sensor readings and a certain range of 
+microphone readings a multi-dimensional range query on those 
+attributes enables higher confidence detection of the arrival 
+of a flock of birds and can trigger a system of cameras 
+in traditional database systems such range queries are 
+supported using pre-computed indices indices trade-off some 
+initial pre-computation cost to achieve a significantly more 
+efficient querying capability for sensor networks we 
+assert that a centralized index for multi-dimensional range 
+queries may not be feasible for energy-efficiency reasons as 
+well as the fact that the access bandwidth to this central 
+index will be limited particularly for queries emanating 
+from within the network rather we believe there will 
+be situations when it is more appropriate to build an 
+innetwork distributed data structure for efficiently answering 
+multi-dimensional range queries 
+in this paper we present just such a data structure that 
+we call a dim 
+ dims are inspired by classical database 
+indices and are essentially embeddings of such indices within 
+the sensor network dims leverage two key ideas in-network 
+ 
+distributed index for multi-dimensional data 
+ 
+data centric storage and a novel locality-preserving 
+geographic hash section dims trace their lineage to 
+datacentric storage systems the underlying mechanism in 
+these systems allows nodes to consistently hash an event to 
+some location within the network which allows efficient 
+retrieval of events building upon this dims use a technique 
+whereby events whose attribute values are close are likely 
+to be stored at the same or nearby nodes dims then use 
+an underlying geographic routing algorithm gpsr to 
+route events and queries to their corresponding nodes in an 
+entirely distributed fashion 
+we discuss the design of a dim presenting algorithms for 
+event insertion and querying for maintaining a dim in the 
+event of node failure and for making dims robust to data or 
+packet loss section we then extensively evaluate dims 
+using analysis section simulation section and actual 
+implementation section our analysis reveals that 
+under reasonable assumptions about query distributions dims 
+scale quite well with network size both insertion and query 
+costs scale as o 
+√ 
+n in detailed simulations we show 
+that in practice the event insertion and querying costs of 
+other alternatives are sometimes an order of magnitude the 
+costs of dims even for moderately sized network 
+experiments on a small scale testbed validate the feasibility of 
+dims section much work remains including efficient 
+support for skewed data distributions existential queries 
+and node heterogeneity 
+we believe that dims will be an essential but perhaps 
+not necessarily the only distributed data structure 
+supporting efficient queries in sensor networks dims will be part 
+of a suite of such systems that enable feature extraction 
+simple range querying exact-match queries or 
+continuous queries all such systems will likely be 
+integrated to a sensor network database system such as 
+tinydb application designers could then choose the 
+appropriate method of information access for instance 
+a fire tracking application would use dim to detect the 
+hotspots and would then use mechanisms that enable 
+continuous queries to track the spatio-temporal progress 
+of the hotspots finally we note that dims are applicable 
+not just to sensor networks but to other deeply distributed 
+systems embedded networks for home and factory 
+automation as well 
+ related work 
+the basic problem that this paper addresses - 
+multidimensional range queries - is typically solved in database 
+systems using indexing techniques the database 
+community has focused mostly on centralized indices but distributed 
+indexing has received some attention in the literature 
+indexing techniques essentially trade-off some data 
+insertion cost to enable efficient querying indexing has for long 
+been a classical research problem in the database 
+community our work draws its inspiration from the class 
+of multi-key constant branching index structures 
+exemplified by k-d trees where k represents the dimensionality 
+of the data space our approach essentially represents a 
+geographic embedding of such structures in a sensor field 
+there is one important difference the classical indexing 
+structures are data-dependent as are some indexing schemes 
+that use locality preserving hashes and developed in the 
+theory literature the index structure is decided 
+not only by the data but also by the order in which data 
+is inserted our current design is not data dependent 
+finally tangentially related to our work is the class of spatial 
+indexing systems 
+while there has been some work on distributed indexing 
+the problem has not been extensively explored there 
+exist distributed indices of a restricted kind-those that allow 
+exact match or partial prefix match queries examples of 
+such systems of course are the internet domain name 
+system and the class of distributed hash table dht systems 
+exemplified by freenet chord and can our 
+work is superficially similar to can in that both construct 
+a zone-based overlay atop of the underlying physical 
+network the underlying details make the two systems very 
+different can s overlay is purely logical while our overlay 
+is consistent with the underlying physical topology more 
+recent work in the internet context has addressed support 
+for range queries in dht systems but it is unclear if 
+these directly translate to the sensor network context 
+several research efforts have expressed the vision of a 
+database interface to sensor networks and there 
+are examples of systems that contribute to this vision 
+ our work is similar in spirit to this body of 
+literature in fact dims could become an important component 
+of a sensor network database system such as tinydb 
+our work departs from prior work in this area in two 
+significant respects unlike these approaches in our work the data 
+generated at a node are hashed in general to different 
+locations this hashing is the key to scaling multi-dimensional 
+range searches in all the other systems described above 
+queries are flooded throughout the network and can 
+dominate the total cost of the system our work avoids query 
+flooding by an appropriate choice of hashing madden et 
+al also describe a distributed index called semantic 
+routing trees srt this index is used to direct queries 
+to nodes that have detected relevant data our work 
+differs from srt in three key aspects first srt is built on 
+single attributes while dim supports mulitple attributes 
+second srt constructs a routing tree based on historical 
+sensor readings and therefore works well only for 
+slowlychanging sensor values finally in srt queries are issued 
+from a fixed node while in dim queries can be issued from 
+any node 
+a similar differentiation applies with respect to work on 
+data-centric routing in sensor networks where data 
+generated at a node is assumed to be stored at the node 
+and queries are either flooded throughout the network 
+or each source sets up a network-wide overlay announcing its 
+presence so that mobile sinks can rendezvous with sources 
+at the nearest node on the overlay these approaches 
+work well for relatively long-lived queries 
+finally our work is most close related to data-centric 
+storage systems which include geographic hash-tables 
+ ghts dimensions and difs in a ght 
+data is hashed by name to a location within the network 
+enabling highly efficient rendezvous ghts are built upon the 
+gpsr protocol and leverage some interesting properties 
+of that protocol such as the ability to route to a node nearest 
+to a given location we also leverage properties in gpsr as 
+we describe later but we use a locality-preserving hash to 
+store data enabling efficient multi-dimensional range queries 
+dimensions and difs can be thought of as using the 
+same set of primitives as ght storage using consistent 
+hashing but for different ends dimensions allows 
+drill 
+down search for features within a sensor network while 
+difs allows range queries on a single key in addition to 
+other operations 
+ the design of dims 
+most sensor networks are deployed to collect data from 
+the environment in these networks nodes either 
+individually or collaboratively will generate events an event 
+can generally be described as a tuple of attribute values 
+a a · · · ak where each attribute ai represents a 
+sensor reading or some value corresponding to a detection 
+ e g a confidence level the focus of this paper is the 
+design of systems to efficiently answer multi-dimensional range 
+queries of the form x − y x − y · · · xk − yk such a 
+query returns all events whose attribute values fall into the 
+corresponding ranges notice that point queries i e queries 
+that ask for events with specified values for each attribute 
+are a special case of range queries 
+as we have discussed in section range queries can 
+enable efficient correlation and triggering within the network 
+it is possible to implement range queries by flooding a query 
+within the network however as we show in later sections 
+this alternative can be inefficient particularly as the system 
+scales and if nodes within the network issue such queries 
+relatively frequently the other alternative sending all events 
+to an external storage node results in the access link being 
+a bottleneck especially if nodes within the network issue 
+queries shenker et al also make similar arguments with 
+respect to data-centric storage schemes in general dims are 
+an instance of such schemes 
+the system we present in this paper the dim relies upon 
+two foundations a locality-preserving geographic hash and 
+an underlying geographic routing scheme 
+the key to resolving range queries efficiently is data 
+locality i e events with comparable attribute values are stored 
+nearby the basic insight underlying dim is that data 
+locality can be obtained by a locality-preserving geographic 
+hash function our geographic hash function finds a 
+localitypreserving mapping from the multi-dimensional space 
+ described by the set of attributes to a -d geographic space 
+this mapping is inspired by k-d trees and is described 
+later moreover each node in the network self-organizes 
+to claim part of the attribute space for itself we say that 
+each node owns a zone so events falling into that space are 
+routed to and stored at that node 
+having established the mapping and the zone structure 
+dims use a geographic routing algorithm previously 
+developed in the literature to route events to their corresponding 
+nodes or to resolve queries this algorithm gpsr 
+essentially enables the delivery of a packet to a node at a 
+specified location the routing mechanism is simple when 
+a node receives a packet destined to a node at location x it 
+forwards the packet to the neighbor closest to x in gpsr 
+this is called greedy-mode forwarding when no such 
+neighbor exists as when there exists a void in the network the 
+node starts the packet on a perimeter mode traversal 
+using the well known right-hand rule to circumnavigate voids 
+gpsr includes efficient techniques for perimeter traversal 
+that are based on graph planarization algorithms amenable 
+to distributed implementation 
+for all of this to work dims make two assumptions that 
+are consistent with the literature first all nodes know 
+the approximate geographic boundaries of the network these 
+boundaries may either be configured in nodes at the time of 
+deployment or may be discovered using a simple protocol 
+second each node knows its geographic location node 
+locations can be automatically determined by a localization 
+system or by other means 
+although the basic idea of dims may seem 
+straightforward it is challenging to design a completely distributed 
+data structure that must be robust to packet losses and 
+node failures yet must support efficient query distribution 
+and deal with communication voids and obstacles we now 
+describe the complete design of dims 
+ zones 
+the key idea behind dims as we have discussed is a 
+geographic locality-preserving hash that maps a multi-attribute 
+event to a geographic zone intuitively a zone is a 
+subdivision of the geographic extent of a sensor field 
+a zone is defined by the following constructive procedure 
+consider a rectangle r on the x-y plane intuitively r is 
+the bounding rectangle that contains all sensors withing the 
+network we call a sub-rectangle z of r a zone if z is 
+obtained by dividing r k times k ≥ using a procedure 
+that satisfies the following property 
+after the i-th division ≤ i ≤ k r is 
+partitioned into i 
+equal sized rectangles if i is an 
+odd even number the i-th division is parallel 
+to the y-axis x-axis 
+that is the bounding rectangle r is first sub-divided into 
+two zones at level by a vertical line that splits r into two 
+equal pieces each of these sub-zones can be split into two 
+zones at level by a horizontal line and so on we call the 
+non-negative integer k the level of zone z i e level z k 
+a zone can be identified either by a zone code code z 
+or by an address addr z the code code z is a - bit 
+string of length level z and is defined as follows if z lies 
+in the left half of r the first from the left bit of code z 
+is else if z lies in the bottom half of r the second 
+bit of code z is else the remaining bits of code z 
+are then recursively defined on each of the four quadrants of 
+r this definition of the zone code matches the definition 
+of zones given above encoding divisions of the sensor field 
+geography by bit strings thus in figure the zone in the 
+top-right corner of the rectangle r has a zone code of 
+note that the zone codes collectively define a zone tree such 
+that individual zones are at the leaves of this tree 
+the address of a zone z addr z is defined to be the 
+centroid of the rectangle defined by z the two representations 
+of a zone its code and its address can each be computed 
+from the other assuming the level of the zone is known 
+two zones are called sibling zones if their zone codes are 
+the same except for the last bit for example if code z 
+ and code z then z and z are sibling 
+zones the sibling subtree of a zone is the subtree rooted 
+at the left or right sibling of the zone in the zone tree we 
+uniquely define a backup zone for each zone as follows if 
+the sibling subtree of the zone is on the left the backup 
+zone is the right-most zone in the sibling subtree 
+otherwise the backup zone is the left-most zone in the sibling 
+subtree for a zone z let p be the first level z − digits 
+of code z let backup z be the backup zone of zone z 
+if code z p code backup z p with the most 
+number of trailing s means or occurrences if 
+ 
+code z p code backup z p with the most 
+number of trailing s 
+ associating zones with nodes 
+our definition of a zone is independent of the actual 
+distribution of nodes in the sensor field and only depends upon 
+the geographic extent the bounding rectangle of the sensor 
+field now we describe how zones are mapped to nodes 
+conceptually the sensor field is logically divided into zones 
+and each zone is assigned to a single node if the sensor 
+network were deployed in a grid-like i e very regular fashion 
+then it is easy to see that there exists a k such that each 
+node maps into a distinct level-k zone in general however 
+the node placements within a sensor field are likely to be less 
+regular than the grid for some k some zones may be empty 
+and other zones might have more than one node situated 
+within them one alternative would have been to choose 
+a fixed k for the overall system and then associate nodes 
+with the zones they are in and if a zone is empty associate 
+the nearest node with it for some definition of nearest 
+because it makes our overall query routing system simpler 
+we allow nodes in a dim to map to different-sized zones 
+to precisely understand the associations between zones 
+and nodes we define the notion of zone ownership for any 
+given placement of network nodes consider a node a let 
+za to be the largest zone that includes only node a and no 
+other node then we say that a owns za notice that this 
+definition of ownership may leave some sections of the sensor 
+field un-associated with a node for example in figure 
+the zone does not contain any nodes and would not have 
+an owner to remedy this for any empty zone z we define 
+the owner to be the owner of backup z in our example 
+that empty zone s owner would also be the node that owns 
+ its backup zone 
+having defined the association between nodes and zones 
+the next problem we tackle is given a node placement does 
+there exist a distributed algorithm that enables each node 
+to determine which zones it owns knowing only the overall 
+boundary of the sensor network in principle this should 
+be relatively straightforward since each node can simply 
+determine the location of its neighbors and apply simple 
+geometric methods to determine the largest zone around it 
+such that no other node resides in that zone in practice 
+however communication voids and obstacles make the 
+algorithm much more challenging in particular resolving the 
+ownership of zones that do not contain any nodes is 
+complicated equally complicated is the case where the zone 
+of a node is larger than its communication radius and the 
+node cannot determine the boundaries of its zone by local 
+communication alone 
+our distributed zone building algorithm defers the 
+resolution of such zones until when either a query is initiated or 
+when an event is inserted the basic idea behind our 
+algorithm is that each node tentatively builds up an idea of the 
+zone it resides in just by communicating with its neighbors 
+ remembering which boundaries of the zone are undecided 
+because there is no radio neighbor that can help resolve that 
+boundary these undecided boundaries are later resolved 
+by a gpsr perimeter traversal when data messages are 
+actually routed 
+we now describe the algorithm and illustrate it using 
+examples in our algorithm each node uses an array bound 
+to maintain the four boundaries of the zone it owns 
+ rememfigure a network where circles represent sensor 
+nodes and dashed lines mark the network boundary 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure the zone code and boundaries 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure the corresponding zone tree 
+ber that in this algorithm the node only tries to determine 
+the zone it resides in not the other zones it might own 
+because those zones are devoid of nodes when a node 
+starts up each node initializes this array to be the network 
+boundary i e initially each node assumes its zone contains 
+the whole network the zone boundary algorithm now 
+relies upon gpsr s beacon messages to learn the locations of 
+neighbors within radio range upon hearing of such a 
+neighbor the node calls the algorithm in figure to update its 
+zone boundaries and its code accordingly in this algorithm 
+we assume that a is the node at which the algorithm is 
+executed za is its zone and a is a newly discovered neighbor 
+of a procedure contain za a is used to decide if node 
+a is located within the current zone boundaries of node a 
+using this algorithm then each node can independently 
+and asynchronously decide its own tentative zone based on 
+the location of its neighbors figure illustrates the results 
+of applying this algorithm for the network in figure 
+figure describes the corresponding zone tree each zone 
+resides at a leaf node and the code of a zone is the path from 
+the root to the zone if we represent the branch to the left 
+ 
+build-zone a 
+ while contain za a 
+ do if length code za mod 
+ then new bound ← bound bound 
+ if a x new bound 
+ then bound ← new bound 
+ else bound ← new bound 
+ else new bound ← bound bound 
+ if a y new bound 
+ then bound ← new bound 
+ else bound ← new bound 
+ update zone code code za 
+figure zone boundary determination where a x 
+and a y represent the geographic coordinate of node 
+a 
+insert-event e 
+ c ← encode e 
+ if contain za c true and is internal true 
+ then store e and exit 
+ send-message c e 
+send-message c m 
+ if ∃ neighbor y closer y owner m m true 
+ then addr m ← addr y 
+ else if length c length code m 
+ then update code m and addr m 
+ source m ← caller 
+ if is owner msg true 
+ then owner m ← caller s code 
+ send m 
+figure inserting an event in a dim procedure 
+closer a b m returns true if code a is closer to 
+code m than code b source m is used to set the source 
+address of message m 
+child by and the branch to the right child by this binary 
+tree forms the index that we will use in the following event 
+and query processing procedures 
+we see that the zone sizes are different and depend on 
+the local densities and so are the lengths of zone codes for 
+different nodes notice that in figure there is an empty 
+zone whose code should be in this case if the node in 
+zone can only hear the node in zone it sets its 
+boundary with the empty zone to undecided because it did 
+not hear from any neighboring nodes from that direction 
+as we have mentioned before the undecided boundaries are 
+resolved using gpsr s perimeter mode when an event is 
+inserted or a query sent we describe event insertion in the 
+next step 
+finally this description does not describe how a node s 
+zone codes are adjusted when neighboring nodes fail or new 
+nodes come up we return to this in section 
+ inserting an event 
+in this section we describe how events are inserted into 
+a dim there are two algorithms of interest a consistent 
+hashing technique for mapping an event to a zone and a 
+routing algorithm for storing the event at the appropriate 
+zone as we shall see these two algorithms are inter-related 
+ hashing an event to a zone 
+in section we described a recursive tessellation of 
+the geographic extent of a sensor field we now describe 
+a consistent hashing scheme for a dim that supports range 
+queries on m distinct attributes 
+let us denote these attributes a am for simplicity 
+assume for now that the depth of every zone in the network 
+is k k is a multiple of m and that this value of k is known 
+to every node we will relax this assumption shortly 
+furthermore for ease of discussion we assume that all attribute 
+values have been normalized to be between and 
+our hashing scheme assigns a k bit zone code to an event 
+as follows for i between and m if ai the i-th 
+bit of the zone code is assigned else for i between 
+m and m if ai−m or ai−m ∈ the 
+i-th bit of the zone is assigned else because the next 
+level divisions are at and which divide the ranges 
+to and we repeat 
+this procedure until all k bits have been assigned as an 
+example consider event e for this event the 
+ -bit zone code is code za 
+essentially our hashing scheme uses the values of the 
+attributes in round-robin fashion on the zone tree such as 
+the one in figure in order to map an m-attribute event 
+to a zone code this is reminiscent of k-d trees but 
+is quite different from that data structure zone trees are 
+spatial embeddings and do not incorporate the re-balancing 
+algorithms in k-d trees 
+in our design of dims we do not require nodes to have 
+zone codes of the same length nor do we expect a node to 
+know the zone codes of other nodes rather suppose the 
+encoding node is a and its own zone code is of length ka 
+then given an event e node a only hashes e to a zone 
+code of length ka we denote the zone code assigned to an 
+event e by code e as we describe below as the event is 
+routed code e is refined by intermediate nodes this lazy 
+evaluation of zone codes allows different nodes to use 
+different length zone codes without any explicit coordination 
+ routing an event to its owner 
+the aim of hashing an event to a zone code is to store the 
+event at the node within the network node that owns that 
+zone we call this node the owner of the event consider 
+an event e that has just been generated at a node a after 
+encoding event e node a compares code e with code a 
+if the two are identical node a store event e locally 
+otherwise node a will attempt to route the event to its owner 
+to do this note that code e corresponds to some zone 
+z which is a s current guess for the zone at which event e 
+should be stored a now invokes gpsr to send a message 
+to addr z the centroid of z section the message 
+contains the event e code e and the target geographic 
+location for storing the event in the message a also marks 
+itself as the owner of event e as we will see later the 
+guessed zone z the address addr z and the owner of 
+e all of them contained in the message will be refined by 
+intermediate forwarding nodes 
+gpsr now delivers this message to the next hop towards 
+addr z from a this next hop node call it b does not 
+immediately forward the message rather it attempts to 
+com 
+dim does not assume that all nodes are homogeneous in 
+terms of the sensors they have thus in an m dimensional 
+dim a node that does not possess all m sensors can use null 
+values for the corresponding readings dim treats null as 
+an extreme value for range comparisons as an aside a 
+network may have many dim instances running concurrently 
+ 
+pute a new zone code for e to get a new code codenew e 
+b will update the code contained in the message and also 
+the geographic destination of the message if codenew e is 
+longer than the event code in the message in this manner 
+as the event wends its way to its owner its zone code gets 
+refined now b compares its own code code b against the 
+owner code owner e contained in the incoming message 
+if code b has a longer match with code e than the 
+current owner owner e then b sets itself to be the current 
+owner of e meaning that if nobody is eligible to store e 
+then b will store the event we shall see how this happens 
+next if b s zone code does not exactly match code e b 
+will invoke gpsr to deliver e to the next hop 
+ resolving undecided zone boundaries during 
+insertion 
+suppose that some node say c finds itself to be the 
+destination or eventual owner of an event e it does so by 
+noticing that code code c equals code e after locally 
+recomputing a code for e in that case c stores e locally but 
+only if all four of c s zone boundaries are decided when 
+this condition holds c knows for sure that no other nodes 
+have overlapped zones with it in this case we call c an 
+internal node 
+recall though that because the zone discovery algorithm 
+section only uses information from immediate neighbors 
+one or more of c s boundaries may be undecided if so c 
+assumes that some other nodes have a zone that overlaps 
+with its own and sets out to resolve this overlap to do 
+this c now sets itself to be the owner of e and continues 
+forwarding the message here we rely on gpsr s 
+perimeter mode routing to probe around the void that causes the 
+undecided boundary since the message starts from c and 
+is destined for a geographic location near c gpsr 
+guarantees that the message will be delivered back to c if no 
+other nodes will update the information in the message if 
+the message comes back to c with itself to be the owner c 
+infers that it must be the true owner of the zone and stores 
+e locally 
+if this does not happen there are two possibilities the 
+first is that as the event traverses the perimeter some 
+intermediate node say b whose zone overlaps with c s marks 
+itself to be the owner of the event but otherwise does not 
+change the event s zone code this node also recognizes that 
+its own zone overlaps with c s and initiates a message 
+exchange which causes each of them to appropriately shrink 
+their zone 
+figures through show an example of this data-driven 
+zone shrinking initially both node a and node b have 
+claimed the same zone because they are out of radio range 
+of each other suppose that a inserts an event e 
+a encodes e to and claims itself to be the owner of e 
+since a is not an internal node it sends out e looking for 
+other owner candidates of e once e gets to node b b will 
+see in the message s owner field a s code that is the same as 
+its own b then shrinks its zone from to according to 
+a s location which is also recorded in the message and send 
+a shrink request to a upon receiving this request a also 
+shrinks its zone from to 
+a second possibility is if some intermediate node changes 
+the destination code of e to a more specific value i e 
+longer zone code let us label this node d d now tries 
+to initiate delivery to the centroid of the new zone this 
+a 
+b 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure nodes a and b have claimed the same zone 
+a 
+b 
+ 
+figure an event query message filled arrows 
+triggers zone shrinking hollow arrows 
+a 
+b 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure the zone layout after shrinking now node 
+a and b have been mapped to different zones 
+might result in a new perimeter walk that returns to d if 
+for example d happens to be geographically closest to the 
+centroid of the zone however d would not be the owner 
+of the event which would still be c in routing to the 
+centroid of this zone the message may traverse the perimeter 
+and return to d now d notices that c was the original 
+owner so it encapsulates the event and directs it to c in 
+case that there indeed is another node say x that owns 
+an overlapped zone with c x will notice this fact by 
+finding in the message the same prefix of the code of one of 
+its zones but with a different geographic location from its 
+own x will shrink its zone to resolve the overlap if x s 
+zone is smaller than or equal to c s zone x will also send 
+a shrink request to c once c receives a shrink request 
+it will reduce its zone appropriately and fix its undecided 
+boundary in this manner the zone formation process is 
+resolved on demand in a data-driven way 
+ 
+there are several interesting effects with respect to 
+perimeter walking that arise in our algorithm the first is that 
+there are some cases where an event insertion might cause 
+the entire outer perimeter of the network to be traversed 
+ 
+figure also works as an example where the outer 
+perimeter is traversed event e inserted by a will eventually be 
+stored in node b before node b stores event e if b s 
+nominal radio range does not intersect the network boundary it 
+needs to send out e again as a did because b in this case 
+is not an internal node but if b s nominal radio range 
+intersects the network boundary it then has two choices it 
+can assume that there will not be any nodes outside the 
+network boundary and so b is an internal node this is an 
+aggressive approach on the other hand b can also make 
+a conservative decision assuming that there might be some 
+other nodes it have not heard of yet b will then force the 
+message walking another perimeter before storing it 
+in some situations especially for large zones where the 
+node that owns a zone is far away from the centroid of the 
+owned zone there might exist a small perimeter around the 
+destination that does not include the owner of the zone the 
+event will end up being stored at a different node than the 
+real owner in order to deal with this problem we add an 
+extra operation in event forwarding called efficient neighbor 
+discovery before invoking gpsr a node needs to check if 
+there exists a neighbor who is eligible to be the real owner of 
+the event to do this a node c say needs to know the zone 
+codes of its neighboring nodes we deploy gpsr s 
+beaconing message to piggyback the zone codes for nodes so by 
+simply comparing the event s code and neighbor s code a 
+node can decide whether there exists a neighbor y which 
+is more likely to be the owner of event e c delivers e 
+to y which simply follows the decision making procedure 
+discussed above 
+ summary and pseudo-code 
+in summary our event insertion procedure is designed to 
+nicely interact with the zone discovery mechanism and the 
+event hashing mechanism the latter two mechanisms are 
+kept simple while the event insertion mechanism uses lazy 
+evaluation at each hop to refine the event s zone code and it 
+leverages gpsr s perimeter walking mechanism to fix 
+undecided zone boundaries in section we address robustness 
+of event insertion to packet loss or to node failures 
+figure shows the pseudo-code for inserting and 
+forwarding an event e in this pseudo code we have omitted a 
+description of the zone shrinking procedure in the pseudo 
+code procedure is internal is used to determine if the 
+caller is an internal node and procedure is owner is used 
+to determine if the caller is more eligible to be the owner of 
+the event than is currently claimed owner as recorded in the 
+message procedure send-message is used to send either 
+an event message or a query message if the message 
+destination address has been changed the packet source address 
+needs also to be changed in order to avoid being dropped by 
+gpsr since gpsr does not allow a node to see the same 
+packet in greedy mode twice 
+ 
+this happens less frequently than for ghts where 
+inserting an event to a location outside the actual but inside 
+the nominal boundary of the network will always invoke an 
+external perimeter walk 
+ resolving and routing queries 
+dims support both point queries 
+and range queries 
+routing a point query is identical to routing an event thus the 
+rest of this section details how range queries are routed 
+the key challenge in routing zone queries is brought out 
+by the following strawman design if the entire network was 
+divided evenly into zones of depth k for some pre-defined 
+constant k then the querier the node issuing the query 
+could subdivide a given range query into the relevant 
+subzones and route individual requests to each of the zones 
+this can be inefficient for large range queries and also hard 
+to implement in our design where zone sizes are not 
+predefined accordingly we use a slightly different technique 
+where a range query is initially routed to a zone 
+corresponding to the entire range and is then progressively split into 
+smaller subqueries we describe this algorithm here 
+the first step of the algorithm is to map a range query to 
+a zone code prefix conceptually this is easy in a zone tree 
+ figure there exists some node which contains the entire 
+range query in its sub-tree and none of its children in the 
+tree do the initial zone code we choose for the query is the 
+zone code corresponding to that tree node and is a prefix of 
+the zone codes of all zones note that these zones may not 
+be geographically contiguous in the subtree the querier 
+computes the zone code of q denoted by code q and then 
+starts routing a query to addr code q 
+upon receiving a range query q a node a where a is any 
+node on the query propagation path divides it into multiple 
+smaller sized subqueries if there is an overlap between the 
+zone of a zone a and the zone code associated with q 
+code q our approach to split a query q into subqueries 
+is as follows if the range of q s first attribute contains 
+the value a divides q into two sub-queries one of whose 
+first attribute ranges from to and the other from to 
+ then a decides the half that overlaps with its own zone 
+let s call it qa if qa does not exist then a stops splitting 
+otherwise it continues splitting using the second attribute 
+range and recomputing qa until qa is small enough so 
+that it completely falls into zone a and hence a can now 
+resolve it for example suppose that node a whose code 
+is is to split a range query q − − 
+the splitting steps is shown in figure after splitting 
+we obtain three smaller queries q − − 
+q − − and q − − 
+this splitting procedure is illustrated in figure which 
+also shows the codes of each subquery after splitting 
+a then replies to subquery q with data stored locally 
+and sends subqueries q and q using the procedure outlined 
+above more generally if node a finds itself to be inside 
+the zone subtree that maximally covers q it will send the 
+subqueries that resulted from the split otherwise if there 
+is no overlap between a and q then a forwards q as is in 
+this case q is either the original query or a product of an 
+earlier split 
+figure describes the pseudo-code for the zone splitting 
+algorithm as shown in the above algorithm once a 
+subquery has been recognized as belonging to the caller s zone 
+procedure resolve is invoked to resolve the subquery and 
+send a reply to the querier every query message contains 
+ 
+by point queries we mean the equality condition on all 
+indexed keys dim index attributes are not necessarily 
+primary keys 
+ 
+the geographic location of its initiator so the corresponding 
+reply message can be delivered directly back to the 
+initiator finally in the process of query resolution zones might 
+shrink similar to shrinkage during inserting we omit this 
+in the pseudo code 
+ robustness 
+until now we have not discussed the impact of node 
+failures and packet losses or node arrivals and departures on 
+our algorithms packet losses can affect query and event 
+insertion and node failures can result in lost data while node 
+arrivals and departures can impact the zone structure we 
+now discuss how dims can be made robust to these kinds 
+of dynamics 
+ maintaining zones 
+in previous sections we described how the zone discovery 
+algorithm could leave zone boundaries undecided these 
+undecided boundaries are resolved during insertion or 
+querying using the zone shrinking procedure describe above 
+when a new node joins the network the zone discovery 
+mechanism section will cause neighboring zones to 
+appropriately adjust their zone boundaries at this time those 
+zones can also transfer to the new node those events they 
+store but which should belong to the new node 
+before a node turns itself off if this is indeed possible it 
+knows that its backup node section will take over its 
+zone and will simply send all its events to its backup node 
+node deletion may also cause zone expansion in order to 
+keep the mapping between the binary zone tree s leaf nodes 
+and zones we allow zone expansion to only occur among 
+sibling zones section the rule is if zone a s sibling 
+zone becomes empty then a can expand its own zone to 
+include its sibling zone 
+now we turn our attention to node failures node failures 
+are just like node deletions except that a failed node does 
+not have a chance to move its events to another node but 
+how does a node decide if its sibling has failed if the 
+sibling is within radio range the absence of gpsr beaconing 
+messages can detect this once it detects this the node can 
+expand its zone a different approach is needed for 
+detecting siblings who are not within radio range these are the 
+cases where two nodes own their zones after exchanging a 
+shrink message they do not periodically exchange messages 
+thereafter to maintain this zone relationship in this case 
+we detect the failure in a data-driven fashion with obvious 
+efficiency benefits compared to periodic keepalives once a 
+node b has failed an event or query message that previously 
+should have been owned by the failed node will now be 
+delivered to the node a that owns the empty zone left by node 
+b a can see this message because a stands right around 
+the empty area left by b and is guaranteed to be visited in a 
+gpsr perimeter traversal a will set itself to be the owner 
+of the message and any node which would have dropped this 
+message due to a perimeter loop will redirect the message to 
+a instead if a s zone happens to be the sibling of b s zone 
+a can safely expand its own zone and notify its expanded 
+zone to its neighbors via gpsr beaconing messages 
+ preventing data loss from node failure 
+the algorithms described above are robust in terms of 
+zone formation but node failure can erase data to avoid 
+this dims can employ two kinds of replication local 
+replication to be resilient to random node failures and mirror 
+replication for resilience to concurrent failure of 
+geographically contiguous nodes 
+mirror replication is conceptually easy suppose an event 
+e has a zone code code e then the node that inserts 
+e would store two copies of e one at the zone denoted 
+by code e and the other at the zone corresponding to the 
+one s complement of code e this technique essentially 
+creates a mirror dim a querier would need in parallel to 
+query both the original dim and its mirror since there is no 
+way of knowing if a collection of nodes has failed clearly 
+the trade-off here is an approximate doubling of both 
+insertion and query costs 
+there exists a far cheaper technique to ensure resilience 
+to random node failures our local replication technique 
+rests on the observation that for each node a there exists 
+a unique node which will take over its zone when a fails 
+this node is defined as the node responsible for a s zone s 
+backup zone see section the basic idea is that a 
+replicates each data item it has in this node we call this 
+node a s local replica let a s local replica be b often 
+b will be a radio neighbor of a and can be detected from 
+gpsr beacons sometimes however this is not the case 
+and b will have to be explicitly discovered 
+we use an explicit message for discovering the local replica 
+discovering the local replica is data-driven and uses a 
+mechanism similar to that of event insertion node a sends a 
+message whose geographic destination is a random nearby 
+location chosen by a the location is close enough to a such 
+that gpsr will guarantee that the message will delivered 
+back to a in addition the message has three fields one for 
+the zone code of a code a one for the owner owner a of 
+zone a which is set to be empty and one for the geographic 
+location of owner a then the packet will be delivered in 
+gpsr perimeter mode each node that receives this 
+message will compare its zone code and code a in the message 
+and if it is more eligible to be the owner of zone a than 
+the current owner a recorded in the message it will 
+update the field owner a and the corresponding geographic 
+location once the packet comes back to a it will know the 
+location of its local replica and can start to send replicas 
+in a dense sensor network the local replica of a node 
+is usually very near to the node either its direct neighbor 
+or - hops away so the cost of sending replicas to local 
+replication will not dominate the network traffic however 
+a node s local replica itself may fail there are two ways to 
+deal with this situation periodic refreshes or repeated 
+datadriven discovery of local replicas the former has higher 
+overhead but more quickly discovers failed replicas 
+ robustness to packet loss 
+finally the mechanisms for querying and event insertion 
+can be easily made resilient to packet loss for event 
+insertion a simple ack scheme suffices 
+of course queries and responses can be lost as well in 
+this case there exists an efficient approach for error 
+recovery this rests on the observation that the querier knows 
+which zones fall within its query and should have responded 
+ we assume that a node that has no data matching a query 
+but whose zone falls within the query responds with a 
+negative acknowledgment after a conservative timeout the 
+querier can re-issue the queries selectively to these zones 
+if dim cannot get any answers positive or negative from 
+ 
+ - - 
+ - - - - 
+ - - 
+ - - 
+ - - - - 
+ 
+ 
+ 
+ 
+ 
+ 
+figure an example of range query splitting 
+resolve-range-query q 
+ qsub ← nil 
+ q qsub ← split-query q 
+ if q nil 
+ then c ← encode q 
+ if contain c code a true 
+ then go to step 
+ else send-message c q 
+ else resolve q 
+ if is internal true 
+ then absorb q 
+ else append q to qsub 
+ if qsub nil 
+ then for each subquery q ∈ qsub 
+ do c ← encode q 
+ send-message c q 
+figure query resolving algorithm 
+certain zones after repeated timeouts it can at least return 
+the partial query results to the application together with the 
+information about the zones from which data is missing 
+ dims an analysis 
+in this section we present a simple analytic performance 
+evaluation of dims and compare their performance against 
+other possible approaches for implementing multi-dimensional 
+range queries in sensor networks in the next section we 
+validate these analyses using detailed packet-level simulations 
+our primary metrics for the performance of a dim are 
+average insertion cost measures the average number of 
+messages required to insert an event into the network 
+average query delivery cost measures the average 
+number of messages required to route a query message to 
+all the relevant nodes in the network 
+it does not measure the number of messages required to 
+transmit responses to the querier this latter number 
+depends upon the precise data distribution and is the same 
+for many of the schemes we compare dims against 
+in dims event insertion essentially uses geographic 
+routing in a dense n-node network where the likelihood of 
+traversing perimeters is small the average event insertion 
+cost proportional to 
+√ 
+n 
+on the other hand the query delivery cost depends upon 
+the size of ranges specified in the query recall that our 
+query delivery mechanism is careful about splitting a query 
+into sub-queries doing so only when the query nears the 
+zone that covers the query range thus when the querier is 
+far from the queried zone there are two components to the 
+query delivery cost the first which is proportional to 
+√ 
+n 
+is the cost to deliver the query near the covering zone if 
+within this covering zone there are m nodes the message 
+delivery cost of splitting the query is proportional to m 
+the average cost of query delivery depends upon the 
+distribution of query range sizes now suppose that query sizes 
+follow some density function f x then the average cost of 
+resolve a query can be approximated by 
+ê n 
+ 
+xf x dx to 
+give some intuition for the performance of dims we 
+consider four different forms for f x the uniform distribution 
+where a query range encompassing the entire network is as 
+likely as a point query a bounded uniform distribution where 
+all sizes up to a bound b are equally likely an algebraic 
+distribution in which most queries are small but large queries 
+are somewhat likely and an exponential distribution where 
+most queries are small and large queries are unlikely in all 
+our analyses we make the simplifying assumption that the 
+size of a query is proportional to the number of nodes that 
+can answer that query 
+for the uniform distribution p x ∝ c for some constant c 
+if each query size from n is equally likely the average 
+query delivery cost of uniformly distributed queries is o n 
+thus for uniformly distributed queries the performance of 
+dims is comparable to that of flooding however for the 
+applications we envision where nodes within the network 
+are trying to correlate events the uniform distribution is 
+highly unrealistic 
+somewhat more realistic is a situation where all query 
+sizes are bounded by a constant b in this case the average 
+cost for resolving such a query is approximately 
+ê b 
+ 
+xf x dx 
+o b recall now that all queries have to pay an 
+approximate cost of o 
+√ 
+n to deliver the query near the covering 
+zone thus if dim limited queries to a size proportional to√ 
+n the average query cost would be o 
+√ 
+n 
+the algebraic distribution where f x ∝ x−k 
+ for some 
+constant k between and has an average query resolution 
+cost given by 
+ê n 
+ 
+xf x dx o n −k 
+ in this case if k 
+ the average cost of query delivery is dominated by the 
+cost to deliver the query to near the covering zone given by 
+o 
+√ 
+n 
+finally for the exponential distribution f x ce−cx 
+for 
+some constant c and the average cost is just the mean of the 
+corresponding distribution i e o for large n 
+asymptotically then the cost of the query for the exponential 
+distribution is dominated by the cost to deliver the query 
+near the covering zone o 
+√ 
+n 
+thus we see that if queries follow either the bounded 
+uniform distribution the algebraic distribution or the 
+exponential distribution the query cost scales as the insertion 
+cost for appropriate choice of constants for the bounded 
+uniform and the algebraic distributions 
+how well does the performance of dims compare against 
+alternative choices for implementing multi-dimensional queries 
+a simple alternative is called external storage where all 
+events are stored centrally in a node outside the sensor 
+network this scheme incurs an insertion cost of o 
+√ 
+n and 
+a zero query cost however as points out such systems 
+may be impractical in sensor networks since the access link 
+to the external node becomes a hotspot 
+a second alternative implementation would store events 
+at the node where they are generated queries are flooded 
+ 
+throughout the network and nodes that have matching data 
+respond examples of systems that can be used for this 
+ although to our knowledge these systems do not implement 
+multi-dimensional range queries are directed diffusion 
+and tinydb the flooding scheme incurs a zero 
+insertion cost but an o n query cost it is easy to show that 
+dims outperform flooding as long as the ratio of the number 
+of insertions to the number of queries is less than 
+√ 
+n 
+a final alternative would be to use a geographic hash table 
+ ght in this approach attribute values are assumed 
+to be integers this is actually quite a reasonable 
+assumption since attribute values are often quantized and events 
+are hashed on some say the first attribute a range query 
+is sub-divided into several sub-queries one for each integer 
+in the range of the first attribute each sub-query is then 
+hashed to the appropriate location the nodes that receive a 
+sub-query only return events that match all other attribute 
+ranges in this approach which we call ght-r ght s for 
+range queries the insertion cost is o 
+√ 
+n suppose that 
+the range of the first attribute contains r discrete values 
+then the cost to deliver queries is o r 
+√ 
+n thus 
+asymptotically ght-r s perform similarly to dims in practice 
+however the proportionality constants are significantly 
+different and dims outperform ght-rs as we shall show 
+using detailed simulations 
+ dims simulation results 
+our analysis gives us some insight into the asymptotic 
+behavior of various approaches for multi-dimensional range 
+queries in this section we use simulation to compare dims 
+against flooding and ght-r this comparison gives us a 
+more detailed understanding of these approaches for 
+moderate size networks and gives us a nuanced view of the 
+mechanistic differences between some of these approaches 
+ simulation methodology 
+we use ns- for our simulations since dims are 
+implemented on top of gpsr we first ported an earlier gpsr 
+implementation to the latest version of ns- we modified 
+the gpsr module to call our dim implementation when 
+it receives any data message in transit or when it is about 
+to drop a message because that message traversed the entire 
+perimeter this allows a dim to modify message zone codes 
+in flight section and determine the actual owner of an 
+event or query 
+in addition to this we implemented in ns- most of the 
+dim mechanisms described in section of those 
+mechanisms the only one we did not implement is mirror 
+replication we have implemented selective query retransmission 
+for resiliency to packet loss but have left the evaluation of 
+this mechanism to future work our dim implementation 
+in ns- is lines of code 
+finally we implemented ght-r our ght-based 
+multidimensional range query mechanism in ns- this 
+implementation was relatively straightforward given that we had 
+ported gpsr and modified gpsr to detect the completion 
+of perimeter mode traversals 
+using this implementation we conducted a fairly 
+extensive evaluation of dim and two alternatives flooding and 
+our ght-r for all our experiments we use uniformly 
+placed sensor nodes with network sizes ranging from 
+nodes to nodes each node has a radio range of m 
+for the results presented here each node has on average 
+nodes within its nominal radio range we have conducted 
+experiments at other node densities they are in agreement 
+with the results presented here 
+in all our experiments each node first generates events 
+on average more precisely for a topology of size n we have 
+ n events and each node is equally likely to generate an 
+event we have conducted experiments for three different 
+event value distributions our uniform event distribution 
+generates -dimensional events and for each dimension 
+every attribute value is equally likely our normal event 
+distribution generates -dimensional events and for each 
+dimension the attribute value is normally distributed with a 
+mean corresponding to the mid-point of the attribute value 
+range the normal event distribution represents a skewed 
+data set finally our trace event distribution is a collection 
+of -dimensional events obtained from a habitat monitoring 
+network as we shall see this represents a fairly skewed 
+data set 
+having generated events for each simulation we 
+generate queries such that on average each node generates 
+queries the query sizes are determined using the four size 
+distributions we discussed in section uniform 
+boundeduniform algebraic and exponential once a query size has 
+been determined the location of the query i e the actual 
+boundaries of the zone are uniformly distributed for our 
+ght-r experiments the dynamic range of the attributes 
+had discrete values but we restricted the query range 
+for any one attribute to discrete values to allow those 
+simulations to complete in reasonable time 
+finally using one set of simulations we evaluate the 
+efficacy of local replication by turning off random fractions of 
+nodes and measuring the fidelity of the returned results 
+the primary metrics for our simulations are the average 
+query and insertion costs as defined in section 
+ results 
+although we have examined almost all the combinations 
+of factors described above we discuss only the most salient 
+ones here for lack of space 
+figure plots the average insertion costs for dim and 
+ght-r for flooding of course the insertion costs are zero 
+dim incurs less per event overhead in inserting events 
+ regardless of the actual event distribution figure shows the 
+cost for uniformly distributed events the reason for this is 
+interesting in ght-r storing almost every event incurs a 
+perimeter traversal and storing some events require 
+traversing the outer perimeter of the network by contrast in 
+dim storing an event incurs a perimeter traversal only when 
+a node s boundaries are undecided furthermore an 
+insertion or a query in a dim can traverse the outer perimeter 
+ section but less frequently than in ghts 
+figure plots the average query cost for a bounded 
+uniform query size distribution for this graph and the next 
+we use a uniform event distribution since the event 
+distribution does not affect the query delivery cost for this 
+simulation our bound was 
+ 
+th the size of the largest possible 
+ 
+our metrics are chosen so that the exact number of events 
+and queries is unimportant for our discussion of course 
+the overall performance of the system will depend on the 
+relative frequency of events and queries as we discuss in 
+section since we don t have realistic ratios for these we 
+focus on the microscopic costs rather than on the overall 
+system costs 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averagecostperinsertion 
+network size 
+dim 
+ght-r 
+figure average insertion cost for dim and 
+ght 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+fractionofrepliescomparedwithnon-failurecase 
+fraction of failed nodes 
+no replication 
+local replication 
+figure local replication performance 
+query e g a query of the form − − even for 
+this generous query size dims perform quite well almost 
+a third the cost of flooding notice however that 
+ghtrs incur high query cost since almost any query requires as 
+many subqueries as the width of the first attribute s range 
+figure plots the average query cost for the exponential 
+distribution the average query size for this distribution was 
+set to be 
+ 
+th the largest possible query the superior 
+scaling of dims is evident in these graphs clearly this is 
+the regime in which one might expect dims to perform best 
+when most of the queries are small and large queries are 
+relatively rare this is also the regime in which one would 
+expect to use multi-dimensional range queries to perform 
+relatively tight correlations as with the bounded uniform 
+distribution ght query cost is dominated by the cost of 
+sending sub-queries for dims the query splitting strategy 
+works quite well in keep overall query delivery costs low 
+figure describes the efficacy of local replication to 
+obtain this figure we conducted the following experiment 
+on a -node network we inserted a number of events 
+uniformly distributed throughout the network then issued 
+a query covering the entire network and recorded the 
+answers knowing the expected answers for this query we 
+then successively removed a fraction f of nodes randomly 
+and re-issued the same query the figure plots the fraction 
+of expected responses actually received with and without 
+replication as the graph shows local replication performs 
+well for random failures returning almost of the 
+responses when up to of the nodes have failed 
+simultaneously 
+ in the absence of local replication of course when 
+ 
+in practice the performance of local replication is likely to 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averagecostperqueryinboundedunifdistribution 
+network size 
+dim 
+flooding 
+ght-r 
+figure average query cost with a bounded 
+uniform query distribution 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averagecostperqueryinexponentialdistribution 
+network size 
+dim 
+flooding 
+ght-r 
+figure average query cost with an exponential 
+query distribution 
+ of the nodes fail the response rate is only as one 
+would expect 
+we note that dims as currently designed are not 
+perfect when the data is highly skewed-as it was for our trace 
+data set from the habitat monitoring application where most 
+of the event values fell into within of the attribute s 
+range-a few dim nodes will clearly become the bottleneck 
+this is depicted in figure which shows that for dims 
+and ght-rs the maximum number of transmissions at any 
+network node the hotspots is rather high for less skewed 
+data distributions and reasonable query size distributions 
+the hotspot curves for all three schemes are comparable 
+this is a standard problem that the database indices have 
+dealt with by tree re-balancing in our case simpler 
+solutions might be possible and we discuss this in section 
+however our use of the trace data demonstrates that 
+dims work for events which have more than two dimensions 
+increasing the number of dimensions does not noticeably 
+degrade dims query cost omitted for lack of space 
+also omitted are experiments examining the impact of 
+several other factors as they do not affect our conclusions 
+in any way as we expected dims are comparable in 
+performance to flooding when all sizes of queries are equally 
+likely for an algebraic distribution of query sizes the 
+relative performance is close to that for the exponential 
+distribution for normally distributed events the insertion costs 
+be much better than this assuming a node and its replica 
+don t simultaneously fail often a node will almost always 
+detect a replica failure and re-replicate leading to near 
+response rates 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+maximumhotspotontracedataset 
+network size 
+dim 
+flooding 
+ght-r 
+figure hotspot usage 
+dim 
+zone 
+manager 
+query 
+router 
+query 
+processor 
+event 
+manager 
+event 
+router 
+gpsr interface event driven thread based 
+update 
+useuse 
+update 
+gpsr 
+upper interface event driven thread based 
+lower interface event driven thread based 
+greedy 
+forwarding 
+perimeter 
+forwarding 
+beaconing 
+neighbor 
+list 
+manager 
+update 
+use 
+motenic micaradio ip socket b ethernet 
+figure software architecture of dim over gpsr 
+are comparable to that for the uniform distribution 
+finally we note that in all our evaluations we have only 
+used list queries those that request all events matching the 
+specified range we expect that for summary queries those 
+that expect an aggregate over matching events the overall 
+cost of dims could be lower because the matching data are 
+likely to be found in one or a small number of zones we 
+leave an understanding of this to future work also left to 
+future work is a detailed understanding of the impact of 
+location error on dim s mechanisms recent work has 
+examined the impact of imprecise location information on 
+other data-centric storage mechanisms such as ghts and 
+found that there exist relatively simple fixes to gpsr that 
+ameliorate the effects of location error 
+ implementation 
+we have implemented dims on a linux platform suitable 
+for experimentation on pdas and pc- class machines 
+to implement dims we had to develop and test an 
+independent implementation of gpsr our gpsr implementation 
+is full-featured while our dim implementation has most of 
+the algorithms discussed in section some of the robustness 
+extensions have only simpler variants implemented 
+the software architecture of dim gpsr system is shown 
+in figure the entire system about lines of code 
+is event-driven and multi-threaded the dim subsystem 
+consists of six logical components zone management event 
+maintenance event routing query routing query 
+processing and gpsr interactions the gpsr system is 
+implemented as user-level daemon process applications are 
+executed as clients for the dim subsystem the gpsr module 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ x x x x 
+query size 
+average ofreceivedresponses 
+perquery 
+figure number of events received for different 
+query sizes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ x x x x 
+query sizetotalnumberofmessages 
+onlyforsendingthequery 
+figure query distribution cost 
+provides several extensions it exports information about 
+neighbors and provides callbacks during packet forwarding 
+and perimeter-mode termination 
+we tested our implementation on a testbed consisting of 
+pc- class machines each of these boxes runs linux and 
+uses a mica mote attached through a serial cable for 
+communication these boxes are laid out in an office building 
+with a total spatial separation of over a hundred feet we 
+manually measured the locations of these nodes relative to 
+some coordinate system and configured the nodes with their 
+location the network topology is approximately a chain 
+on this testbed we inserted queries and events from a 
+single designated node our events have two attributes which 
+span all combinations of the four values 
+ sixteen events in all our queries span four sizes returning 
+ and events respectively 
+figure plots the number of events received for different 
+sized queries it might appear that we received fewer events 
+than expected but this graph doesn t count the events that 
+were already stored at the querier with that adjustment 
+the number of responses matches our expectation finally 
+figure shows the total number of messages required for 
+different query sizes on our testbed 
+while these experiments do not reveal as much about the 
+performance range of dims as our simulations do they 
+nevertheless serve as proof-of-concept for dims our next step 
+in the implementation is to port dims to the mica motes 
+and integrate them into the tinydb sensor database 
+engine on motes 
+ 
+ conclusions 
+in this paper we have discussed the design and evaluation 
+of a distributed data structure called dim for efficiently 
+resolving multi-dimensional range queries in sensor networks 
+our design of dims relies upon a novel locality-preserving 
+hash inspired by early work in database indexing and is 
+built upon gpsr we have a working prototype both of 
+gpsr and dim and plan to conduct larger scale 
+experiments in the future 
+there are several interesting future directions that we 
+intend to pursue one is adaptation to skewed data 
+distributions since these can cause storage and transmission 
+hotspots unlike traditional database indices that re-balance 
+trees upon data insertion in sensor networks it might be 
+feasible to re-structure the zones on a much larger timescale 
+after obtaining a rough global estimate of the data 
+distribution another direction is support for node heterogeneity 
+in the zone construction process nodes with larger storage 
+space assert larger-sized zones for themselves a third is 
+support for efficient resolution of existential queries-whether 
+there exists an event matching a multi-dimensional range 
+acknowledgments 
+this work benefited greatly from discussions with fang bian 
+hui zhang and other enl lab members as well as from 
+comments provided by the reviewers and our shepherd feng 
+zhao 
+ references 
+ j aspnes and g shah skip graphs in proceedings of 
+ th annual acm-siam symposium on discrete 
+algorithms soda baltimore md january 
+ j l bentley multidimensional binary search trees used 
+for associative searching communicaions of the acm 
+ - 
+ p bonnet j e gerhke and p seshadri towards sensor 
+database systems in proceedings of the second 
+international conference on mobile data management 
+hong kong january 
+ i clarke o sandberg b wiley and t w hong freenet 
+a distributed anonymous information storage and 
+retrieval system in designing privacy enhancing 
+technologies international workshop on design issues in 
+anonymity and unobservability springer new york 
+ d comer the ubiquitous b-tree acm computing 
+surveys - 
+ r a finkel and j l bentley quad trees a data 
+structure for retrieval on composite keys acta 
+informatica - 
+ d ganesan d estrin and j heidemann dimensions 
+why do we need a new data handling architecture for 
+sensor networks in proceedings of the first workshop on 
+hot topics in networks hotnets-i princeton nj 
+october 
+ a gionis p indyk and r motwani similarity search in 
+high dimensions via hashing in proceedings of the th 
+vldb conference edinburgh scotland september 
+ r govindan j hellerstein w hong s madden 
+m franklin and s shenker the sensor network as a 
+database technical report - computer science 
+department university of southern california september 
+ 
+ b greenstein d estrin r govindan s ratnasamy and 
+s shenker difs a distributed index for features in 
+sensor networks in proceedings of st ieee international 
+workshop on sensor network protocols and applications 
+anchorage ak may 
+ a guttman r-trees a dynamic index structure for 
+spatial searching in proceedings of the acm sigmod 
+boston ma june 
+ m harren j m hellerstein r huebsch b t loo 
+s shenker and i stoica complex queries in dht-based 
+peer-to-peer networks in p druschel f kaashoek and 
+a rowstron editors proceedings of st international 
+workshop on peer-to-peer systems iptps volume 
+ of lncs page cambridge ma march 
+springer-verlag 
+ p indyk and r motwani approximate nearest neighbors 
+towards removing the curse of dimensionality in 
+proceedings of the th annual acm symposium on 
+theory of computing dallas texas may 
+ p indyk r motwani p raghavan and s vempala 
+locality-preserving hashing in multidimensional spaces in 
+proceedings of the th annual acm symposium on 
+theory of computing pages - el paso texas 
+may acm press 
+ c intanagonwiwat r govindan and d estrin directed 
+diffusion a scalable and robust communication 
+paradigm for sensor networks in proceedings of the sixth 
+annual acm ieee international conference on mobile 
+computing and networking mobicom boston ma 
+august 
+ b karp and h t kung gpsr greedy perimeter 
+stateless routing for wireless networks in proceedings of 
+the sixth annual acm ieee international conference on 
+mobile computing and networking mobicom 
+boston ma august 
+ s madden m franklin j hellerstein and w hong the 
+design of an acquisitional query processor for sensor 
+networks in proceedings of acm sigcmod san diego 
+ca june 
+ s madden m j franklin j m hellerstein and w hong 
+tag a tiny agregation service for ad-hoc sensor 
+networks in proceedings of th annual symposium on 
+operating systems design and implementation osdi 
+boston ma december 
+ s ratnasamy p francis m handley r karp and 
+s shenker a scalable content-addressable network in 
+proceedings of the acm sigcomm san diego ca 
+august 
+ s ratnasamy b karp l yin f yu d estrin 
+r govindan and s shenker ght a geographic hash 
+table for data-centric storage in proceedings of the first 
+acm international workshop on wireless sensor 
+networks and applications atlanta ga september 
+ h samet spatial data structures in w kim editor 
+modern database systems the object model 
+interoperability and beyond pages - addison 
+wesley acm 
+ k sead a helmy and r govindan on the effect of 
+localization errors on geographic face routing in sensor 
+networks in under submission 
+ s shenker s ratnasamy b karp r govindan and 
+d estrin data-centric storage in sensornets in proc 
+acm sigcomm workshop on hot topics in networks 
+princeton nj 
+ i stoica r morris d karger m f kaashoek and 
+h balakrishnan chord a scalable peer-to-peer lookup 
+service for internet applications in proceedings of the 
+acm sigcomm san diego ca august 
+ f ye h luo j cheng s lu and l zhang a two-tier 
+data dissemination model for large-scale wireless sensor 
+networks in proceedings of the eighth annual acm ieee 
+international conference on mobile computing and 
+networking mobicom atlanta ga september 
+ 

@@ -1,0 +1,918 @@
+on the relevance of utterances in formal inter-agent 
+dialogues 
+simon parsons 
+peter mcburney 
+ 
+department of computer information science 
+brooklyn college city university of new york 
+brooklyn ny usa 
+ parsons sklar  sci brooklyn cuny edu 
+elizabeth sklar 
+michael wooldridge 
+ 
+department of computer science 
+university of liverpool 
+liverpool l zf uk 
+ p j mcburney m j wooldridge  csc liv ac uk 
+abstract 
+work on argumentation-based dialogue has defined 
+frameworks within which dialogues can be carried out established 
+protocols that govern dialogues and studied different 
+properties of dialogues this work has established the space in 
+which agents are permitted to interact through dialogues 
+recently there has been increasing interest in the 
+mechanisms agents might use to choose how to act - the 
+rhetorical manoeuvring that they use to navigate through the space 
+defined by the rules of the dialogue key in such 
+considerations is the idea of relevance since a usual requirement is 
+that agents stay focussed on the subject of the dialogue and 
+only make relevant remarks here we study several notions 
+of relevance showing how they can be related to both the 
+rules for carrying out dialogues and to rhetorical 
+manoeuvring 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence coherence co-ordination languages 
+structures multiagent systems 
+general terms 
+design languages theory 
+ introduction 
+finding ways for agents to reach agreements in 
+multiagent systems is an area of active research one mechanism 
+for achieving agreement is through the use of argumentation 
+- where one agent tries to convince another agent of 
+something during the course of some dialogue early examples of 
+argumentation-based approaches to multiagent agreement 
+include the work of dignum et al kraus 
+parsons and jennings reed schroeder et al and 
+sycara 
+the work of walton and krabbe popularised in the 
+multiagent systems community by reed has been 
+particularly influential in the field of argumentation-based 
+dialogue this work influenced the field in a number of ways 
+perhaps most deeply in framing multi-agent interactions as 
+dialogue games in the tradition of hamblin viewing 
+dialogues in this way as in provides a powerful 
+framework for analysing the formal properties of dialogues and 
+for identifying suitable protocols under which dialogues can 
+be conducted the dialogue game view overlaps with 
+work on conversation policies see for example but 
+differs in considering the entire dialogue rather than dialogue 
+segments 
+in this paper we extend the work of by considering 
+the role of relevance - the relationship between utterances 
+in a dialogue relevance is a topic of increasing interest 
+in argumentation-based dialogue because it relates to the 
+scope that an agent has for applying strategic manoeuvering 
+to obtain the outcomes that it requires our 
+work identifes the limits on such rhetorical manoeuvering 
+showing when it can and cannot have an effect 
+ background 
+we begin by introducing the formal system of 
+argumentation that underpins our approach as well as the 
+corresponding terminology and notation all taken from 
+a dialogue is a sequence of messages passed between two 
+or more members of a set of agents a an agent α maintains 
+a knowledge base σα containing formulas of a propositional 
+language l and having no deductive closure agent α also 
+maintains the set of its past utterances called the 
+commitment store csα we refer to this as an agent s public 
+knowledge since it contains information that is shared with 
+other agents in contrast the contents of σα are private 
+to α 
+note that in the description that follows we assume that 
+is the classical inference relation that ≡ stands for logical 
+equivalence and we use δ to denote all the information 
+available to an agent thus in a dialogue between two agents 
+α and β δα σα ∪ csα ∪ csβ so the commitment store 
+csα can be loosely thought of as a subset of δα consisting of 
+the assertions that have been made public in some dialogue 
+games such as those in anything in csα is either in σα 
+or can be derived from it in other dialogue games such as 
+ 
+ - - - - rps c ifaamas 
+those in csα may contain things that cannot be derived 
+from σα 
+definition an argument a is a pair s p where p 
+is a formula of l and s a subset of δ such that i s is 
+consistent ii s p and iii s is minimal so no proper 
+subset of s satisfying both and exists 
+s is called the support of a written s support a and p 
+is the conclusion of a written p conclusion a thus we 
+talk of p being supported by the argument s p 
+in general since δ may be inconsistent arguments in 
+a δ the set of all arguments which can be made from δ 
+may conflict and we make this idea precise with the notion 
+of undercutting 
+definition let a and a be arguments in a δ 
+a undercuts a iff ∃¬p ∈ support a such that p ≡ 
+conclusion a 
+in other words an argument is undercut if and only if there 
+is another argument which has as its conclusion the negation 
+of an element of the support for the first argument 
+to capture the fact that some beliefs are more strongly 
+held than others we assume that any set of beliefs has a 
+preference order over it we consider all information 
+available to an agent δ to be stratified into non-overlapping 
+subsets δ δn such that beliefs in δi are all equally 
+preferred and are preferred over elements in δj where i j 
+the preference level of a nonempty subset s ⊂ δ where 
+different elements s ∈ s may belong to different layers δi 
+is valued at the highest numbered layer which has a member 
+in s and is referred to as level s in other words s is only 
+as strong as its weakest member note that the strength of 
+a belief as used in this context is a separate concept from 
+the notion of support discussed earlier 
+definition let a and a be arguments in a δ 
+a is preferred to a according to pref a 
+pref 
+a iff 
+level support a level support a if a is 
+preferred to a we say that a is stronger than a 
+we can now define the argumentation system we will use 
+definition an argumentation system is a triple 
+a δ undercut pref 
+such that 
+ a δ is a set of the arguments built from δ 
+ undercut is a binary relation representing the defeat 
+relationship between arguments undercut ⊆ a δ × 
+a δ and 
+ pref is a pre-ordering on a δ × a δ 
+the preference order makes it possible to distinguish 
+different types of relations between arguments 
+definition let a a be two arguments of a δ 
+ if a undercuts a then a defends itself against a 
+iff a 
+pref 
+a otherwise a does not defend itself 
+ a set of arguments a defends a iff for every a that 
+undercuts a where a does not defend itself against 
+a then there is some a ∈ a such that a undercuts 
+a and a does not defend itself against a 
+we write aundercut pref to denote the set of all non-undercut 
+arguments and arguments defending themselves against all 
+their undercutting arguments the set a δ of acceptable 
+arguments of the argumentation system 
+a δ undercut pref 
+is the least fixpoint of a function f 
+a ⊆ a δ 
+f a s p ∈ a δ s p is defended by a 
+definition the set of acceptable arguments for an 
+argumentation system a δ undercut pref is recursively 
+defined as 
+a δ 
+ 
+fi≥ ∅ 
+ aundercut pref ∪ 
+h 
+fi≥ aundercut pref 
+i 
+an argument is acceptable if it is a member of the acceptable 
+set and a proposition is acceptable if it is the conclusion of 
+an acceptable argument 
+an acceptable argument is one which is in some sense 
+proven since all the arguments which might undermine it 
+are themselves undermined 
+definition if there is an acceptable argument for a 
+proposition p then the status of p is accepted while if there 
+is not an acceptable argument for p the status of p is not 
+accepted 
+argument a is said to affect the status of another argument 
+a if changing the status of a will change the status of a 
+ dialogues 
+systems like those described in lay down sets of 
+locutions that agents can make to put forward propositions 
+and the arguments that support them and protocols that 
+define precisely which locutions can be made at which points 
+in the dialogue we are not concerned with such a level 
+of detail here instead we are interested in the interplay 
+between arguments that agents put forth as a result we 
+will consider only that agents are allowed to put forward 
+arguments we do not discuss the detail of the mechanism 
+that is used to put these arguments forward - we just 
+assume that arguments of the form s p are inserted into 
+an agent s commitment store where they are then visible to 
+other agents 
+we then have a typical definition of a dialogue 
+definition a dialogue d is a sequence of moves 
+m m mn 
+a given move mi is a pair α ai where ai is an argument 
+that α places into its commitment store csα 
+moves in an argumentation-based dialogue typically attack 
+moves that have been made previously while in general 
+a dialogue can include moves that undercut several 
+arguments in the remainder of this paper we will only consider 
+dialogues that put forward moves that undercut at most 
+one argument for now we place no additional constraints 
+on the moves that make up a dialogue later we will see 
+how different restrictions on moves lead to different kinds of 
+dialogue 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the sequence of arguments put forward in the dialogue 
+is determined by the agents who are taking part in the 
+dialogue but they are usually not completely free to choose 
+what arguments they make as indicated earlier their choice 
+is typically limited by a protocol if we write the sequence 
+of n moves m m mn as mn and denote the empty 
+sequence as m then we can define a profocol in the following 
+way 
+definition a protocol p is a function on a sequence 
+of moves mi in a dialogue d that for all i ≥ identifies 
+a set of possible moves mi from which the mi th move 
+may be drawn 
+p mi → mi 
+in other words for our purposes here at every point in 
+a dialogue a protocol determines a set of possible moves 
+that agents may make as part of the dialogue if a dialogue 
+d always picks its moves m from the set m identified by 
+protocol p then d is said to conform to p 
+even if a dialogue conforms to a protocol it is typically 
+the case that the agent engaging in the dialogue has to make 
+a choice of move - it has to choose which of the moves in m 
+to make this excercise of choice is what we refer to as an 
+agent s use of rhetoric in its oratorical sense of influencing 
+the thought and conduct of an audience some of our 
+results will give a sense of how much scope an agent has to 
+exercise rhetoric under different protocols 
+as arguments are placed into commitment stores and 
+hence become public agents can determine the relationships 
+between them in general after several moves in a 
+dialogue some arguments will undercut others we will denote 
+the set of arguments a a aj asserted after moves 
+m m mj of a dialogue to be aj - the relationship of 
+the arguments in aj can be described as an argumentation 
+graph similar to those described in for example 
+definition an argumentation graph ag over a set 
+of arguments a is a directed graph v e such that every 
+vertex v v ∈ v denotes one argument a ∈ a every 
+argument a is denoted by one vertex v and every directed edge 
+e ∈ e from v to v denotes that v undercuts v 
+we will use the term argument graph as a synonym for 
+argumentation graph 
+note that we do not require that the argumentation graph 
+is connected in other words the notion of an argumentation 
+graph allows for the representation of arguments that do 
+not relate by undercutting or being undercut to any other 
+arguments we will come back to this point very shortly 
+we adapt some standard graph theoretic notions in order 
+to describe various aspects of the argumentation graph if 
+there is an edge e from vertex v to vertex v then v is said 
+to be the parent of v and v is said to be the child of v 
+in a reversal of the usual notion we define a root of an 
+argumentation graph 
+as follows 
+definition a root of an argumentation graph ag 
+ v e is a node v ∈ v that has no children 
+thus a root of a graph is a node to which directed edges 
+may be connected but from which no directed edges 
+connect to other nodes thus a root is a node representing an 
+ 
+note that we talk of a root rather than the root - as defined 
+an argumentation graph need not be a tree 
+v v 
+figure an example argument graph 
+argument that is undercut but which itself does no 
+undercutting similarly 
+definition a leaf of an argumentation graph ag 
+ v e is a node v ∈ v that has no parents 
+thus a leaf in an argumentation graph represents an 
+argument that undercuts another argument but does no 
+undercutting thus in figure v is a root and v is a leaf the 
+reason for the reversal of the usual notions of root and leaf 
+is that as we shall see we will consider dialogues to 
+construct argumentation graphs from the roots in our sense 
+to the leaves the reversal of the terminology means that it 
+matches the natural process of tree construction 
+since as described above argumentation graphs are 
+allowed to be not connected in the usual graph theory sense 
+it is helpful to distinguish nodes that are connected to other 
+nodes in particular to the root of the tree we say that node 
+v is connected to node v if and only if there is a path from 
+v to v since edges represent undercut relations the notion 
+of connectedness between nodes captures the influence that 
+one argument may have on another 
+proposition given an argumentation graph ag if 
+there is any argument a denoted by node v that affects the 
+status of another argument a denoted by v then v is 
+connected to v the converse does not hold 
+proof given definitions and the only ways in 
+which a can affect the status of a is if a either undercuts 
+a or if a undercuts some argument a that undercuts a 
+or if a undercuts some a that undercuts some a that 
+undercuts a and so on in all such cases a sequence of 
+undercut relations relates the two arguments and if they are 
+both in an argumentation graph this means that they are 
+connected 
+since the notion of path ignores the direction of the 
+directed arcs nodes v and v are connected whether the edge 
+between them runs from v to v or vice versa since a only 
+undercuts a if the edge runs from v to v we cannot infer 
+that a will affect the status of a from information about 
+whether or not they are connected 
+the reason that we need the concept of the argumentation 
+graph is that the properties of the argumentation graph tell 
+us something about the set of arguments a the graph 
+represents when that set of arguments is constructed through a 
+dialogue there is a relationship between the structure of the 
+argumentation graph and the protocol that governs the 
+dialogue it is the extent of the relationship between structure 
+and protocol that is the main subject of this paper to study 
+this relationship we need to establish a correspondence 
+between a dialogue and an argumentation graph given the 
+definitions we have so far this is simple 
+definition a dialogue d consisting of a sequence 
+of moves mn and an argument graph ag v e 
+correspond to one another iff ∀m ∈ mn the argument ai that 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+is advanced at move mi is represented by exactly one node 
+v ∈ v and ∀v ∈ v v represents exactly one argument ai 
+that has been advanced by a move m ∈ mn 
+thus a dialogue corresponds to an argumentation graph if 
+and only if every argument made in the dialogue corresponds 
+to a node in the graph and every node in the graph 
+corresponds to an argument made in the dialogue this 
+one-toone correspondence allows us to consider each node v in the 
+graph to have an index i which is the index of the move in 
+the dialogue that put forward the argument which that node 
+represents thus we can for example refer to the third 
+node in the argumentation graph meaning the node that 
+represents the argument put forward in the third move of 
+the dialogue 
+ relevance 
+most work on dialogues is concerned with what we might 
+call coherent dialogues that is dialogues in which the 
+participants are as in the work of walton and krabbe 
+focused on resolving some question through the dialogue 
+to capture this coherence it seems we need a notion of 
+relevance to constrain the statements made by agents here 
+we study three notions of relevance 
+definition consider a dialogue d consisting of a 
+sequence of moves mi with a corresponding argument graph 
+ag the move mi i is said to be relevant if one or 
+more of the following hold 
+r making mi will change the status of the argument 
+denoted by the first node of ag 
+r making mi will add a node vi that is connected to 
+the first node of ag 
+r making mi will add a node vi that is connected to 
+the last node to be added to ag 
+r -relevance is the form of relevance defined by in their 
+study of strategic and tactical reasoning 
+ r -relevance was 
+suggested by the notion used in and though it differs 
+somewhat from that suggested there we believe it captures 
+the essence of its predecessor 
+note that we only define relevance for the second move 
+of the dialogue onwards because the first move is taken to 
+identify the subject of the dialogue that is the central 
+question that the dialogue is intended to answer and hence it 
+must be relevant to the dialogue no matter what it is in 
+assuming this we focus our attention on the same kind of 
+dialogues as 
+we can think of relevance as enforcing a form of 
+parsimony on a dialogue - it prevents agents from making 
+statements that do not bear on the current state of the dialogue 
+this promotes efficiency in the sense of limiting the 
+number of moves in the dialogue and as in prevents agents 
+revealing information that they might better keep hidden 
+another form of parsimony is to insist that agents are not 
+allowed to put forward arguments that will be undercut by 
+arguments that have already been made during the dialogue 
+we therefore distinguish such arguments 
+ 
+see for examples of dialogues where this is not the case 
+ 
+we consider such reasoning sub-types of rhetoric 
+definition consider a dialogue d consisting of a 
+sequence of moves mi with a corresponding argument graph 
+ag the move mi and the argument it puts forward 
+ai are both said to be pre-empted if ai is undercut by 
+some a ∈ ai 
+we use the term pre-empted because if such an argument 
+is put forward it can seem as though another agent 
+anticipated the argument being made and already made an 
+argument that would render it useless in the rest of this 
+paper we will only deal with protocols that permit moves 
+that are relevant in any of the senses introduced above and 
+are not allowed to be pre-empted we call such protocols 
+basic protocols and dialogues carried out under such protocols 
+basic dialogues 
+the argument graph of a basic dialogue is somewhat 
+restricted 
+proposition consider a basic dialogue d the 
+argumentation graph ag that corresponds to d is a tree with 
+a single root 
+proof recall that definition requires only that ag 
+be a directed graph to show that it is a tree we have to 
+show that it is acyclic and connected 
+that the graph is connected follows from the construction 
+of the graph under a protocol that enforces relevance if the 
+notion of relevance is r each move adds a node that is 
+connected to the previous node if the notion of relevance is 
+r then every move adds a node that is connected to the 
+root and thus is connected to some node in the graph if the 
+notion of relevance is r then every move has to change the 
+status of the argument denoted by the root proposition 
+tells us that to affect the status of an argument a the node 
+v representing the argument a that is effecting the change 
+has to be connected to v the node representing a and so 
+it follows that every new node added as a result of an 
+r relevant move will be connected to the argumentation graph 
+thus ag is connected 
+since a basic dialogue does not allow moves that are 
+preempted every edge that is added during construction is 
+directed from the node that is added to one already in the graph 
+ thus denoting that the argument a denoted by the added 
+node v undercuts the argument a denoted by the node to 
+which the connection is made v rather than the other way 
+around since every edge that is added is directed from the 
+new node to the rest of the graph there can be no cycles 
+thus ag is a tree 
+to show that ag has a single root consider its 
+construction from the initial node after m the graph has one node 
+v that is both a root and a leaf after m the graph is two 
+nodes connected by an edge and v is now a root and not a 
+leaf v is a leaf and not a root however the third node is 
+added the argument earlier in this proof demonstrates that 
+there will be a directed edge from it to some other node 
+making it a leaf thus v will always be the only root the ruling 
+out of pre-empted moves means that v will never cease to 
+be a root and so the argumentation graph will always have 
+one root 
+since every argumentation graph constructed by a basic 
+dialogue is a tree with a single root this means that the first 
+node of every argumentation graph is the root 
+although these results are straightforward to obtain they 
+allow us to show how the notions of relevance are related 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+proposition consider a basic dialogue d 
+consisting of a sequence of moves mi with a corresponding 
+argument graph ag 
+ every move mi that is r -relevant is r -relevant 
+the converse does not hold 
+ every move mi that is r -relevant is r -relevant 
+the converse does not hold 
+ not every move mi that is r -relevant is r -relevant 
+and not every move mi that is r -relevant is 
+r relevant 
+proof for consider how move mi can satisfy r 
+proposition tells us that if ai can change the status 
+of the argument denoted by the root v which as observed 
+above is the first node of ag then vi must be connected 
+to the root this is precisely what is required to satisfy r 
+and the relatiosnhip is proved to hold 
+to see that the converse does not hold we have to consider 
+what it takes to change the status of r since proposition 
+tells us that connectedness is not enough to ensure a change 
+of status - if it did r and r relevance would coincide 
+for mi to change the status of the root it will have to 
+make the argument a represented by r either unacceptable 
+if it were acceptable before the move or acceptable if it 
+were unacceptable before the move given the definition of 
+acceptability it can achieve either by directly 
+undercutting the argument represented by r in which case vi will 
+be directly connected to r by some edge or by undercutting 
+some argument a that is part of the set of non-undercut 
+arguments defending a in the latter case vi will be 
+directly connected to the node representing a and by 
+proposition to r to achieve vi will have to undercut 
+an argument a that is either currently undercutting a or 
+is undercutting an argument that would otherwise defend a 
+now further consider that mi puts forward an argument 
+ai that undercuts the argument denoted by some node v 
+but this latter argument defends itself against ai in such 
+a case the set of acceptable arguments will not change and 
+so the status of ar will not change thus a move that is 
+r -relevant need not be r -relevant 
+for consider that mi can satisfy r simply by adding 
+a node that is connected to vi the last node to be added 
+to ag by proposition it is connected to r and so is 
+r -relevant 
+to see that the converse does not hold consider that an 
+r -relevant move can connect to any node in ag 
+the first part of follows by a similar argument to that we 
+just used - an r -relevant move does not have to connect to 
+vi just to some v that is part of the graph - and the second 
+part follows since a move that is r -relevant may introduce 
+an argument ai that undercuts the argument ai put 
+forward by the previous move and so vi is connected to vi 
+but finds that ai defends itself against ai preventing a 
+change of status at the root 
+what is most interesting is not so much the results but 
+why they hold since this reveals some aspects of the 
+interplay between relevance and the structure of argument 
+graphs for example to restate a case from the proof of 
+proposition a move that is r -relevant by definition has 
+to add a node to the argument graph that is connected to the 
+last node that was added since a move that is r -relevant 
+can add a node that connects anywhere on an argument 
+graph any move that is r -relevant will be r -relevant 
+but the converse does not hold 
+it turns out that we can exploit the interplay between 
+structure and relevance that propositions and have 
+started to illuminate to establish relationships between the 
+protocols that govern dialogues and the argument graphs 
+constructed during such dialogues to do this we need to 
+define protocols in such a way that they refer to the structure 
+of the graph we have 
+definition a protocol is single-path if all dialogues 
+that conform to it construct argument graphs that have only 
+one branch 
+proposition a basic protocol p is single-path if for 
+all i the set of permitted moves mi at move i are all 
+r relevant the converse does not hold 
+proof r -relevance requires that every node added to 
+the argument graph be connected to the previous node 
+starting from the first node this recursively constructs a tree with 
+just one branch and the relationship holds the converse 
+does not hold because even if one or more moves in the 
+protocol are r - or r -relevant it may be the case that because 
+of an agent s rhetorical choice or because of its knowledge 
+every argument that is chosen to be put forward will 
+undercut the previous argument and so the argument graph is a 
+one-branch tree 
+looking for more complex kinds of protocol that construct 
+more complex kinds of argument graph it is an obvious 
+move to turn to 
+definition a basic protocol is multi-path if all 
+dialogues that conform to it can construct argument graphs that 
+are trees 
+but on reflection since any graph with only one branch is 
+also a tree 
+proposition any single-path protocol is an instance 
+of a multi-path protocol 
+and furthermore 
+proposition any basic protocol p is multi-path 
+proof immediate from proposition 
+so the notion of a multi-path protocol does not have much 
+traction as a result we distinguish multi-path protocols 
+that permit dialogues that can construct trees that have 
+more than one branch as bushy protocols we then have 
+proposition a basic protocol p is bushy if for some 
+i the set of permitted moves mi at move i are all r - or 
+r -relevant 
+proof from proposition we know that if all moves 
+are r -relevant then we ll get a tree with one branch and 
+from proposition we know that all basic protocols will 
+build an argument graph that is a tree so providing we 
+exclude r -relevant moves we will get protocols that can build 
+multi-branch trees 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+of course since by proposition any move that is 
+r relevant is r -relevant and can quite possibly be r -relevant 
+ all that proposition tells us is that there is no 
+guarantee that it will be all that proposition tells us is that 
+dialogues that conform to bushy protocols may have more 
+than one branch all we can do is to identify a bound on 
+the number of branches 
+proposition consider a basic dialogue d that 
+includes m moves that are not r -relevant and has a 
+corresponding argumentation graph ag the number of branches 
+in ag is less than or equal to m 
+proof since it must connect a node to the last node 
+added to ag an r -relevant move can only extend an 
+existing branch since they do not have the same restriction 
+r and r -relevant moves may create a new branch by 
+connecting to a node that is not the last node added every 
+such move could create a new branch and if they do we 
+will have m branches if there were r -relevant moves 
+before any of these new-branch-creating moves then these m 
+branches are in addition to the initial branch created by the 
+r -relevant moves and we have a maximum of m 
+possible branches 
+we distinguish bushy protocols from multi-path protocols 
+and hence r - and r -relevance from r -relevance because 
+of the kinds of dialogue that r -relevance enforces in a 
+dialogue in which all moves must be r -relevant the 
+argumentation graph has a single branch - the dialogue consists of 
+a sequence of arguments each of which undercuts the 
+previous one and the last move to be made is the one that settles 
+the dialogue this as we will see next means that such a 
+dialogue only allows a subset of all the moves that would 
+otherwise be possible 
+ completeness 
+the above discussion of the difference between dialogues 
+carried out under single-path and bushy protocols brings us 
+to the consideration of what called predeterminism 
+but we now prefer to describe using the term 
+completeness the idea of predeterminism as described in 
+captures the notion that under some circumstances the 
+result of a dialogue can be established without actually having 
+the dialogue - the agents have sufficiently little room for 
+rhetorical manoeuver that were one able to see the contents 
+of all the σi of all the αi ∈ a one would be able to 
+identify the outcome of any dialogue on a given subject 
+ we 
+develop this idea by considering how the argument graphs 
+constructed by dialogues under different protocols compare 
+to benchmark complete dialogues we start by developing 
+ideas of what complete might mean one reasonable 
+definition is that 
+definition a basic dialogue d between the set of 
+agents a with a corresponding argumentation graph ag is 
+topic-complete if no agent can construct an argument a that 
+undercuts any argument a represented by a node in ag 
+the argumentation graph constructed by a topic-complete 
+dialogue is called a topic-complete argumentation graph and 
+is denoted ag d t 
+ 
+assuming that the σi do not change during the dialogue which is 
+the usual assumption in this kind of dialogue 
+a dialogue is topic-complete when no agent can add 
+anything that is directly connected to the subject of the 
+dialogue some protocols will prevent agents from making 
+moves even though the dialogue is not topic-complete to 
+distinguish such cases we have 
+definition a basic dialogue d between the set of 
+agents a with a corresponding argumentation graph ag is 
+protocol-complete under a protocol p if no agent can make 
+a move that adds a node to the argumentation graph that is 
+permitted by p 
+the argumentation graph constructed by a protocol-complete 
+dialogue is called a protocol-complete argumentation graph 
+and is denoted ag d p clearly 
+proposition any dialogue d under a basic protocol 
+p is protocol-complete if it is topic-complete the converse 
+does not hold in general 
+proof if d is topic-complete no agent can make a move 
+that will extend the argumentation graph this means that 
+no agent can make a move that is permitted by a basic 
+protocol and so d is also protocol complete 
+the converse does not hold since some basic dialogues 
+ under a protocol that only permits r -relevant moves for 
+example will not permit certain moves like the addition of 
+a node that connects to the root of the argumentation graph 
+after more than two moves that would be allowed in a 
+topiccomplete dialogue 
+corollary for a basic dialogue d ag d p is a 
+sub-graph of ag d t 
+obviously from the definition of a sub-graph the converse 
+of corollary does not hold in general 
+the important distinction between topic- and 
+protocolcompleteness is that the former is determined purely by the 
+state of the dialogue - as captured by the argumentation 
+graph - and is thus independent of the protocol while the 
+latter is determined entirely by the protocol any time that 
+a dialogue ends in a state of protocol-completeness rather 
+than topic completeness it is ending when agents still have 
+things to say but can t because the protocol won t allow 
+them to 
+with these definitions of completeness our task is to 
+relate topic-completeness - the property that ensures that 
+agents can say everything that they have to say in a dialogue 
+that is in some sense important - to the notions of 
+relevance we have developed - which determine what agents 
+are allowed to say when we need very specific conditions to 
+make protocol-complete dialogues topic-complete it means 
+that agents have lots of room for rhetorical maneouver when 
+those conditions are not in force that is there are many 
+ways they can bring dialogues to a close before everything 
+that can be said has been said where few conditions are 
+required or conditions are absent then dialogues between 
+agents with the same knowledge will always play out the 
+same way and rhetoric has no place we have 
+proposition a protocol-complete basic dialogue d 
+under a protocol which only allows r -relevant moves will 
+be topic-complete only when ag d t has a single branch 
+in which the nodes are labelled in increasing order from the 
+root 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+proof given what we know about r -relevance the 
+condition on ag d p having a single branch is obvious this 
+is not a sufficient condition on its own because certain 
+protocols may prevent - through additional restrictions like 
+strict turn-taking in a multi-party dialogue - all the nodes 
+in ag d t which is not subject to such restrictions being 
+added to the graph only when ag d t includes the nodes 
+in the exact order that the corresponding arguments are put 
+forward is it necessary that a topic-complete argumentation 
+graph be constructed 
+given proposition these are the conditions under which 
+dialogues conducted under the notion of r -relevance will 
+always be predetermined and given how restrictive the 
+conditions are such dialogues seem to have plenty of room for 
+rhetoric to play a part 
+to find similar conditions for dialogues composed of 
+r and r -relevant moves we first need to distinguish between 
+them we can do this in terms of the structure of the 
+argumentation graph 
+proposition consider a basic dialogue d with 
+argumentation graph ag which has root r denoting an 
+argument a if argument a denoted by node v is an an 
+r relevant move m m is not r -relevant if and only if 
+ there are two nodes v and v on the path between v 
+and r and the argument denoted by v defends itself 
+against the argument denoted by v or 
+ there is an argument a denoted by node v that 
+affects the status of a and the path from v to r has one 
+or more nodes in common with the path from v to r 
+proof for the first condition consider that since ag is 
+a tree v is connected to r thus there is a series of undercut 
+relations between a and a and this corrresponds to a path 
+through ag if this path is the only branch in the tree then 
+a will affect the status of a unless the chain of affect 
+is broken by an undercut that can t change the status of the 
+undercut argument because the latter defends itself 
+for the second condition as for the first the only way 
+that a cannot affect the status of a is if something is 
+blocking its influence if this is not due to defending against 
+it must be because there is some node u on the path that 
+represents an argument whose status is fixed somehow and 
+that must mean that there is another chain of undercut 
+relations another branch of the tree that is incident at u since 
+this second branch denotes another chain of arguments and 
+these affect the status of the argument denoted by u they 
+must also affect the status of a any of these are the a in 
+the condition 
+so an r -relevant move m is not r -relevant if either its 
+effect is blocked because an argument upstream is not strong 
+enough or because there is another line of argument that 
+is currently determining the status of the argument at the 
+root this in turn means that if the effect is not due to 
+defending against then there is an alternative move that 
+is r -relevant - a move that undercuts a in the second 
+condition above 
+ we can now show 
+ 
+though whether the agent in question can make such a move is 
+another question 
+proposition a protocol-complete basic dialogue d 
+will always be topic-complete under a protocol which only 
+includes r -relevant moves and allows every r -relevant move 
+to be made 
+the restriction on r -relevant rules is exactly that for 
+topiccompleteness so a dialogue that has only r -relevant moves 
+will continue until every argument that any agent can make 
+has been put forward given this and what we revealed 
+about r -relevance in proposition we can see that 
+proposition a protocol-complete basic dialogue d 
+under a protocol which only includes r -relevant moves will 
+be topic-complete if ag d t 
+ includes no path with adjacent nodes v denoting a 
+and v denoting a such that a undercuts a and a 
+is stronger that a and 
+ is such that the nodes in every branch have consecutive 
+indices and no node with degree greater than two is an 
+odd number of arcs from a leaf node 
+proof the first condition rules out the first condition 
+in proposition and the second deals with the situation 
+that leads to the second condition in proposition the 
+second condition ensures that each branch is constructed in 
+full before any new branch is added and when a new branch 
+is added the argument that is undercut as part of the 
+addition will be acceptable and so the addition will change the 
+status of the argument denoted by that node and hence the 
+root with these conditions every move required to 
+construct ag d t will be permitted and so the dialogue will be 
+topic-complete when every move has been completed 
+the second part of this result only identifies one possible 
+way to ensure that the second condition in proposition 
+is met so the converse of this result does not hold 
+however what we have is sufficient to answer the 
+question about predetermination that we started with for 
+dialogues to be predetermined every move that is r -relevant 
+must be made in such cases every dialogue is topic 
+complete if we do not require that all r -relevant moves are 
+made then there is some room for rhetoric - the way in 
+which alternative lines of argument are presented becomes 
+an issue if moves are forced to be r -relevant then there 
+is considerable room for rhetorical play 
+ summary 
+this paper has studied the different ideas of relevance in 
+argumentation-based dialogue identifying the relationship 
+between these ideas and showing how they can impact the 
+extent to which the way that agents choose moves in a 
+dialogue - what some authors have called the strategy and 
+tactics of a dialogue this extends existing work on 
+relvance such as by showing how different notions of 
+relevance can have an effect on the outcome of a dialogue 
+in particular when they render the outcome predetermined 
+this connection extends the work of which considered 
+dialogue outcome but stopped short of identifying the 
+conditions under which it is predetermined 
+there are two ways we are currently trying to extend this 
+work both of which will generalise the results and extend its 
+applicability first we want to relax the restrictions that 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+we have imposed the exclusion of moves that attack 
+several arguments without which the argument graph can be 
+mulitply-connected and the exclusion of pre-empted moves 
+without which the argument graph can have cycles 
+second we want to extend the ideas of relevance to cope with 
+moves that do not only add undercutting arguments but 
+also supporting arguments thus taking account of bipolar 
+argumentation frameworks 
+acknowledgments 
+the authors are grateful for financial support received from 
+the ec through project ist-fp - and from the nsf 
+under grants rec- - and nsf iis- they are 
+also grateful to peter stone for a question now several years 
+old which this paper has finally answered 
+ references 
+ l amgoud and c cayrol on the acceptability of 
+arguments in preference-based argumentation 
+framework in proceedings of the th conference on 
+uncertainty in artificial intelligence pages - 
+ l amgoud s parsons and n maudet arguments 
+dialogue and negotiation in w horn editor 
+proceedings of the fourteenth european conference on 
+artificial intelligence pages - berlin 
+germany ios press 
+ j bentahar m mbarki and b moulin strategic and 
+tactic reasoning for communicating agents in 
+n maudet i rahwan and s parsons editors 
+proceedings of the third workshop on argumentation 
+in muliagent systems hakodate japan 
+ p besnard and a hunter a logic-based theory of 
+deductive arguments artificial intelligence 
+ - 
+ c cayrol c devred and m -c lagasquie-schiex 
+handling controversial arguments in bipolar 
+argumentation frameworks in p e dunne and 
+t j m bench-capon editors computational models 
+of argument proceedings of comma pages 
+ - ios press 
+ b chaib-draa and f dignum trends in agent 
+communication language computational intelligence 
+ - 
+ f dignum b dunin-k¸eplicz and r verbrugge 
+agent theory for team formation by dialogue in 
+c castelfranchi and y lesp´erance editors seventh 
+workshop on agent theories architectures and 
+languages pages - boston usa 
+ p m dung on the acceptability of arguments and its 
+fundamental role in nonmonotonic reasoning logic 
+programming and n-person games artificial 
+intelligence - 
+ p m dung r a kowalski and f toni dialectic 
+proof procedures for assumption-based admissable 
+argumentation artificial intelligence - 
+ 
+ r a flores and r c kremer to commit or not to 
+commit computational intelligence - 
+ 
+ d m gabbay and j woods more on 
+non-cooperation in dialogue logic logic journal of 
+the igpl - 
+ d m gabbay and j woods non-cooperation in 
+dialogue logic synthese - - 
+ c l hamblin mathematical models of dialogue 
+theoria - 
+ s kraus k sycara and a evenchik reaching 
+agreements through argumentation a logical model 
+and implementation artificial intelligence 
+ - - 
+ n oren t j norman and a preece loose lips sink 
+ships a heuristic for argumentation in n maudet 
+i rahwan and s parsons editors proceedings of the 
+third workshop on argumentation in muliagent 
+systems hakodate japan 
+ s parsons and n r jennings negotiation through 
+argumentation - a preliminary report in proceedings 
+of second international conference on multi-agent 
+systems pages - 
+ s parsons m wooldridge and l amgoud an 
+analysis of formal inter-agent dialogues in st 
+international conference on autonomous agents and 
+multi-agent systems acm press 
+ s parsons m wooldridge and l amgoud on the 
+outcomes of formal inter-agent dialogues in nd 
+international conference on autonomous agents and 
+multi-agent systems acm press 
+ h prakken on dialogue systems with speech acts 
+arguments and counterarguments in proceedings of 
+the seventh european workshop on logic in artificial 
+intelligence berlin germany springer verlag 
+ h prakken relating protocols for dynamic dispute 
+with logics for defeasible argumentation synthese 
+ - 
+ h prakken and g sartor modelling reasoning with 
+precedents in a formal dialogue game artificial 
+intelligence and law - 
+ i rahwan p mcburney and e sonenberg towards 
+a theory of negotiation strategy in i rahwan 
+p moraitis and c reed editors proceedings of the 
+ st international workshop on argumentation in 
+multiagent systems new york ny 
+ c reed dialogue frames in agent communications in 
+y demazeau editor proceedings of the third 
+international conference on multi-agent systems 
+pages - ieee press 
+ m rovatsos i rahwan f fisher and g weiss 
+adaptive strategies for practical argument-based 
+negotiation in i rahwan p moraitis and c reed 
+editors proceedings of the st international workshop 
+on argumentation in multiagent systems new york 
+ny 
+ m schroeder d a plewe and a raab ultima 
+ratio should hamlet kill claudius in proceedings of 
+the nd international conference on autonomous 
+agents pages - 
+ k sycara argumentation planning other agents 
+plans in proceedings of the eleventh joint conference 
+on artificial intelligence pages - 
+ d n walton and e c w krabbe commitment in 
+dialogue basic concepts of interpersonal reasoning 
+state university of new york press albany ny 
+usa 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

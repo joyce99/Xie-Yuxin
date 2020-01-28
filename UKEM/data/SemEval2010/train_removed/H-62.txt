@@ -1,0 +1,902 @@
+implicit user modeling for personalized search 
+xuehua shen bin tan chengxiang zhai 
+department of computer science 
+university of illinois at urbana-champaign 
+abstract 
+information retrieval systems e g web search engines are 
+critical for overcoming information overload a major deficiency of 
+existing retrieval systems is that they generally lack user 
+modeling and are not adaptive to individual users resulting in inherently 
+non-optimal retrieval performance for example a tourist and a 
+programmer may use the same word java to search for different 
+information but the current search systems would return the same 
+results in this paper we study how to infer a user s interest from 
+the user s search context and use the inferred implicit user model 
+for personalized search we present a decision theoretic framework 
+and develop techniques for implicit user modeling in information 
+retrieval we develop an intelligent client-side web search agent 
+ ucair that can perform eager implicit feedback e g query 
+expansion based on previous queries and immediate result reranking 
+based on clickthrough information experiments on web search 
+show that our search agent can improve search accuracy over the 
+popular google search engine 
+categories and subject descriptors 
+h information search and retrieval retrieval models 
+relevance feedback search process 
+general terms 
+algorithms 
+ introduction 
+although many information retrieval systems e g web search 
+engines and digital library systems have been successfully deployed 
+the current retrieval systems are far from optimal a major 
+deficiency of existing retrieval systems is that they generally lack user 
+modeling and are not adaptive to individual users this 
+inherent non-optimality is seen clearly in the following two cases 
+ different users may use exactly the same query e g java to 
+search for different information e g the java island in indonesia or 
+the java programming language but existing ir systems return the 
+same results for these users without considering the actual user it 
+is impossible to know which sense java refers to in a query 
+a user s information needs may change over time the same user 
+may use java sometimes to mean the java island in indonesia 
+and some other times to mean the programming language 
+without recognizing the search context it would be again impossible to 
+recognize the correct sense 
+in order to optimize retrieval accuracy we clearly need to model 
+the user appropriately and personalize search according to each 
+individual user the major goal of user modeling for information 
+retrieval is to accurately model a user s information need which is 
+unfortunately a very difficult task indeed it is even hard for a user 
+to precisely describe what his her information need is 
+what information is available for a system to infer a user s 
+information need obviously the user s query provides the most direct 
+evidence indeed most existing retrieval systems rely solely on 
+the query to model a user s information need however since a 
+query is often extremely short the user model constructed based 
+on a keyword query is inevitably impoverished an effective way 
+to improve user modeling in information retrieval is to ask the user 
+to explicitly specify which documents are relevant i e useful for 
+satisfying his her information need and then to improve user 
+modeling based on such examples of relevant documents this is called 
+relevance feedback which has been proved to be quite effective for 
+improving retrieval accuracy unfortunately in real world 
+applications users are usually reluctant to make the extra effort to 
+provide relevant examples for feedback 
+it is thus very interesting to study how to infer a user s 
+information need based on any implicit feedback information which 
+naturally exists through user interactions and thus does not require 
+any extra user effort indeed several previous studies have shown 
+that implicit user modeling can improve retrieval accuracy in 
+a web browser curious browser is developed to record a user s 
+explicit relevance ratings of web pages relevance feedback and 
+browsing behavior when viewing a page such as dwelling time 
+mouse click mouse movement and scrolling implicit feedback 
+it is shown that the dwelling time on a page amount of scrolling 
+on a page and the combination of time and scrolling have a strong 
+correlation with explicit relevance ratings which suggests that 
+implicit feedback may be helpful for inferring user information need 
+in user clickthrough data is collected as training data to learn 
+a retrieval function which is used to produce a customized ranking 
+of search results that suits a group of users preferences in 
+the clickthrough data collected over a long time period is exploited 
+through query expansion to improve retrieval accuracy 
+ 
+while a user may have general long term interests and 
+preferences for information often he she is searching for documents to 
+satisfy an ad-hoc information need which only lasts for a short 
+period of time once the information need is satisfied the user 
+would generally no longer be interested in such information for 
+example a user may be looking for information about used cars 
+in order to buy one but once the user has bought a car he she is 
+generally no longer interested in such information in such cases 
+implicit feedback information collected over a long period of time 
+is unlikely to be very useful but the immediate search context and 
+feedback information such as which of the search results for the 
+current information need are viewed can be expected to be much 
+more useful consider the query java again any of the 
+following immediate feedback information about the user could 
+potentially help determine the intended meaning of java in the query 
+ the previous query submitted by the user is hashtable as 
+opposed to e g travel indonesia in the search results the user 
+viewed a page where words such as programming software 
+and applet occur many times 
+to the best of our knowledge how to exploit such immediate 
+and short-term search context to improve search has so far not been 
+well addressed in the previous work in this paper we study how to 
+construct and update a user model based on the immediate search 
+context and implicit feedback information and use the model to 
+improve the accuracy of ad-hoc retrieval in order to maximally 
+benefit the user of a retrieval system through implicit user modeling 
+we propose to perform eager implicit feedback that is as soon 
+as we observe any new piece of evidence from the user we would 
+update the system s belief about the user s information need and 
+respond with improved retrieval results based on the updated user 
+model we present a decision-theoretic framework for optimizing 
+interactive information retrieval based on eager user model 
+updating in which the system responds to every action of the user by 
+choosing a system action to optimize a utility function in a 
+traditional retrieval paradigm the retrieval problem is to match a query 
+with documents and rank documents according to their relevance 
+values as a result the retrieval process is a simple independent 
+cycle of query and result display in the proposed new retrieval 
+paradigm the user s search context plays an important role and the 
+inferred implicit user model is exploited immediately to benefit the 
+user the new retrieval paradigm is thus fundamentally different 
+from the traditional paradigm and is inherently more general 
+we further propose specific techniques to capture and exploit two 
+types of implicit feedback information identifying related 
+immediately preceding query and using the query and the 
+corresponding search results to select appropriate terms to expand the current 
+query and exploiting the viewed document summaries to 
+immediately rerank any documents that have not yet been seen by the 
+user using these techniques we develop a client-side web search 
+agent ucair user-centered adaptive information retrieval on 
+top of a popular search engine google experiments on web 
+search show that our search agent can improve search accuracy over 
+google since the implicit information we exploit already naturally 
+exists through user interactions the user does not need to make any 
+extra effort thus the developed search agent can improve existing 
+web search performance without additional effort from the user 
+the remaining sections are organized as follows in section 
+we discuss the related work in section we present a 
+decisiontheoretic interactive retrieval framework for implicit user modeling 
+in section we present the design and implementation of an 
+intelligent client-side web search agent ucair that performs eager 
+implicit feedback in section we report our experiment results 
+using the search agent section concludes our work 
+ related work 
+implicit user modeling for personalized search has been 
+studied in previous work but our work differs from all previous work 
+in several aspects we emphasize the exploitation of 
+immediate search context such as the related immediately preceding query 
+and the viewed documents in the same session while most previous 
+work relies on long-term collection of implicit feedback 
+information we perform eager feedback and bring the benefit of 
+implicit user modeling as soon as any new implicit feedback 
+information is available while the previous work mostly exploits 
+longterm implicit feedback we propose a retrieval framework 
+to integrate implicit user modeling with the interactive retrieval 
+process while the previous work either studies implicit user modeling 
+separately from retrieval or only studies specific retrieval 
+models for exploiting implicit feedback to better match a query with 
+documents we develop and evaluate a 
+personalized web search agent with online user studies while most existing 
+work evaluates algorithms offline without real user interactions 
+currently some search engines provide rudimentary 
+personalization such as google personalized web search which allows 
+users to explicitly describe their interests by selecting from 
+predefined topics so that those results that match their interests are 
+brought to the top and my yahoo search which gives users 
+the option to save web sites they like and block those they 
+dislike in contrast ucair personalizes web search through implicit 
+user modeling without any additional user efforts furthermore the 
+personalization of ucair is provided on the client side there are 
+two remarkable advantages on this first the user does not need to 
+worry about the privacy infringement which is a big concern for 
+personalized search second both the computation of 
+personalization and the storage of the user profile are done at the client 
+side so that the server load is reduced dramatically 
+there have been many works studying user query logs or 
+query dynamics ucair makes direct use of a user s query 
+history to benefit the same user immediately in the same search 
+session ucair first judges whether two neighboring queries 
+belong to the same information session and if so it selects terms from 
+the previous query to perform query expansion 
+our query expansion approach is similar to automatic query 
+expansion but instead of using pseudo feedback to expand 
+the query we use user s implicit feedback information to expand 
+the current query these two techniques may be combined 
+ optimization in interactive ir 
+in interactive ir a user interacts with the retrieval system through 
+an action dialogue in which the system responds to each user 
+action with some system action for example the user s action may 
+be submitting a query and the system s response may be returning 
+a list of document summaries in general the space of user 
+actions and system responses and their granularities would depend on 
+the interface of a particular retrieval system 
+in principle every action of the user can potentially provide new 
+evidence to help the system better infer the user s information need 
+thus in order to respond optimally the system should use all the 
+evidence collected so far about the user when choosing a response 
+when viewed in this way most existing search engines are clearly 
+non-optimal for example if a user has viewed some documents on 
+the first page of search results when the user clicks on the next 
+link to fetch more results an existing retrieval system would still 
+return the next page of results retrieved based on the original query 
+without considering the new evidence that a particular result has 
+been viewed by the user 
+ 
+we propose to optimize retrieval performance by adapting 
+system responses based on every action that a user has taken and cast 
+the optimization problem as a decision task specifically at any 
+time the system would attempt to do two tasks user model 
+updating monitor any useful evidence from the user regarding 
+his her information need and update the user model as soon as such 
+evidence is available improving search results rerank 
+immediately all the documents that the user has not yet seen as soon 
+as the user model is updated we emphasize eager updating and 
+reranking which makes our work quite different from any existing 
+work below we present a formal decision theoretic framework for 
+optimizing retrieval performance through implicit user modeling in 
+interactive information retrieval 
+ a decision-theoretic framework 
+let a be the set of all user actions and r a be the set of all 
+possible system responses to a user action a ∈ a at any time let 
+at a at be the observed sequence of user actions so far 
+ up to time point t and rt− r rt− be the responses that 
+the system has made responding to the user actions the system s 
+goal is to choose an optimal response rt ∈ r at for the current 
+user action at 
+let m be the space of all possible user models we further 
+define a loss function l a r m ∈ where a ∈ a is a user action 
+r ∈ r a is a system response and m ∈ m is a user model 
+l a r m encodes our decision preferences and assesses the 
+optimality of responding with r when the current user model is m 
+and the current user action is a according to bayesian decision 
+theory the optimal decision at time t is to choose a response that 
+minimizes the bayes risk i e 
+r 
+t argmin 
+r∈r at m 
+l at r mt p mt u d at rt− dmt 
+where p mt u d at rt− is the posterior probability of the 
+user model mt given all the observations about the user u we have 
+made up to time t 
+to simplify the computation of equation let us assume that the 
+posterior probability mass p mt u d at rt− is mostly 
+concentrated on the mode m 
+t argmaxmt p mt u d at rt− 
+we can then approximate the integral with the value of the loss 
+function at m 
+t that is 
+r 
+t ≈ argminr∈r at l at r m 
+t 
+where m 
+t argmaxmt p mt u d at rt− 
+leaving aside how to define and estimate these probabilistic 
+models and the loss function we can see that such a decision-theoretic 
+formulation suggests that in order to choose the optimal response 
+to at the system should perform two tasks compute the 
+current user model and obtain m 
+t based on all the useful 
+information choose a response rt to minimize the loss function value 
+l at rt m 
+t when at does not affect our belief about m 
+t the 
+first step can be omitted and we may reuse m 
+t− for m 
+t 
+note that our framework is quite general since we can 
+potentially model any kind of user actions and system responses in most 
+cases as we may expect the system s response is some ranking of 
+documents i e for most actions a r a consists of all the 
+possible rankings of the unseen documents and the decision problem 
+boils down to choosing the best ranking of unseen documents based 
+on the most current user model when a is the action of submitting 
+a keyword query such a response is exactly what a current retrieval 
+system would do however we can easily imagine that a more 
+intelligent web search engine would respond to a user s clicking of 
+the next link to fetch more unseen results with a more 
+optimized ranking of documents based on any viewed documents in 
+the current page of results in fact according to our eager updating 
+strategy we may even allow a system to respond to a user s clicking 
+of browser s back button after viewing a document in the same 
+way so that the user can maximally benefit from implicit feedback 
+these are precisely what our ucair system does 
+ user models 
+a user model m ∈ m represents what we know about the user 
+u so in principle it can contain any information about the user 
+that we wish to model we now discuss two important components 
+in a user model 
+the first component is a component model of the user s 
+information need presumably the most important factor affecting the 
+optimality of the system s response is how well the response addresses 
+the user s information need indeed at any time we may assume 
+that the system has some belief about what the user is interested 
+in which we model through a term vector x x x v 
+where v w w v is the set of all terms i e vocabulary 
+and xi is the weight of term wi such a term vector is commonly 
+used in information retrieval to represent both queries and 
+documents for example the vector-space model assumes that both 
+the query and the documents are represented as term vectors and 
+the score of a document with respect to a query is computed based 
+on the similarity between the query vector and the document 
+vector in a language modeling approach we may also regard 
+the query unigram language model or the relevance model 
+ as a term vector representation of the user s information need 
+intuitively x would assign high weights to terms that characterize 
+the topics which the user is interested in 
+the second component we may include in our user model is the 
+documents that the user has already viewed obviously even if a 
+document is relevant if the user has already seen the document it 
+would not be useful to present the same document again we thus 
+introduce another variable s ⊂ d d is the whole set of documents 
+in the collection to denote the subset of documents in the search 
+results that the user has already seen viewed 
+in general at time t we may represent a user model as mt 
+ s x at rt− where s is the seen documents x is the system s 
+understanding of the user s information need and at rt− 
+represents the user s interaction history note that an even more 
+general user model may also include other factors such as the user s 
+reading level and occupation 
+if we assume that the uncertainty of a user model mt is solely 
+due to the uncertainty of x the computation of our current estimate 
+of user model m 
+t will mainly involve computing our best estimate 
+of x that is the system would choose a response according to 
+r 
+t argminr∈r at l at r s x 
+ at rt− 
+where x 
+ argmaxx p x u d at rt− this is the 
+decision mechanism implemented in the ucair system to be described 
+later in this system we avoided specifying the probabilistic model 
+p x u d at rt− by computing x 
+directly with some existing 
+feedback method 
+ loss functions 
+the exact definition of loss function l depends on the responses 
+thus it is inevitably application-specific we now briefly discuss 
+some possibilities when the response is to rank all the unseen 
+documents and present the top k of them let r d dk be the 
+top k documents s be the set of seen documents by the user and 
+x 
+be the system s best guess of the user s information need we 
+ 
+may simply define the loss associated with r as the negative sum 
+of the probability that each of the di is relevant i e l a r m 
+− k 
+i p relevant di m clearly in order to minimize this 
+loss function the optimal response r would contain the k 
+documents with the highest probability of relevance which is intuitively 
+reasonable 
+one deficiency of this top-k loss function is that it is not 
+sensitive to the internal order of the selected top k documents so 
+switching the ranking order of a non-relevant document and a relevant one 
+would not affect the loss which is unreasonable to model 
+ranking we can introduce a factor of the user model - the probability 
+of each of the k documents being viewed by the user p view di 
+and define the following ranking loss function 
+l a r m − 
+k 
+i 
+p view di p relevant di m 
+since in general if di is ranked above dj i e i j p view di 
+p view dj this loss function would favor a decision to rank 
+relevant documents above non-relevant ones as otherwise we could 
+always switch di with dj to reduce the loss value thus the 
+system should simply perform a regular retrieval and rank documents 
+according to the probability of relevance 
+depending on the user s retrieval preferences there can be many 
+other possibilities for example if the user does not want to see 
+redundant documents the loss function should include some 
+redundancy measure on r based on the already seen documents s 
+of course when the response is not to choose a ranked list of 
+documents we would need a different loss function we discuss 
+one such example that is relevant to the search agent that we 
+implement when a user enters a query qt current action our search 
+agent relies on some existing search engine to actually carry out 
+search in such a case even though the search agent does not have 
+control of the retrieval algorithm it can still attempt to optimize the 
+search results through refining the query sent to the search engine 
+and or reranking the results obtained from the search engine the 
+loss functions for reranking are already discussed above we now 
+take a look at the loss functions for query refinement 
+let f be the retrieval function of the search engine that our agent 
+uses so that f q would give us the search results using query q 
+given that the current action of the user is entering a query qt i e 
+at qt our response would be f q for some q since we have 
+no choice of f our decision is to choose a good q formally 
+r 
+t argminrt l a rt m 
+ argminf q l a f q m 
+ f argminql qt f q m 
+which shows that our goal is to find q 
+ argminql qt f q m 
+i e an optimal query that would give us the best f q a different 
+choice of loss function l qt f q m would lead to a different 
+query refinement strategy in ucair we heuristically compute q 
+by expanding qt with terms extracted from rt− whenever qt− and 
+qt have high similarity note that rt− and qt− are contained in 
+m as part of the user s interaction history 
+ implicit user modeling 
+implicit user modeling is captured in our framework through 
+the computation of x 
+ argmaxx p x u d at rt− i e the 
+system s current belief of what the user s information need is here 
+again there may be many possibilities leading to different 
+algorithms for implicit user modeling we now discuss a few of them 
+first when two consecutive queries are related the previous 
+query can be exploited to enrich the current query and provide more 
+search context to help disambiguation for this purpose instead of 
+performing query expansion as we did in the previous section we 
+could also compute an updated x 
+based on the previous query and 
+retrieval results the computed new user model can then be used to 
+rank the documents with a standard information retrieval model 
+second we can also infer a user s interest based on the 
+summaries of the viewed documents when a user is presented with a 
+list of summaries of top ranked documents if the user chooses to 
+skip the first n documents and to view the n -th document we 
+may infer that the user is not interested in the displayed summaries 
+for the first n documents but is attracted by the displayed summary 
+of the n -th document we can thus use these summaries as 
+negative and positive examples to learn a more accurate user model 
+x 
+ here many standard relevance feedback techniques can be 
+exploited note that we should use the displayed summaries 
+as opposed to the actual contents of those documents since it is 
+possible that the displayed summary of the viewed document is 
+relevant but the document content is actually not similarly a 
+displayed summary may mislead a user to skip a relevant document 
+inferring user models based on such displayed information rather 
+than the actual content of a document is an important difference 
+between ucair and some other similar systems 
+in ucair both of these strategies for inferring an implicit user 
+model are implemented 
+ ucair a personalized 
+search agent 
+ design 
+in this section we present a client-side web search agent called 
+ucair in which we implement some of the methods discussed 
+in the previous section for performing personalized search through 
+implicit user modeling ucair is a web browser plug-in 
+that 
+acts as a proxy for web search engines currently it is only 
+implemented for internet explorer and google but it is a matter of 
+engineering to make it run on other web browsers and interact with 
+other search engines 
+the issue of privacy is a primary obstacle for deploying any real 
+world applications involving serious user modeling such as 
+personalized search for this reason ucair is strictly running as 
+a client-side search agent as opposed to a server-side application 
+this way the captured user information always resides on the 
+computer that the user is using thus the user does not need to release 
+any information to the outside client-side personalization also 
+allows the system to easily observe a lot of user information that may 
+not be easily available to a server furthermore performing 
+personalized search on the client-side is more scalable than on the 
+serverside since the overhead of computation and storage is distributed 
+among clients 
+as shown in figure the ucair toolbar has major 
+components the implicit user modeling module captures a user s 
+search context and history information including the submitted 
+queries and any clicked search results and infers search session 
+boundaries the query modification module selectively 
+improves the query formulation according to the current user model 
+ the result re-ranking module immediately re-ranks any unseen 
+search results whenever the user model is updated 
+in ucair we consider four basic user actions submitting a 
+keyword query viewing a document clicking the back 
+button clicking the next link on a result page for each 
+of these four actions the system responds with respectively 
+ 
+ucair is available at http sifaka cs uiuc edu ir ucair download html 
+ 
+search 
+engine 
+ e g 
+google 
+search history log 
+ e g past queries 
+clicked results 
+query 
+modification 
+result 
+re-ranking 
+user 
+modeling 
+result buffer 
+ucair 
+userquery 
+results 
+clickthrough  
+figure ucair architecture 
+generating a ranked list of results by sending a possibly expanded 
+query to a search engine updating the information need model 
+x reranking the unseen results on the current result page based 
+on the current model x and reranking the unseen pages and 
+generating the next page of results based on the current model x 
+behind these responses there are three basic tasks decide 
+whether the previous query is related to the current query and if so 
+expand the current query with useful terms from the previous query 
+or the results of the previous query update the information 
+need model x based on a newly clicked document summary 
+rerank a set of unseen documents based on the current model x 
+below we describe our algorithms for each of them 
+ session boundary detection and query 
+expansion 
+to effectively exploit previous queries and their corresponding 
+clickthrough information ucair needs to judge whether two 
+adjacent queries belong to the same search session i e detect 
+session boundaries existing work on session boundary detection is 
+mostly in the context of web log analysis e g and uses 
+statistical information rather than textual features since our 
+clientside agent does not have access to server query logs we make 
+session boundary decisions based on textual similarity between two 
+queries because related queries do not necessarily share the same 
+words e g java island and travel indonesia it is insufficient 
+to use only query text therefore we use the search results of the 
+two queries to help decide whether they are topically related for 
+example for the above queries java island and travel 
+indonesia the words java bali island indonesia and travel 
+may occur frequently in both queries search results yielding a high 
+similarity score 
+we only use the titles and summaries of the search results to 
+calculate the similarity since they are available in the retrieved search 
+result page and fetching the full text of every result page would 
+significantly slow down the process to compensate for the terseness 
+of titles and summaries we retrieve more results than a user would 
+normally view for the purpose of detecting session boundaries 
+ typically results 
+the similarity between the previous query q and the current 
+query q is computed as follows let s s sn and 
+ s s sn be the result sets for the two queries we use 
+the pivoted normalization tf-idf weighting formula to 
+compute a term weight vector si for each result si we define the 
+average result savg to be the centroid of all the result vectors i e 
+ s s sn n the cosine similarity between the two 
+average results is calculated as 
+s avg · savg s 
+ 
+avg · s 
+avg 
+if the similarity value exceeds a predefined threshold the two queries 
+will be considered to be in the same information session 
+if the previous query and the current query are found to belong 
+to the same search session ucair would attempt to expand the 
+current query with terms from the previous query and its search 
+results specifically for each term in the previous query or the 
+corresponding search results if its frequency in the results of the 
+current query is greater than a preset threshold e g results out 
+of the term would be added to the current query to form an 
+expanded query in this case ucair would send this expanded 
+query rather than the original one to the search engine and return 
+the results corresponding to the expanded query currently ucair 
+only uses the immediate preceding query for query expansion in 
+principle we could exploit all related past queries 
+ information need model updating 
+suppose at time t we have observed that the user has viewed 
+k documents whose summaries are s sk we update our user 
+model by computing a new information need vector with a standard 
+feedback method in information retrieval i e rocchio 
+according to the vector space retrieval model each clicked summary 
+si can be represented by a term weight vector si with each term 
+weighted by a tf-idf weighting formula rocchio computes 
+the centroid vector of all the summaries and interpolates it with the 
+original query vector to obtain an updated term vector that is 
+x αq − α 
+ 
+k 
+k 
+i 
+si 
+where q is the query vector k is the number of summaries the user 
+clicks immediately following the current query and α is a parameter 
+that controls the influence of the clicked summaries on the inferred 
+information need model in our experiments α is set to note 
+that we update the information need model whenever the user views 
+a document 
+ result reranking 
+in general we want to rerank all the unseen results as soon as the 
+user model is updated currently ucair implements reranking in 
+two cases corresponding to the user clicking the back button 
+and next link in the internet explorer in both cases the current 
+ updated user model would be used to rerank the unseen results so 
+that the user would see improved search results immediately 
+to rerank any unseen document summaries ucair uses the 
+standard vector space retrieval model and scores each summary 
+based on the similarity of the result and the current user information 
+need vector x since implicit feedback is not completely 
+reliable we bring up only a small number e g of highest reranked 
+results to be followed by any originally high ranked results 
+ 
+google result user query java map ucair result user query java map 
+previous query travel indonesia previous query hashtable 
+expanded user query java map indonesia expanded user query java map class 
+ java map projections of the world lonely planet - indonesia map map java platform se v 
+www btinternet com se js mapproj htm www lonelyplanet com mapshells java sun com j se docs 
+ java map projections of the world indonesia tourism central java - map java platform se v interface map 
+www btinternet com se js oldmapproj htm www indonesia-tourism com java sun com j se docs api java 
+ java map indonesia tourism west java - map an introduction to java map collection classes 
+java sun com developer www indonesia-tourism com www oracle com technology 
+ java technology concept map indostreets - java map an introduction to java map collection classes 
+java sun com developer onlinetraining www indostreets com maps java www theserverside com news 
+ science nasa home indonesia regions and islands maps bali java koders - mappings java 
+science nasa gov realtime www maps anywhere com maps www koders com java 
+ an introduction to java map collection classes indonesia city street map hibernate simplifies inheritance mapping 
+www oracle com technology www maps anywhere com maps www ibm com developerworks java 
+ lonely planet - java map maps of indonesia tmap map class hierarchy 
+www lonelyplanet com mapshells www embassyworld com maps tmap pmel noaa gov 
+ onjava com java api map maps of indonesia by peter loud class scope 
+www onjava com pub a onjava api map users powernet co uk jalbum net api se datadosen util scope html 
+ gta san andreas sam maps of indonesia by peter loud class printsafehashmap 
+www gtasanandreas net sam users powernet co uk mkmarina indonesia jalbum net api se datadosen 
+ indonesia tourism west java - map indonesiaphoto com java pro - union and vertical mapping of classes 
+www indonesia-tourism com www indonesiaphoto com www fawcette com javapro 
+table sample results of query expansion 
+ evaluation of ucair 
+we now present some results on evaluating the two major ucair 
+functions selective query expansion and result reranking based on 
+user clickthrough data 
+ sample results 
+the query expansion strategy implemented in ucair is 
+intentionally conservative to avoid misinterpretation of implicit user 
+models in practice whenever it chooses to expand the query the 
+expansion usually makes sense in table we show how ucair can 
+successfully distinguish two different search contexts for the query 
+java map corresponding to two different previous queries i e 
+travel indonesia vs hashtable due to implicit user modeling 
+ucair intelligently figures out to add indonesia and class 
+respectively to the user s query java map which would 
+otherwise be ambiguous as shown in the original results from google 
+on march ucair s results are much more accurate than 
+google s results and reflect personalization in search 
+the eager implicit feedback component is designed to 
+immediately respond to a user s activity such as viewing a document in 
+figure we show how ucair can successfully disambiguate an 
+ambiguous query jaguar by exploiting a viewed document 
+summary in this case the initial retrieval results using jaguar shown 
+on the left side contain two results about the jaguar cars followed 
+by two results about the jaguar software however after the user 
+views the web page content of the second result about jaguar 
+car and returns to the search result page by clicking back 
+button ucair automatically nominates two new search results about 
+jaguar cars shown on the right side while the original two results 
+about jaguar software are pushed down on the list unseen from the 
+picture 
+ quantitative evaluation 
+to further evaluate ucair quantitatively we conduct a user 
+study on the effectiveness of the eager implicit feedback 
+component it is a challenge to quantitatively evaluate the potential 
+performance improvement of our proposed model and ucair over 
+google in an unbiased way here we design a user study 
+in which participants would do normal web search and judge a 
+randomly and anonymously mixed set of results from google and 
+ucair at the end of the search session participants do not know 
+whether a result comes from google or ucair 
+we recruited graduate students for this user study who have 
+different backgrounds computer science biology and 
+chem top 
+ num number 
+ title spammer arrest sue 
+ desc description have any spammers 
+been arrested or sued for sending unsolicited 
+e-mail 
+ narr narrative instances of arrests 
+prosecutions convictions and punishments 
+of spammers and lawsuits against them are 
+relevant documents which describe laws to 
+limit spam without giving details of lawsuits 
+or criminal trials are not relevant 
+ top 
+figure an example of trec query topic expressed in a 
+form which might be given to a human assistant or librarian 
+istry we use query topics from trec 
+ terabyte track 
+and trec web track topic distillation task in the way to 
+be described below 
+an example topic from trec terabyte track appears in 
+figure the title is a short phrase and may be used as a query 
+to the retrieval system the description field provides a slightly 
+longer statement of the topic requirement usually expressed as a 
+single complete sentence or question finally the narrative supplies 
+additional information necessary to fully specify the requirement 
+expressed in the form of a short paragraph 
+initially each participant would browse topics either from 
+terabyte track or web track and pick or most interesting topics 
+for each picked topic the participant would essentially do the 
+normal web search using ucair to find many relevant web pages by 
+using the title of the query topic as the initial keyword query 
+during this process the participant may view the search results and 
+possibly click on some interesting ones to view the web pages just 
+as in a normal web search there is no requirement or restriction 
+on how many queries the participant must submit or when the 
+participant should stop the search for one topic when the participant 
+plans to change the search topic he she will simply press a button 
+ 
+text retrieval conference http trec nist gov 
+ 
+figure screen shots for result reranking 
+to evaluate the search results before actually switching to the next 
+topic 
+at the time of evaluation top ranked results from google and 
+ucair some are overlapping are randomly mixed together so 
+that the participant would not know whether a result comes from 
+google or ucair the participant would then judge the relevance 
+of these results we measure precision at top n n 
+documents of google and ucair we also evaluate precisions at 
+different recall levels 
+altogether documents judged as relevant from google search 
+results and documents judged as relevant from ucair by 
+participants scatter plots of precision at top and top documents 
+are shown in figure and figure respectively the scatter plot 
+of precision at top documents is very similar to precision at top 
+ documents each point of the scatter plots represents the 
+precisions of google and ucair on one query topic 
+table shows the average precision at top n documents among 
+ topics from figure figure and table we see that the 
+search results from ucair are consistently better than those from 
+google by all the measures moreover the performance 
+improvement is more dramatic for precision at top documents than that 
+at precision at top documents one explanation for this is that 
+the more interaction the user has with the system the more 
+clickthrough data ucair can be expected to collect thus the retrieval 
+system can build more precise implicit user models which lead to 
+better retrieval accuracy 
+ranking method prec  prec  prec  prec  
+google 
+ucair 
+improvement 
+table table of average precision at top n documents for 
+query topics 
+the plot in figure shows the precision-recall curves for ucair 
+and google where it is clearly seen that the performance of ucair 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ucair prec  
+googleprec  
+scatterplot of precision at top documents 
+figure precision at top documents of ucair and google 
+is consistently and considerably better than that of google at all 
+levels of recall 
+ conclusions 
+in this paper we studied how to exploit implicit user modeling to 
+intelligently personalize information retrieval and improve search 
+accuracy unlike most previous work we emphasize the use of 
+immediate search context and implicit feedback information as well 
+as eager updating of search results to maximally benefit a user we 
+presented a decision-theoretic framework for optimizing 
+interactive information retrieval based on eager user model updating in 
+which the system responds to every action of the user by 
+choosing a system action to optimize a utility function we further 
+propose specific techniques to capture and exploit two types of implicit 
+feedback information identifying related immediately 
+preceding query and using the query and the corresponding search results 
+to select appropriate terms to expand the current query and 
+exploiting the viewed document summaries to immediately rerank 
+any documents that have not yet been seen by the user using these 
+techniques we develop a client-side web search agent ucair 
+on top of a popular search engine google experiments on web 
+search show that our search agent can improve search accuracy over 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ucair prec  
+googleprec  
+scatterplot of precision at top documents 
+figure precision at top documents of ucair and google 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+precision 
+precision−recall curves 
+google result 
+ucair result 
+figure precision at top result of ucair and google 
+google since the implicit information we exploit already naturally 
+exists through user interactions the user does not need to make any 
+extra effort the developed search agent thus can improve 
+existing web search performance without any additional effort from the 
+user 
+ acknowledgement 
+we thank the six participants of our evaluation experiments this 
+work was supported in part by the national science foundation 
+grants iis- and iis- 
+ references 
+ s m beitzel e c jensen a chowdhury d grossman 
+and o frieder hourly analysis of a very large topically 
+categorized web query log in proceedings of sigir 
+pages - 
+ c clarke n craswell and i soboroff overview of the 
+trec terabyte track in proceedings of trec 
+ 
+ m claypool p le m waseda and d brown implicit 
+interest indicators in proceedings of intelligent user 
+interfaces pages - 
+ n craswell d hawking r wilkinson and m wu 
+overview of the trec web track in proceedings of 
+trec 
+ w b croft s cronen-townsend and v larvrenko 
+relevance feedback and personalization a language 
+modeling perspective in proeedings of second delos 
+workshop personalisation and recommender systems in 
+digital libraries 
+ google personalized http labs google com personalized 
+ d hawking n craswell p b thistlewaite and d harman 
+results and challenges in web search evaluation computer 
+networks - - 
+ x huang f peng a an and d schuurmans dynamic 
+web log session identification with statistical language 
+models journal of the american society for information 
+science and technology - 
+ g jeh and j widom scaling personalized web search in 
+proceedings of www pages - 
+ t joachims optimizing search engines using clickthrough 
+data in proceedings of sigkdd pages - 
+ 
+ d kelly and j teevan implicit feedback for inferring user 
+preference a bibliography sigir forum - 
+ 
+ j lafferty and c zhai document language models query 
+models and risk minimization for information retrieval in 
+proceedings of sigir pages - 
+ t lau and e horvitz patterns of search analyzing and 
+modeling web query refinement in proceedings of the 
+seventh international conference on user modeling um 
+pages - 
+ v lavrenko and b croft relevance-based language 
+models in proceedings of sigir pages - 
+ m mitra a singhal and c buckley improving automatic 
+query expansion in proceedings of sigir pages 
+ - 
+ my yahoo http mysearch yahoo com 
+ g nunberg as google goes so goes the nation new york 
+times may 
+ s e robertson the probability ranking principle in ı˚ 
+journal of documentation - 
+ j j rocchio relevance feedback in information retrieval in 
+the smart retrieval system experiments in automatic 
+document processing pages - prentice-hall inc 
+ 
+ g salton and c buckley improving retrieval performance 
+by retrieval feedback journal of the american society for 
+information science - 
+ g salton and m j mcgill introduction to modern 
+information retrieval mcgraw-hill 
+ x shen b tan and c zhai context-sensitive information 
+retrieval using implicit feedback in proceedings of sigir 
+ pages - 
+ x shen and c zhai exploiting query history for document 
+ranking in interactive information retrieval poster in 
+proceedings of sigir pages - 
+ a singhal modern information retrieval a brief overview 
+bulletin of the ieee computer society technical committee 
+on data engineering - 
+ k sugiyama k hatano and m yoshikawa adaptive web 
+search based on user profile constructed without any effort 
+from users in proceedings of www pages - 
+ 
+ e volokh personalization and privacy communications of 
+the acm - 
+ r w white j m jose c j van rijsbergen and 
+i ruthven a simulated study of implicit feedback models 
+in proceedings of ecir pages - 
+ j xu and w b croft query expansion using local and 
+global document analysis in proceedings of sigir 
+pages - 
+ c zhai and j lafferty model-based feedback in kl 
+divergence retrieval model in proceedings of the cikm 
+ pages - 
+ 

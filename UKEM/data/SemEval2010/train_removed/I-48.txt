@@ -1,0 +1,981 @@
+normative system games 
+thomas 
+◦ 
+agotnes 
+dept of computer engineering 
+bergen university college 
+pb n- bergen 
+norway 
+tag hib no 
+wiebe van der hoek 
+dept of computer science 
+university of liverpool 
+liverpool l zf 
+uk 
+wiebe csc liv ac uk 
+michael wooldridge 
+dept of computer science 
+university of liverpool 
+liverpool l zf 
+uk 
+mjw csc liv ac uk 
+abstract 
+we develop a model of normative systems in which agents are 
+assumed to have multiple goals of increasing priority and 
+investigate the computational complexity and game theoretic properties of 
+this model in the underlying model of normative systems we use 
+kripke structures to represent the possible transitions of a 
+multiagent system a normative system is then simply a subset of the 
+kripke structure which contains the arcs that are forbidden by the 
+normative system we specify an agent s goals as a hierarchy of 
+formulae of computation tree logic ctl a widely used logic 
+for representing the properties of kripke structures the intuition is 
+that goals further up the hierarchy are preferred by the agent over 
+those that appear further down the hierarchy using this scheme 
+we define a model of ordinal utility which in turn allows us to 
+interpret our kripke-based normative systems as games in which 
+agents must determine whether to comply with the normative 
+system or not we then characterise the computational complexity of 
+a number of decision problems associated with these kripke-based 
+normative system games for example we show that the 
+complexity of checking whether there exists a normative system which has 
+the property of being a nash implementation is np-complete 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent systems 
+i knowledge representation formalisms and methods 
+general terms 
+theory 
+ introduction 
+normative systems or social laws have proved to be an attractive 
+approach to coordination in multi-agent systems 
+although the various approaches to normative systems proposed in 
+the literature differ on technical details they all share the same 
+basic intuition that a normative system is a set of constraints on the 
+behaviour of agents in the system by imposing these constraints 
+it is hoped that some desirable objective will emerge the idea of 
+using social laws to coordinate multi-agent systems was proposed 
+by shoham and tennenholtz their approach was extended 
+by van der hoek et al to include the idea of specifying a desirable 
+global objective for a social law as a logical formula with the idea 
+being that the normative system would be regarded as successful 
+if after implementing it i e after eliminating all forbidden 
+actions the objective formula was guaranteed to be satisfied in the 
+system however this model did not take into account the 
+preferences of individual agents and hence neglected to account 
+for possible strategic behaviour by agents when deciding whether 
+to comply with the normative system or not this model of 
+normative systems was further extended by attributing to each agent 
+a single goal in however this model was still too 
+impoverished to capture the kinds of decision making that take place when 
+an agent decides whether or not to comply with a social law in 
+reality strategic considerations come into play an agent takes into 
+account not just whether the normative system would be beneficial 
+for itself but also whether other agents will rationally choose to 
+participate 
+in this paper we develop a model of normative systems in which 
+agents are assumed to have multiple goals of increasing priority 
+we specify an agent s goals as a hierarchy of formulae of 
+computation tree logic ctl a widely used logic for representing the 
+properties of kripke structures the intuition is that goals further 
+up the hierarchy are preferred by the agent over those that appear 
+further down the hierarchy using this scheme we define a model 
+of ordinal utility which in turn allows us to interpret our 
+kripkebased normative systems as games in which agents must determine 
+whether to comply with the normative system or not we thus 
+provide a very natural bridge between logical structures and languages 
+and the techniques and concepts of game theory which have proved 
+to be very powerful for analysing social contract-style scenarios 
+such as normative systems we then characterise the 
+computational complexity of a number of decision problems associated 
+with these kripke-based normative system games for example we 
+show that the complexity of checking whether there exists a 
+normative system which has the property of being a nash implementation 
+is np-complete 
+ kripke structures and ctl 
+we use kripke structures as our basic semantic model for 
+multiagent systems a kripke structure is essentially a directed 
+graph with the vertex set s corresponding to possible states of the 
+system being modelled and the relation r ⊆ s × s capturing the 
+ 
+ - - - - rps c ifaamas 
+possible transitions of the system intuitively these transitions are 
+caused by agents in the system performing actions although we do 
+not include such actions in our semantic model see e g 
+ for related models which include actions as first class citizens 
+we let s 
+denote the set of possible initial states of the system 
+our model is intended to correspond to the well-known interleaved 
+concurrency model from the reactive systems literature thus an 
+arc corresponds to the execution of an atomic action by one of the 
+processes in the system which we call agents 
+it is important to note that in contrast to such models as 
+we are therefore here not modelling synchronous action this 
+assumption is not in fact essential for our analysis but it greatly 
+simplifies the presentation however we find it convenient to include 
+within our model the agents that cause transitions we therefore 
+assume a set a of agents and we label each transition in r with 
+the agent that causes the transition via a function α r → a 
+finally we use a vocabulary φ p q of boolean variables 
+to express the properties of individual states s we use a function 
+v s → φ 
+to label each state with the boolean variables true or 
+satisfied in that state 
+collecting these components together an agent-labelled kripke 
+structure over φ is a -tuple 
+k s s 
+ r a α v where 
+ s is a finite non-empty set of states 
+ s 
+⊆ s s 
+ ∅ is the set of initial states 
+ r ⊆ s × s is a total binary relation on s which we refer to 
+as the transition relation 
+ 
+ a n is a set of agents 
+ α r → a labels each transition in r with an agent and 
+ v s → φ 
+labels each state with the set of propositional 
+variables true in that state 
+in the interests of brevity we shall hereafter refer to an 
+agentlabelled kripke structure simply as a kripke structure a path 
+over a transition relation r is an infinite sequence of states π 
+s s which must satisfy the property that ∀u ∈ n su su ∈ 
+r if u ∈ n then we denote by π u the component indexed by 
+u in π thus π denotes the first element π the second and so 
+on a path π such that π s is an s-path let πr s denote 
+the set of s-paths over r since it will usually be clear from 
+context we often omit reference to r and simply write π s we will 
+sometimes refer to and think of an s-path as a possible 
+computation or system evolution from s 
+example our running example is of a system with a single 
+non-sharable resource which is desired by two agents consider 
+the kripke structure depicted in figure we have two states s and 
+t and two corresponding boolean variables p and p which are 
+ 
+in the branching time temporal logic literature a relation r ⊆ 
+s × s is said to be total iff ∀s ∃s s s ∈ r note that 
+the term total relation is sometimes used to refer to relations 
+r ⊆ s × s such that for every pair of elements s s ∈ s we 
+have either s s ∈ r or s s ∈ r we are not using the term 
+in this way here it is also worth noting that for some domains 
+other constraints may be more appropriate than simple totality for 
+example one might consider the agent totality requirement that in 
+every state every agent has at least one possible transition 
+available ∀s∀i ∈ a∃s s s ∈ r and α s s i 
+ p 
+t 
+p 
+ 
+ 
+ 
+s 
+ 
+ 
+figure the resource control running example 
+mutually exclusive think of pi as meaning agent i has currently 
+control over the resource each agent has two possible actions 
+when in possession of the resource either give it away or keep it 
+obviously there are infinitely many different s-paths and t-paths 
+let us say that our set of initial states s 
+equals s t i e we 
+don t make any assumptions about who initially has control over 
+the resource 
+ ctl 
+we now define computation tree logic ctl a branching time 
+temporal logic intended for representing the properties of kripke 
+structures note that since ctl is well known and widely 
+documented in the literature our presentation though complete will be 
+somewhat terse we will use ctl to express agents goals 
+the syntax of ctl is defined by the following grammar 
+ϕ p ¬ϕ ϕ ∨ ϕ e fϕ e ϕ u ϕ a fϕ a ϕ u ϕ 
+where p ∈ φ we denote the set of ctl formula over φ by lφ 
+since φ is understood we usually omit reference to it 
+the semantics of ctl are given with respect to the satisfaction 
+relation which holds between pairs of the form k s where 
+k is a kripke structure and s is a state in k and formulae of the 
+language the satisfaction relation is defined as follows 
+k s 
+k s p iff p ∈ v s where p ∈ φ 
+k s ¬ϕ iff not k s ϕ 
+k s ϕ ∨ ψ iff k s ϕ or k s ψ 
+k s a fϕ iff ∀π ∈ π s k π ϕ 
+k s e fϕ iff ∃π ∈ π s k π ϕ 
+k s a ϕ u ψ iff ∀π ∈ π s ∃u ∈ n s t k π u ψ 
+and ∀v ≤ v u k π v ϕ 
+k s e ϕ u ψ iff ∃π ∈ π s ∃u ∈ n s t k π u ψ 
+and ∀v ≤ v u k π v ϕ 
+the remaining classical logic connectives ∧ → ↔ are 
+assumed to be defined as abbreviations in terms of ¬ ∨ in the 
+conventional manner the remaining ctl temporal operators are 
+defined 
+a♦ϕ ≡ a u ϕ e♦ϕ ≡ e u ϕ 
+a ϕ ≡ ¬e♦¬ϕ e ϕ ≡ ¬a♦¬ϕ 
+we say ϕ is satisfiable if k s ϕ for some kripke structure k 
+and state s in k ϕ is valid if k s ϕ for all kripke structures 
+k and states s in k the problem of checking whether k s ϕ 
+for given k s ϕ model checking can be done in deterministic 
+polynomial time while checking whether a given ϕ is satisfiable or 
+whether ϕ is valid is exptime-complete we write k ϕ if 
+k s ϕ for all s ∈ s 
+ and ϕ if k ϕ for all k 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ normative systems 
+for our purposes a normative system is simply a set of constraints 
+on the behaviour of agents in a system more precisely a 
+normative system defines for every possible system transition whether 
+or not that transition is considered to be legal or not different 
+normative systems may differ on whether or not a transition is 
+legal formally a normative system η w r t a kripke structure 
+k s s 
+ r a α v is simply a subset of r such that r \ η 
+is a total relation the requirement that r\η is total is a 
+reasonableness constraint it prevents normative systems which lead to states 
+with no successor let n r η η ⊆ r r \ η is total 
+be the set of normative systems over r the intended 
+interpretation of a normative system η is that s s ∈ η means transition 
+ s s is forbidden in the context of η hence r \ η denotes the 
+legal transitions of η since it is assumed η is reasonable we are 
+guaranteed that a legal outward transition exists for every state we 
+denote the empty normative system by η∅ so η∅ ∅ note that 
+the empty normative system η∅ is reasonable with respect to any 
+transition relation r 
+the effect of implementing a normative system on a kripke 
+structure is to eliminate from it all transitions that are forbidden 
+according to this normative system see if k is a kripke 
+structure and η is a normative system over k then k † η denotes the 
+kripke structure obtained from k by deleting transitions forbidden 
+in η formally if k s s 
+ r a α v and η ∈ n r then 
+let k†η k be the kripke structure k s s 
+ r a α v 
+where 
+ s s s 
+ s 
+ a a and v v 
+ r r \ η and 
+ α is the restriction of α to r 
+α s s 
+j 
+α s s if s s ∈ r 
+undefined otherwise 
+notice that for all k we have k † η∅ k 
+example continued when thinking in terms of fairness it 
+seems natural to consider normative systems η that contain s s 
+or t t a normative system with s t would not be fair in the 
+sense that a♦a ¬p ∨ a♦a ¬p holds in all paths from 
+some moment on one agent will have control forever let us for 
+later reference fix η s s η t t and η s s 
+ t t 
+later we will address the issue of whether or not agents should 
+rationally choose to comply with a particular normative system in 
+this context it is useful to define operators on normative systems 
+which correspond to groups of agents defecting from the 
+normative system formally let k s s 
+ r a α v be a kripke 
+structure let c ⊆ a be a set of agents over k and let η be a 
+normative system over k then 
+ η c denotes the normative system that is the same as η 
+except that it only contains the arcs of η that correspond to 
+the actions of agents in c we call η c the restriction of η 
+to c and it is defined as 
+η c s s s s ∈ η α s s ∈ c 
+thus k † η c is the kripke structure that results if only 
+the agents in c choose to comply with the normative system 
+ η c denotes the normative system that is the same as η 
+except that it only contains the arcs of η that do not correspond 
+to actions of agents in c we call η c the exclusion of c 
+from η and it is defined as 
+η c s s s s ∈ η α s s ∈ c 
+thus k † η c is the kripke structure that results if only 
+the agents in c choose not to comply with the normative 
+system i e the only ones who comply are those in a \ c 
+note that we have η c η a\c and η c η a\c 
+example continued we have η η s s 
+while η η∅ η similarly we have η 
+ s s and η t t 
+ goals and utilities 
+next we want to be able to capture the goals that agents have as 
+these will drive an agent s strategic considerations - particularly as 
+we will see considerations about whether or not to comply with a 
+normative system we will model an agent s goals as a prioritised 
+list of ctl formulae representing increasingly desired properties 
+that the agent wishes to hold the intended interpretation of such a 
+goal hierarchy γi for agent i ∈ a is that the further up the 
+hierarchy a goal is the more it is desired by i note that we assume 
+that if an agent can achieve a goal at a particular level in its goal 
+hierarchy then it is unconcerned about goals lower down the 
+hierarchy formally a goal hierarchy γ over a kripke structure k 
+is a finite non-empty sequence of ctl formulae 
+γ ϕ ϕ ϕk 
+in which by convention ϕ we use a natural number 
+indexing notation to extract the elements of a goal hierarchy so if 
+γ ϕ ϕ ϕk then γ ϕ γ ϕ and so on we 
+denote the largest index of any element in γ by γ 
+a particular kripke structure k is said to satisfy a goal at 
+index x in goal hierarchy γ if k γ x i e if γ x is satisfied in all 
+initial states s 
+of k an obvious potential property of goal 
+hierarchies is monotonicity where goals at higher levels in the hierarchy 
+logically imply those at lower levels in the hierarchy formally a 
+goal hierarchy γ is monotonic if for all x ∈ γ ⊆ n we 
+have γ x → γ x − the simplest type of monotonic goal 
+hierarchy is where γ x γ x ∧ ψx for some ψx so at 
+each successive level of the hierarchy we add new constraints to 
+the goal of the previous level although this is a natural property 
+of many goal hierarchies it is not a property we demand of all goal 
+hierarchies 
+example continued suppose the agents have similar but 
+opposing goals each agent i wants to keep the source as often and 
+long as possible for himself define each agent s goal hierarchy as 
+γi ϕi 
+ ϕi 
+ e♦pi 
+ϕi 
+ e e♦pi ϕi 
+ e♦e pi 
+ϕi 
+ a e♦pi ϕi 
+ e♦a pi 
+ϕi 
+ a a♦pi ϕi 
+ a a♦pi ∧ e pi 
+ϕi 
+ a pi 
+the most desired goal of agent i is to in every computation 
+always have the resource pi this is expressed in ϕi 
+ thanks to our 
+reasonableness constraint this goal implies ϕi 
+ which says that no 
+matter how the computation paths evolve it will always be that all 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+continuations will hit a point in which pi and moreover there is a 
+continuation in which pi always holds goal ϕi 
+ is a fairness 
+constraint implied by it note that a♦pi says that every computation 
+eventually reaches a pi state this may mean that after pi has 
+happened it will never happen again ϕi 
+ circumvents this it says that 
+no matter where you are there should be a future pi state the goal 
+ϕi 
+ is like the strong goal ϕi 
+ but it accepts that this is only achieved 
+in some computation eventually ϕi 
+ requires that in every path 
+there is always a continuation that eventually gives pi goal ϕi 
+ 
+says that pi should be true on some branch from some moment on 
+it implies ϕi 
+ which expresses that there is a computation such that 
+everywhere during it it is possible to choose a continuation that 
+eventually satisfies pi this implies ϕi 
+ which says that pi should 
+at least not be impossible if we even drop that demand we have 
+the trivial goal ϕi 
+ 
+we remark that it may seem more natural to express a fairness 
+constraint ϕi 
+ as a ♦pi however this is not a proper ctl 
+formula it is in fact a formula in ctl 
+ 
+ and in this logic the two 
+expressions would be equivalent however our basic complexity 
+results in the next sections would not hold for the richer language 
+ctl 
+ 
+ and the price to pay for this is that we have to formulate 
+our desired goals in a somewhat more cumbersome manner than 
+we might ideally like of course our basic framework does not 
+demand that goals are expressed in ctl they could equally well 
+be expressed in ctl 
+ 
+or indeed atl as in we 
+comment on the implications of alternative goal representations at the 
+conclusion of the next section 
+a multi-agent system collects together a kripke structure 
+ representing the basic properties of a system under consideration its 
+state space and the possible state transitions that may occur in it 
+together with a goal hierarchy one for each agent representing the 
+aspirations of the agents in the system formally a multi-agent 
+system m is an n -tuple 
+m k γ γn 
+where k is a kripke structure and for each agent i in k γi is a 
+goal hierarchy over k 
+ the utility of normative systems 
+we can now define the utility of a kripke structure for an agent 
+the idea is that the utility of a kripke structure is the highest index 
+of any goal that is guaranteed for that agent in the kripke structure 
+we make this precise in the function ui · 
+ui k max j ≤ j ≤ γi k γi j 
+note that using these definitions of goals and utility it never 
+makes sense to have a goal ϕ at index n if there is a logically 
+weaker goal ψ at index n k in the hierarchy by definition of 
+utility it could never be n for any structure k 
+example continued let m k γ γ be the 
+multiagent system of figure with γ and γ as defined earlier in this 
+example recall that we have defined s 
+as s t then u k 
+u k goal ϕ is true in s 
+ but ϕ is not to see that 
+ϕ 
+ a e♦p is true in s for instance note that on ever path it 
+is always the case that there is a transition to t in which p is true 
+notice that since for any goal hierarchy γi we have γ 
+then for all kripke structures ui k is well defined with ui k ≥ 
+ 
+ctl 
+ 
+model checking is pspace-complete and hence much 
+worse under standard complexity theoretic assumptions than 
+model checking ctl 
+η δ k η δ k η 
+η∅ 
+η 
+η 
+η 
+c d 
+c 
+d 
+figure benefits of implementing a normative system η left 
+and pay-offs for the game σm 
+ note that this is an ordinal utility measure it tells us for any 
+given agent the relative utility of different kripke structures but 
+utility values are not on some standard system-wide scale the fact 
+that ui k ui k certainly means that i strictly prefers k 
+over k but the fact that ui k uj k does not mean that i 
+values k more highly than j thus it does not make sense to 
+compare utility values between agents and so for example some system 
+wide measures of utility notably those measures that aggregate 
+individual utilities such as social welfare do not make sense when 
+applied in this setting however as we shall see shortly other 
+measures - such as pareto efficiency - can be usefully applied 
+there are other representations for goals which would allow us 
+to define cardinal utilities the simplest would be to specify goals γ 
+for an agent as a finite non-empty one-to-one relation γ ⊆ l×r 
+we assume that the x values in pairs ϕ x ∈ γ are specified so 
+that x for agent i means the same as x for agent j and so we have 
+cardinal utility we then define the utility for i of a kripke structure 
+k asui k max x ϕ x ∈ γi k ϕ the results of 
+this paper in fact hold irrespective of which of these representations 
+we actually choose we fix upon the goal hierarchy approach in the 
+interests of simplicity 
+our next step is to show how in much the same way we can lift 
+the utility function from kripke structures to normative systems 
+suppose we are given a multi-agent system m k γ γn 
+and an associated normative system η over k let for agent i 
+δi k k be the difference in his utility when moving from k to 
+k δi k k ui k − ui k then the utility of η to agent i 
+wrt k is δi k k † η we will sometimes abuse notation and just 
+write δi k η for this and refer to it as the benefit for agent i of 
+implementing η in k note that this benefit can be negative 
+summarising the utility of a normative system to an agent is the 
+difference between the utility of the kripke structure in which the 
+normative system was implemented and the original kripke 
+structure if this value is greater than then the agent would be better 
+off if the normative system were imposed while if it is less than 
+ then the agent would be worse off if η were imposed than in the 
+original system we say η is individually rational for i wrt k if 
+δi k η and individually rational simpliciter if η is 
+individually rational for every agent 
+a social system now is a pair 
+σ m η 
+where m is a multi-agent system and η is a normative system over 
+m 
+example the table at the left hand in figure displays the 
+utilities δi k η of implementing η in the kripke structure of our 
+running example for the normative systems η η∅ η η and η 
+introduced before recall that u k u k 
+ universal and existential goals 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+keeping in mind that a norm η restricts the possible transitions 
+of the model under consideration we make the following 
+observation borrowing from some classes of goals are monotonic 
+or anti-monotonic with respect to adding additional constraints to 
+a system let us therefore define two fragments of the language 
+of ctl the universal language lu 
+with typical element μ and the 
+existential fragment le 
+with typical element ε 
+μ p ¬p μ ∨ μ a fμ a μ a μ u μ 
+ε p ¬p ε ∨ ε e fε e♦ε e ε u ε 
+let us say for two kripke structures k s s 
+ r a α v 
+and k s s 
+ r a α v that k is a subsystem of k and 
+k is a supersystem of k written k k iff r ⊆ r note 
+that typically k † η k then we have cf 
+theorem suppose k k and s ∈ s then 
+∀ε ∈ le 
+ k s ε ⇒ k s ε 
+∀μ ∈ lu 
+ k s μ ⇒ k s μ 
+this has the following effect on imposing a new norm 
+corollary let k be a structure and η a normative 
+system let γi denote a goal hierarchy for agent i 
+ suppose agent i s utility ui k is n and γi n ∈ lu 
+ i e 
+γi n is a universal formula then for any normative system 
+η δi k η ≥ 
+ suppose agent i s utility ui k † η is n and γi n is an 
+existential formula ε then δi k † η k ≥ 
+corollary s first item says that an agent whose current 
+maximal goal in a system is a universal formula need never fear the 
+imposition of a new norm η the reason is that his current goal will 
+at least remain true in fact a goal higher up in the hierarchy may 
+become true it follows from this that an agent with only universal 
+goals can only gain from the imposition of normative systems η 
+the opposite is true for existential goals according to the second 
+item of the corollary it can never be bad for an agent to undo a 
+norm η hence an agent with only existential goals might well fear 
+any norm η 
+however these observations implicitly assume that all agents in 
+the system will comply with the norm whether they will in fact do 
+so of course is a strategic decision it partly depends on what the 
+agent thinks that other agents will do this motivates us to consider 
+normative system games 
+ normative system games 
+we now have a principled way of talking about the utility of 
+normative systems for agents and so we can start to apply the technical 
+apparatus of game theory to analyse them 
+suppose we have a multi-agent system m k γ γn 
+and a normative system η over k it is proposed to the agents 
+in m that η should be imposed on k typically to achieve some 
+coordination objective our agent - let s say agent i - is then faced 
+with a choice should it comply with the strictures of the normative 
+system or not note that this reasoning takes place before the agent 
+is in the system - it is a design time consideration 
+we can understand the reasoning here as a game as follows a 
+game in strategic normal form cf p is a structure 
+g ag s sn u un where 
+ ag n is a set of agents - the players of the game 
+ si is the set of strategies for each agent i ∈ ag a strategy 
+for an agent i is nothing else than a choice between 
+alternative actions and 
+ ui s × · · · × sn → r is the utility function for agent 
+i ∈ ag which assigns a utility to every combination of 
+strategy choices for the agents 
+now suppose we are given a social system σ m η where 
+m k γ γn then we can associate a game - the 
+normative system game - gς with σ as follows the agents ag in gς 
+are as in σ each agent i has just two strategies available to it 
+ c - comply cooperate with the normative system and 
+ d - do not comply with defect from the normative system 
+if s is a tuple of strategies one for each agent and x ∈ c d 
+then we denote by agx 
+s the subset of agents that play strategy x in 
+s hence for a social system σ m η the normative system 
+η agc 
+s only implements the restrictions for those agents that 
+choose to cooperate in gς note that this is the same as η agd 
+s 
+the normative system that excludes all the restrictions of agents that 
+play d in gς we then define the utility functions ui for each 
+i ∈ ag as 
+ui s δi k η agc 
+s 
+so for example if sd is a collection of strategies in which every 
+agent defects i e does not comply with the norm then 
+ui sd δi k η agd 
+sd 
+ ui k † η∅ − ui k 
+in the same way if sc is a collection of strategies in which every 
+agent cooperates i e complies with the norm then 
+ui sc δi k η agd 
+sc 
+ ui k † η ∅ ui k † η 
+we can now start to investigate some properties of normative 
+system games 
+example continued for our example system we have 
+displayed the different u values for our multi agent system with the 
+norm η i e s s t t as the second table of figure for 
+instance the pair in the matrix under the entry s c d 
+is obtained as follows u c d δ k η agc 
+c d 
+u k † η agc 
+c d − u k the first term of this is the 
+utility of in the system k where we implement η for the 
+cooperating agent i e only this means that the transitions are 
+r \ s s in this system still ϕ 
+ a e♦p is the highest 
+goal for agent this is the same utility for as in k and hence 
+δ k η agc 
+c d agent of course benefits if agent 
+complies with η while does not his utility would be since 
+η agc 
+c d is in fact η 
+ individually rational normative systems 
+a normative system is individually rational if every agent would 
+fare better if the normative system were imposed than otherwise 
+this is a necessary although not sufficient condition on a norm to 
+expect that everybody respects it note that η of our example is 
+individually rational for both and although this is not a stable 
+situation given that the other plays c i is better of by playing 
+d we can easily characterise individually rationality with respect 
+to the corresponding game in strategic form as follows let σ 
+m η be a social system then the following are equivalent 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+f xk 
+ 
+s 
+s 
+s 
+s 
+s 
+s k− 
+s k 
+t x 
+f x 
+t x 
+f x 
+t xk 
+figure the kripke structure produced in the reduction of 
+theorem all transitions are associated with agent the only 
+initial state is s 
+ η is individually rational in m 
+ ∀i ∈ ag ui sc ui sd in the game gς 
+the decision problem associated with individually rational 
+normative systems is as follows 
+individually rational normative system irns 
+given multi-agent system m 
+question does there exist an individually rational 
+normative system for m 
+theorem irns is np-complete even in one-agent systems 
+proof for membership of np guess a normative system η 
+and verify that it is individually rational since η ⊆ r we will be 
+able to guess it in nondeterministic polynomial time to verify that 
+it is individually rational we check that for all i we have ui k † 
+η ui k computing k † η is just set subtraction so can be 
+done in polynomial time while determining the value of ui k for 
+any k can be done with a polynomial number of model checking 
+calls each of which requires only time polynomial in the k and γ 
+hence verifying that ui k † η ui k requires only polynomial 
+time 
+for np-hardness we reduce sat p given a sat instance 
+ϕ over boolean variables x xk we produce an instance of 
+irns as follows first we define a single agent a for each 
+boolean variable xi in the sat instance we create two boolean 
+variables t xi and f xi in the irns instance we then create a 
+kripke structure kϕ with k states as shown in figure arcs 
+in this graph correspond to transitions in kϕ let ϕ 
+be the result 
+of systematically substituting for every boolean variable xi in ϕ 
+the ctl expression e ft xi next consider the following 
+formulae 
+k 
+i 
+e f t xi ∨ f xi 
+k 
+i 
+¬ e ft xi ∧ e ff xi 
+we then define the goal hierarchy for all agent as follows 
+γ 
+γ ∧ ∧ ϕ 
+we claim there is an individually rational normative system for the 
+instance so constructed iff ϕ is satisfiable first notice that any 
+individually rational normative system must force γ to be true 
+since in the original system we do not have γ 
+for the ⇒ direction if there is an individually rational normative 
+system η then we construct a satisfying assignment for ϕ by 
+considering the arcs that are forbidden by η formula ensures that 
+we must forbid an arc to either a t xi or a f xi state for all 
+variables xi but ensures that we cannot forbid arcs to both so if 
+we forbid an arc to a t xi state then in the corresponding valuation 
+for ϕ we make xi false while if we forbid an arc to a f xi state 
+then we make xi true the fact that ϕ 
+is part of the goal ensures 
+that the normative system is indeed a valuation for ϕ 
+for ⇐ note that for any satisfying valuation for ϕ we can 
+construct an individually rational normative system η as follows if 
+the valuation makes xi true we forbid the arc to the f xi state 
+while if the valuation makes xi false we forbid the arc to the t xi 
+state the resulting normative system ensures γ and is thus 
+individually rational 
+notice that the kripke structure constructed in the reduction 
+contains just a single agent and so the theorem is proven 
+ pareto efficient normative systems 
+pareto efficiency is a basic measure of how good a particular 
+outcome is for a group of agents p intuitively an outcome 
+is pareto efficient if there is no other outcome that makes every 
+agent better off in our framework suppose we are given a social 
+system σ m η and asked whether η is pareto efficient this 
+amounts to asking whether or not there is some other normative 
+system η such that every agent would be better off under η than 
+with η if η makes every agent better off than η then we say η 
+pareto dominates η the decision problem is as follows 
+pareto efficient normative system pens 
+given multi-agent system m and normative system η 
+over m 
+question is η pareto efficient for m 
+theorem pens is co-np-complete even for one-agent 
+systems 
+proof let m and η be as in the theorem we show that the 
+complement problem to pens which we refer to as pareto 
+dominated is np-complete in this problem we are given m and η 
+and we are asked whether η is pareto dominated i e whether or not 
+there exists some η over m such that η makes every agent better 
+off than η for membership of np simply guess a normative system 
+η and verify that for all i ∈ a we have ui k † η ui k † η 
+- verifying requires a polynomial number of model checking 
+problems each of which takes polynomial time since η ⊆ r the 
+normative system can be guessed in non-deterministic polynomial 
+time for np-hardness we reduce irns which we know to be 
+npcomplete from theorem given an instance m of irns we let m 
+in the instance of pareto dominated be as in the irns instance 
+and define the normative system for pareto dominated to be η∅ 
+the empty normative system now it is straightforward that there 
+exists a normative system η which pareto dominates η∅ in m iff 
+there exist an individually rational normative system in m since 
+the complement problem is np-complete it follows that pens is 
+co-np-complete 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+η η η η η η η η η 
+u k † η 
+u k † η 
+table utilities for all possible norms in our example 
+how about pareto efficient norms for our toy example settling 
+this question amounts to finding the dominant normative systems 
+among η η∅ η η η defined before and η s t η 
+ t s η s s t s η t t s t and η 
+ s t t s the utilities for each system are given in table 
+from this we infer that the pareto efficient norms are η η η η 
+and η note that η prohibits the resource to be passed from one 
+agent to another and this is not good for any agent since we have 
+chosen s 
+ s t no agent can be sure to ever get the resource 
+i e goal ϕi 
+ is not true in k † η 
+ nash implementation normative systems 
+the most famous solution concept in game theory is of course 
+nash equilibrium p a collection of strategies one for each 
+agent is said to form a nash equilibrium if no agent can benefit by 
+doing anything other than playing its strategy under the 
+assumption that the other agents play theirs nash equilibria are important 
+because they provide stable solutions to the problem of what 
+strategy an agent should play note that in our toy example although 
+η is individually rational for each agent it is not a nash 
+equilibrium since given this norm it would be beneficial for agent to 
+deviate and likewise for in our framework we say a social 
+system σ m η where η η∅ is a nash implementation if 
+sc i e everyone complying with the normative system forms a 
+nash equilibrium in the game gς the intuition is that if σ is a 
+nash implementation then complying with the normative system 
+is a reasonable solution for all concerned there can be no 
+benefit to deviating from it indeed there is a positive incentive for all 
+to comply if σ is not a nash implementation then the normative 
+system is unlikely to succeed since compliance is not rational for 
+some agents our choice of terminology is deliberately chosen to 
+reflect the way the term nash implementation is used in 
+implementation theory or mechanism design p where a game 
+designer seeks to achieve some outcomes by designing the rules of 
+the game such that these outcomes are equilibria 
+nash implementation ni 
+given multi-agent system m 
+question does there exist a non-empty normative 
+system η over m such that m η forms a nash 
+implementation 
+verifying that a particular social system forms a nash 
+implementation can be done in polynomial time - it amounts to checking 
+∀i ∈ a ui k † η ≥ ui k † η i 
+this clearly requires only a polynomial number of model checking 
+calls each of which requires only polynomial time 
+theorem the ni problem is np-complete even for 
+twoagent systems 
+proof for membership of np simply guess a normative 
+system η and check that it forms a nash implementation since η ⊆ r 
+guessing can be done in non-deterministic polynomial time and as 
+s k 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+t x 
+f x 
+t x 
+f x 
+t xk 
+f xk 
+ 
+ 
+t x 
+f x 
+t x 
+f x 
+t xk 
+f xk 
+ 
+s 
+figure reduction for theorem 
+we argued above verifying that it forms a nash implementation 
+can be done in polynomial time 
+for np-hardness we reduce sat suppose we are given a sat 
+instance ϕ over boolean variables x xk then we construct an 
+instance of ni as follows we create two agents a for 
+each boolean variable xi we create two boolean variables t xi 
+and f xi and we then define a kripke structure as shown in 
+figure with s being the only initial state the arc labelling in 
+figure gives the α function and each state is labelled with the 
+propositions that are true in that state for each boolean variable xi we 
+define the formulae xi and x⊥ 
+i as follows 
+xi e f t xi ∧ e f e f t xi ∧ a f ¬f xi 
+x⊥ 
+i e f f xi ∧ e f e f f xi ∧ a f ¬t xi 
+let ϕ 
+be the formula obtained from ϕ by systematically 
+substituting xi for xi each agent has three goals γi for both 
+i ∈ while 
+γ 
+k 
+i 
+ e f t xi ∧ e f f xi 
+γ e fe f 
+k 
+i 
+ e f t xi ∧ e f f xi 
+and finally for both agents γi being the conjunction of the 
+following formulae 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+k 
+i 
+ xi ∨ x⊥ 
+i 
+k 
+i 
+¬ xi ∧ x⊥ 
+i 
+k 
+i 
+¬ e f t xi ∧ e f f xi 
+ϕ 
+ 
+we denote the multi-agent system so constructed by mϕ now 
+we prove that the sat instance ϕ is satisfiable iff mϕ has a nash 
+implementation normative system 
+for the ⇒ direction suppose ϕ is satisfiable and let x be a 
+satisfying valuation i e a set of boolean variables making ϕ true 
+we can extract from x a nash implementation normative system η 
+as follows if xi ∈ x then η includes the arc from s to the state 
+in which f xi is true and also includes the arc from s k 
+to the state in which f xi is true if xi ∈ x then η includes the 
+arc from s to the state in which t xi is true and also includes 
+the arc from s k to the state in which t xi is true no 
+other arcs apart from those so defined as included in η notice 
+that η is individually rational for both agents if they both comply 
+with the normative system then they will have their γi goals 
+achieved which they do not in the basic system to see that η 
+forms a nash implementation observe that if either agent defects 
+from η then neither will have their γi goals achieved agent 
+strictly prefers c c over d c and agent strictly prefers 
+ c c over c d 
+for the ⇐ direction suppose there exists a nash implementation 
+normative system η in which case η ∅ then ϕ is satisfiable 
+for suppose not then the goals γi are not achievable by any 
+normative system by construction now since η must forbid at 
+least one transition then at least one agent would fail to have its 
+γi goal achieved if it complied so at least one would do better 
+by defecting i e not complying with η but this contradicts the 
+assumption that η is a nash implementation i e that c c forms 
+a nash equilibrium 
+this result is perhaps of some technical interest beyond the specific 
+concerns of the present paper since it is related to two problems 
+that are of wider interest the complexity of mechanism design 
+and the complexity of computing nash equilibria 
+ richer goal languages 
+it is interesting to consider what happens to the complexity of 
+the problems we consider above if we allow richer languages for 
+goals in particular ctl 
+ 
+ the main difference is that 
+determining ui k in a given multi-agent system m when such a goal 
+language is used involves solving a pspace-complete problem since 
+model checking for ctl 
+ 
+is pspace-complete in fact it seems 
+that for each of the three problems we consider above the 
+corresponding problem under the assumption of a ctl 
+ 
+representation 
+for goals is also pspace-complete it cannot be any easier since 
+determining the utility of a particular kripke structure involves 
+solving a pspace-complete problem to see membership in pspace 
+we can exploit the fact that pspace npspace p and so 
+we can guess the desired normative system applying a pspace 
+verification procedure to check that it has the desired properties 
+ conclusions 
+social norms are supposed to restrict our behaviour of course 
+such a restriction does not have to be bad the fact that an agent s 
+behaviour is restricted may seem a limitation but there may be 
+benefits if he can assume that others will also constrain their behaviour 
+the question then for an agent is how to be sure that others will 
+comply with a norm and for a system designer how to be sure 
+that the system will behave socially that is according to its norm 
+game theory is a very natural tool to analyse and answer these 
+questions which involve strategic considerations and we have 
+proposed a way to translate key questions concerning logic-based 
+normative systems to game theoretical questions we have proposed 
+a logical framework to reason about such scenarios and we have 
+given some computational costs for settling some of the main 
+questions about them of course our approach is in many senses open 
+for extension or enrichment an obvious issue is to consider is the 
+complexity of the questions we give for more practical 
+representations of models cf and to consider other classes of allowable 
+goals 
+ references 
+ t agotnes w van der hoek j a rodriguez-aguilar 
+c sierra and m wooldridge on the logic of normative 
+systems in proc ijcai- hyderabad india 
+ r alur t a henzinger and o kupferman 
+alternating-time temporal logic jnl of the acm 
+ - 
+ k binmore game theory and the social contract volume 
+ playing fair the mit press cambridge ma 
+ k binmore game theory and the social contract volume 
+ just playing the mit press cambridge ma 
+ v conitzer and t sandholm complexity of mechanism 
+design in proc uai edmonton canada 
+ v conitzer and t sandholm complexity results about nash 
+equilibria in proc ijcai- pp - acapulco 
+mexico 
+ c daskalakis p w goldberg and c h papadimitriou the 
+complexity of computing a nash equilibrium in proc 
+stoc seattle wa 
+ e a emerson temporal and modal logic in handbook of 
+theor comp sci vol b pages - elsevier 
+ e a emerson and j y halpern  sometimes and  not 
+never revisited on branching time versus linear time 
+temporal logic jnl of the acm - 
+ d fitoussi and m tennenholtz choosing social laws for 
+multi-agent systems minimality and simplicity artificial 
+intelligence - - 
+ m j osborne and a rubinstein a course in game theory 
+the mit press cambridge ma 
+ c h papadimitriou computational complexity 
+addison-wesley reading ma 
+ y shoham and m tennenholtz on the synthesis of useful 
+social laws for artificial agent societies in proc aaai san 
+diego ca 
+ y shoham and m tennenholtz on social laws for artificial 
+agent societies off-line design in computational theories 
+of interaction and agency pages - the mit press 
+cambridge ma 
+ w van der hoek m roberts and m wooldridge social 
+laws in alternating time effectiveness feasibility and 
+synthesis synthese 
+ m wooldridge and w van der hoek on obligations and 
+normative ability jnl of appl logic - 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

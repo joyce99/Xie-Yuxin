@@ -1,0 +1,588 @@
+live data center migration across wans 
+a robust cooperative context aware approach 
+k k ramakrishnan prashant shenoy 
+ 
+ jacobus van der merwe 
+at t labs-research 
+ 
+university of massachusetts 
+abstract 
+a significant concern for internet-based service providers is the 
+continued operation and availability of services in the face of 
+outages whether planned or unplanned in this paper we advocate 
+a cooperative context-aware approach to data center migration 
+across wans to deal with outages in a non-disruptive manner we 
+specifically seek to achieve high availability of data center services 
+in the face of both planned and unanticipated outages of data center 
+facilities we make use of server virtualization technologies to 
+enable the replication and migration of server functions we propose 
+new network functions to enable server migration and replication 
+across wide area networks e g the internet and finally show the 
+utility of intelligent and dynamic storage replication technology to 
+ensure applications have access to data in the face of outages with 
+very tight recovery point objectives 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems 
+general terms 
+design reliability 
+ introduction 
+a significant concern for internet-based service providers is the 
+continued operation and availability of services in the face of 
+outages whether planned or unplanned these concerns are 
+exacerbated by the increased use of the internet for mission critical 
+business and real-time entertainment applications a relatively minor 
+outage can disrupt and inconvenience a large number of users 
+today these services are almost exclusively hosted in data centers 
+recent advances in server virtualization technologies 
+allow for the live migration of services within a local area network 
+ lan environment in the lan environment these 
+technologies have proven to be a very effective tool to enable data center 
+management in a non-disruptive fashion not only can it support 
+planned maintenance events but it can also be used in a more 
+dynamic fashion to automatically balance load between the 
+physical servers in a data center when using these technologies 
+in a lan environment services execute in a virtual server and the 
+migration services provided by the underlying virtualization 
+framework allows for a virtual server to be migrated from one physical 
+server to another without any significant downtime for the service 
+or application in particular since the virtual server retains the 
+same network address as before any ongoing network level 
+interactions are not disrupted similarly in a lan environment storage 
+requirements are normally met via either network attached storage 
+ nas or via a storage area network san which is still 
+reachable from the new physical server location to allow for continued 
+storage access 
+unfortunately in a wide area environment wan live server 
+migration is not as easily achievable for two reasons first live 
+migration requires the virtual server to maintain the same network 
+address so that from a network connectivity viewpoint the migrated 
+server is indistinguishable from the original while this is fairly 
+easily achieved in a shared lan environment no current 
+mechanisms are available to efficiently achieve the same feat in a wan 
+environment second while fairly sophisticated remote 
+replication mechanisms have been developed in the context of disaster 
+recovery these mechanisms are ill suited to live data 
+center migration because in general the available technologies are 
+unaware of application service level semantics 
+in this paper we outline a design for live service migration across 
+wans our design makes use of existing server virtualization 
+technologies and propose network and storage mechanisms to facilitate 
+migration across a wan the essence of our approach is 
+cooperative context aware migration where a migration management 
+system orchestrates the data center migration across all three 
+subsystems involved namely the server platforms the wide area network 
+and the disk storage system while conceptually similar in nature 
+to the lan based work described above using migration 
+technologies across a wide area network presents unique challenges and has 
+to our knowledge not been achieved our main contribution is the 
+design of a framework that will allow the migration across a wan 
+of all subsystems involved with enabling data center services we 
+describe new mechanisms as well as extensions to existing 
+technologies to enable this and outline the cooperative context aware 
+functionality needed across the different subsystems to enable this 
+ 
+ live data center migration 
+across wans 
+three essential subsystems are involved with hosting services in 
+a data center first the servers host the application or service logic 
+second services are normally hosted in a data center to provide 
+shared access through a network either the internet or virtual 
+private networks vpns finally most applications require disk 
+storage for storing data and the amount of disk space and the frequency 
+of access varies greatly between different services applications 
+disruptions failures or in general outages of any kind of any 
+of these components will cause service disruption for this 
+reason prior work and current practices have addressed the 
+robustness of individual components for example data centers typically 
+have multiple network connections and redundant lan devices 
+to ensure redundancy at the networking level similarly physical 
+servers are being designed with redundant hot-swappable 
+components disks processor blades power supplies etc finally 
+redundancy at the storage level can be provided through sophisticated 
+data mirroring technologies 
+the focus of our work however is on the case where such 
+local redundancy mechanisms are not sufficient specifically we are 
+interested in providing service availability when the data center as 
+a whole becomes unavailable for example because of data center 
+wide maintenance operations or because of catastrophic events as 
+such our basic approach is to migrate services between data centers 
+across the wide are network wan 
+by necessity moving or migrating services from one data center 
+to another needs to consider all three of these components 
+historically such migration has been disruptive in nature requiring 
+downtime of the actual services involved or requiring heavy weight 
+replication techniques in the latter case concurrently running 
+replicas of a service can be made available thus allowing a subset of the 
+service to be migrated or maintained without impacting the 
+service as a whole we argue that these existing mechanisms are 
+inadequate to meet the needs of network-based services including 
+real-time services in terms of continuous availability and 
+operation instead we advocate an approach where server network and 
+storage subsystems cooperate and coordinate actions in a manner 
+that is cognizant of the service context in order to realize seamless 
+migration across wide area networks 
+in this section we briefly describe the technical building blocks 
+that would enable our approach as outlined below some of these 
+building blocks exist or exist in part while in other cases we use 
+the desire for high availability of services as the driver for the 
+changes we are proposing 
+ live virtual server migration 
+the main enabler for our approach is the live server migration 
+capabilities that have been developed in the context of server 
+virtualization in recent years in this approach an entire running 
+operating system including any active applications executing as 
+a virtual server is being transfered from one physical machine to 
+another since the virtual server is migrated in its entirety both 
+application and kernel level state gets migrated including any state 
+associated with ongoing network connections assuming that 
+network level reachability to the virtual server s network addresses are 
+maintained after the migration the implication is that applications 
+executing in the virtual server experience very little downtime in 
+the order of tens to hundreds of milliseconds and ongoing network 
+connections remain intact 
+in order to maintain network level reachability the ip address es 
+associated with the virtual server has to be reachable at the physical 
+server where the virtual server is migrated to in a lan 
+environment this is achieved either by issuing an unsolicited arp reply to 
+establish the binding between the new mac address and the ip 
+address or by relying on layer-two technologies to allow the virtual 
+server to reuse its old mac address 
+because of the difficulty of moving network level i e ip 
+addresses in a routed non-lan environment use of live server 
+migration as a management tool has been limited to the lan 
+environments however virtual server migration across the wide area 
+will also be an attractive tool specifically to deal with outages and 
+therefore propose networking mechanisms to enable this 
+if disk storage needs are being met with network attached storage 
+ nas the storage becomes just another network based application 
+and can therefore be addressed in the same way with lan based 
+migration modern virtualization environments also include 
+support for other forms of local storage including storage area 
+networks sans however since we propose to use wan 
+server migration as a means to deal with complete data center 
+outages these mechanisms are inadequate for our purposes and below 
+we propose extension to remote replication technologies which can 
+work in concert with server migration to minimize service 
+downtime 
+ networking requirements 
+from the discussion above a key requirement for live server 
+migration across a wan is the ability to have the ip address es of the 
+virtual server be reachable at the new data center location 
+immediately after the migration has completed this presents a significant 
+challenge for a number of reasons first despite decades of work in 
+this area ip address mobility remains an unresolved problem that is 
+typically only addressed at manual configuration time scales the 
+second challenge comes from the fact that current routing 
+protocols are well known to have convergence issues which is ill suited 
+to the time constraints imposed by live migration third in today s 
+wan networking environment connectivity changes are typically 
+initiated and controlled by network operators or network 
+management systems again this is poorly suited to wan server migration 
+where it is essential that the migration software which is closely 
+monitoring the status of the server migration process initiate this 
+change at the appropriate time 
+our approach to addressing the networking requirements for live 
+wan migration builds on the observations that not all networking 
+changes in this approach are time critical and further that 
+instantaneous changes are best achieved in a localized manner 
+specifically in our solution described in detail in section we allow the 
+migration software to initiate the necessary networking changes as 
+soon as the need for migration has been identified we make use 
+of tunneling technologies during this initial phase to preemptively 
+establish connectivity between the data centers involved once 
+server migration is complete the migration software initiates a 
+local change to direct traffic towards the new data center via the 
+tunnel slower time scale network changes then phase out this local 
+network connectivity change for a more optimal network wide path 
+to the new data center 
+ storage replication requirements 
+data availability is typically addressed by replicating business 
+data on a local primary storage system to some remote location 
+from where it can be accessed from a business usability point of 
+view such remote replication is driven by two metrics first 
+ 
+is the recovery-point-objective which is the consistent data point to 
+which data can be restored after a disaster second is the 
+recoverytime-objective which is the time it takes to recover to that consistent 
+data point after a disaster 
+remote replication can be broadly classified into the following 
+two categories 
+ synchronous replication every data block written to a local 
+storage system is replicated to the remote location before the 
+local write operation returns 
+ asynchronous replication in this case the local and remote 
+storage systems are allowed to diverge the amount of 
+divergence between the local and remote copies is typically 
+bounded by either a certain amount of data or by a certain 
+amount of time 
+synchronous replication is normally recommended for 
+applications such as financial databases where consistency between local 
+and remote storage systems is a high priority however these 
+desirable properties come at a price first because every data block 
+needs to be replicated remotely synchronous replication systems 
+can not benefit from any local write coalescing of data if the same 
+data blocks are written repeatedly second because data have 
+to be copied to the remote location before the write operation 
+returns synchronous replication has a direct performance impact on 
+the application since both lower throughput and increased latency 
+of the path between the primary and the remote systems are 
+reflected in the time it takes for the local disk write to complete 
+an alternative is to use asynchronous replication however 
+because the local and remote systems are allowed to diverge 
+asynchronous replication always involves some data loss in the event 
+of a failure of the primary system but because write operations 
+can be batched and pipelined asynchronous replication systems 
+can move data across the network in a much more efficient 
+manner than synchronous replication systems 
+for wan live server migration we seek a more flexible 
+replication system where the mode can be dictated by the migration 
+semantics specifically to support live server migration we propose a 
+remote replication system where the initial transfer of data between 
+the data centers is performed via asynchronous replication to 
+benefit from the efficiency of that mode of operation when the bulk of 
+the data have been transfered in this manner replication switches 
+to synchronous replication in anticipation of the completion of the 
+server migration step the final server migration step triggers a 
+simultaneous switch-over to the storage system at the new data 
+center in this manner when the virtual server starts executing in the 
+new data center storage requirements can be locally met 
+ wan migration scenarios 
+in this section we illustrate how our cooperative context aware 
+approach can combine the technical building blocks described in 
+the previous section to realize live server migration across a wide 
+area network we demonstrate how the coordination of server 
+virtualization and migration technologies the storage replication 
+subsystem and the network can achieve live migration of the entire data 
+center across the wan we utilize different scenarios to 
+demonstrate our approach in section we outline how our approach 
+can be used to achieve the safe live migration of a data center when 
+planned maintenance events are handled in section we show 
+the use of live server migration to mitigate the effects of unplanned 
+outages or failures 
+ maintenance outages 
+we deal with maintenance outages in two parts first we 
+consider the case where the service has no or very limited storage 
+requirements this might for example be the case with a network 
+element such as a voice-over-ip voip gateway second we deal 
+with the more general case where the service also requires the 
+migration of data storage to the new data center 
+without requiring storage to be migrated without storage to 
+be replicated the primary components that we need to coordinate 
+are the server migration and network mobility figure shows 
+the environment where the application running in a virtual server 
+vs has to be moved from a physical server in data center a to a 
+physical server in data center b 
+prior to the maintenance event the coordinating migration 
+management system mms would signal to both the server 
+management system as well as the network that a migration is imminent 
+the server management system would initiate the migration of the 
+virtual server from physical server a ¢¤£¦¥ to physical server b 
+ ¢¤£¦§ after an initial bulk state transfer as preparation for 
+migration the server management system will mirror any state changes 
+between the two virtual servers 
+similarly for the network part based on the signal received 
+from the mms the service provider edge ¢©¨ router will 
+initiate a number of steps to prepare for the migration specifically 
+as shown in figure b the migration system will cause the 
+network to create a tunnel between ¢©¨ and ¢©¨ which will be used 
+subsequently to transfer data destined to vs to data center b 
+when the mms determines a convenient point to quiesce the vs 
+another signal is sent to both the server management system and 
+the network for the server management system this signal will 
+indicate the final migration of the vs from data center a to data 
+center b i e after this the vs will become active in data center b 
+for the network this second signal enables the network data path to 
+switchover locally at ¢©¨©¥ to the remote data center specifically 
+from this point in time any traffic destined for the virtual server 
+address that arrives at ¢©¨©¥ will be switched onto the tunnel to 
+¢©¨©§ for delivery to data center b 
+note that at this point from a server perspective the migration is 
+complete as the vs is now active in data center b however traffic 
+is sub-optimally flowing first to ¢©¨©¥ and then across the tunnel 
+to ¢©¨¤§ to rectify this situation another networking step is 
+involved specifically ¢©¨©§ starts to advertise a more preferred route 
+to reach vs than the route currently being advertised by ¢©¨¤¥ in 
+this manner as ingress pes to the network ¢©¨¤ to ¢©¨¤ in 
+figure receive the more preferred route traffic will start to flow to 
+¢©¨©§ directly and the tunnel between ¢©¨©¥ and ¢©¨©§ can be torn 
+down leading to the final state shown in figure c 
+requiring storage migration when storage has to also be 
+replicated it is critical that we achieve the right balance between 
+performance impact on the application and the recovery point or 
+data loss when the switchover occurs to the remote data center to 
+achieve this we allow the storage to be replicated asynchronously 
+prior to any initiation of the maintenance event or assuming the 
+amount of data to be transfered is relatively small asynchronous 
+replication can be started in anticipation of a migration that is 
+expected to happen shortly asynchronous replication during this 
+initial phase allows for the application to see no performance 
+impact however when the maintenance event is imminent the mms 
+would signal to the replication system to switch from asynchronous 
+replication to synchronous replication to ensure that there is no 
+loss of data during migration when data is being replicated 
+synchronously there will be a performance impact on the application 
+ 
+figure live server migration across a wan 
+this requires us to keep the exposure to the amount of time we 
+replicate on a synchronous basis to a minimum 
+when the mms signals to the storage system the requirement 
+to switch to synchronous replication the storage system completes 
+all the pending asynchronous operations and then proceeds to 
+perform all the subsequent writes by synchronously replicating it to 
+the remote data center thus between the server migration and 
+synchronous replication both the application state and all the 
+storage operations are mirrored at the two environments in the two data 
+centers when all the pending write operations are copied over 
+then as in the previous case we quiesce the application and the 
+network is signaled to switch traffic over to the remote data center 
+from this point on both storage and server migration operations 
+are complete and activated in data center b as above the network 
+state still needs to be updated to ensure optimal data flow directly 
+to data center b 
+note that while we have described the live server migration 
+process as involving the service provider for the networking part it 
+is possible for a data center provider to perform a similar set of 
+functions without involving the service provider specifically by 
+creating a tunnel between the customer edge ce routers in the 
+data center and performing local switching on the appropriate ce 
+rather than on the pe the data center provider can realize the same 
+functionality 
+ unplanned outages 
+we propose to also use cooperative context aware migration to 
+deal with unplanned data center outages there are multiple 
+considerations that go into managing data center operations to plan 
+and overcome failures through migration some of these are 
+amount of overhead under normal operation to overcome 
+anticipated failures amount of data loss affordable recovery point 
+objective - rpo amount of state that has to be migrated and 
+ time available from anticipated failure to occurrence of event 
+at the one extreme one might incur the overhead of completely 
+mirroring the application at the remote site this has the 
+consequence of both incurring processing and network overhead under 
+normal operation as well as impacting application performance 
+ latency and throughput throughout the other extreme is to only 
+ensure data recovery and to start a new copy of the application at the 
+remote site after an outage in this case application memory state 
+such as ongoing sessions are lost but data stored on disk is 
+replicated and available in a consistent state neither this hot standby 
+nor the cold standby approach described are desirable due to the 
+overhead or the loss of application memory state 
+an intermediate approach is to recover control and essential state 
+of the application in addition to data stored on disk to further 
+minimize disruptions to users a spectrum of approaches are possible 
+in a voip server for instance session-based information can be 
+mirrored without mirroring the data flowing through each session 
+more generally this points to the need to checkpoint some 
+application state in addition to mirroring data on disk checkpointing 
+application state involves storing application state either periodically 
+or in an application-aware manner like databases do and then 
+copying it to the remote site of course this has the consequence that 
+the application can be restarted remotely at the checkpoint 
+boundary only similarly for storage one may use asynchronous 
+replication with a periodic snapshot ensuring all writes are up-to-date 
+at the remote site at the time of checkpointing some data loss 
+may occur upon an unanticipated catastrophic failure but the 
+recovery point may be fairly small depending on the frequency of 
+checkpointing application and storage state coordination between 
+ 
+the checkpointing of the application state and the snapshot of 
+storage is key to successful migration while meeting the desired rpos 
+incremental checkpointing of application and storage is key to 
+efficiency and we see existing techniques to achieve this 
+for instance rather than full application mirroring a virtualized 
+replica can be maintained as a warm standby-in dormant or 
+hibernating state-enabling a quick switch-over to the previously 
+checkpointed state to make the switch-over seamless in addition 
+to replicating data and recovering state network support is needed 
+specifically on detecting the unavailability of the primary site the 
+secondary site is made active and the same mechanism described 
+in section is used to switch traffic over to reach the secondary 
+site via the pre-established tunnel note that for simplicity of 
+exposition we assume here that the pe that performs the local switch 
+over is not affected by the failure the approach can however 
+easily be extended to make use of a switchover at a router deeper in 
+the network 
+the amount of state and storage that has to be migrated may vary 
+widely from application to application there may be many 
+situations where in principle the server can be stateless for example 
+a sip proxy server may not have any persistent state and the 
+communication between the clients and the proxy server may be using 
+udp in such a case the primary activity to be performed is in 
+the network to move the communication over to the new data 
+center site little or no overhead is incurred under normal operation to 
+enable the migration to a new data center failure recovery involves 
+no data loss and we can deal with near instantaneous catastrophic 
+failures 
+as more and more state is involved with the server more 
+overhead is incurred to checkpoint application state and potentially 
+to take storage snapshots either periodically or upon application 
+prompting it also means that the rpo is a function of the 
+interval between checkpoints when we have to deal with instantaneous 
+failures the more advanced information we have of an impending 
+failure the more effective we can be in having the state migrated 
+over to the new data center so that we can still have a tighter rpo 
+when operations are resumed at the new site 
+ related work 
+prior work on this topic falls into several categories virtual 
+machine migration storage replication and network support 
+at the core of our technique is the ability of encapsulate 
+applications within virtual machines that can be migrated without 
+application downtimes most virtual machine software such as xen 
+ and vmware support live migration of vms that involve 
+extremely short downtimes ranging from tens of milliseconds to a 
+second details of xen s live migration techniques are discussed in 
+ as indicated earlier these techniques assume that migration is 
+being done on a lan vm migration has also been studied in the 
+shirako system and for grid environments 
+current virtual machine software support a suspend and resume 
+feature that can be used to support wan migration but with 
+downtimes recently live wan migration using ip tunnels was 
+demonstrated in where an ip tunnel is set up from the source 
+to destination server to transparently forward packets to and from 
+the application we advocate an alternate approach that assumes 
+edge router support 
+in the context of storage there exist numerous commercial 
+products that perform replication such as ibm extended remote copy 
+hp continuous access xp and emc replistor an excellent 
+description of these and others as well as a detailed taxonomy of the 
+different approaches for replication can be found in the ursa 
+minor system argues that no single fault model is optimal for all 
+applications and proposed supporting data-type specific selections 
+of fault models and encoding schemes for replication recently 
+we proposed the notion of semantic-aware replication where 
+the system supports both synchronous and asynchronous 
+replication concurrently and use signals from the file system to 
+determine whether to replicate a particular write synchronously and 
+asynchronously 
+in the context of network support our work is related to the 
+routerfarm approach which makes use of orchestrated 
+network changes to realize near hitless maintenance on provider edge 
+routers in addition to being in a different application area our 
+approach differs from the routerfarm work in two regards first 
+we propose to have the required network changes be triggered by 
+functionality outside of the network as opposed to network 
+management functions inside the network second due to the stringent 
+timing requirements of live migration we expect that our approach 
+would require new router functionality as opposed to being 
+realizable via the existing configuration interfaces 
+finally the recovery oriented computing roc work 
+emphasizes recovery from failures rather than failure avoidance in a 
+similar spirit to roc we advocate using mechanisms from live vm 
+migration to storage replication to support planned and unplanned 
+outages in data centers rather than full replication to mask such 
+failures 
+ conclusion 
+a significant concern for internet-based service providers is the 
+continued operation and availability of services in the face of 
+outages whether planned or unplanned in this paper we advocated 
+a cooperative context-aware approach to data center migration 
+across wans to deal with outages in a non-disruptive manner we 
+sought to achieve high availability of data center services in the 
+face of both planned and incidental outages of data center 
+facilities we advocated using server virtualization technologies to 
+enable the replication and migration of server functions we proposed 
+new network functions to enable server migration and replication 
+across wide area networks such as the internet or a geographically 
+distributed virtual private network and finally showed the utility 
+of intelligent and dynamic storage replication technology to ensure 
+applications have access to data in the face of outages with very 
+tight recovery point objectives 
+ references 
+ m abd-el-malek w v courtright ii c cranor g r 
+ganger j hendricks a j klosterman m mesnier 
+m prasad b salmon r r sambasivan s sinnamohideen 
+j d strunk e thereska m wachs and j j wylie ursa 
+minor versatile cluster-based storage usenix conference 
+on file and storage technologies december 
+ mukesh agrawal susan bailey albert greenberg jorge 
+pastor panagiotis sebos srinivasan seshan kobus van der 
+merwe and jennifer yates routerfarm towards a dynamic 
+manageable network edge sigcomm workshop on 
+internet network management inm september 
+ l alvisi understanding the message logging paradigm for 
+masking process crashes phd thesis cornell january 
+ 
+ l alvisi and k marzullo message logging pessimistic 
+optimistic and causal in proceedings of the th 
+international conference on distributed computing systems 
+pages - ieee computer society june 
+ 
+ paul barham boris dragovic keir fraser steven hand tim 
+harris alex ho rolf neugebar ian pratt and andrew 
+warfield xen and the art of virtualization in the 
+proceedings of the acm symposium on operating systems 
+principles sosp october 
+ a brown and d a patterson embracing failure a case for 
+recovery-oriented computing roc high performance 
+transaction processing symposium october 
+ k brown j katcher r walters and a watson snapmirror 
+and snaprestore advances in snapshot technology network 
+appliance technical report tr 
+www ne t app c om t e c h l i br ar y ht ml 
+ c clark k fraser s hand j hanse e jul c limpach 
+i pratt and a warfiel live migration of virtual machines 
+in proceedings of nsdi may 
+ disaster recovery journal business continuity glossary 
+ht t p 
+ www dr j c om gl os s ar y dr j gl os s ar y ht ml 
+ laura grit david irwin aydan yumerefendi and jeff 
+chase virtual machine hosting for networked clusters 
+building the foundations for autonomic orchestration in in 
+the first international workshop on virtualization 
+technology in distributed computing vtdc november 
+ 
+ m ji a veitch and j wilkes seneca remote mirroring 
+done write usenix annual technical conference 
+june 
+ m kozuch and m satyanarayanan internet suspend and 
+resume in proceedings of the fourth ieee workshop on 
+mobile computing systems and applications calicoon ny 
+june 
+ xiaotao liu gal niv k k ramakrishnan prashant shenoy 
+and jacobus van der merwe the case for semantic aware 
+remote replication in proc nd international workshop on 
+storage security and survivability storagess 
+alexandria va october 
+ michael nelson beng-hong lim and greg hutchins fast 
+transparent migration for virtual machines in usenix 
+annual technical conference 
+ mendel rosenblum and tal garfinkel virtual machine 
+monitors current technology and future trends computer 
+ - 
+ c ruemmler and j wilkes unix disk access patterns 
+proceedings of winter usenix jan 
+ paul ruth junghwan rhee dongyan xu rick kennell and 
+sebastien goasguen autonomic live adaptation of virtual 
+computational environments in a multi-domain 
+infrastructure in ieee international conference on 
+autonomic computing icac june 
+ constantine p sapuntzakis ramesh chandra ben pfaff jim 
+chow monica s lam and mendel rosenblum optimizing 
+the migration of virtual computers in proceedings of the th 
+symposium on operating systems design and 
+implementation december 
+ a sundararaj a gupta and p dinda increasing 
+application performance in virtual environments through 
+run-time inference and adaptation in fourteenth 
+international symposium on high performance distributed 
+computing hpdc july 
+ symantec corporation veritas volume replicator 
+administrator s guide ht t p 
+ f t p s uppor t ve r i t as c om pub s uppor t 
+pr oduc t s vol ume re pl i c at or pdf 
+ edition 
+ f travostino p daspit l gommans c jog c de laat 
+j mambretti i monga b van oudenaarde s raghunath 
+and p wang seamless live migration of virtual machines 
+over the man wan elsevier future generations computer 
+systems 
+ t wood p shenoy a venkataramani and m yousif 
+black-box and gray-box strategies for virtual machine 
+migration in proceedings of the usenix symposium on 
+networked system design and implementation nsdi 
+cambridge ma april 
+ a xen way to iscsi virtualization 
+http www internetnews com dev-news article php 
+april 
+ 

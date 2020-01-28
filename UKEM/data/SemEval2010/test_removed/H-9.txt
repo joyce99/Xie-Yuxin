@@ -1,0 +1,934 @@
+learn from web search logs to organize search results 
+xuanhui wang 
+department of computer science 
+university of illinois at urbana-champaign 
+urbana il 
+xwang  cs uiuc edu 
+chengxiang zhai 
+department of computer science 
+university of illinois at urbana-champaign 
+urbana il 
+czhai cs uiuc edu 
+abstract 
+effective organization of search results is critical for 
+improving the utility of any search engine clustering search results 
+is an effective way to organize search results which allows 
+a user to navigate into relevant documents quickly 
+however two deficiencies of this approach make it not always 
+work well the clusters discovered do not necessarily 
+correspond to the interesting aspects of a topic from the 
+user s perspective and the cluster labels generated are 
+not informative enough to allow a user to identify the right 
+cluster in this paper we propose to address these two 
+deficiencies by learning interesting aspects of a topic from 
+web search logs and organizing search results accordingly 
+and generating more meaningful cluster labels using past 
+query words entered by users we evaluate our proposed 
+method on a commercial search engine log data compared 
+with the traditional methods of clustering search results our 
+method can give better result organization and more 
+meaningful labels 
+categories and subject descriptors h 
+ information search and retrieval clustering search process 
+general terms algorithm experimentation 
+ introduction 
+the utility of a search engine is affected by multiple 
+factors while the primary factor is the soundness of the 
+underlying retrieval model and ranking function how to organize 
+and present search results is also a very important factor 
+that can affect the utility of a search engine significantly 
+compared with the vast amount of literature on retrieval 
+models however there is relatively little research on how to 
+improve the effectiveness of search result organization 
+the most common strategy of presenting search results is 
+a simple ranked list intuitively such a presentation 
+strategy is reasonable for non-ambiguous homogeneous search 
+results in general it would work well when the search 
+results are good and a user can easily find many relevant 
+documents in the top ranked results 
+however when the search results are diverse e g due 
+to ambiguity or multiple aspects of a topic as is often the 
+case in web search the ranked list presentation would not 
+be effective in such a case it would be better to group the 
+search results into clusters so that a user can easily navigate 
+into a particular interesting group for example the results 
+in the first page returned from google for the ambiguous 
+query jaguar as of dec nd contain at least four 
+different senses of jaguar i e car animal software and a 
+sports team even for a more refined query such as jaguar 
+team picture the results are still quite ambiguous 
+including at least four different jaguar teams - a wrestling team a 
+jaguar car team southwestern college jaguar softball team 
+and jacksonville jaguar football team moreover if a user 
+wants to find a place to download a jaguar software a query 
+such as download jaguar is also not very effective as the 
+dominating results are about downloading jaguar brochure 
+jaguar wallpaper and jaguar dvd in these examples a 
+clustering view of the search results would be much more 
+useful to a user than a simple ranked list clustering is also 
+useful when the search results are poor in which case a user 
+would otherwise have to go through a long list sequentially 
+to reach the very first relevant document 
+as a primary alternative strategy for presenting search 
+results clustering search results has been studied relatively 
+extensively the general idea in virtually 
+all the existing work is to perform clustering on a set of 
+topranked search results to partition the results into natural 
+clusters which often correspond to different subtopics of the 
+general query topic a label will be generated to indicate 
+what each cluster is about a user can then view the labels 
+to decide which cluster to look into such a strategy has 
+been shown to be more useful than the simple ranked list 
+presentation in several studies 
+however this clustering strategy has two deficiencies which 
+make it not always work well 
+first the clusters discovered in this way do not necessarily 
+correspond to the interesting aspects of a topic from the 
+user s perspective for example users are often interested 
+in finding either phone codes or zip codes when entering 
+the query area codes but the clusters discovered by the 
+current methods may partition the results into local codes 
+and international codes such clusters would not be very 
+useful for users even the best cluster would still have a low 
+precision 
+second the cluster labels generated are not informative 
+enough to allow a user to identify the right cluster there 
+are two reasons for this problem the clusters are not 
+corresponding to a user s interests so their labels would not 
+be very meaningful or useful even if a cluster really 
+corresponds to an interesting aspect of the topic the label 
+may not be informative because it is usually generated based 
+on the contents in a cluster and it is possible that the user is 
+not very familiar with some of the terms for example the 
+ambiguous query jaguar may mean an animal or a car a 
+cluster may be labeled as panthera onca although this 
+is an accurate label for a cluster with the animal sense of 
+jaguar if a user is not familiar with the phrase the label 
+would not be helpful 
+in this paper we propose a different strategy for 
+partitioning search results which addresses these two deficiencies 
+through imposing a user-oriented partitioning of the search 
+results that is we try to figure out what aspects of a search 
+topic are likely interesting to a user and organize the results 
+accordingly specifically we propose to do the following 
+first we will learn interesting aspects of similar topics 
+from search logs and organize search results based on these 
+interesting aspects for example if the current query has 
+occurred many times in the search logs we can look at what 
+kinds of pages viewed by the users in the results and what 
+kind of words are used together with such a query in case 
+when the query is ambiguous such as jaguar we can expect 
+to see some clear clusters corresponding different senses of 
+jaguar more importantly even if a word is not ambiguous 
+ e g car we may still discover interesting aspects such 
+as car rental and car pricing which happened to be 
+the two primary aspects discovered in our search log data 
+such aspects can be very useful for organizing future search 
+results about car note that in the case of car 
+clusters generated using regular clustering may not necessarily 
+reflect such interesting aspects about car from a user s 
+perspective even though the generated clusters are 
+coherent and meaningful in other ways 
+second we will generate more meaningful cluster labels 
+using past query words entered by users assuming that the 
+past search logs can help us learn what specific aspects are 
+interesting to users given the current query topic we could 
+also expect that those query words entered by users in the 
+past that are associated with the current query can provide 
+meaningful descriptions of the distinct aspects thus they 
+can be better labels than those extracted from the ordinary 
+contents of search results 
+to implement the ideas presented above we rely on search 
+engine logs and build a history collection containing the past 
+queries and the associated clickthroughs given a new query 
+we find its related past queries from the history collection 
+and learn aspects through applying the star clustering 
+algorithm to these past queries and clickthroughs we 
+can then organize the search results into these aspects using 
+categorization techniques and label each aspect by the most 
+representative past query in the query cluster 
+we evaluate our method for result organization using logs 
+of a commercial search engine we compare our method 
+with the default search engine ranking and the traditional 
+clustering of search results the results show that our method 
+is effective for improving search utility and the labels 
+generated using past query words are more readable than those 
+generated using traditional clustering approaches 
+the rest of the paper is organized as follows we first 
+review the related work in section in section we 
+describe search engine log data and our procedure of building 
+a history collection in section we present our approach 
+in details we describe the data set in section and the 
+experimental results are discussed in section finally we 
+conclude our paper and discuss future work in section 
+ related work 
+our work is closely related to the study of clustering 
+search results in the authors used scatter gather 
+algorithm to cluster the top documents returned from a 
+traditional information retrieval system their results validate 
+the cluster hypothesis that relevant documents tend to 
+form clusters the system grouper was described in 
+ in these papers the authors proposed to cluster the 
+results of a real search engine based on the snippets or the 
+contents of returned documents several clustering 
+algorithms are compared and the suffix tree clustering 
+algorithm stc was shown to be the most effective one they 
+also showed that using snippets is as effective as using whole 
+documents however an important challenge of document 
+clustering is to generate meaningful labels for clusters to 
+overcome this difficulty in supervised learning 
+algorithms were studied to extract meaningful phrases from the 
+search result snippets and these phrases were then used to 
+group search results in the authors proposed to use 
+a monothetic clustering algorithm in which a document is 
+assigned to a cluster based on a single feature to organize 
+search results and the single feature is used to label the 
+corresponding cluster clustering search results has also 
+attracted a lot of attention in industry and commercial web 
+services such as vivisimo however in all these works 
+the clusters are generated solely based on the search results 
+thus the obtained clusters do not necessarily reflect users 
+preferences and the generated labels may not be informative 
+from a user s viewpoint 
+methods of organizing search results based on text 
+categorization are studied in in this work a text 
+classifier is trained using a web directory and search results are 
+then classified into the predefined categories the authors 
+designed and studied different category interfaces and they 
+found that category interfaces are more effective than list 
+interfaces however predefined categories are often too 
+general to reflect the finer granularity aspects of a query 
+search logs have been exploited for several different 
+purposes in the past for example clustering search queries to 
+find those frequent asked questions faq is studied in 
+ recently search logs have been used for suggesting query 
+substitutes personalized search web site design 
+latent semantic analysis and learning retrieval 
+ranking functions in our work we explore past query 
+history in order to better organize the search results for 
+future queries we use the star clustering algorithm which 
+is a graph partition based approach to learn interesting 
+aspects from search logs given a new query thus past queries 
+are clustered in a query specific manner and this is another 
+difference from previous works such as in which all 
+queries in logs are clustered in an oﬄine batch manner 
+ search engine logs 
+search engine logs record the activities of web users which 
+reflect the actual users needs or interests when conducting 
+id query url time 
+ win zip http www winzip com xxxx 
+ win zip http www swinzip com winzip xxxx 
+ time zones http www timeanddate com xxxx 
+ 
+table sample entries of search engine logs 
+different id s mean different sessions 
+web search they generally have the following 
+information text queries that users submitted the urls that they 
+clicked after submitting the queries and the time when they 
+clicked search engine logs are separated by sessions a 
+session includes a single query and all the urls that a user 
+clicked after issuing the query a small sample of search 
+log data is shown in table 
+our idea of using search engine logs is to treat these logs 
+as past history learn users interests using this history data 
+automatically and represent their interests by 
+representative queries for example in the search logs a lot of queries 
+are related to car and this reflects that a large number of 
+users are interested in information about car different 
+users are probably interested in different aspects of car 
+some are looking for renting a car thus may submit a query 
+like car rental some are more interested in buying a used 
+car and may submit a query like used car and others may 
+care more about buying a car accessory so they may use a 
+query like car audio by mining all the queries which are 
+related to the concept of car we can learn the aspects 
+that are likely interesting from a user s perspective as an 
+example the following is some aspects about car learned 
+from our search log data see section 
+ car rental hertz car rental enterprise car 
+rental 
+ car pricing used car car values 
+ car accidents car crash car wrecks 
+ car audio car stereo car speaker 
+in order to learn aspects from search engine logs we 
+preprocess the raw logs to build a history data collection as 
+shown above search engine logs consist of sessions each 
+session contains the information of the text query and the 
+clicked web page urls together with the time that the 
+user did the clicks however this information is limited 
+since urls alone are not informative enough to tell the 
+intended meaning of a submitted query accurately to gather 
+rich information we enrich each url with additional text 
+content specifically given the query in a session we obtain 
+its top-ranked results using the search engine from which we 
+obtained our log data and extract the snippets of the urls 
+that are clicked on according to the log information in the 
+corresponding session all the titles snippets and urls of 
+the clicked web pages of that query are used to represent 
+the session 
+different sessions may contain the same queries thus 
+the number of sessions could be quite huge and the 
+information in the sessions with the same queries could be 
+redundant in order to improve the scalability and reduce data 
+sparseness we aggregate all the sessions which contain 
+exactly the same queries together that is for each unique 
+query we build a pseudo-document which consists of all 
+the descriptions of its clicks in all the sessions aggregated 
+the keywords contained in the queries themselves can be 
+regarded as brief summaries of the pseudo-documents all 
+these pseudo-documents form our history data collection 
+which is used to learn interesting aspects in the following 
+section 
+ our approach 
+our approach is to organize search results by aspects 
+learned from search engine logs given an input query the 
+general procedure of our approach is 
+ get its related information from search engine logs 
+all the information forms a working set 
+ learn aspects from the information in the working set 
+these aspects correspond to users interests given the 
+input query each aspect is labeled with a 
+representative query 
+ categorize and organize the search results of the input 
+query according to the aspects learned above 
+we now give a detailed presentation of each step 
+ finding related past queries 
+given a query q a search engine will return a ranked list 
+of web pages to know what the users are really interested 
+in given this query we first retrieve its past similar queries 
+in our preprocessed history data collection 
+formally assume we have n pseudo-documents in our 
+history data set h q q qn each qi 
+corresponds to a unique query and is enriched with clickthrough 
+information as discussed in section to find q s related 
+queries in h a natural way is to use a text retrieval 
+algorithm here we use the okapi method one of the 
+state-of-the-art retrieval methods specifically we use the 
+following formula to calculate the similarity between query 
+q and pseudo-document qi 
+ 
+w∈q qi 
+c w q × idf w × 
+ k × c w qi 
+k − b b qi 
+avdl 
+ c w qi 
+where k and b are okapi parameters set empirically c w qi 
+and c w q are the count of word w in qi and q respectively 
+idf w is the inverse document frequency of word w and 
+avdl is the average document length in our history 
+collection 
+based on the similarity scores we rank all the documents 
+in h the top ranked documents provide us a working set to 
+learn the aspects that users are usually interested in each 
+document in h corresponds to a past query and thus the 
+top ranked documents correspond to q s related past queries 
+ learning aspects by clustering 
+given a query q we use hq d dn to represent the 
+top ranked pseudo-documents from the history collection 
+h these pseudo-documents contain the aspects that users 
+are interested in in this subsection we propose to use a 
+clustering method to discover these aspects 
+any clustering algorithm could be applied here in this 
+paper we use an algorithm based on graph partition the 
+star clustering algorithm a good property of the star 
+clustering in our setting is that it can suggest a good label 
+for each cluster naturally we describe the star clustering 
+algorithm below 
+ star clustering 
+given hq star clustering starts with constructing a 
+pairwise similarity graph on this collection based on the vector 
+space model in information retrieval then the clusters 
+are formed by dense subgraphs that are star-shaped these 
+clusters form a cover of the similarity graph formally for 
+each of the n pseudo-documents d dn in the collection 
+hq we compute a tf-idf vector then for each pair of 
+documents di and dj i j their similarity is computed 
+as the cosine score of their corresponding vectors vi and vj 
+that is 
+sim di dj cos vi vj 
+vi · vj 
+ vi · vj 
+ 
+a similarity graph gσ can then be constructed as follows 
+using a similarity threshold parameter σ each document 
+di is a vertex of gσ if sim di dj σ there would be an 
+edge connecting the corresponding two vertices after the 
+similarity graph gσ is built the star clustering algorithm 
+clusters the documents using a greedy algorithm as follows 
+ associate every vertex in gσ with a flag initialized as 
+unmarked 
+ from those unmarked vertices find the one which has 
+the highest degree and let it be u 
+ mark the flag of u as center 
+ form a cluster c containing u and all its neighbors 
+that are not marked as center mark all the selected 
+neighbors as satellites 
+ repeat from step until all the vertices in gσ are 
+marked 
+each cluster is star-shaped which consists a single center 
+and several satellites there is only one parameter σ in 
+the star clustering algorithm a big σ enforces that the 
+connected documents have high similarities and thus the 
+clusters tend to be small on the other hand a small σ will 
+make the clusters big and less coherent we will study the 
+impact of this parameter in our experiments 
+a good feature of the star clustering algorithm is that it 
+outputs a center for each cluster in the past query 
+collection hq each document corresponds to a query this center 
+query can be regarded as the most representative one for 
+the whole cluster and thus provides a label for the cluster 
+naturally all the clusters obtained are related to the input 
+query q from different perspectives and they represent the 
+possible aspects of interests about query q of users 
+ categorizing search results 
+in order to organize the search results according to users 
+interests we use the learned aspects from the related past 
+queries to categorize the search results given the top m 
+web pages returned by a search engine for q s sm 
+we group them into different aspects using a categorization 
+algorithm 
+in principle any categorization algorithm can be used 
+here here we use a simple centroid-based method for 
+categorization naturally more sophisticated methods such as 
+svm may be expected to achieve even better 
+performance 
+based on the pseudo-documents in each discovered aspect 
+ci we build a centroid prototype pi by taking the average 
+of all the vectors of the documents in ci 
+pi 
+ 
+ ci 
+ 
+l∈ci 
+vl 
+all these pi s are used to categorize the search results 
+specifically for any search result sj we build a tf-idf vector 
+the centroid-based method computes the cosine similarity 
+between the vector representation of sj and each centroid 
+prototype pi we then assign sj to the aspect with which it 
+has the highest cosine similarity score 
+all the aspects are finally ranked according to the number 
+of search results they have within each aspect the search 
+results are ranked according to their original search engine 
+ranking 
+ data collection 
+we construct our data set based on the msn search log 
+data set released by the microsoft live labs in 
+in total this log data spans days from to 
+ there are queries distinct 
+queries and distinct urls in the raw data 
+to test our algorithm we separate the whole data set into 
+two parts according to the time the first data is used 
+to simulate the historical data that a search engine 
+accumulated and we use the last to simulate future queries 
+in the history collection we clean the data by only 
+keeping those frequent well-formatted english queries queries 
+which only contain characters  a  b  z and space and 
+appear more than times after cleaning we get 
+unique queries in our history data collection totally on 
+average each query has distinct clicks we build the 
+pseudo-documents for all these queries as described in 
+section the average length of these pseudo-documents 
+is words and the total data size of our history collection 
+is mb 
+we construct our test data from the last data 
+according to the time we separate this data into two test sets 
+equally for cross-validation to set parameters for each test 
+set we use every session as a test case each session 
+contains a single query and several clicks note that we do not 
+aggregate sessions for test cases different test cases may 
+have the same queries but possibly different clicks since it 
+is infeasible to ask the original user who submitted a query 
+to judge the results for the query we follow the work 
+and opt to use the clicks associated with the query in a 
+session to approximate relevant documents using clicks as 
+judgments we can then compare different algorithms for 
+organizing search results to see how well these algorithms can 
+help users reach the clicked urls 
+organizing search results into different aspects is expected 
+to help informational queries it thus makes sense to focus 
+on the informational queries in our evaluation for each 
+test case i e each session we count the number of different 
+clicks and filter out those test cases with fewer than clicks 
+under the assumption that a query with more clicks is more 
+likely to be an informational query since we want to test 
+whether our algorithm can learn from the past queries we 
+also filter out those test cases whose queries can not retrieve 
+at least pseudo-documents from our history collection 
+finally we obtain and test cases in the first and 
+second test sets respectively on average we have and 
+ clicks for each test case in the two test sets respectively 
+ experiments 
+in the section we describe our experiments on the search 
+result organization based past search engine logs 
+ experimental design 
+we use two baseline methods to evaluate the proposed 
+method for organizing search results for each test case 
+the first method is the default ranked list from a search 
+engine baseline the second method is to organize the 
+search results by clustering them cluster-based for fair 
+comparison we use the same clustering algorithm as our 
+logbased method i e star clustering that is we treat each 
+search result as a document construct the similarity graph 
+and find the star-shaped clusters we compare our method 
+ log-based with the two baseline methods in the following 
+experiments for both cluster-based and log-based methods 
+the search results within each cluster is ranked based on their 
+original ranking given by the search engine 
+to compare different result organization methods we adopt 
+a similar method as in the paper that is we compare the 
+quality e g precision of the best cluster which is defined 
+as the one with the largest number of relevant documents 
+organizing search results into clusters is to help users 
+navigate into relevant documents quickly the above metric is to 
+simulate a scenario when users always choose the right 
+cluster and look into it specifically we download and organize 
+the top search results into aspects for each test case we 
+use precision at documents p  in the best cluster as 
+the primary measure to compare different methods p  is 
+a very meaningful measure as it tells us the perceived 
+precision when the user opens a cluster and looks at the first 
+documents we also use mean reciprocal rank mrr as 
+another metric mrr is calculated as 
+mrr 
+ 
+ t 
+ 
+q∈t 
+ 
+rq 
+where t is a set of test queries rq is the rank of the first 
+relevant document for q 
+to give a fair comparison across different organization 
+algorithms we force both cluster-based and log-based 
+methods to output the same number of aspects and force each 
+search result to be in one and only one aspect the 
+number of aspects is fixed at in all the following experiments 
+the star clustering algorithm can output different number 
+of clusters for different input to constrain the number of 
+clusters to we order all the clusters by their sizes select 
+the top as aspect candidates we then re-assign each 
+search result to one of these selected aspects that has 
+the highest similarity score with the corresponding aspect 
+centroid in our experiments we observe that the sizes of 
+the best clusters are all larger than and this ensures that 
+p  is a meaningful metric 
+ experimental results 
+our main hypothesis is that organizing search results based 
+on the users interests learned from a search log data set is 
+more beneficial than to organize results using a simple list 
+or cluster search results in the following we test our 
+hypothesis from two perspectives - organization and labeling 
+method test set test set 
+mmr p  mmr p  
+baseline 
+cluster-based 
+log-based 
+cluster baseline - - 
+log baseline 
+log cluster 
+table comparison of different methods by mmr 
+and p  we also show the percentage of relative 
+improvement in the lower part 
+comparison test set test set 
+impr decr impr decr 
+cluster baseline 
+log baseline 
+log cluster 
+table pairwise comparison w r t the number of 
+test cases whose p  s are improved versus 
+decreased w r t the baseline 
+ overall performance 
+we compare three methods basic search engine 
+ranking baseline traditional clustering based method 
+ clusterbased and our log based method log-based in table 
+using mrr and p  we optimize the parameter σ s for each 
+collection individually based on p  values this shows the 
+best performance that each method can achieve in this 
+table we can see that in both test collections our method 
+is better than both the baseline and the cluster-based 
+methods for example in the first test collection the 
+baseline method of mmr is the cluster-based method is 
+ and our method is we achieve higher 
+accuracy than both cluster-based method improvement 
+and the baseline method improvement the p  
+values are for the baseline for cluster-based 
+method but for our method our method improves 
+over the baseline by while the cluster-based method 
+even decreases the accuracy this is because cluster-based 
+method organizes the search results only based on the 
+contents thus it could organize the results differently from 
+users preferences this confirms our hypothesis of the bias 
+of the cluster-based method comparing our method with 
+the cluster-based method we achieve significant 
+improvement on both test collections the p-values of the 
+significance tests based on p  on both collections are and 
+ respectively this shows that our log-based method is 
+effective to learn users preferences from the past query 
+history and thus it can organize the search results in a more 
+useful way to users 
+we showed the optimal results above to test the 
+sensitivity of the parameter σ of our log-based method we use 
+one of the test sets to tune the parameter to be optimal 
+and then use the tuned parameter on the other set we 
+compare this result log tuned outside with the optimal 
+results of both cluster-based cluster optimized and log-based 
+methods log optimized in figure we can see that as 
+expected the performance using the parameter tuned on a 
+separate set is worse than the optimal performance 
+however our method still performs much better than the optimal 
+results of cluster-based method on both test collections 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+test set test set 
+p  
+cluster optimized log optimized log tuned outside 
+figure results using parameters tuned from the 
+other test collection we compare it with the 
+optimal performance of the cluster-based and our 
+logbased methods 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bin number 
+ queries 
+improved decreased 
+figure the correlation between performance 
+change and result diversity 
+in table we show pairwise comparisons of the three 
+methods in terms of the numbers of test cases for which 
+p  is increased versus decreased we can see that our 
+method improves more test cases compared with the other 
+two methods in the next section we show more detailed 
+analysis to see what types of test cases can be improved by 
+our method 
+ detailed analysis 
+to better understand the cases where our log-based method 
+can improve the accuracy we test two properties result 
+diversity and query difficulty all the analysis below is based 
+on test set 
+diversity analysis intuitively organizing search 
+results into different aspects is more beneficial to those queries 
+whose results are more diverse as for such queries the 
+results tend to form two or more big clusters in order to 
+test the hypothesis that log-based method help more those 
+queries with diverse results we compute the size ratios of 
+the biggest and second biggest clusters in our log-based 
+results and use this ratio as an indicator of diversity if the 
+ratio is small it means that the first two clusters have a 
+small difference thus the results are more diverse in this 
+case we would expect our method to help more the 
+results are shown in figure in this figure we partition the 
+ratios into bins the bins correspond to the ratio ranges 
+ and ∞ respectively i j means 
+that i ≤ ratio j in each bin we count the numbers of 
+test cases whose p  s are improved versus decreased with 
+respect to the ranking baseline and plot the numbers in this 
+figure we can observe that when the ratio is smaller the 
+log-based method can improve more test cases but when 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bin number 
+ queries 
+improved decreased 
+figure the correlation between performance 
+change and query difficulty 
+the ratio is large the log-based method can not improve 
+over the baseline for example in bin test cases are 
+improved and are decreased but in bin all the test 
+cases are decreased this confirms our hypothesis that our 
+method can help more if the query has more diverse results 
+this also suggests that we should turn off the option of 
+re-organizing search results if the results are not very diverse 
+ e g as indicated by the cluster size ratio 
+difficulty analysis difficult queries have been studied 
+in recent years here we analyze the effectiveness 
+of our method in helping difficult queries we quantify the 
+query difficulty by the mean average precision map of 
+the original search engine ranking for each test case we 
+then order the test cases in test set in an increasing 
+order of map values we partition the test cases into bins 
+with each having a roughly equal number of test cases a 
+small map means that the utility of the original ranking is 
+low bin contains those test cases with the lowest map s 
+and bin contains those test cases with the highest map s 
+for each bin we compute the numbers of test cases whose 
+p  s are improved versus decreased figure shows the 
+results clearly in bin most of the test cases are improved 
+ vs while in bin log-based method may decrease 
+the performance vs this shows that our method 
+is more beneficial to difficult queries which is as expected 
+since clustering search results is intended to help difficult 
+queries this also shows that our method does not really 
+help easy queries thus we should turn off our organization 
+option for easy queries 
+ parameter setting 
+we examine parameter sensitivity in this section for the 
+star clustering algorithm we study the similarity threshold 
+parameter σ for the okapi retrieval function we study 
+the parameters k and b we also study the impact of the 
+number of past queries retrieved in our log-based method 
+figure shows the impact of the parameter σ for both 
+cluster-based and log-based methods on both test sets we 
+vary σ from to with step figure shows that 
+the performance is not very sensitive to the parameter σ we 
+can always obtain the best result in range ≤ σ ≤ 
+in table we show the impact of okapi parameters 
+we vary k from to with step and b from to 
+ with step from this table it is clear that p  is 
+also not very sensitive to the parameter setting most of the 
+values are larger than the default values k and 
+b give approximately optimal results 
+we further study the impact of the amount of history 
+ 
+ 
+ 
+ 
+ 
+ 
+p  
+similarity threhold sigma 
+cluster-based 
+log-based 
+cluster-based 
+log-based 
+figure the impact of similarity threshold σ on 
+both cluster-based and log-based methods we show 
+the result on both test collections 
+b 
+ 
+ 
+ 
+k 
+ 
+ 
+ 
+table impact of okapi parameters k and b 
+information to learn from by varying the number of past 
+queries to be retrieved for learning aspects the results on 
+both test collections are shown in figure we can see 
+that the performance gradually increases as we enlarge the 
+number of past queries retrieved thus our method could 
+potentially learn more as we accumulate more history more 
+importantly as time goes more and more queries will have 
+sufficient history so we can improve more and more queries 
+ an illustrative example 
+we use the query area codes to show the difference in 
+the results of the log-based method and the cluster-based 
+method this query may mean phone codes or zip codes 
+table shows the representative keywords extracted from 
+the three biggest clusters of both methods in the 
+clusterbased method the results are partitioned based on locations 
+local or international in the log-based method the results 
+are disambiguated into two senses phone codes or zip 
+codes while both are reasonable partitions our 
+evaluation indicates that most users using such a query are often 
+interested in either phone codes or zip codes since the 
+p  values of cluster-based and log-based methods are 
+and respectively therefore our log-based method is 
+more effective in helping users to navigate into their desired 
+results 
+cluster-based method log-based method 
+city state telephone city international 
+local area phone dialing 
+international zip postal 
+table an example showing the difference between 
+the cluster-based method and our log-based method 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+p  
+ queries retrieved 
+test set 
+test set 
+figure the impact of the number of past queries 
+retrieved 
+ labeling comparison 
+we now compare the labels between the cluster-based 
+method and log-based method the cluster-based method 
+has to rely on the keywords extracted from the snippets to 
+construct the label for each cluster our log-based method 
+can avoid this difficulty by taking advantage of queries 
+specifically for the cluster-based method we count the frequency 
+of a keyword appearing in a cluster and use the most 
+frequent keywords as the cluster label for log-based method 
+we use the center of each star cluster as the label for the 
+corresponding cluster 
+in general it is not easy to quantify the readability of a 
+cluster label automatically we use examples to show the 
+difference between the cluster-based and the log-based 
+methods in table we list the labels of the top clusters for 
+two examples jaguar and apple for the cluster-based 
+method we separate keywords by commas since they do not 
+form a phrase from this table we can see that our log-based 
+method gives more readable labels because it generates 
+labels based on users queries this is another advantage of 
+our way of organizing search results over the clustering 
+approach 
+label comparison for query jaguar 
+log-based method cluster-based method 
+ jaguar animal jaguar auto accessories 
+ jaguar auto accessories jaguar type prices 
+ jaguar cats jaguar panthera cats 
+ jaguar repair jaguar services boston 
+ jaguar animal pictures jaguar collection apparel 
+label comparison for query apple 
+log-based method cluster-based method 
+ apple computer apple support product 
+ apple ipod apple site computer 
+ apple crisp recipe apple world visit 
+ fresh apple cake apple ipod amazon 
+ apple laptop apple products news 
+table cluster label comparison 
+ conclusions and future work 
+in this paper we studied the problem of organizing search 
+results in a user-oriented manner to attain this goal we 
+rely on search engine logs to learn interesting aspects from 
+users perspective given a query we retrieve its related 
+queries from past query history learn the aspects by 
+clustering the past queries and the associated clickthrough 
+information and categorize the search results into the aspects 
+learned we compared our log-based method with the 
+traditional cluster-based method and the baseline of search 
+engine ranking the experiments show that our log-based 
+method can consistently outperform cluster-based method 
+and improve over the ranking baseline especially when the 
+queries are difficult or the search results are diverse 
+furthermore our log-based method can generate more 
+meaningful aspect labels than the cluster labels generated based 
+on search results when we cluster search results 
+there are several interesting directions for further 
+extending our work first although our experiment results have 
+clearly shown promise of the idea of learning from search 
+logs to organize search results the methods we have 
+experimented with are relatively simple it would be interesting 
+to explore other potentially more effective methods in 
+particular we hope to develop probabilistic models for learning 
+aspects and organizing results simultaneously second with 
+the proposed way of organizing search results we can 
+expect to obtain informative feedback information from a user 
+ e g the aspect chosen by a user to view it would thus 
+be interesting to study how to further improve the 
+organization of the results based on such feedback information 
+finally we can combine a general search log with any 
+personal search log to customize and optimize the organization 
+of search results for each individual user 
+ acknowledgments 
+we thank the anonymous reviewers for their valuable 
+comments this work is in part supported by a microsoft live 
+labs research grant a google research grant and an nsf 
+career grant iis- 
+ references 
+ e agichtein e brill and s t dumais improving 
+web search ranking by incorporating user behavior 
+information in sigir pages - 
+ j a aslam e pelekov and d rus the star 
+clustering algorithm for static and dynamic 
+information organization journal of graph 
+algorithms and applications - 
+ r a baeza-yates applications of web query mining 
+in ecir pages - 
+ d beeferman and a l berger agglomerative 
+clustering of a search engine query log in kdd pages 
+ - 
+ d carmel e yom-tov a darlow and d pelleg 
+what makes a query difficult in sigir pages 
+ - 
+ h chen and s t dumais bringing order to the web 
+automatically categorizing search results in chi 
+pages - 
+ s cronen-townsend y zhou and w b croft 
+predicting query performance in proceedings of acm 
+sigir pages - 
+ s t dumais e cutrell and h chen optimizing 
+search by showing results in context in chi pages 
+ - 
+ m a hearst and j o pedersen reexamining the 
+cluster hypothesis scatter gather on retrieval results 
+in sigir pages - 
+ t joachims optimizing search engines using 
+clickthrough data in kdd pages - 
+ t joachims evaluating retrieval performance using 
+clickthrough data pages - physica springer 
+verlag in j franke and g nakhaeizadeh and i 
+renz text mining 
+ r jones b rey o madani and w greiner 
+generating query substitutions in www pages 
+ - 
+ k kummamuru r lotlikar s roy k singal and 
+r krishnapuram a hierarchical monothetic 
+document clustering algorithm for summarization and 
+browsing search results in www pages - 
+ 
+ microsoft live labs accelerating search in academic 
+research 
+http research microsoft com ur us fundingopps rfps 
+search rfp aspx 
+ p pirolli p k schank m a hearst and c diehl 
+scatter gather browsing communicates the topic 
+structure of a very large text collection in chi pages 
+ - 
+ f radlinski and t joachims query chains learning 
+to rank from implicit feedback in kdd pages 
+ - 
+ s e robertson and s walker some simple effective 
+approximations to the -poisson model for 
+probabilistic weighted retrieval in sigir pages 
+ - 
+ g salton a wong and c s yang a vector space 
+model for automatic indexing commun acm 
+ - 
+ x shen b tan and c zhai context-sensitive 
+information retrieval using implicit feedback in 
+sigir pages - 
+ c j van rijsbergen information retrieval second 
+edition butterworths london 
+ v n vapnik the nature of statistical learning 
+theory springer-verlag berlin 
+ vivisimo http vivisimo com 
+ x wang j -t sun z chen and c zhai latent 
+semantic analysis for multiple-type interrelated data 
+objects in sigir pages - 
+ j -r wen j -y nie and h zhang clustering user 
+queries of a search engine in www pages - 
+ 
+ e yom-tov s fine d carmel and a darlow 
+learning to estimate query difficulty including 
+applications to missing content detection and 
+distributed information retrieval in sigir pages 
+ - 
+ o zamir and o etzioni web document clustering a 
+feasibility demonstration in sigir pages - 
+ 
+ o zamir and o etzioni grouper a dynamic 
+clustering interface to web search results computer 
+networks - - 
+ h -j zeng q -c he z chen w -y ma and j ma 
+learning to cluster web search results in sigir 
+pages - 

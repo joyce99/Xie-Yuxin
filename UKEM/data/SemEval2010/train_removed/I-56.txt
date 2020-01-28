@@ -1,0 +1,1017 @@
+unifying distributed constraint algorithms in a bdi 
+negotiation framework 
+bao chau le dinh and kiam tian seow 
+school of computer engineering 
+nanyang technological university 
+republic of singapore 
+ ledi asktseow  ntu edu sg 
+abstract 
+this paper presents a novel unified distributed constraint 
+satisfaction framework based on automated negotiation the 
+distributed constraint satisfaction problem dcsp is one that 
+entails several agents to search for an agreement which is a 
+consistent combination of actions that satisfies their mutual constraints 
+in a shared environment by anchoring the dcsp search on 
+automated negotiation we show that several well-known dcsp 
+algorithms are actually mechanisms that can reach agreements 
+through a common belief-desire-intention bdi protocol but 
+using different strategies a major motivation for this bdi 
+framework is that it not only provides a conceptually clearer 
+understanding of existing dcsp algorithms from an agent model 
+perspective but also opens up the opportunities to extend and 
+develop new strategies for dcsp to this end a new strategy called 
+unsolicited mutual advice uma is proposed performance 
+evaluation shows that the uma strategy can outperform some 
+existing mechanisms in terms of computational cycles 
+categories and subject descriptors 
+i distributed artificial intelligence intelligent 
+agents multiagent systems 
+general terms 
+algorithms design experimentation 
+ introduction 
+at the core of many emerging distributed applications is the 
+distributed constraint satisfaction problem dcsp - one which 
+involves finding a consistent combination of actions abstracted as 
+domain values to satisfy the constraints among multiple agents 
+in a shared environment important application examples include 
+distributed resource allocation and distributed scheduling 
+many important algorithms such as distributed breakout dbo 
+ asynchronous backtracking abt asynchronous partial 
+overlay apo and asynchronous weak-commitment awc 
+ have been developed to address the dcsp and provide the 
+agent solution basis for its applications broadly speaking these 
+algorithms are based on two different approaches either 
+extending from classical backtracking algorithms or introducing 
+mediation among the agents 
+while there has been no lack of efforts in this promising 
+research field especially in dealing with outstanding issues such as 
+resource restrictions e g limits on time and communication 
+and privacy requirements there is unfortunately no 
+conceptually clear treatment to prise open the model-theoretic workings of 
+the various agent algorithms that have been developed as a 
+result for instance a deeper intellectual understanding on why one 
+algorithm is better than the other beyond computational issues 
+is not possible 
+in this paper we present a novel unified distributed constraint 
+satisfaction framework based on automated negotiation 
+negotiation is viewed as a process of several agents searching for a 
+solution called an agreement the search can be realized via a 
+negotiation mechanism or algorithm by which the agents follow 
+a high level protocol prescribing the rules of interactions using 
+a set of strategies devised to select their own preferences at each 
+negotiation step 
+anchoring the dcsp search on automated negotiation we 
+show in this paper that several well-known dcsp algorithms 
+ are actually mechanisms that share the same 
+belief-desireintention bdi interaction protocol to reach agreements but 
+use different action or value selection strategies the proposed 
+framework provides not only a clearer understanding of existing 
+dcsp algorithms from a unified bdi agent perspective but also 
+opens up the opportunities to extend and develop new strategies 
+for dcsp to this end a new strategy called unsolicited mutual 
+advice uma is proposed our performance evaluation shows 
+that uma can outperform abt and awc in terms of the average 
+number of computational cycles for both the sparse and critical 
+coloring problems 
+the rest of this paper is organized as follows in section 
+we provide a formal overview of dcsp section presents a bdi 
+negotiation model by which a dcsp agent reasons section 
+presents the existing algorithms abt awc and dbo as 
+different strategies formalized on a common protocol a new strategy 
+called unsolicited mutual advice is proposed in section our 
+empirical results and discussion attempt to highlight the merits 
+of the new strategy over existing ones section concludes the 
+paper and points to some future work 
+ dcsp problem formalization 
+the dcsp considers the following environment 
+ there are n agents with k variables x x · · · xk− n ≤ 
+k which have values in domains d d · · · dk 
+respectively we define a partial function b over the 
+productrange n− × k − such that that 
+variable xj belongs to agent i is denoted by b i j the 
+exclamation mark   means  is defined 
+ there are m constraints c c · · · cm− to be conjunctively 
+satisfied in a similar fashion as defined for b i j we use 
+e l j ≤ l m ≤ j k to denote that xj is 
+relevant to the constraint cl 
+the dcsp may be formally stated as follows 
+problem statement ∀i j ≤ i n ≤ j k where 
+b i j find the assignment xj dj ∈ dj such that ∀l ≤ l 
+m where e l j cl is satisfied 
+a constraint may consist of different variables belonging to 
+different agents an agent cannot change or modify the 
+assignment values of other agents variables therefore in 
+cooperatively searching for a dcsp solution the agents would need to 
+communicate with one another and adjust and re-adjust their 
+own variable assignments in the process 
+ dcsp agent model 
+in general all dcsp agents must cooperatively interact and 
+essentially perform the assignment and reassignment of domain 
+values to variables to resolve all constraint violations if the 
+agents succeed in their resolution a solution is found 
+in order to engage in cooperative behavior a dcsp agent needs 
+five fundamental parameters namely i a variable or a 
+variable set ii domains iii priority iv a neighbor list and 
+ v a constraint list 
+each variable assumes a range of values called a domain a 
+domain value which usually abstracts an action is a possible 
+option that an agent may take each agent has an assigned priority 
+these priority values help decide the order in which they revise 
+or modify their variable assignments an agent s priority may be 
+fixed static or changing dynamic when searching for a 
+solution if an agent has more than one variable each variable can 
+be assigned a different priority to help determine which variable 
+assignment the agent should modify first 
+an agent which shares the same constraint with another agent 
+is called the latter s neighbor each agent needs to refer to its list 
+of neighbors during the search process this list may also be kept 
+unchanged or updated accordingly in runtime similarly each 
+agent maintains a constraint list the agent needs to ensure that 
+there is no violation of the constraints in this list constraints can 
+be added or removed from an agent s constraint list in runtime 
+as with an agent a constraint can also be associated with a 
+priority value constraints with a high priority are said to be 
+more important than constraints with a lower priority to 
+distinguish it from the priority of an agent the priority of a constraint 
+is called its weight 
+ the bdi negotiation model 
+the bdi model originates with the work of m bratman 
+according to ch the bdi architecture is based on a 
+philosophical model of human practical reasoning and draws out the 
+process of reasoning by which an agent decides which actions to 
+perform at consecutive moments when pursuing certain goals 
+grounding the scope to the dcsp framework the common goal 
+of all agents is finding a combination of domain values to satisfy a 
+set of predefined constraints in automated negotiation such 
+a solution is called an agreement among the agents within this 
+scope we found that we were able to unearth the generic behavior 
+of a dcsp agent and formulate it in a negotiation protocol 
+prescribed using the powerful concepts of bdi thus our proposed 
+negotiation model can be said to combine the bdi concepts with 
+automated negotiation in a multiagent framework allowing us 
+to conceptually separate dcsp mechanisms into a common bdi 
+interaction protocol and the adopted strategies 
+ the generic protocol 
+figure shows the basic reasoning steps in an arbitrary round 
+of negotiation that constitute the new protocol the solid line 
+indicates the common component or transition which always 
+exists regardless of the strategy used the dotted line indicates the 
+percept 
+belief 
+desire 
+intention 
+mediation 
+execution 
+p 
+b 
+d 
+i 
+i 
+i 
+info message 
+info message 
+negotiation message 
+negotiation message 
+negotiation message 
+negotiation message 
+negotiation message 
+negotiation message 
+negotiation message 
+figure the bdi interaction protocol 
+component or transition which may or may not appear depending 
+on the adopted strategy 
+two types of messages are exchanged through this protocol 
+namely the info message and the negotiation message 
+an info message perceived is a message sent by another agent 
+the message will contain the current selected values and priorities 
+of the variables of that sending agent the main purpose of this 
+message is to update the agent about the current environment 
+info message is sent out at the end of one negotiation round also 
+called a negotiation cycle and received at the beginning of next 
+round 
+a negotiation message is a message which may be sent within 
+a round this message is for mediation purposes the agent may 
+put different contents into this type of message as long as it is 
+agreed among the group the format of the negotiation message 
+and when it is to be sent out are subject to the strategy a 
+negotiation message can be sent out at the end of one reasoning 
+step and received at the beginning of the next step 
+mediation is a step of the protocol that depends on whether the 
+agent s interaction with others is synchronous or asynchronous 
+in synchronous mechanism mediation is required in every 
+negotiation round in an asynchronous one mediation is needed only in 
+a negotiation round when the agent receives a negotiation 
+message a more in-depth view of this mediation step is provided 
+later in this section 
+the bdi protocol prescribes the skeletal structure for dcsp 
+negotiation we will show in section that several well-known 
+dcsp mechanisms all inherit this generic model 
+the details of the six main reasoning steps for the protocol 
+ see figure are described as follows for a dcsp agent for a 
+conceptually clearer description we assume that there is only one 
+variable per agent 
+ percept in this step the agent receives info messages 
+from its neighbors in the environment and using its percept 
+function returns an image p this image contains the 
+current values assigned to the variables of all agents in its 
+neighbor list the image p will drive the agent s actions 
+in subsequent steps the agent also updates its constraint 
+list c using some criteria of the adopted strategy 
+ belief using the image p and constraint list c the agent 
+will check if there is any violated constraint if there is 
+no violation the agent will believe it is choosing a correct 
+option and therefore will take no action the agent will 
+do nothing if it is in a local stable state - a snapshot of 
+the variables assignments of the agent and all its neighbors 
+by which they satisfy their shared constraints when all 
+agents are in their local stable states the whole 
+environment is said to be in a global stable state and an 
+agreethe sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ment is found in case the agent finds its value in conflict 
+with some of its neighbors i e the combination of values 
+assigned to the variables leads to a constraint violation 
+the agent will first try to reassign its own variable using a 
+specific strategy if it finds a suitable option which meets 
+some criteria of the adopted strategy the agent will believe 
+it should change to the new option however it does not 
+always happen that an agent can successfully find such an 
+option if no option can be found the agent will believe it 
+has no option and therefore will request its neighbors to 
+reconsider their variable assignments 
+to summarize there are three types of beliefs that a dcsp 
+agent can form i it can change its variable assignment to 
+improve the current situation ii it cannot change its 
+variable assignment and some constraints violations cannot be 
+resolved and iii it need not change its variable assignment 
+as all the constraints are satisfied 
+once the beliefs are formed the agent will determine its 
+desires which are the options that attempt to resolve the 
+current constraint violations 
+ desire if the agent takes belief i it will generate a list of 
+its own suitable domain values as its desire set if the agent 
+takes belief ii it cannot ascertain its desire set but will 
+generate a sublist of agents from its neighbor list whom it 
+will ask to reconsider their variable assignments how this 
+sublist is created depends on the strategy devised for the 
+agent in this situation the agent will use a virtual desire 
+set that it determines based on its adopted strategy if the 
+agent takes belief iii it will have no desire to revise its 
+domain value and hence no intention 
+ intention the agent will select a value from its desire 
+set as its intention an intention is the best desired 
+option that the agent assigns to its variable the criteria for 
+selecting a desire as the agent s intention depend on the 
+strategy used once the intention is formed the agent may 
+either proceed to the execution step or undergo mediation 
+again the decision to do so is determined by some criteria 
+of the adopted strategy 
+ mediation this is an important function of the agent 
+since if the agent executes its intention without 
+performing intention mediation with its neighbors the constraint 
+violation between the agents may not be resolved take 
+for example suppose two agents have variables x and x 
+associated with the same domain and their shared 
+constraint is x x then if both the variables are 
+initialized with value they will both concurrently switch 
+between the values and in the absence of mediation 
+between them 
+there are two types of mediation local mediation and 
+group mediation in the former the agents exchange their 
+intentions when an agent receives another s intention 
+which conflicts with its own the agent must mediate 
+between the intentions by either changing its own intention 
+or informing the other agent to change its intention in the 
+latter there is an agent which acts as a group mediator 
+this mediator will collect the intentions from the group - a 
+union of the agent and its neighbors - and determine which 
+intention is to be executed the result of this mediation is 
+passed back to the agents in the group following 
+mediation the agent may proceed to the next reasoning step to 
+execute its intention or begin a new negotiation round 
+ execution this is the last step of a negotiation round 
+the agent will execute by updating its variable assignment 
+if the intention obtained at this step is its own following 
+execution the agent will inform its neighbors about its new 
+variable assignment and updated priority to do so the 
+agent will send out an info message 
+ the strategy 
+a strategy plays an important role in the negotiation process 
+within the protocol it will often determine the efficiency of the 
+percept 
+belief 
+desire 
+intention 
+mediation 
+execution 
+p 
+b 
+d 
+i 
+info message 
+info message 
+negotiation message 
+negotiation message 
+negotiation message 
+figure bdi protocol with asynchronous 
+backtracking strategy 
+search process in terms of computational cycles and message 
+communication costs 
+the design space when devising a strategy is influenced by the 
+following dimensions i asynchronous or synchronous ii 
+dynamic or static priority iii dynamic or static constraint weight 
+ iv number of negotiation messages to be communicated v the 
+negotiation message format and vi the completeness property 
+in other words these dimensions provide technical considerations 
+for a strategy design 
+ dcsp algorithms bdi protocol 
+ strategies 
+in this section we apply the proposed bdi negotiation model 
+presented in section to expose the bdi protocol and the 
+different strategies used for three well-known algorithms abt awc 
+and dbo all these algorithms assume that there is only one 
+variable per agent under our framework we call the strategies 
+applied the abt awc and dbo strategies respectively 
+to describe each strategy formally the following mathematical 
+notations are used 
+ n is the number of agents m is the number of constraints 
+ xi denotes the variable held by agent i ≤ i n 
+ di denotes the domain of variable xi fi denotes the 
+neighbor list of agent i ci denotes its constraint list 
+ pi denotes the priority of agent i and pi xj vj pj 
+k agent j ∈ fi vj ∈ dj is the current value assigned 
+to xj and the priority value k is a positive integer is the 
+perception of agent i 
+ wl denotes the weight of constraint l ≤ l m 
+ si v is the total weight of the violated constraints in ci 
+when its variable has the value v ∈ di 
+ asynchronous backtracking 
+figure presents the bdi negotiation model incorporating the 
+asynchronous backtracking abt strategy as mentioned in 
+section for an asynchronous mechanism that abt is the 
+mediation step is needed only in a negotiation round when an agent 
+receives a negotiation message 
+for agent i beginning initially with wl ≤ l m 
+pi i ≤ i n and fi contains all the agents who share the 
+constraints with agent i its bdi-driven abt strategy is described 
+as follows 
+step - percept update pi upon receiving the info 
+messages from the neighbors in fi update ci to be the list of 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+constraints which only consists of agents in fi that have equal or 
+higher priority than this agent 
+step - belief the belief function gb pi ci will return a 
+value bi ∈ decided as follows 
+ bi when agent i can find an optimal option i e if 
+ si vi or vi is in bad values list and ∃a ∈ di si a 
+ and a is not in a list of domain values called bad values 
+list initially this list is empty and it will be cleared when a 
+neighbor of higher priority changes its variable assignment 
+ bi when it cannot find an optimal option i e if ∀a ∈ 
+di si a or a is in bad values list 
+ bi when its current variable assignment is an optimal 
+option i e if si vi and vi is not in bad value list 
+step - desire the desire function gd bi will return a 
+desire set denoted by ds decided as follows 
+ if bi then ds a a vi si a and a is not 
+in the bad value list 
+ if bi then ds ∅ the agent also finds agent k which 
+is determined by k pk min pj with agent j ∈ fi and 
+pk pi 
+ if bi then ds ∅ 
+step - intention the intention function gi ds will 
+return an intention decided as follows 
+ if ds ∅ then select an arbitrary value say vi from ds 
+as the intention 
+ if ds ∅ then assign nil as the intention to denote its 
+lack thereof 
+step - execution 
+ if agent i has a domain value as its intention the agent will 
+update its variable assignment with this value 
+ if bi agent i will send a negotiation message to agent 
+k then remove k from fi and begin its next negotiation 
+round the negotiation message will contain the list of 
+variable assignments of those agents in its neighbor list fi 
+that have a higher priority than agent i in the current image 
+pi 
+mediation when agent i receives a negotiation message 
+several sub-steps are carried out as follows 
+ if the list of agents associated with the negotiation message 
+contains agents which are not in fi it will add these agents 
+to fi and request these agents to add itself to their 
+neighbor lists the request is considered as a type of negotiation 
+message 
+ agent i will first check if the sender agent is updated with 
+its current value vi the agent will add vi to its bad values 
+list if it is so or otherwise send its current value to the 
+sender agent 
+following this step agent i proceeds to the next negotiation 
+round 
+ asynchronous weak commitment search 
+figure presents the bdi negotiation model incorporating the 
+asynchronous weak commitment awc strategy the model is 
+similar to that of incorporating the abt strategy see figure 
+this is not surprising awc and abt are found to be 
+strategically similar differing only in the details of some reasoning steps 
+the distinguishing point of awc is that when the agent cannot 
+find a suitable variable assignment it will change its priority to 
+the highest among its group members i ∪ fi 
+for agent i beginning initially with wl ≤ l m 
+pi i ≤ i n and fi contains all the agents who share 
+the constraints with agent i its bdi-driven awc strategy is 
+described as follows 
+step - percept this step is identical to the percept step 
+of abt 
+step - belief the belief function gb pi ci will return a 
+value bi ∈ decided as follows 
+percept 
+belief 
+desire 
+intention 
+mediation 
+execution 
+p 
+b 
+d 
+i 
+info message 
+info message 
+negotiation message 
+negotiation message 
+negotiation message 
+figure bdi protocol with asynchronous 
+weakcommitment strategy 
+ bi when the agent can find an optimal option i e if 
+ si vi or the assignment xi vi and the current 
+variables assignments of the neighbors in fi who have higher 
+priority form a nogood stored in a list called nogood list 
+and ∃a ∈ di si a initially the list is empty 
+ bi when the agent cannot find any optimal option i e 
+if ∀a ∈ di si a 
+ bi when the current assignment is an optimal option 
+i e if si vi and the current state is not a nogood in 
+nogood list 
+step - desire the desire function gd bi will return a 
+desire set ds decided as follows 
+ if bi then ds a a vi si a and the 
+number of constraint violations with lower priority agents 
+is minimized 
+ if bi then ds a a ∈ di and the number of 
+violations of all relevant constraints is minimized 
+ if bi then ds ∅ 
+following if bi agent i will find a list ki of higher priority 
+neighbors defined by ki k agent k ∈ fi and pk pi 
+step - intention this step is similar to the intention step 
+of abt however for this strategy the negotiation message will 
+contain the variable assignments of the current image pi for 
+all the agents in ki this list of assignment is considered as 
+a nogood if the same negotiation message had been sent out 
+before agent i will have nil intention otherwise the agent will 
+send the message and save the nogood in the nogood list 
+step - execution 
+ if agent i has a domain value as its intention the agent will 
+update its variable assignment with this value 
+ if bi it will send the negotiation message to its 
+neighbors in ki and set pi max pj with agent j ∈ fi 
+mediation this step is identical to the mediation step of 
+abt except that agent i will now add the nogood contained in 
+the negotiation message received to its own nogood list 
+ distributed breakout 
+figure presents the bdi negotiation model incorporating the 
+distributed breakout dbo strategy essentially by this 
+synchronous strategy each agent will search iteratively for 
+improvement by reducing the total weight of the violated constraints 
+the iteration will continue until no agent can improve further 
+at which time if some constraints remain violated the weights of 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+percept 
+belief 
+desire 
+intention 
+mediation 
+execution 
+p 
+b 
+d 
+i 
+i 
+a 
+info message 
+info message 
+negotiation message 
+negotiation message 
+figure bdi protocol with distributed breakout 
+strategy 
+these constraints will be increased by to help  breakout from a 
+local minimum 
+for agent i beginning initially with wl ≤ l m 
+pi i ≤ i n and fi contains all the agents who share the 
+constraints with agent i its bdi-driven dbo strategy is described 
+as follows 
+step - percept update pi upon receiving the info 
+messages from the neighbors in fi update ci to be the list of its 
+relevant constraints 
+step - belief the belief function gb pi ci will return a 
+value bi ∈ decided as follows 
+ bi when agent i can find an option to reduce the number 
+violations of the constraints in ci i e if ∃a ∈ di si a 
+si vi 
+ bi when it cannot find any option to improve situation 
+i e if ∀a ∈ di a vi si a ≥ si vi 
+ bi when its current assignment is an optimal option 
+i e if si vi 
+step - desire the desire function gd bi will return a 
+desire set ds decided as follows 
+ if bi then ds a a vi si a si vi and 
+ si vi −si a is maximized max si vi −si a will 
+be referenced by hmax 
+i in subsequent steps and it defines 
+the maximal reduction in constraint violations 
+ otherwise ds ∅ 
+step - intention the intention function gi ds will 
+return an intention decided as follows 
+ if ds ∅ then select an arbitrary value say vi from ds 
+as the intention 
+ if ds ∅ then assign nil as the intention 
+following agent i will send its intention to all its neighbors 
+in return it will receive intentions from these agents before 
+proceeding to mediation step 
+mediation agent i receives all the intentions from its 
+neighbors if it finds that the intention received from a neighbor agent 
+j is associated with hmax 
+j hmax 
+i the agent will automatically 
+cancel its current intention 
+step - execution 
+ if agent i did not cancel its intention it will update its 
+variable assignment with the intended value 
+percept 
+belief 
+desire 
+intention 
+mediation 
+execution 
+p 
+b 
+d 
+i 
+i 
+a 
+info message 
+info message 
+negotiation message 
+negotiation message 
+negotiation message 
+negotiation message 
+figure bdi protocol with unsolicited mutual 
+advice strategy 
+ if all intentions received and its own one are nil intention 
+the agent will increase the weight of each currently violated 
+constraint by 
+ the uma strategy 
+figure presents the bdi negotiation model incorporating the 
+unsolicited mutual advice uma strategy 
+unlike when using the strategies of the previous section a 
+dcsp agent using uma will not only send out a negotiation 
+message when concluding its intention step but also when 
+concluding its desire step the negotiation message that it sends out 
+to conclude the desire step constitutes an unsolicited advice for 
+all its neighbors in turn the agent will wait to receive unsolicited 
+advices from all its neighbors before proceeding on to determine 
+its intention 
+for agent i beginning initially with wl ≤ l m 
+pi i ≤ i n and fi contains all the agents who share 
+the constraints with agent i its bdi-driven uma strategy is 
+described as follows 
+step - percept update pi upon receiving the info 
+messages from the neighbors in fi update ci to be the list of 
+constraints relevant to agent i 
+step - belief the belief function gb pi ci will return a 
+value bi ∈ decided as follows 
+ bi when agent i can find an option to reduce the number 
+violations of the constraints in ci i e if ∃a ∈ di si a 
+si vi and the assignment xi a and the current variable 
+assignments of its neighbors do not form a local state stored 
+in a list called bad states list initially this list is empty 
+ bi when it cannot find a value a such as a ∈ di si a 
+si vi and the assignment xi a and the current variable 
+assignments of its neighbors do not form a local state stored 
+in the bad states list 
+ bi when its current assignment is an optimal option 
+i e if si vi 
+step - desire the desire function gd bi will return a 
+desire set ds decided as follows 
+ if bi then ds a a vi si a si vi and 
+ si vi − si a is maximized and the assignment xi a 
+and the current variable assignments of agent i s neighbors 
+do not form a state in the bad states list in this case ds is 
+called a set of voluntary desires max si vi −si a will 
+be referenced by hmax 
+i in subsequent steps and it defines 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the maximal reduction in constraint violations it is also 
+referred to as an improvement 
+ if bi then ds a a vi si a is minimized and 
+the assignment xi a and the current variable assignments 
+of agent i s neighbors do not form a state in the bad states 
+list in this case ds is called a set of reluctant desires 
+ if bi then ds ∅ 
+following if bi agent i will send a negotiation message 
+containing hmax 
+i to all its neighbors this message is called a 
+voluntary advice if bi agent i will send a negotiation message 
+called change advice to the neighbors in fi who share the violated 
+constraints with agent i 
+agent i receives advices from all its neighbors and stores them 
+in a list called a before proceeding to the next step 
+step - intention the intention function gi ds a will 
+return an intention decided as follows 
+ if there is a voluntary advice from an agent j which is 
+associated with hmax 
+j hmax 
+i assign nil as the intention 
+ if ds ∅ ds is a set of voluntary desires and hmax 
+i is 
+the biggest improvement among those associated with the 
+voluntary advices received select an arbitrary value say 
+vi from ds as the intention this intention is called a 
+voluntary intention 
+ if ds ∅ ds is a set of reluctant desires and agent i 
+receives some change advices select an arbitrary value say 
+vi from ds as the intention this intention is called 
+reluctant intention 
+ if ds ∅ then assign nil as the intention 
+following if the improvement hmax 
+i is the biggest improvement 
+and equal to some improvements associated with the received 
+voluntary advices agent i will send its computed intention to all 
+its neighbors if agent i has a reluctant intention it will also 
+send this intention to all its neighbors in both cases agent i 
+will attach the number of received change advices in the current 
+negotiation round with its intention in return agent i will receive 
+the intentions from its neighbors before proceeding to mediation 
+step 
+mediation if agent i does not send out its intention before 
+this step i e the agent has either a nil intention or a voluntary 
+intention with biggest improvement it will proceed to next step 
+otherwise agent i will select the best intention among all the 
+intentions received including its own if any the criteria to 
+select the best intention are listed applied in descending order of 
+importance as follows 
+ a voluntary intention is preferred over a reluctant intention 
+ a voluntary intention if any with biggest improvement is 
+selected 
+ if there is no voluntary intention the reluctant intention 
+with the lowest number of constraint violations is selected 
+ the intention from an agent who has received a higher 
+number of change advices in the current negotiation round is 
+selected 
+ intention from an agent with highest priority is selected 
+if the selected intention is not agent i s intention it will cancel 
+its intention 
+step - execution if agent i does not cancel its intention 
+it will update its variable assignment with the intended value 
+termination condition since each agent does not have 
+full information about the global state it may not know when it 
+has reached a solution i e when all the agents are in a global 
+stable state hence an observer is needed that will keep track 
+of the negotiation messages communicated in the environment 
+following a certain period of time when there is no more message 
+communication and this happens when all the agents have no 
+more intention to update their variable assignments the observer 
+will inform the agents in the environment that a solution has been 
+found 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure example problem 
+ an example 
+to illustrate how uma works consider a -color graph problem 
+ as shown in figure in this example each agent has a color 
+variable representing a node there are color variables sharing 
+the same domain black white 
+the following records the outcome of each step in every 
+negotiation round executed 
+round 
+step - percept each agent obtains the current color 
+assignments of those nodes agents adjacent to it i e its 
+neighbors 
+step - belief agents which have positive improvements are 
+agent this agent believes it should change its color to 
+white agent this believes should change its color to 
+white agent this agent believes it should change its 
+color to black and agent this agent believes it should 
+change its value to black in this negotiation round the 
+improvements achieved by these agents are agents which 
+do not have any improvements are agents and agents 
+ and need not change as all their relevant constraints 
+are satisfied 
+step - desire agents and have the voluntary desire 
+ white color for agents and black color for agents 
+ these agents will send the voluntary advices to all 
+their neighbors meanwhile agents and have the 
+reluctant desires white color for agent and black color 
+for agents agent will send a change advice to 
+agent as agent is sharing the violated constraint with 
+it similarly agents and will send change advices to 
+agents and respectively agents and do not have 
+any desire to update their color assignments 
+step - intention agents and receive the change 
+advices from agents and respectively they form their 
+voluntary intentions agents and receive the 
+voluntary advices from agents and hence they will not 
+have any intention agents and do not have any 
+intention following the intention from the agents will be 
+sent to all their neighbors 
+mediation agent finds that the intention from agent is 
+better than its intention this is because although both 
+agents have voluntary intentions with improvement of 
+agent has received one change advice from agent while 
+agent has not received any hence agent cancels its 
+intention agent will keep its intention 
+agents and keep their intentions since none of their 
+neighbors has an intention 
+the rest of the agents do nothing in this step as they do 
+not have any intention 
+step - execution agent changes its color to white agents 
+ and change their colors to black 
+the new state after round is shown in figure 
+round 
+step - percept the agents obtain the current color 
+assignments of their neighbors 
+step - belief agent is the only agent who has a positive 
+improvement which is it believes it should change its 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure the graph after round 
+color to black agent does not have any positive 
+improvement the rest of the agents need not make any change as 
+all their relevant constraints are satisfied they will have 
+no desire and hence no intention 
+step - desire agent desires to change its color to black 
+voluntarily hence it sends out a voluntary advice to its 
+neighbor i e agent agent does not have any value for 
+its reluctant desire set as the only option black color will 
+bring agent and its neighbors to the previous state which 
+is known to be a bad state since agent is sharing the 
+constraint violation with agent it sends a change advice 
+to agent 
+step - intention agent will have a voluntary intention 
+while agent will not have any intention as it receives the 
+voluntary advice from agent 
+mediation agent will keep its intention as its only neighbor 
+agent does not have any intention 
+step - execution agent changes its color to black 
+the new state after round is shown in figure 
+round in this round every agent finds that it has no 
+desire and hence no intention to revise its variable assignment 
+following with no more negotiation message communication in 
+the environment the observer will inform all the agents that a 
+solution has been found 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure the solution obtained 
+ performance evaluation 
+to facilitate credible comparisons with existing strategies we 
+measured the execution time in terms of computational cycles 
+as defined in and built a simulator that could reproduce the 
+published results for abt and awc the definition of a 
+computational cycle is as follows 
+ in one cycle each agent receives all the incoming messages 
+performs local computation and sends out a reply 
+ a message which is sent at time t will be received at time 
+t the network delay is neglected 
+ each agent has it own clock the initial clock s value is 
+ agents attach their clock value as a time-stamp in the 
+outgoing message and use the time-stamp in the incoming 
+message to update their own clock s value 
+four benchmark problems were considered namely n-queens 
+and node coloring for sparse dense and critical graphs for each 
+problem a finite number of test cases were generated for 
+various problem sizes n the maximum execution time was set to 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of queens 
+cycles 
+asynchronous 
+backtracking 
+asynchronous weak 
+commitment 
+unsolicited mutual 
+advice 
+figure relationship between execution time and 
+problem size 
+ cycles for node coloring for critical graphs and cycles 
+for other problems the simulator program was terminated after 
+this period and the algorithm was considered to fail a test case if 
+it did not find a solution by then in such a case the execution 
+time for the test was counted as cycles 
+ evaluation with n-queens problem 
+the n-queens problem is a traditional problem of constraint 
+satisfaction test cases were generated for each problem size 
+n ∈ and 
+figure shows the execution time for different problem sizes 
+when abt awc and uma were run 
+ evaluation with graph coloring problem 
+the graph coloring problem can be characterized by three 
+parameters i the number of colors k the number of nodes agents 
+n and the number of links m based on the ratio m n the 
+problem can be classified into three types i sparse with 
+m n ii critical with m n or and iii dense 
+ with m n n − for this problem we did not include 
+abt in our empirical results as its failure rate was found to be 
+very high this poor performance of abt was expected since 
+the graph coloring problem is more difficult than the n-queens 
+problem on which abt already did not perform well see figure 
+ 
+the sparse and dense coloring problem types are relatively 
+easy while the critical type is difficult to solve in the 
+experiments we fix k test cases were created using the method 
+described in for each value of n ∈ for each 
+problem type 
+the simulation results for each type of problem are shown in 
+figures - 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of nodes 
+cycles 
+asynchronous 
+weak 
+commitment 
+unsolicited 
+mutual advice 
+figure comparison between awc and uma 
+ sparse graph coloring 
+ discussion 
+ comparison with abt and awc 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of nodes 
+cycles 
+asynchronous 
+weak 
+commitment 
+unsolicited 
+mutual advice 
+figure comparison between awc and uma 
+ critical graph coloring 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of nodes 
+cycles 
+asynchronous 
+weak 
+commitment 
+unsolicited 
+mutual advice 
+figure comparison between awc and uma 
+ dense graph coloring 
+figure shows that the average performance of uma is slightly 
+better than awc for the sparse problem uma outperforms 
+awc in solving the critical problem as shown in figure it 
+was observed that the latter strategy failed in some test cases 
+however as seen in figure both the strategies are very 
+efficient when solving the dense problem with awc showing slightly 
+better performance 
+the performance of uma in the worst time complexity case 
+is similar to that of all evaluated strategies the worst case 
+occurs when all the possible global states of the search are reached 
+since only a few agents have the right to change their variable 
+assignments in a negotiation round the number of redundant 
+computational cycles and info messages is reduced as we observe 
+from the backtracking in abt and awc the difference in the 
+ordering of incoming messages can result in a different number of 
+computational cycles to be executed by the agents 
+ comparison with dbo 
+the computational performance of uma is arguably better 
+than dbo for the following reasons 
+ uma can guarantee that there will be a variable 
+reassignment following every negotiation round whereas dbo 
+cannot 
+ uma introduces one more communication round trip that 
+of sending a message and awaiting a reply than dbo 
+which occurs due to the need to communicate unsolicited 
+advices although this increases the communication cost 
+per negotiation round we observed from our simulations 
+that the overall communication cost incurred by uma is 
+lower due to the significantly lower number of negotiation 
+rounds 
+ using uma in the worst case an agent will only take or 
+communication round trips per negotiation round following 
+which the agent or its neighbor will do a variable 
+assignment update using dbo this number of round trips is 
+uncertain as each agent might have to increase the weights 
+of the violated constraints until an agent has a positive 
+improvement this could result in a infinite loop 
+ conclusion 
+applying automated negotiation to dcsp this paper has 
+proposed a protocol that prescribes the generic reasoning of a dcsp 
+agent in a bdi architecture our work shows that several 
+wellknown dcsp algorithms namely abt awc and dbo can be 
+described as mechanisms sharing the same proposed protocol and 
+only differ in the strategies employed for the reasoning steps per 
+negotiation round as governed by the protocol importantly this 
+means that it might furnish a unified framework for dcsp that 
+not only provides a clearer bdi agent-theoretic view of existing 
+dcsp approaches but also opens up the opportunities to enhance 
+or develop new strategies towards the latter we have proposed 
+and formulated a new strategy - the uma strategy empirical 
+results and our discussion suggest that uma is superior to abt 
+awc and dbo in some specific aspects 
+it was observed from our simulations that uma possesses the 
+completeness property future work will attempt to formally 
+establish this property as well as formalize other existing dscp 
+algorithms as bdi negotiation mechanisms including the recent 
+endeavor that employs a group mediator the idea of dcsp 
+agents using different strategies in the same environment will also 
+be investigated 
+ references 
+ p j modi h jung m tambe w -m shen and 
+s kulkarni dynamic distributed resource allocation a 
+distributed constraint satisfaction approach in lecture 
+notes in computer science p 
+ h schlenker and u geske simulating large railway 
+networks using distributed constraint satisfaction in nd 
+ieee international conference on industrial informatics 
+ indin- pp - 
+ m yokoo distributed constraint satisfaction 
+foundations of cooperation in multi-agent systems 
+springer verlag springer series on agent technology 
+ m yokoo e h durfee t ishida and k kuwabara the 
+distributed constraint satisfaction problem formalization 
+and algorithms ieee transactions on knowledge and 
+data engineering vol no pp - 
+september october 
+ r mailler and v lesser using cooperative mediation to 
+solve distributed constraint satisfaction problems in 
+proceedings of the third international joint conference on 
+autonomous agents and multiagent systems 
+ aamas- pp - 
+ e tsang foundation of constraint satisfaction 
+academic press 
+ r mailler r vincent v lesser t middlekoop and 
+j shen soft real-time cooperative negotiation for 
+distributed resource allocation aaai fall symposium 
+on negotiation methods for autonomous cooperative 
+systems november 
+ m yokoo k suzuki and k hirayama secure 
+distributed constraint satisfaction reaching agreement 
+without revealing private information artificial 
+intelligence vol no - pp - 
+ j s rosenschein and g zlotkin rules of encounter 
+the mit press 
+ m yokoo and k hirayama distributed constraint 
+satisfaction algorithm for complex local problems in 
+proceedings of the third international conference on 
+multiagent systems icmas- pp - 
+ m e bratman intentions plans and practical reason 
+harvard university press cambridge m a 
+ g weiss ed multiagent system a modern approach to 
+distributed artificial intelligence the mit press 
+london u k 
+ s minton m d johnson a b philips and p laird 
+minimizing conflicts a heuristic repair method for 
+constraint satisfaction and scheduling problems artificial 
+intelligence vol e no - pp - 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

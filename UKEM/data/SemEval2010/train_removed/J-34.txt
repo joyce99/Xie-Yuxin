@@ -1,0 +1,1169 @@
+ in stability properties of limit order dynamics 
+eyal even-dar 
+sham m kakade † 
+michael kearns ‡ 
+yishay mansour § 
+abstract 
+we study the stability properties of the dynamics of the 
+standard continuous limit-order mechanism that is used in 
+modern equity markets we ask whether such mechanisms 
+are susceptible to butterfly effects - the infliction of large 
+changes on common measures of market activity by only 
+small perturbations of the order sequence we show that the 
+answer depends strongly on whether the market consists of 
+absolute traders who determine their prices independent 
+of the current order book state or relative traders who 
+determine their prices relative to the current bid and ask 
+we prove that while the absolute trader model enjoys 
+provably strong stability properties the relative trader model 
+is vulnerable to great instability our theoretical results 
+are supported by large-scale experiments using limit order 
+data from inet a large electronic exchange for nasdaq 
+stocks 
+categories and subject descriptors 
+j social and behavioral sciences economics 
+general terms 
+economics theory 
+ introduction 
+in recent years there has been an explosive increase in 
+the automation of modern equity markets this increase 
+has taken place both in the exchanges which are 
+increasingly computerized and offer sophisticated interfaces for 
+order placement and management and in the trading 
+activity itself which is ever more frequently undertaken by 
+software the so-called electronic communication networks or 
+ecns that dominate trading in nasdaq stocks are a 
+common example of the automation of the exchanges on the 
+trading side computer programs now are entrusted not only 
+with the careful execution of large block trades for clients 
+ sometimes referred to on wall street as program trading 
+but with the autonomous selection of stocks direction long 
+or short and volumes to trade for profit commonly referred 
+to as statistical arbitrage 
+the vast majority of equity trading is done via the 
+standard limit order market mechanism in this mechanism 
+continuous trading takes place via the arrival of limit 
+orders specifying whether the party wishes to buy or sell the 
+volume desired and the price offered arriving limit orders 
+that are entirely or partially executable with the best offers 
+on the other side are executed immediately with any 
+volume not immediately executable being placed in an queue 
+ or book ordered by price on the appropriate side buy or 
+sell a detailed description of the limit order mechanism is 
+given in section while traders have always been able to 
+view the prices at the top of the buy and sell books known 
+as the bid and ask a relatively recent development in 
+certain exchanges is the real-time revelation of the entire order 
+book - the complete distribution of orders prices and 
+volumes on both sides of the exchange with this revelation 
+has come the opportunity - and increasingly the 
+needfor modeling and exploiting limit order data and 
+dynamics it is fair to say that market microstructure as this area 
+is generally known is a topic commanding great interest 
+both in the real markets and in the academic finance 
+literature the opportunities and needs span the range from 
+the optimized execution of large trades to the creation of 
+stand-alone proprietary strategies that attempt to profit 
+from high-frequency microstructure signals 
+in this paper we investigate a previously unexplored but 
+fundamental aspect of limit order microstructure the 
+stability properties of the dynamics specifically we are 
+interested in the following natural question to what extent 
+are simple models of limit order markets either susceptible 
+or immune to butterfly effects - that is the infliction of 
+large changes in important activity statistics such as the 
+ 
+number of shares traded or the average price per share by 
+only minor perturbations of the order sequence 
+to examine this question we consider two stylized but 
+natural models of the limit order arrival process in the 
+absolute price model buyers and sellers arrive with limit order 
+prices that are determined independently of the current state 
+of the market as represented by the order books though 
+they may depend on all manner of exogenous information 
+or shocks such as time news events announcements from 
+the company whose shares are being traded private signals 
+or state of the individual traders etc this process models 
+traditional fundamentals-based trading in which market 
+participants each have some inherent but possibly varying 
+valuation for the good that in turn determines their limit 
+price 
+in contrast in the relative price model traders express 
+their limit order prices relative to the best price offered in 
+their respective book buy or sell thus a buyer would 
+encode their limit order price as an offset ∆ which may be 
+positive negative or zero from the current bid pb which is 
+then translated to the limit price pb ∆ again in addition 
+to now depending on the state of the order books prices 
+may also depend on all manner of exogenous information 
+the relative price model can be viewed as modeling traders 
+who in addition to perhaps incorporating fundamental 
+external information on the stock may also position their 
+orders strategically relative to the other orders on their side 
+of the book a common example of such strategic 
+behavior is known as penny-jumping on wall street in which 
+a trader who has in interest in buying shares quickly but 
+still at a discount to placing a market order will 
+deliberately position their order just above the current bid more 
+generally the entire area of modern execution optimization 
+ has come to rely heavily on the careful positioning 
+of limit orders relative to the current order book state note 
+that such positioning may depend on more complex features 
+of the order books than just the current bid and ask but 
+the relative model is a natural and simplified starting point 
+we remark that an alternate view of the two models is that 
+all traders behave in a relative manner but with absolute 
+traders able to act only on a considerably slower time scale 
+than the faster relative traders 
+how do these two models differ clearly given any fixed 
+sequence of arriving limit order prices we can choose to 
+express these prices either as their original absolute values 
+or we can run the order book dynamical process and 
+transform each order into a relative difference with the top of 
+its book and obtain identical results the differences arise 
+when we consider the stability question introduced above 
+intuitively in the absolute model a small perturbation in 
+the arriving limit price sequence should have limited but 
+still some effects on the subsequent evolution of the order 
+books since prices are determined independently for the 
+relative model this intuition is less clear it seems possible 
+that a small perturbation could for example slightly 
+modify the current bid which in turn could slightly modify the 
+price of the next arriving order which could then slightly 
+modify the price of the subsequent order and so on leading 
+to an amplifying sequence of events 
+our main results demonstrate that these two models do 
+indeed have dramatically different stability properties we 
+first show that for any fixed sequence of prices in the 
+absolute model the modification of a single order has a bounded 
+and extremely limited impact on the subsequent evolution 
+of the books in particular we define a natural notion of 
+distance between order books and show that small 
+modifications can result in only constant distance to the original 
+books for all subsequent time steps we then show that this 
+implies that for almost any standard statistic of market 
+activity - the executed volume the average price execution 
+price and many others - the statistic can be influenced 
+only infinitesimally by small perturbations 
+in contrast we show that the relative model enjoys no 
+such stability properties after giving specific worst-case 
+relative price sequences in which small perturbations 
+generate large changes in basic statistics for example altering the 
+number of shares traded by a factor of two we proceed to 
+demonstrate that the difference in stability properties of the 
+two models is more than merely theoretical using 
+extensive inet a major ecn for nasdaq stocks limit order 
+data and order book reconstruction code we investigate the 
+empirical stability properties when the data is interpreted 
+as containing either absolute prices relative prices or 
+mixtures of the two the theoretical predictions of stability and 
+instability are strongly borne out by the subsequent 
+experiments 
+in addition to stability being of fundamental interest in 
+any important dynamical system we believe that the 
+results described here provide food for thought on the 
+topics of market impact and the backtesting of quantitative 
+trading strategies the attempt to determine hypothetical 
+past performance using historical data they suggest that 
+one s confidence that trading quietly and in small 
+volumes will have minimal market impact is linked to an 
+implicit belief in an absolute price model our results and the 
+fact that in the real markets there is a large and increasing 
+amount of relative behavior such as penny-jumping would 
+seem to cast doubts on such beliefs similarly in a purely or 
+largely relative-price world backtesting even low-frequency 
+low-volume strategies could result in historical estimates of 
+performance that are not only unrelated to future 
+performance the usual concern but are not even accurate 
+measures of a hypothetical past 
+the outline of the paper follows in section we briefly 
+review the large literature on market microstructure in 
+section we describe the limit order mechanism and our 
+formal models section presents our most important 
+theoretical results the -modification theorem for the absolute 
+price model this theorem is applied in section to derive a 
+number of strong stability properties in the absolute model 
+section presents specific examples establishing the 
+worstcase instability of the relative model section contains 
+the simulation studies that largely confirm our theoretical 
+findings on inet market data 
+ related work 
+as was mentioned in the introduction market 
+microstructure is an important and timely topic both in academic 
+finance and on wall street and consequently has a large and 
+varied recent literature here we have space only to 
+summarize the main themes of this literature and to provide 
+pointers to further readings to our knowledge the stability 
+properties of detailed limit order microstructure dynamics 
+have not been previously considered however see farmer 
+and joshi for an example and survey of other price 
+dynamic stability studies 
+ 
+on the more theoretical side there is a rich line of work 
+examining what might be considered the game-theoretic 
+properties of limit order markets these works model traders 
+and market-makers who provide liquidity by offering both 
+buy and sell quotes and profit on the difference by utility 
+functions incorporating tolerance for risks of price 
+movement large positions and other factors and examine the 
+resulting equilibrium prices and behaviors common 
+findings predict negative price impacts for large trades and price 
+effects for large inventory holdings by market-makers an 
+excellent and comprehensive survey of results in this area 
+can be found in 
+there is a similarly large body of empirical work on 
+microstructure major themes include the measurement of 
+price impacts statistical properties of limit order books and 
+attempts to establish the informational value of order books 
+ a good overview of the empirical work can be found in 
+ of particular note for our interests is which 
+empirically studies the distribution of arriving limit order prices in 
+several prominent markets this work takes a view of 
+arriving prices analogous to our relative model and establishes 
+a power-law form for the resulting distributions 
+there is also a small but growing number of works 
+examining market microstructure topics from a computer 
+science perspective including some focused on the use of 
+microstructure in algorithms for optimized trade execution 
+kakade et al introduced limit order dynamics in 
+competitive analysis for one-way and volume-weighted average 
+price vwap trading some recent papers have applied 
+reinforcement learning methods to trade execution using order 
+book properties as state variables 
+ microstructure preliminaries 
+the following expository background material is adapted 
+from the market mechanism we examine in this paper 
+is driven by the simple and standard concept of a limit 
+order suppose we wish to purchase shares of microsoft 
+ msft stock in a limit order we specify not only the 
+desired volume shares but also the desired price 
+suppose that msft is currently trading at roughly 
+a share see figure which shows an actual snapshot of an 
+msft order book on inet but we are only willing to buy 
+the shares at a share or lower we can choose to 
+submit a limit order with this specification and our order 
+will be placed in a queue called the buy order book which 
+is ordered by price with the highest offered unexecuted buy 
+price at the top often referred to as the bid if there are 
+multiple limit orders at the same price they are ordered 
+by time of arrival with older orders higher in the book 
+in the example provided by figure our order would be 
+placed immediately after the extant order for shares 
+at though we offer the same price this order has 
+arrived before ours similarly a sell order book for sell limit 
+orders is maintained this time with the lowest sell price 
+offered often referred to as the ask at its top 
+thus the order books are sorted from the most 
+competitive limit orders at the top high buy prices and low sell 
+prices down to less competitive limit orders the bid and 
+ask prices together are sometimes referred to as the inside 
+market and the difference between them as the spread by 
+definition the order books always consist exclusively of 
+unexecuted orders - they are queues of orders hopefully 
+waiting for the price to move in their direction 
+figure sample inet order books for msft 
+how then do orders get partially executed if a buy 
+ sell respectively limit order comes in above the ask 
+ below the bid respectively price then the order is matched 
+with orders on the opposing books until either the incoming 
+order s volume is filled or no further matching is possible 
+in which case the remaining incoming volume is placed in 
+the books 
+for instance suppose in the example of figure a buy 
+order for shares arrived with a limit price of 
+this order would be partially filled by the two -share 
+sell orders at in the sell books the -share sell 
+order at and the -share sell order at for 
+a total of shares executed the remaining shares 
+of the incoming buy order would become the new bid of 
+the buy book at it is important to note that the 
+prices of executions are the prices specified in the limit orders 
+already in the books not the prices of the incoming order 
+that is immediately executed thus in this example the 
+ executed shares would be at different prices note that 
+this also means that in a pure limit order exchange such as 
+inet market orders can be simulated by limit orders 
+with extreme price values in exchanges such as inet any 
+order can be withdrawn or canceled by the party that placed 
+it any time prior to execution 
+every limit order arrives atomically and instantaneously 
+- there is a strict temporal sequence in which orders arrive 
+and two orders can never arrive simultaneously this gives 
+rise to the definition of the last price of the exchange which 
+is simply the last price at which the exchange executed an 
+order it is this quantity that is usually meant when people 
+casually refer to the ticker price of a stock 
+ formal definitions 
+we now provide a formal model for the limit order 
+pro 
+cess described above in this model limit orders arrive in a 
+temporal sequence with each order specifying its limit price 
+and an indication of its type buy or sell like the actual 
+exchanges we also allow cancellation of a standing 
+ unexecuted order in the books any time prior to its execution 
+without loss of generality we limit attention to a model in 
+which every order is for a single share large order volumes 
+can be represented by -share sequences 
+definition let σ σ σn be a sequence of limit 
+orders where each σi has the form ni ti vi here ni is an 
+order identifier ti is the order type buy sell or cancel and 
+vi is the limit order value in the case that ti is a cancel ni 
+matches a previously placed order and vi is ignored 
+we have deliberately called vi in the definition above the 
+limit order value rather than price since our two models 
+will differ in their interpretation of vi as being absolute or 
+relative in the absolute model we do indeed interpret vi 
+as simply being the price of the limit order in the 
+relative model if the current order book configuration is a b 
+ where a is the sell and b the buy book the price of the 
+order is ask a vi if ti is sell and bid b vi if ti is buy 
+where by ask x and bid x we denote the price of the 
+order at the top of the book x note vi can be negative 
+our main interest in this paper is the effects that the 
+modification of a small number of limit orders can have on the 
+resulting dynamics for simplicity we consider only 
+modifications to the limit order values but our results generalize 
+to any modification 
+definition a k-modification of σ is a sequence σ 
+such that for exactly k indices i ik vij vij 
+ tij tij 
+ 
+and nij nij 
+ for every ij j ∈ k σ σ 
+we now define the various quantities whose stability 
+properties we examine in the absolute and relative models all of 
+these are standard quantities of common interest in financial 
+markets 
+ volume σ number of shares executed traded in the 
+sequence σ 
+ average σ average execution price 
+ close σ price of the last closing execution 
+ lastbid σ bid at the end of the sequence 
+ lastask σ ask at end of the sequence 
+ the -modification theorem 
+in this section we provide our most important technical 
+result it shows that in the absolute model the effects that 
+the modification of a single order has on the resulting 
+evolution of the order books is extremely limited we then apply 
+this result to derive strong stability results for all of the 
+aforementioned quantities in the absolute model 
+throughout this section we consider an arbitrary order 
+sequence σ in the absolute model and any -modification 
+σ of σ at any point index i in the two sequences we shall 
+use a b to denote the sell and buy books respectively 
+in σ and a b to denote the sell and buy books in σ 
+for notational convenience we omit explicitly superscripting 
+by the current index i we will shortly establish that at all 
+times i a b and a b are very close 
+although the order books are sorted by price we will use 
+ for example a ∪ a a to indicate that a contains 
+an order at some price a that is not present in a but that 
+otherwise a and a are identical thus deleting the order 
+at a in a would render the books the same similarly 
+b ∪ b b ∪ b means b contains an order at price 
+b not present in b b contains an order at price b not 
+present in b and that otherwise b and b are identical 
+using this notation we now define a set of stable system 
+states where each state is composed from the order books 
+of the original and the modified sequences shortly we show 
+that if we change only one order s value price we remain 
+in this set for any sequence of limit orders 
+definition let ab be the set of all states a b 
+and a b such that a a and b b let ¯ab be 
+the set of states such that a ∪ a a ∪ a where 
+a a and b b let a¯b be the set of states such that 
+b ∪ b b ∪ b where b b and a a let ¯a¯b be 
+the set of states in which a a ∪ a and b b ∪ b 
+or in which a a ∪ a and b b ∪ b finally 
+we define s ab ∪ ¯ab ∪ ¯ba ∪ ¯a¯b as the set of stable states 
+theorem -modification theorem consider any 
+sequence of orders σ and any -modification σ of σ then 
+the order books a b and a b determined by σ and 
+σ lie in the set s of stable states at all times 
+ab 
+¯a¯b 
+a¯b¯ab 
+figure diagram representing the set s of stable 
+states and the possible movements transitions in it 
+after the change 
+the idea of the proof of this theorem is contained in 
+figure which shows a state transition diagram labeled by the 
+categories of stable states this diagram describes all 
+transitions that can take place after the arrival of the order on 
+which σ and σ differ the following establishes that 
+immediately after the arrival of this differing order the state lies 
+in s 
+lemma if at any time the current books a b and 
+ a b are in the set ab and thus identical then 
+modifying the price of the next order keeps the state in s 
+proof suppose the arriving order is a sell order and we 
+change it from a to a assume without loss of generality 
+that a a if neither order is executed immediately then 
+we move to state ¯ab if both of them are executed then we 
+stay in state ab and if only a is executed then we move to 
+state ¯a¯b the analysis of an arriving buy order is similar 
+following the arrival of their only differing order σ and 
+σ are identical we now give a sequence of lemmas showing 
+ 
+executed with two orders 
+not executed in both 
+arrivng buy order 
+arriving buy order 
+arriving buy order 
+arriving sell order 
+¯ab 
+ab 
+¯a¯b 
+executed only with a 
+ not a and a 
+executed with a and a 
+figure the state diagram when starting at state 
+¯ab this diagram provides the intuition of lemma 
+ 
+that following the initial difference covered by lemma 
+the state remains in s forever on the remaining identical 
+sequence we first show that from state ¯ab we remain in 
+s regardless the next order the intuition of this lemma is 
+demonstrated in figure 
+lemma if the current state is in the set ¯ab then for 
+any order the state will remain in s 
+proof we first provide the analysis for the case of an 
+arriving sell order note that in ¯ab the buy books are identical 
+ b b thus either the arriving sell order is executed 
+with the same buy order in both buy books or it is not 
+executed in both buy books for the first case the buy 
+books remain identical the bid is executed in both and the 
+sell books remain unchanged for the second case the buy 
+books remain unchanged and identical and the sell books 
+have the new sell order added to both of them and thus 
+still differ by one order 
+next we provide an analysis of the more subtle case where 
+the arriving item is a buy order for this case we need to 
+take care of several different scenarios the first is when the 
+top of both sell books the ask is identical then 
+regardless of whether the new buy order is executed or not the 
+state remains in ¯ab the analysis is similar to an arriving 
+sell order 
+we are left to deal with case where ask a and ask a 
+are different here we discuss two subcases a ask a 
+a and ask a a and b ask a a and ask a 
+a here a and a are as in the definition of ¯ab in 
+definition and a is some other price for subcase a by our 
+assumption a a then either both asks get executed 
+the sell books become identical and we move to state ab 
+ neither ask is executed and we remain in state ¯ab or 
+only ask a a is executed in which case we move to 
+state ¯a¯b with a a ∪ a and b b ∪ b where 
+b is the arriving buy order price for subcase b either 
+ buy order is executed in neither sell book we remain in 
+state ¯ab or the buy order is executed in both sell books 
+and stay in state ¯ab with a ∪ a a ∪ a or only 
+ask a a is executed and we move to state ¯a¯b 
+lemma if the current state is in the set a¯b then for 
+any order the state will remain in s 
+lemma if the current configuration is in the set ¯a¯b 
+then for any order the state will remain in s 
+the proofs of these two lemmas are omitted but are 
+similar in spirit to that of lemma the next and final lemma 
+deals with cancellations 
+lemma if the current order book state lies in s then 
+following the arrival of a cancellation it remains in s 
+proof when a cancellation order arrives one of the 
+following possibilities holds the order is still in both sets of 
+books it is not in either of them and it is only in one 
+of them for the first two cases it is easy to see that the 
+cancellation effect is identical on both sets of books and thus 
+the state remains unchanged for the case when the order 
+appears only in one set of books without loss of generality 
+we assume that the cancellation cancels a buy order at b 
+rather than removing b from the book we can change it to 
+have price meaning this buy order will never be executed 
+and is effectively canceled now regardless the state that we 
+were in b is still only in one buy book but with a different 
+price and thus we remain in the same state in s 
+the proof of theorem follows from the above lemmas 
+ absolute model stability 
+in this section we apply the -modification theorem to 
+show strong stability properties for the absolute model we 
+begin with an examination of the executed volume 
+lemma let σ be any sequence and σ be any 
+ modification of σ then the set of the executed orders id 
+numbers generated by the two sequences differs by at most 
+ 
+proof by theorem we know that at each stage the 
+books differ by at most two orders now since the union of 
+the ids of the executed orders and the order books is always 
+identical for both sequences this implies that the executed 
+orders can differ by at most two 
+corollary let σ be any sequence and σ be any 
+kmodification of σ then the set of the executed orders id 
+numbers generated by the two sequences differs by at most 
+ k 
+an order sequence σ is a k-extension of σ if σ can be 
+obtained by deleting any k orders in σ 
+lemma let σ be any sequence and let σ be any 
+kextension of σ then the set of the executed orders generated 
+by σ and σ differ by at most k 
+this lemma is the key to obtain our main absolute model 
+volume result below we use edit σ σ to denote the 
+standard edit distance between the sequences σ and σ - the 
+minimal number of substitutions insertions and deletions or 
+orders needed to change σ to σ 
+theorem let σ and σ be any absolute model order 
+sequences then if edit σ σ ≤ k the set of the executed 
+orders generated by σ and σ differ by at most k in 
+particular volume σ − volume σ ≤ k 
+proof we first define the sequence ˜σ which is the 
+intersection of σ and σ since σ and σ are at most k apart we 
+have that by k insertions we change ˜σ to either σ or σ and 
+by lemma its set of executed orders is at most k from 
+each thus the set of executed orders in σ and σ is at most 
+ k apart 
+ 
+ spread bounds 
+theorem establishes strong stability for executed 
+volume in the absolute model we now turn to the quantities 
+that involve execution prices as opposed to volume alone 
+- namely average σ close σ lastbid σ and lastask σ 
+for these results unlike executed volume a condition must 
+hold on σ in order for stability to occur this condition 
+is expressed in terms of a natural measure of the spread of 
+the market or the gap between the buyers and sellers we 
+motivate this condition by first showing that without it by 
+changing one order we can change average σ by any 
+positive value x 
+lemma there exists σ such that for any x ≥ 
+there is a -modification σ of σ such that average σ 
+average σ x 
+proof let σ be a sequence of alternating sell and buy 
+orders in which each seller offers p and each buyer p x 
+and the first order is a sell then all executions take place 
+at the ask which is always p and thus average σ p 
+now suppose we modify only the first sell order to be at 
+price p x this initial sell order will never be executed 
+and now all executions take place at the bid which is always 
+p x 
+similar instability results can be shown to hold for the 
+other price-based quantities this motivates the 
+introduction of a quantity we call the second spread of the order 
+books which is defined as the difference between the prices 
+of the second order in the sell book and the second order in 
+the buy book as opposed to the bid-ask difference which is 
+commonly called the spread we note that in a liquid stock 
+such as those we examine experimentally in section the 
+second spread will typically be quite small and in fact almost 
+always equal to the spread 
+in this subsection we consider changes in the sequence 
+only after an initialization period and sequences such that 
+the second spread is always defined after the time we make a 
+change we define s σ to be the maximum second spread 
+in the sequence σ following the change 
+theorem let σ be a sequence and let σ be any 
+ modification of σ then 
+ lastbid σ − lastbid σ ≤ s σ 
+ lastask σ − lastask σ ≤ s σ 
+where s σ is the maximum over the second spread in σ 
+following the -modification 
+proof we provide the proof for the last bid the proof 
+for the last ask is similar the proof relies on theorem 
+and considers states in the stable set s for states ab and ¯ab 
+we have that the bid is identical let bid x sb x ask x 
+be the bid the second highest buy order and the ask of a 
+sequence x now recall that in state a¯b we have that the sell 
+books are identical and that the two buy books are identical 
+except one different order thus 
+bid σ s σ ≥ sb σ s σ ≥ ask σ ask σ ≥ bid σ 
+now it remains to bound bid σ here we use the fact that 
+the bid of the modified sequence is at least the second 
+highest buy order in the original sequence due to the fact that 
+the books are different only in one order since 
+bid σ ≥ sb σ ≥ ask σ − s σ ≥ bid σ − s σ 
+we have that bid σ − bid σ ≤ s σ as desired 
+in state ¯a¯b we have that for one sequence the books 
+contain an additional buy order and an additional sell order 
+first suppose that the books containing the additional 
+orders are the original sequence σ now if the bid is not the 
+additional order we are done otherwise we have the 
+following 
+bid σ ≤ ask σ ≤ sb σ s σ bid σ s σ 
+where sb σ ≤ bid σ since the original buy book has only 
+one additional order 
+now assume that the books with the additional orders are 
+for the modified sequence σ we have 
+bid σ s σ ≥ ask σ ≥ ask σ ≥ bid σ 
+where we used the fact that ask σ ≥ ask σ since the 
+modified sequence has an additional order similarly we 
+have that bid σ ≤ bid σ since the modified buy book 
+contains an additional order 
+we note that the proof of theorem actually establishes 
+that the bid and ask of the original and modified sequences 
+are within s σ at all times 
+next we provide a technical lemma which relates the first 
+spread of the modified sequence to the second spread of the 
+original sequence 
+lemma let σ be a sequence and let σ be any 
+ modification of σ then the spread of σ is bounded by 
+s σ 
+proof by the -modification theorem we know that 
+the books of the modified sequence and the original sequence 
+can differ by at most one order in each book buy and sell 
+therefore the second-highest buy order in the original 
+sequence is always at most the bid in the modified sequence 
+and the second-lowest sell order in the original sequence is 
+always at least the ask of the modified sequence 
+we are now ready to state a stability result for the average 
+execution price in the absolute model it establishes that in 
+highly liquid markets where the executed volume is large 
+and the spread small the average price is highly stable 
+theorem let σ be a sequence and let σ be any 
+ modification of σ then 
+ average σ − average σ ≤ 
+ pmax s σ 
+volume σ 
+ s σ 
+where pmax is the highest execution price in σ 
+proof the proof will show that every execution in σ 
+besides the execution of the modified order and the last 
+execution has a matching execution in σ with a price different 
+by at most s σ and will use the fact that pmax s σ is 
+a bound on the price in σ 
+referring to the proof of the -modification theorem 
+suppose we are in state ¯a¯b where we have in one sequence 
+ which can be either σ or σ an additional buy order b 
+and an additional sell order a without loss of generality 
+we assume that the sequence with the additional orders is 
+σ if the next execution does not involve a or b then clearly 
+we have the same execution in both σ and σ suppose 
+that it involves a there are two possibilities either a is the 
+modified order in which case we change the average price 
+ 
+difference by pmax s σ volume σ and this can happen 
+only once or a was executed before in σ and the executions 
+both involve an order whose limit price is a by lemma 
+the spread of both sequences is bounded by s σ which 
+implies that the price of the execution in σ was at most 
+a s σ while execution is in σ is at price a and thus the 
+prices are different by at most s σ 
+in states ¯ab a¯b as long as we have concurrent executions 
+in the two sequences we know that the prices can differ 
+by at most s σ if we have an execution only in one 
+sequence we either match it in state ¯a¯b or charge it by 
+ pmax s σ volume σ if we end at state ¯a¯b 
+if we end in state ab ¯ab or a¯b then every execution in 
+states ¯ab or a¯b were matched to an execution in state ¯a¯b if 
+we end up in state ¯a¯b we have the one execution that is not 
+matched and thus we charge it pmax s σ volume σ 
+we next give a stability result for the closing price we 
+first provide a technical lemma regarding the prices of 
+consecutive executions 
+lemma let σ be any sequence then the prices of 
+two consecutive executions in σ differ by at most s σ 
+proof suppose the first execution is taken at time t 
+its price is bounded below by the current bid and above by 
+the current ask now after this execution the bid is at least 
+the second highest buy order at time t if the former bid 
+was executed and no higher buy orders arrived and higher 
+otherwise similarly the ask is at most the second lowest 
+sell order at time t therefore the next execution price is 
+at least the second bid at time t and at most the second ask 
+at time t which is at most s σ away from the bid ask at 
+time t 
+lemma let σ be any sequence and let σ be a 
+ modification of σ if the volume σ ≥ then 
+ close σ − close σ ≤ s σ 
+proof we first deal with case where the last execution 
+occurs in both sequences simultaneously by theorem 
+both the ask and the bid of σ and σ are at most s σ 
+apart at every time t since the price of the last execution 
+is their asks bids at time t we are done 
+next we deal with the case where the last execution among 
+the two sequences occurs only in σ in this case we know 
+that either the previous execution happened simultaneously 
+in both sequences at time t and thus all three executions are 
+within the second spread of σ at time t the first execution 
+in σ by definition the execution at σ from identical 
+arguments as in the former case and the third by lemma 
+otherwise the previous execution happened only in σ at 
+time t in which case the two executions are within the the 
+spread of σ at time t the execution of σ from the same 
+arguments as before and the execution in σ must be inside 
+its spread in time t 
+if the last execution happens only in σ we know that 
+the next execution of σ will be at most s σ away from 
+its previous execution by lemma together with the 
+fact that if an execution happens only in one sequence it 
+implies that the order is in the spread of the second sequence 
+as long as the sequences are -modification the proof is 
+completed 
+ spread bounds for k-modifications 
+as in the case of executed volume we would like to extend 
+the absolute model stability results for price-based 
+quantities to the case where multiple orders are modified here our 
+results are weaker and depend on the k-spread the distance 
+between the kth highest buy order and the kth lowest sell 
+order instead of the second spread looking ahead to 
+section we note that in actual market data for liquid stocks 
+this quantity is often very small as well we use sk σ to 
+denote the k-spread as before we assume that the k-spread 
+is always defined after an initialization period 
+we first state the following generalization of lemma 
+lemma let σ be a sequence and let σ be any 
+ modification of σ for ≥ if s σ is always defined 
+after the change then s σ ≤ s σ 
+the proof is similar to the proof of lemma and 
+omitted a simple application of this lemma is the following let 
+σ be any sequence which is an -modification of σ then 
+we have s σ ≤ s σ now using the above lemma and 
+by simple induction we can obtain the following theorem 
+theorem let σ be a sequence and let σ be any 
+k-modification of σ then 
+ lastbid σ − lastbid σ ≤ 
+pk 
+ s σ ≤ ksk σ 
+ lastask σ −lastask σ ≤ 
+pk 
+ s σ ≤ ksk σ 
+ close σ − close σ ≤ 
+pk 
+ s σ ≤ ksk σ 
+ average σ − average σ ≤ 
+pk 
+ 
+ 
+ pmax s σ 
+volume σ 
+ s σ 
+ 
+where s σ is the maximum over the -spread in σ following 
+the first modification 
+we note that while these bounds depend on deeper 
+measures of spread for more modifications we are working in 
+a -share order model thus in an actual market where 
+single orders contain hundreds or thousands of shares the 
+k-spread even for large k might be quite small and close to 
+the standard -spread in liquid stocks 
+ relative model instability 
+in the relative model the underlying assumption is that 
+traders try to exploit their knowledge of the books to 
+strategically place their orders thus if a trader wants her buy 
+order to be executed quickly she may position it above the 
+current bid and be the first in the queue if the trader is 
+patient and believes that the price trend is going to be 
+downward she will place orders deeper in the buy book and so 
+on 
+while in the previous sections we showed stability results 
+for the absolute model here we provide simple examples 
+which show instability in the relative model for the 
+executed volume last bid last ask average execution price and 
+the last execution price in section we provide many 
+simulations on actual market data that demonstrate that this 
+instability is inherent to the relative model and not due 
+to artificial constructions in the relative model we assume 
+that for every sequence the ask and bid are always defined 
+so the books have a non-empty initial configuration 
+ 
+we begin by showing that in the relative model even a 
+single modification can double the number of shares 
+executed 
+theorem there is a sequence σ and a -modification 
+σ of σ such that volume σ ≥ volume σ 
+proof for concreteness we assume that at the 
+beginning the ask is and the bid is the sequence σ is 
+composed from n buy orders with ∆ followed by n sell 
+orders with ∆ and finally an alternating sequence of 
+buy orders with ∆ and sell orders with ∆ − of 
+length n since the books before the alternating sequence 
+contain n sell orders at and n buy orders at we 
+have that each pair of buy sell order in the alternating part 
+is matched and executed but none of the initial n orders 
+is executed and thus volume σ n now we change the 
+first buy order to have ∆ after the first n orders 
+there are still no executions however the books are 
+different now there are n sell orders at n buy orders at 
+and one buy order at now each order in the alternating 
+sequence is executed with one of the former orders and we 
+have volume σ n 
+the next theorem shows that the spread-based stability 
+results of section do not also hold in the relative model 
+before providing the proof we give its intuition at the 
+beginning the sell book contains only two prices which are far 
+apart and both contain only two orders now several buy 
+orders arrive at the original sequence they are not being 
+executed while in the modified sequence they will be 
+executed and leave the sell book with only the orders at the high 
+price now many sell orders followed by many buy orders 
+will arrive such that in the original sequence they will be 
+executed only at the low price and in the modified sequence 
+they will executed at the high price 
+theorem for any positive numbers s and x there 
+is sequence σ such that s σ s and a -modification σ 
+of σ such that 
+ close σ − close σ ≥ x 
+ average σ − average σ ≥ x 
+ lastbid σ − lastbid σ ≥ x 
+ lastask σ − lastask σ ≥ x 
+proof without loss of generality let us consider sequences 
+in which all prices are integer-valued in which case the 
+smallest possible value for the second spread is we provide 
+the proof for the case s σ but the s σ case is 
+similar 
+we consider a sequence σ such that after an initialization 
+period there have been no executions the buy book has 
+ orders at price and the sell book has two orders at 
+price and orders with value y where y is a positive 
+integer that will be determined by the analysis the original 
+sequence σ is a buy order with ∆ followed by two 
+buy orders with ∆ then y sell orders with ∆ 
+and then y buy orders with ∆ we first note that 
+s σ there are y executions all at price the last 
+bid is and the last ask is next we analyze a modified 
+sequence we change the first buy order from ∆ to 
+∆ therefore the next two buy orders with ∆ 
+are executed and afterwards we have that the bid is and 
+the ask is y now the y sell orders are accumulated at 
+ y and after the next y buy orders the bid is at y− 
+therefore at the end we have that lastbid σ y − 
+lastask σ y close σ y and average σ 
+y 
+y 
+ y 
+y 
+ setting y x we obtain the 
+lemma for every property 
+we note that while this proof was based on the fact that 
+there are two consecutive orders in the books which are far 
+ y apart we can provide a slightly more complicated 
+example in which all orders are close at most apart yet still 
+one change results in large differences 
+ simulation studies 
+the results presented so far paint a striking contrast 
+between the absolute and relative price models while the 
+absolute model enjoys provably strong stability over any fixed 
+event sequence there exist at least specific sequences 
+demonstrating great instability in the relative model the 
+worstcase nature of these results raises the question of the extent 
+to which such differences could actually occur in real 
+markets in this section we provide indirect evidence on this 
+question by presenting simulation results exploiting a rich 
+source of real-market historical limit order sequence data 
+by interpreting arriving limit order prices as either 
+absolute values or by transforming them into differences with 
+the current bid and ask relative model we can perform 
+small modifications on the sequences and examine how 
+different various outcomes volume traded average price etc 
+would be from what actually occurred in the market these 
+simulations provide an empirical counterpart to the theory 
+we have developed we emphasize that all such simulations 
+interpret the actual historical data as falling into either the 
+absolute or relative model and are meaningful only within 
+the confines of such an interpretation nevertheless we feel 
+they provide valuable empirical insight into the potential 
+ in stability properties of modern equity limit order 
+markets and demonstrate that one s belief or hope in stability 
+largely relies on an absolute model interpretation we also 
+investigate the empirical behavior of mixtures of absolute 
+and relative prices 
+ data 
+the historical data used in our simulations is 
+commercially available limit order data from inet the previously 
+mentioned electronic exchange for nasdaq stocks broadly 
+speaking this data consists of practically every single event 
+on inet regarding the trading of an individual 
+stockevery arriving limit order price volume and sequence id 
+number every execution and every cancellation of a 
+standing order - all timestamped in milliseconds it is data 
+sufficient to recreate the precise inet order book in a given 
+stock on a given day and time 
+we will report stability properties for three stocks 
+amazon nvidia and qualcomm identified in the sequel by their 
+tickers amzn nvda and qcom these three provide 
+some range of liquidities with qcom having the greatest 
+and nvda the least liquidity on inet and other trading 
+properties we note that the qualitative results of our 
+simulations were similar for several other stocks we examined 
+ 
+ methodology 
+for our simulations we employed order-book 
+reconstruction code operating on the underlying raw data the basic 
+format of each experiment was the following 
+ run the order book reconstruction code on the 
+original inet data and compute the quantity of interest 
+ volume traded average price etc 
+ make a small modification to a single order and 
+recompute the resulting value of the quantity of interest 
+in the absolute model case step is as simple as 
+modifying the order in the original data and re-running the order 
+book reconstruction for the relative model we must first 
+pre-process the raw data and convert its prices to relative 
+values then make the modification and re-run the order 
+book reconstruction on the relative values 
+the type of modification we examined was extremely small 
+compared to the volume of orders placed in these stocks 
+namely the deletion of a single randomly chosen order from 
+the sequence although a deletion is not -modification 
+its edit distance is and we can apply theorem for 
+each trading day examined this single deleted order was 
+selected among those arriving between am and pm and 
+the quantities of interest were measured and compared at 
+pm these times were chosen to include the busiest part of 
+the trading day but avoid the half hour around the opening 
+and closing of the official nasdaq market am and 
+ pm respectively which are known to have different 
+dynamics than the central portion of the day 
+we run the absolute and relative model simulations on 
+both the raw inet data and on a cleaned version of 
+this data in the cleaned we remove all limit orders that 
+were canceled in the actual market prior to their execution 
+ along with the cancellations themselves the reason is 
+that such cancellations may often be the first step in the 
+repositioning of orders - that is cancellations of the 
+order that are followed by the submission of a replacement 
+order at a different price not removing canceled orders 
+allows the possibility of modified simulations in which the 
+same order 
+is executed twice which may magnify 
+instability effects again it is clear that neither the raw nor 
+the cleaned data can perfectly reflect what would have 
+happened under the deleted orders in the actual market 
+however the results both from the raw data and the clean 
+data are qualitatively similar the results mainly differ as 
+expected in the executed volume where the instability 
+results for the relative model are much more dramatic in the 
+raw data 
+ results 
+we begin with summary statistics capturing our overall 
+stability findings each row of the tables below contains a 
+ticker e g amzn followed by either -r for the uncleaned 
+or raw data or -c for the data with canceled orders 
+removed for each of the approximately trading days 
+in trials were run in which a randomly selected 
+order was deleted from the inet event sequence for each 
+quantity of interest volume executed average price closing 
+price and last bid we show for the both the absolute and 
+ 
+here same is in quotes since the two orders will actually 
+have different sequence id numbers which is what makes 
+such repositioning activity impossible to reliably detect in 
+the data 
+relative model the average percentage change in the quantity 
+induced by the deletion 
+the results confirm rather strikingly the qualitative 
+conclusions of the theory we have developed in virtually every 
+case stock raw or cleaned data and quantity the 
+percentage change induced by a single deletion in the relative 
+model is many orders of magnitude greater than in the 
+absolute model and shows that indeed butterfly effects may 
+occur in a relative model market as just one specific 
+representative example notice that for qcom on the cleaned 
+data the relative model effect of just a single deletion on the 
+closing price is in excess of a full percentage point this is 
+a variety of market impact entirely separate from the more 
+traditional and expected kind generated by trading a large 
+volume of shares 
+stock date volume average 
+rel abs rel abs 
+amzn-r 
+amzn-c 
+nvda-r 
+nvda-c 
+qcom-r 
+qcom-c 
+stock date close lastbid 
+rel abs rel abs 
+amzn-r 
+amzn-c 
+nvda-r 
+nvda-c 
+qcom-r 
+qcom-c 
+in figure we examine how the change to one the 
+quantities the average execution price grows with the 
+introduction of greater perturbations of the event sequence in the two 
+models rather than deleting only a single order between 
+ am and pm in these experiments a growing number 
+of randomly chosen deletions was performed and the 
+percentage change to the average price measured as suggested 
+by the theory we have developed for the absolute model the 
+change to the average price grows linearly with the number 
+of deletions and remains very small note the vastly 
+different scales of the y-axis in the panels for the absolute and 
+relative models in the figure for the relative model it is 
+interesting to note that while small numbers of changes have 
+large effects often causing average execution price changes 
+well in excess of percent the effects of large numbers of 
+changes levels off quite rapidly and consistently 
+we conclude with an examination of experiments with a 
+mixture model even if one accepts a world in which traders 
+behave in either an absolute or relative manner one would 
+be likely to claim that the market contains a mixture of both 
+we thus ran simulations in which each arriving order in the 
+inet event streams was treated as an absolute price with 
+probability α and as a relative price with probability −α 
+representative results for the average execution price in this 
+mixture model are shown in figure for amzn and nvda 
+perhaps as expected we see a monotonic decrease in the 
+percentage change instability as the fraction of absolute 
+traders increases with most of the reduction already being 
+realized by the introduction of just a small population of 
+absolute traders thus even in a largely relative-price world a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+− qcom−r june absolute 
+number of changes 
+averageprice 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+qcom−r june relative 
+number of changes 
+averageprice 
+figure percentage change to the average 
+execution price y-axis as a function of the number of 
+deletions to the sequence x-axis the left panel is 
+for the absolute model the right panel for the 
+relative model and each curve corresponds to a single 
+day of qcom trading in june curves 
+represent averages over trials 
+small minority of absolute traders can have a greatly 
+stabilizing effect similar behavior is found for closing price and 
+last bid 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+amzn−r feburary 
+α 
+averageprice 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+nvda−r june 
+α 
+averageprice 
+figure percentage change to the average 
+execution price y-axis vs probability of treating 
+arriving inet orders as absolute prices x-axis each 
+curve corresponds to a single day of trading during 
+a month of curves represent averages over 
+ trials 
+for the executed volume in the mixture model however 
+the findings are more curious in figure we show how 
+the percentage change to the executed volume varies with 
+the absolute trader fraction α for nvda data that is both 
+raw and cleaned of cancellations we first see that for this 
+quantity unlike the others the difference induced by the 
+cleaned and uncleaned data is indeed dramatic as already 
+suggested by the summary statistics table above but most 
+intriguing is the fact that the stability is not monotonically 
+increasing with α for either the cleaned or uncleaned 
+datathe market with maximum instability is not a pure relative 
+price market but occurs at some nonzero value for α it was 
+in fact not obvious to us that sequences with this property 
+could even be artificially constructed much less that they 
+would occur as actual market data we have yet to find a 
+satisfying explanation for this phenomenon and leave it to 
+future research 
+ acknowledgments 
+we are grateful to yuriy nevmyvaka of lehman brothers 
+in new york for the use of his inet order book 
+reconstruction code and for valuable comments on the work presented 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+nvda−c june 
+α 
+volume 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+nvda−r june 
+α 
+volume 
+figure percentage change to the executed volume 
+ y-axis vs probability of treating arriving inet 
+orders as absolute prices x-axis the left panel is 
+for nvda using the raw data that includes 
+cancellations while the right panel is on the cleaned data 
+each curve corresponds to a single day of trading 
+during june curves represent averages over 
+ trials 
+here yishay mansour was supported in part by the ist 
+programme of the european community under the pascal 
+network of excellence ist- - by a grant from 
+the israel science foundation and an ibm faculty award 
+ references 
+ d bertsimas and a lo optimal control of execution 
+costs journal of financial markets - 
+ b biais l glosten and c spatt market 
+microstructure a survey of microfoundations 
+empirical results and policy implications journal of 
+financial markets - 
+ j -p bouchaud m mezard and m potters 
+statistical properties of stock order books empirical 
+results and models quantitative finance - 
+ 
+ c cao o hansch and x wang the informational 
+content of an open limit order book afa 
+philadelphia meetings efa maastricht meetings 
+paper no 
+ r coggins a blazejewski and m aitken optimal 
+trade execution of equities in a limit order market in 
+international conference on computational 
+intelligence for financial engineering pages - 
+march 
+ d farmer and s joshi the price dynamics of 
+common trading strategies journal of economic 
+behavior and organization - 
+ j hasbrouck empirical market microstructure 
+economic and statistical perspectives on the dynamics 
+of trade in securities markets course notes 
+stern school of business new york university 
+ r kissell and m glantz optimal trading strategies 
+amacom 
+ s kakade m kearns y mansour and l ortiz 
+competitive algorithms for vwap and limit order 
+trading in proceedings of the acm conference on 
+electronic commerce pages - 
+ y nevmyvaka y feng and m kearns reinforcement 
+learning for optimized trade execution preprint 
+ 

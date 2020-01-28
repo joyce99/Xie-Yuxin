@@ -1,0 +1,875 @@
+context-sensitive information retrieval using 
+implicit feedback 
+xuehua shen 
+department of computer 
+science 
+university of illinois at 
+urbana-champaign 
+bin tan 
+department of computer 
+science 
+university of illinois at 
+urbana-champaign 
+chengxiang zhai 
+department of computer 
+science 
+university of illinois at 
+urbana-champaign 
+abstract 
+a major limitation of most existing retrieval models and systems 
+is that the retrieval decision is made based solely on the query and 
+document collection information about the actual user and search 
+context is largely ignored in this paper we study how to 
+exploit implicit feedback information including previous queries and 
+clickthrough information to improve retrieval accuracy in an 
+interactive information retrieval setting we propose several 
+contextsensitive retrieval algorithms based on statistical language models 
+to combine the preceding queries and clicked document summaries 
+with the current query for better ranking of documents we use 
+the trec ap data to create a test collection with search context 
+information and quantitatively evaluate our models using this test 
+set experiment results show that using implicit feedback 
+especially the clicked document summaries can improve retrieval 
+performance substantially 
+categories and subject descriptors 
+h information search and retrieval retrieval models 
+general terms 
+algorithms 
+ introduction 
+in most existing information retrieval models the retrieval 
+problem is treated as involving one single query and a set of documents 
+from a single query however the retrieval system can only have 
+very limited clue about the user s information need an optimal 
+retrieval system thus should try to exploit as much additional context 
+information as possible to improve retrieval accuracy whenever it 
+is available indeed context-sensitive retrieval has been identified 
+as a major challenge in information retrieval research 
+there are many kinds of context that we can exploit relevance 
+feedback can be considered as a way for a user to provide 
+more context of search and is known to be effective for 
+improving retrieval accuracy however relevance feedback requires that 
+a user explicitly provides feedback information such as specifying 
+the category of the information need or marking a subset of 
+retrieved documents as relevant documents since it forces the user 
+to engage additional activities while the benefits are not always 
+obvious to the user a user is often reluctant to provide such feedback 
+information thus the effectiveness of relevance feedback may be 
+limited in real applications 
+for this reason implicit feedback has attracted much attention 
+recently in general the retrieval results using the 
+user s initial query may not be satisfactory often the user would 
+need to revise the query to improve the retrieval ranking accuracy 
+ for a complex or difficult information need the user may need 
+to modify his her query and view ranked documents with many 
+iterations before the information need is completely satisfied in such 
+an interactive retrieval scenario the information naturally available 
+to the retrieval system is more than just the current user query and 
+the document collection - in general all the interaction history can 
+be available to the retrieval system including past queries 
+information about which documents the user has chosen to view and even 
+how a user has read a document e g which part of a document the 
+user spends a lot of time in reading we define implicit feedback 
+broadly as exploiting all such naturally available interaction history 
+to improve retrieval results 
+a major advantage of implicit feedback is that we can improve 
+the retrieval accuracy without requiring any user effort for 
+example if the current query is java without knowing any extra 
+information it would be impossible to know whether it is intended 
+to mean the java programming language or the java island in 
+indonesia as a result the retrieved documents will likely have both 
+kinds of documents - some may be about the programming 
+language and some may be about the island however any particular 
+user is unlikely searching for both types of documents such an 
+ambiguity can be resolved by exploiting history information for 
+example if we know that the previous query from the user is cgi 
+programming it would strongly suggest that it is the programming 
+language that the user is searching for 
+implicit feedback was studied in several previous works in 
+joachims explored how to capture and exploit the clickthrough 
+information and demonstrated that such implicit feedback 
+information can indeed improve the search accuracy for a group of 
+people in a simulation study of the effectiveness of different 
+implicit feedback algorithms was conducted and several retrieval 
+models designed for exploiting clickthrough information were 
+proposed and evaluated in some existing retrieval algorithms are 
+adapted to improve search results based on the browsing history of 
+a user other related work on using context includes personalized 
+search query log analysis context factors 
+and implicit queries 
+while the previous work has mostly focused on using 
+clickthrough information in this paper we use both clickthrough 
+information and preceding queries and focus on developing new 
+context-sensitive language models for retrieval specifically we 
+develop models for using implicit feedback information such as 
+query and clickthrough history of the current search session to 
+improve retrieval accuracy we use the kl-divergence retrieval model 
+ as the basis and propose to treat context-sensitive retrieval as 
+estimating a query language model based on the current query and 
+any search context information we propose several statistical 
+language models to incorporate query and clickthrough history into 
+the kl-divergence model 
+one challenge in studying implicit feedback models is that there 
+does not exist any suitable test collection for evaluation we thus 
+use the trec ap data to create a test collection with implicit 
+feedback information which can be used to quantitatively evaluate 
+implicit feedback models to the best of our knowledge this is the 
+first test set for implicit feedback we evaluate the proposed 
+models using this data set the experimental results show that using 
+implicit feedback information especially the clickthrough data can 
+substantially improve retrieval performance without requiring 
+additional effort from the user 
+the remaining sections are organized as follows in section 
+we attempt to define the problem of implicit feedback and introduce 
+some terms that we will use later in section we propose several 
+implicit feedback models based on statistical language models in 
+section we describe how we create the data set for implicit 
+feedback experiments in section we evaluate different implicit 
+feedback models on the created data set section is our conclusions 
+and future work 
+ problem definition 
+there are two kinds of context information we can use for 
+implicit feedback one is short-term context which is the immediate 
+surrounding information which throws light on a user s current 
+information need in a single session a session can be considered as a 
+period consisting of all interactions for the same information need 
+the category of a user s information need e g kids or sports 
+previous queries and recently viewed documents are all examples of 
+short-term context such information is most directly related to the 
+current information need of the user and thus can be expected to be 
+most useful for improving the current search in general short-term 
+context is most useful for improving search in the current session 
+but may not be so helpful for search activities in a different 
+session the other kind of context is long-term context which refers 
+to information such as a user s education level and general interest 
+accumulated user query history and past user clickthrough 
+information such information is generally stable for a long time and is 
+often accumulated over time long-term context can be applicable 
+to all sessions but may not be as effective as the short-term context 
+in improving search accuracy for a particular session in this paper 
+we focus on the short-term context though some of our methods 
+can also be used to naturally incorporate some long-term context 
+in a single search session a user may interact with the search 
+system several times during interactions the user would 
+continuously modify the query therefore for the current query qk 
+ except for the first query of a search session there is a query history 
+hq q qk− associated with it which consists of the 
+preceding queries given by the same user in the current session note 
+that we assume that the session boundaries are known in this paper 
+in practice we need techniques to automatically discover session 
+boundaries which have been studied in traditionally the 
+retrieval system only uses the current query qk to do retrieval but 
+the short-term query history clearly may provide useful clues about 
+the user s current information need as seen in the java example 
+given in the previous section indeed our previous work has 
+shown that the short-term query history is useful for improving 
+retrieval accuracy 
+in addition to the query history there may be other short-term 
+context information available for example a user would 
+presumably frequently click some documents to view we refer to data 
+associated with these actions as clickthrough history the 
+clickthrough data may include the title summary and perhaps also the 
+content and location e g the url of the clicked document 
+although it is not clear whether a viewed document is actually 
+relevant to the user s information need we may safely assume that 
+the displayed summary title information about the document is 
+attractive to the user thus conveys information about the user s 
+information need suppose we concatenate all the displayed text 
+information about a document usually title and summary together we 
+will also have a clicked summary ci in each round of retrieval in 
+general we may have a history of clicked summaries c ck− 
+we will also exploit such clickthrough history hc c ck− 
+to improve our search accuracy for the current query qk previous 
+work has also shown positive results using similar clickthrough 
+information 
+both query history and clickthrough history are implicit 
+feedback information which naturally exists in interactive information 
+retrieval thus no additional user effort is needed to collect them in 
+this paper we study how to exploit such information hq and hc 
+develop models to incorporate the query history and clickthrough 
+history into a retrieval ranking function and quantitatively evaluate 
+these models 
+ language models for 
+contextsensitiveinformationretrieval 
+intuitively the query history hq and clickthrough history hc 
+are both useful for improving search accuracy for the current query 
+qk an important research question is how we can exploit such 
+information effectively we propose to use statistical language 
+models to model a user s information need and develop four specific 
+context-sensitive language models to incorporate context 
+information into a basic retrieval model 
+ basic retrieval model 
+we use the kullback-leibler kl divergence method as 
+our basic retrieval method according to this model the retrieval 
+task involves computing a query language model θq for a given 
+query and a document language model θd for a document and then 
+computing their kl divergence d θq θd which serves as the 
+score of the document 
+one advantage of this approach is that we can naturally 
+incorporate the search context as additional evidence to improve our 
+estimate of the query language model 
+formally let hq q qk− be the query history and 
+the current query be qk let hc c ck− be the 
+clickthrough history note that ci is the concatenation of all clicked 
+documents summaries in the i-th round of retrieval since we may 
+reasonably treat all these summaries equally our task is to estimate 
+a context query model which we denote by p w θk based on the 
+current query qk as well as the query history hq and clickthrough 
+history hc we now describe several different language models for 
+exploiting hq and hc to estimate p w θk we will use c w x 
+to denote the count of word w in text x which could be either a 
+query or a clicked document s summary or any other text we will 
+use x to denote the length of text x or the total number of words 
+in x 
+ fixed coefficient interpolation fixint 
+our first idea is to summarize the query history hq with a 
+unigram language model p w hq and the clickthrough history hc 
+with another unigram language model p w hc then we linearly 
+interpolate these two history models to obtain the history model 
+p w h finally we interpolate the history model p w h with 
+the current query model p w qk these models are defined as 
+follows 
+p w qi 
+c w qi 
+ qi 
+p w hq 
+ 
+k − 
+i k− 
+i 
+p w qi 
+p w ci 
+c w ci 
+ ci 
+p w hc 
+ 
+k − 
+i k− 
+i 
+p w ci 
+p w h βp w hc − β p w hq 
+p w θk αp w qk − α p w h 
+where β ∈ is a parameter to control the weight on each 
+history model and where α ∈ is a parameter to control the 
+weight on the current query and the history information 
+if we combine these equations we see that 
+p w θk αp w qk − α βp w hc − β p w hq 
+that is the estimated context query model is just a fixed coefficient 
+interpolation of three models p w qk p w hq and p w hc 
+ bayesian interpolation bayesint 
+one possible problem with the fixint approach is that the 
+coefficients especially α are fixed across all the queries but intuitively 
+if our current query qk is very long we should trust the current 
+query more whereas if qk has just one word it may be beneficial 
+to put more weight on the history to capture this intuition we treat 
+p w hq and p w hc as dirichlet priors and qk as the observed 
+data to estimate a context query model using bayesian estimator 
+the estimated model is given by 
+p w θk 
+c w qk µp w hq νp w hc 
+ qk µ ν 
+ 
+ qk 
+ qk µ ν 
+p w qk 
+µ ν 
+ qk µ ν 
+ 
+µ 
+µ ν 
+p w hq 
+ν 
+µ ν 
+p w hc 
+where µ is the prior sample size for p w hq and ν is the prior 
+sample size for p w hc we see that the only difference between 
+bayesint and fixint is the interpolation coefficients are now 
+adaptive to the query length indeed when viewing bayesint as fixint 
+we see that α qk 
+ qk µ ν 
+ β ν 
+ν µ 
+ thus with fixed µ and ν 
+we will have a query-dependent α later we will show that such an 
+adaptive α empirically performs better than a fixed α 
+ online bayesian updating onlineup 
+both fixint and bayesint summarize the history information by 
+averaging the unigram language models estimated based on 
+previous queries or clicked summaries this means that all previous 
+queries are treated equally and so are all clicked summaries 
+however as the user interacts with the system and acquires more 
+knowledge about the information in the collection presumably the 
+reformulated queries will become better and better thus assigning 
+decaying weights to the previous queries so as to trust a recent query 
+more than an earlier query appears to be reasonable interestingly 
+if we incrementally update our belief about the user s information 
+need after seeing each query we could naturally obtain decaying 
+weights on the previous queries since such an incremental online 
+updating strategy can be used to exploit any evidence in an 
+interactive retrieval system we present it in a more general way 
+in a typical retrieval system the retrieval system responds to 
+every new query entered by the user by presenting a ranked list 
+of documents in order to rank documents the system must have 
+some model for the user s information need in the kl divergence 
+retrieval model this means that the system must compute a query 
+model whenever a user enters a new query a principled way of 
+updating the query model is to use bayesian estimation which we 
+discuss below 
+ bayesian updating 
+we first discuss how we apply bayesian estimation to update a 
+query model in general let p w φ be our current query model 
+and t be a new piece of text evidence observed e g t can be a 
+query or a clicked summary to update the query model based on 
+t we use φ to define a dirichlet prior parameterized as 
+dir µt p w φ µt p wn φ 
+where µt is the equivalent sample size of the prior we use 
+dirichlet prior because it is a conjugate prior for multinomial 
+distributions with such a conjugate prior the predictive distribution of φ 
+ or equivalently the mean of the posterior distribution of φ is given 
+by 
+p w φ 
+c w t µt p w φ 
+ t µt 
+ 
+where c w t is the count of w in t and t is the length of t 
+parameter µt indicates our confidence in the prior expressed in 
+terms of an equivalent text sample comparable with t for 
+example µt indicates that the influence of the prior is equivalent to 
+adding one extra word to t 
+ sequential query model updating 
+we now discuss how we can update our query model over time 
+during an interactive retrieval process using bayesian estimation 
+in general we assume that the retrieval system maintains a current 
+query model φi at any moment as soon as we obtain some implicit 
+feedback evidence in the form of a piece of text ti we will update 
+the query model 
+initially before we see any user query we may already have 
+some information about the user for example we may have some 
+information about what documents the user has viewed in the past 
+we use such information to define a prior on the query model 
+which is denoted by φ after we observe the first query q we 
+can update the query model based on the new observed data q 
+the updated query model φ can then be used for ranking 
+documents in response to q as the user views some documents the 
+displayed summary text for such documents c i e clicked 
+summaries can serve as some new data for us to further update the 
+query model to obtain φ as we obtain the second query q from 
+the user we can update φ to obtain a new model φ in general 
+we may repeat such an updating process to iteratively update the 
+query model 
+clearly we see two types of updating updating based on a 
+new query qi updating based on a new clicked summary ci in 
+both cases we can treat the current model as a prior of the context 
+query model and treat the new observed query or clicked summary 
+as observed data thus we have the following updating equations 
+p w φi 
+c w qi µip w φi− 
+ qi µi 
+p w φi 
+c w ci νip w φi 
+ ci νi 
+where µi is the equivalent sample size for the prior when updating 
+the model based on a query while νi is the equivalent sample size 
+for the prior when updating the model based on a clicked summary 
+if we set µi or νi we essentially ignore the prior model 
+thus would start a completely new query model based on the query 
+qi or the clicked summary ci on the other hand if we set µi 
+ ∞ or νi ∞ we essentially ignore the observed query or 
+the clicked summary and do not update our model thus the model 
+remains the same as if we do not observe any new text evidence in 
+general the parameters µi and νi may have different values for 
+different i for example at the very beginning we may have very 
+sparse query history thus we could use a smaller µi but later as the 
+query history is richer we can consider using a larger µi but in 
+our experiments unless otherwise stated we set them to the same 
+constants i e ∀i j µi µj νi νj 
+note that we can take either p w φi or p w φi as our context 
+query model for ranking documents this suggests that we do not 
+have to wait until a user enters a new query to initiate a new round 
+of retrieval instead as soon as we collect clicked summary ci we 
+can update the query model and use p w φi to immediately rerank 
+any documents that a user has not yet seen 
+to score documents after seeing query qk we use p w φk i e 
+p w θk p w φk 
+ batch bayesian updating batchup 
+if we set the equivalent sample size parameters to fixed 
+constant the onlineup algorithm would introduce a decaying factor 
+- repeated interpolation would cause the early data to have a low 
+weight this may be appropriate for the query history as it is 
+reasonable to believe that the user becomes better and better at query 
+formulation as time goes on but it is not necessarily appropriate for 
+the clickthrough information especially because we use the 
+displayed summary rather than the actual content of a clicked 
+document one way to avoid applying a decaying interpolation to 
+the clickthrough data is to do onlineup only for the query history 
+q q qi− but not for the clickthrough data c we first 
+buffer all the clickthrough data together and use the whole chunk 
+of clickthrough data to update the model generated through 
+running onlineup on previous queries the updating equations are as 
+follows 
+p w φi 
+c w qi µip w φi− 
+ qi µi 
+p w ψi 
+i− 
+j c w cj νip w φi 
+i− 
+j cj νi 
+where µi has the same interpretation as in onlineup but νi now 
+indicates to what extent we want to trust the clicked summaries as 
+in onlineup we set all µi s and νi s to the same value and to rank 
+documents after seeing the current query qk we use 
+p w θk p w ψk 
+ data collection 
+in order to quantitatively evaluate our models we need a data set 
+which includes not only a text database and testing topics but also 
+query history and clickthrough history for each topic since there 
+is no such data set available to us we have to create one there 
+are two choices one is to extract topics and any associated query 
+history and clickthrough history for each topic from the log of a 
+retrieval system e g search engine but the problem is that we 
+have no relevance judgments on such data the other choice is to 
+use a trec data set which has a text database topic description 
+and relevance judgment file unfortunately there are no query 
+history and clickthrough history data we decide to augment a trec 
+data set by collecting query history and clickthrough history data 
+we select trec ap ap and ap data as our text database 
+because ap data has been used in several trec tasks and has 
+relatively complete judgments there are altogether news 
+articles and the average document length is words most articles 
+have titles if not we select the first sentence of the text as the 
+title for the preprocessing we only do case folding and do not do 
+stopword removal or stemming 
+we select relatively difficult topics from trec topics - 
+these topics have the worst average precision performance among 
+trec topics - according to some baseline experiments using 
+the kl-divergence model with bayesian prior smoothing the 
+reason why we select difficult topics is that the user then would 
+have to have several interactions with the retrieval system in order 
+to get satisfactory results so that we can expect to collect a 
+relatively richer query history and clickthrough history data from the 
+user in real applications we may also expect our models to be 
+most useful for such difficult topics so our data collection strategy 
+reflects the real world applications well 
+we index the trec ap data set and set up a search engine and 
+web interface for trec ap news articles we use subjects to do 
+experiments to collect query history and clickthrough history data 
+each subject is assigned topics and given the topic descriptions 
+provided by trec for each topic the first query is the title of 
+the topic given in the original trec topic description after the 
+subject submits the query the search engine will do retrieval and 
+return a ranked list of search results to the subject the subject will 
+browse the results and maybe click one or more results to browse 
+the full text of article s the subject may also modify the query to 
+do another search for each topic the subject composes at least 
+queries in our experiment only the first queries for each topic 
+are used the user needs to select the topic number from a 
+selection menu before submitting the query to the search engine so that 
+we can easily detect the session boundary which is not the focus of 
+our study we use a relational database to store user interactions 
+including the submitted queries and clicked documents for each 
+query we store the query terms and the associated result pages 
+and for each clicked document we store the summary as shown 
+on the search result page the summary of the article is query 
+dependent and is computed online using fixed-length passage retrieval 
+ kl divergence model with bayesian prior smoothing 
+among for each of topics queries which we study in 
+the experiment the average query length is words altogether 
+there are documents clicked to view so on average there are 
+around clicks per topic the average length of clicked summary 
+fixint bayesint onlineup batchup 
+query α β µ ν µ ν µ ν 
+map pr  docs map pr  docs map pr  docs map pr  docs 
+q 
+q 
+q hq hc 
+improve - - - - - 
+q 
+q hq hc 
+improve 
+q 
+q hq hc 
+improve 
+table effect of using query history and clickthrough data for document ranking 
+is words among clicked documents documents are 
+judged relevant according to trec judgment file this data set is 
+publicly available 
+ 
+ experiments 
+ experiment design 
+our major hypothesis is that using search context i e query 
+history and clickthrough information can help improve search 
+accuracy in particular the search context can provide extra information 
+to help us estimate a better query model than using just the current 
+query so most of our experiments involve comparing the retrieval 
+performance using the current query only thus ignoring any 
+context with that using the current query as well as the search context 
+since we collected four versions of queries for each topic we 
+make such comparisons for each version of queries we use two 
+performance measures mean average precision map this 
+is the standard non-interpolated average precision and serves as a 
+good measure of the overall ranking accuracy precision at 
+documents pr  docs this measure does not average well but 
+it is more meaningful than map and reflects the utility for users 
+who only read the top documents in all cases the reported 
+figure is the average over all of the topics 
+we evaluate the four models for exploiting search context i e 
+fixint bayesint onlineup and batchup each model has 
+precisely two parameters α and β for fixint µ and ν for others 
+note that µ and ν may need to be interpreted differently for 
+different methods we vary these parameters and identify the optimal 
+performance for each method we also vary the parameters to study 
+the sensitivity of our algorithms to the setting of the parameters 
+ result analysis 
+ overall effect of search context 
+we compare the optimal performances of four models with those 
+using the current query only in table a row labeled with qi is 
+the baseline performance and a row labeled with qi hq hc 
+is the performance of using search context we can make several 
+observations from this table 
+ comparing the baseline performances indicates that on average 
+reformulated queries are better than the previous queries with the 
+performance of q being the best users generally formulate better 
+and better queries 
+ using search context generally has positive effect especially 
+when the context is rich this can be seen from the fact that the 
+ 
+http sifaka cs uiuc edu ir ucair qchistory zip 
+improvement for q and q is generally more substantial compared 
+with q actually in many cases with q using the context may 
+hurt the performance probably because the history at that point is 
+sparse when the search context is rich the performance 
+improvement can be quite substantial for example batchup achieves 
+ improvement in the mean average precision over q and 
+ improvement over q the generally low precisions also 
+make the relative improvement deceptively high though 
+ among the four models using search context the performances 
+of fixint and onlineup are clearly worse than those of bayesint 
+and batchup since bayesint performs better than fixint and the 
+main difference between bayesint and fixint is that the former uses 
+an adaptive coefficient for interpolation the results suggest that 
+using adaptive coefficient is quite beneficial and a bayesian style 
+interpolation makes sense the main difference between onlineup 
+and batchup is that onlineup uses decaying coefficients to 
+combine the multiple clicked summaries while batchup simply 
+concatenates all clicked summaries therefore the fact that batchup 
+is consistently better than onlineup indicates that the weights for 
+combining the clicked summaries indeed should not be decaying 
+while onlineup is theoretically appealing its performance is 
+inferior to bayesint and batchup likely because of the decaying 
+coefficient overall batchup appears to be the best method when we 
+vary the parameter settings 
+we have two different kinds of search context - query history 
+and clickthrough data we now look into the contribution of each 
+kind of context 
+ using query history only 
+in each of four models we can turn off the clickthrough 
+history data by setting parameters appropriately this allows us to 
+evaluate the effect of using query history alone we use the same 
+parameter setting for query history as in table the results are 
+shown in table here we see that in general the benefit of using 
+query history is very limited with mixed results this is different 
+from what is reported in a previous study where using query 
+history is consistently helpful another observation is that the 
+context runs perform poorly at q but generally perform slightly 
+better than the baselines for q and q this is again likely because 
+at the beginning the initial query which is the title in the original 
+trec topic description may not be a good query indeed on 
+average performances of these first-generation queries are clearly 
+poorer than those of all other user-formulated queries in the later 
+generations yet another observation is that when using query 
+history only the bayesint model appears to be better than other 
+models since the clickthrough data is ignored onlineup and batchup 
+fixint bayesint onlineup batchup 
+query α β µ ν µ ν ∞ µ ν ∞ 
+map pr  docs map pr  docs map pr  docs map pr  docs 
+q 
+q hq 
+improve - - - - - - - 
+q 
+q hq 
+improve - - - - 
+q 
+q hq 
+improve - - - - - 
+table effect of using query history only for document ranking 
+µ 
+q hq map 
+q hq map 
+q hq map 
+table average precision of batchup using query history only 
+are essentially the same algorithm the displayed results thus 
+reflect the variation caused by parameter µ a smaller setting of 
+is seen better than a larger value of a more complete picture 
+of the influence of the setting of µ can be seen from table where 
+we show the performance figures for a wider range of values of µ 
+the value of µ can be interpreted as how many words we regard 
+the query history is worth a larger value thus puts more weight 
+on the history and is seen to hurt the performance more when the 
+history information is not rich thus while for q the best 
+performance tends to be achieved for µ ∈ only when µ we 
+see some small benefit for q as we would expect an excessively 
+large µ would hurt the performance in general but q is hurt most 
+and q is barely hurt indicating that as we accumulate more and 
+more query history information we can put more and more weight 
+on the history information this also suggests that a better strategy 
+should probably dynamically adjust parameters according to how 
+much history information we have 
+the mixed query history results suggest that the positive effect 
+of using implicit feedback information may have largely come from 
+the use of clickthrough history which is indeed true as we discuss 
+in the next subsection 
+ using clickthrough history only 
+we now turn off the query history and only use the clicked 
+summaries plus the current query the results are shown in table we 
+see that the benefit of using clickthrough information is much more 
+significant than that of using query history we see an overall 
+positive effect often with significant improvement over the baseline it 
+is also clear that the richer the context data is the more 
+improvement using clicked summaries can achieve other than some 
+occasional degradation of precision at documents the improvement 
+is fairly consistent and often quite substantial 
+these results show that the clicked summary text is in general 
+quite useful for inferring a user s information need intuitively 
+using the summary text rather than the actual content of the 
+document makes more sense as it is quite possible that the document 
+behind a seemingly relevant summary is actually non-relevant 
+ out of the clicked documents are relevant updating the 
+query model based on such summaries would bring up the ranks 
+of these relevant documents causing performance improvement 
+however such improvement is really not beneficial for the user as 
+the user has already seen these relevant documents to see how 
+much improvement we have achieved on improving the ranks of 
+the unseen relevant documents we exclude these relevant 
+documents from our judgment file and recompute the performance of 
+bayesint and the baseline using the new judgment file the results 
+are shown in table note that the performance of the baseline 
+method is lower due to the removal of the relevant documents 
+which would have been generally ranked high in the results from 
+table we see clearly that using clicked summaries also helps 
+improve the ranks of unseen relevant documents significantly 
+query bayesint µ ν 
+map pr  docs 
+q 
+q hc 
+improve 
+q 
+q hc 
+improve 
+q 
+q hc 
+improve 
+table bayesint evaluated on unseen relevant documents 
+one remaining question is whether the clickthrough data is still 
+helpful if none of the clicked documents is relevant to answer 
+this question we took out the relevant summaries from our 
+clickthrough history data hc to obtain a smaller set of clicked 
+summaries hc and re-evaluated the performance of the bayesint 
+method using hc with the same setting of parameters as in 
+table the results are shown in table we see that although the 
+improvement is not as substantial as in table the average 
+precision is improved across all generations of queries these results 
+should be interpreted as very encouraging as they are based on only 
+ non-relevant clickthroughs in reality a user would more likely 
+click some relevant summaries which would help bring up more 
+relevant documents as we have seen in table and table 
+fixint bayesint onlineup batchup 
+query α β µ ν µk ν ∀i k µi ∞ µ ν 
+map pr  docs map pr  docs map pr  docs map pr  docs 
+q 
+q hc 
+improve - - 
+q 
+q hc 
+improve 
+q 
+q hc 
+improve 
+table effect of using clickthrough data only for document ranking 
+query bayesint µ ν 
+map pr  docs 
+q 
+q hc 
+improve - 
+q 
+q hc 
+improve 
+q 
+q hc 
+improve - 
+table effect of using only non-relevant clickthrough data 
+ additive effect of context information 
+by comparing the results across table table and table 
+we can see that the benefit of the query history information and 
+that of clickthrough information are mostly additive i e 
+combining them can achieve better performance than using each alone 
+but most improvement has clearly come from the clickthrough 
+information in table we show this effect for the batchup method 
+ parameter sensitivity 
+all four models have two parameters to control the relative weights 
+of hq hc and qk though the parameterization is different from 
+model to model in this subsection we study the parameter 
+sensitivity for batchup which appears to perform relatively better than 
+others batchup has two parameters µ and ν 
+we first look at µ when µ is set to the query history is not 
+used at all and we essentially just use the clickthrough data 
+combined with the current query if we increase µ we will gradually 
+incorporate more information from the previous queries in table 
+we show how the average precision of batchup changes as we vary 
+µ with ν fixed to where the best performance of batchup is 
+achieved we see that the performance is mostly insensitive to the 
+change of µ for q and q but is decreasing as µ increases for q 
+the pattern is also similar when we set ν to other values 
+in addition to the fact that q is generally worse than q q and 
+q another possible reason why the sensitivity is lower for q and 
+q may be that we generally have more clickthrough data 
+available for q and q than for q and the dominating influence of the 
+clickthrough data has made the small differences caused by µ less 
+visible for q and q 
+the best performance is generally achieved when µ is around 
+ which means that the past query information is as useful as 
+about words in the current query except for q there is clearly 
+some tradeoff between the current query and the previous queries 
+query map pr  docs 
+q 
+q hq 
+improve - - 
+q hc 
+improve 
+q hq hc 
+improve - 
+q 
+q hq 
+improve - 
+q hc 
+improve 
+q hq hc 
+improve 
+q 
+q hq 
+improve - 
+q hc 
+improve 
+q hq hc 
+improve 
+table additive benefit of context information 
+and using a balanced combination of them achieves better 
+performance than using each of them alone 
+we now turn to the other parameter ν when ν is set to we 
+only use the clickthrough data when ν is set to ∞ we only use 
+the query history and the current query with µ set to where 
+the best performance of batchup is achieved we vary ν and show 
+the results in table we see that the performance is also not very 
+sensitive when ν ≤ with the best performance often achieved 
+at ν this means that the combined information of query 
+history and the current query is as useful as about words in the 
+clickthrough data indicating that the clickthrough information is 
+highly valuable 
+overall these sensitivity results show that batchup not only 
+performs better than other methods but also is quite robust 
+ conclusions and future work 
+in this paper we have explored how to exploit implicit 
+feedback information including query history and clickthrough history 
+within the same search session to improve information retrieval 
+performance using the kl-divergence retrieval model as the 
+basis we proposed and studied four statistical language models for 
+context-sensitive information retrieval i e fixint bayesint 
+onlineup and batchup we use trec ap data to create a test set 
+µ 
+map 
+q hq hc pr  
+map 
+q hq hc pr  
+map 
+q hq hc pr  
+table sensitivity of µ in batchup 
+ν 
+map 
+q hq hc pr  
+map 
+q hq hc pr  
+map 
+q hq hc pr  
+table sensitivity of ν in batchup 
+for evaluating implicit feedback models experiment results show 
+that using implicit feedback especially clickthrough history can 
+substantially improve retrieval performance without requiring any 
+additional user effort 
+the current work can be extended in several ways first we 
+have only explored some very simple language models for 
+incorporating implicit feedback information it would be interesting to 
+develop more sophisticated models to better exploit query history 
+and clickthrough history for example we may treat a clicked 
+summary differently depending on whether the current query is a 
+generalization or refinement of the previous query second the 
+proposed models can be implemented in any practical systems we are 
+currently developing a client-side personalized search agent which 
+will incorporate some of the proposed algorithms we will also do 
+a user study to evaluate effectiveness of these models in the real 
+web search finally we should further study a general retrieval 
+framework for sequential decision making in interactive 
+information retrieval and study how to optimize some of the parameters in 
+the context-sensitive retrieval models 
+ acknowledgments 
+this material is based in part upon work supported by the 
+national science foundation under award numbers iis- and 
+iis- we thank the anonymous reviewers for their useful 
+comments 
+ references 
+ e adar and d karger haystack per-user information 
+environments in proceedings of cikm 
+ j allan and et al challenges in information retrieval and 
+language modeling workshop at university of amherst 
+ 
+ k bharat searchpad explicit capture of search context to 
+support web search in proceeding of www 
+ w b croft s cronen-townsend and v larvrenko 
+relevance feedback and personalization a language 
+modeling perspective in proeedings of second delos 
+workshop personalisation and recommender systems in 
+digital libraries 
+ h cui j -r wen j -y nie and w -y ma probabilistic 
+query expansion using query logs in proceedings of www 
+ 
+ s t dumais e cutrell r sarin and e horvitz implicit 
+queries iq for contextualized search demo description in 
+proceedings of sigir page 
+ l finkelstein e gabrilovich y matias e rivlin z solan 
+g wolfman and e ruppin placing search in context the 
+concept revisited in proceedings of www 
+ c huang l chien and y oyang query session based term 
+suggestion for interactive web search in proceedings of 
+www 
+ x huang f peng a an and d schuurmans dynamic 
+web log session identification with statistical language 
+models journal of the american society for information 
+science and technology - 
+ g jeh and j widom scaling personalized web search in 
+proceeding of www 
+ t joachims optimizing search engines using clickthrough 
+data in proceedings of sigkdd 
+ d kelly and n j belkin display time as implicit feedback 
+understanding task effects in proceedings of sigir 
+ 
+ d kelly and j teevan implicit feedback for inferring user 
+preference sigir forum 
+ j rocchio relevance feedback information retrieval in the 
+smart retrieval system-experiments in automatic document 
+processing pages - kansas city mo 
+prentice-hall 
+ x shen and c zhai exploiting query history for document 
+ranking in interactive information retrieval poster in 
+proceedings of sigir 
+ s sriram x shen and c zhai a session-based search 
+engine poster in proceedings of sigir 
+ k sugiyama k hatano and m yoshikawa adaptive web 
+search based on user profile constructed without any effort 
+from users in proceedings of www 
+ r w white j m jose c j van rijsbergen and 
+i ruthven a simulated study of implicit feedback models 
+in proceedings of ecir pages - 
+ c zhai and j lafferty model-based feedback in the 
+kl-divergence retrieval model in proceedings of cikm 
+ 
+ c zhai and j lafferty a study of smoothing methods for 
+language models applied to ad-hoc information retrieval in 
+proceedings of sigir 

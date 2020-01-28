@@ -1,0 +1,1122 @@
+using query contexts in information retrieval 
+jing bai 
+ 
+ jian-yun nie 
+ 
+ hugues bouchard 
+ 
+ guihong cao 
+ 
+ 
+department iro university of montreal 
+cp succursale centre-ville montreal quebec 
+h c j canada 
+ baijing nie caogui  iro umontreal ca 
+ 
+yahoo inc 
+montreal quebec canada 
+bouchard yahoo-inc com 
+abstract 
+user query is an element that specifies an information need but it 
+is not the only one studies in literature have found many 
+contextual factors that strongly influence the interpretation of a 
+query recent studies have tried to consider the user s interests by 
+creating a user profile however a single profile for a user may 
+not be sufficient for a variety of queries of the user in this study 
+we propose to use query-specific contexts instead of user-centric 
+ones including context around query and context within query 
+the former specifies the environment of a query such as the 
+domain of interest while the latter refers to context words within 
+the query which is particularly useful for the selection of relevant 
+term relations in this paper both types of context are integrated in 
+an ir model based on language modeling our experiments on 
+several trec collections show that each of the context factors 
+brings significant improvements in retrieval effectiveness 
+categories and subject descriptors 
+h information storage and retrieval information search 
+and retrieval - retrieval models 
+general terms 
+algorithms performance experimentation theory 
+ introduction 
+queries especially short queries do not provide a complete 
+specification of the information need many relevant terms can be 
+absent from queries and terms included may be ambiguous these 
+issues have been addressed in a large number of previous studies 
+typical solutions include expanding either document or query 
+representation by exploiting different resources 
+using word sense disambiguation etc in these studies 
+however it has been generally assumed that query is the only 
+element available about the user s information need in reality 
+query is always formulated in a search context as it has been 
+found in many previous studies contextual 
+factors have a strong influence on relevance judgments these 
+factors include among many others the user s domain of interest 
+knowledge preferences etc all these elements specify the 
+contexts around the query so we call them context around query 
+in this paper it has been demonstrated that user s query should be 
+placed in its context for a correct interpretation 
+recent studies have investigated the integration of some contexts 
+around the query typically a user profile is 
+constructed to reflect the user s domains of interest and 
+background a user profile is used to favor the documents that are 
+more closely related to the profile however a single profile for a 
+user can group a variety of different domains which are not 
+always relevant to a particular query for example if a user 
+working in computer science issues a query java hotel the 
+documents on java language will be incorrectly favored a 
+possible solution to this problem is to use query-related profiles or 
+models instead of user-centric ones in this paper we propose to 
+model topic domains among which the related one s will be 
+selected for a given query this method allows us to select more 
+appropriate query-specific context around the query 
+another strong contextual factor identified in literature is domain 
+knowledge or domain-specific term relations such as 
+program→computer in computer science using this relation 
+one would be able to expand the query program with the term 
+computer however domain knowledge is available only for a 
+few domains e g medicine the shortage of domain 
+knowledge has led to the utilization of general knowledge for 
+query expansion which is more available from resources 
+such as thesauri or it can be automatically extracted from 
+documents however the use of general knowledge gives 
+rise to an enormous problem of knowledge ambiguity we are 
+often unable to determine if a relation applies to a query for 
+example usually little information is available to determine 
+whether program→computer is applicable to queries java 
+program and tv program therefore the relation has been 
+applied to all queries containing program in previous studies 
+leading to a wrong expansion for tv program 
+looking at the two query examples however people can easily 
+determine whether the relation is applicable by considering the 
+context words java and tv so the important question is how 
+we can serve these context words in queries to select the 
+appropriate relations to apply these context words form a context 
+within query in some previous studies context words in 
+a query have been used to select expansion terms suggested by 
+term relations which are however context-independent such as 
+program→computer although improvements are observed in 
+some cases they are limited we argue that the problem stems 
+from the lack of necessary context information in relations 
+themselves and a more radical solution lies in the addition of 
+contexts in relations the method we propose is to add context 
+words into the condition of a relation such as java program 
+→ computer to limit its applicability to the appropriate context 
+this paper aims to make contributions on the following aspects 
+ query-specific domain model we construct more specific 
+domain models instead of a single user model grouping all the 
+domains the domain related to a specific query is selected 
+ either manually or automatically for each query 
+ context within query we integrate context words in term 
+relations so that only appropriate relations can be applied to the 
+query 
+ multiple contextual factors finally we propose a framework 
+based on language modeling approach to integrate multiple 
+contextual factors 
+our approach has been tested on several trec collections the 
+experiments clearly show that both types of context can result in 
+significant improvements in retrieval effectiveness and their 
+effects are complementary we will also show that it is possible to 
+determine the query domain automatically and this results in 
+comparable effectiveness to a manual specification of domain 
+this paper is organized as follows in section we review some 
+related work and introduce the principle of our approach section 
+ presents our general model then sections and describe 
+respectively the domain model and the knowledge model section 
+ explains the method for parameter training experiments are 
+presented in section and conclusions in section 
+ contexts and utilization in ir 
+there are many contextual factors in ir the user s domain of 
+interest knowledge about the subject preference document 
+recency and so on among them the user s domain of 
+interest and knowledge are considered to be among the most 
+important ones in this section we review some of the 
+studies in ir concerning these aspects 
+domain of interest and context around query 
+a domain of interest specifies a particular background for the 
+interpretation of a query it can be used in different ways most 
+often a user profile is created to encompass all the domains of 
+interest of a user in a user profile contains a set of topic 
+categories of odp open directory project http dmoz org 
+identified by the user the documents web pages classified in 
+these categories are used to create a term vector which represents 
+the whole domains of interest of the user on the other hand 
+ as well as google personalized search use 
+the documents read by the user stored on user s computer or 
+extracted from user s search history in all these studies we 
+observe that a single user profile usually a statistical model or 
+vector is created for a user without distinguishing the different 
+topic domains the systematic application of the user profile can 
+incorrectly bias the results for queries unrelated to the profile this 
+situation can often occur in practice as a user can search for a 
+variety of topics outside the domains that he has previously 
+searched in or identified 
+a possible solution to this problem is the creation of multiple 
+profiles one for a separate domain of interest the domains 
+related to a query are then identified according to the query this 
+will enable us to use a more appropriate query-specific profile 
+instead of a user-centric one this approach is used in in 
+which odp directories are used however only a small scale 
+experiment has been carried out a similar approach is used in 
+where domain models are created using odp categories and user 
+queries are manually mapped to them however the experiments 
+showed variable results it remains unclear whether domain 
+models can be effectively used in ir 
+in this study we also model topic domains we will carry out 
+experiments on both automatic and manual identification of query 
+domains domain models will also be integrated with other 
+factors in the following discussion we will call the topic domain 
+of a query a context around query to contrast with another context 
+within query that we will introduce 
+knowledge and context within query 
+due to the unavailability of domain-specific knowledge general 
+knowledge resources such as wordnet and term relations extracted 
+automatically have been used for query expansion in 
+both cases the relations are defined between two single terms such 
+as t →t if a query contains term t then t is always considered 
+as a candidate for expansion as we mentioned earlier we are 
+faced with the problem of relation ambiguity some relations apply 
+to a query and some others should not for example 
+program→computer should not be applied to tv program 
+even if the latter contains program however little information 
+is available in the relation to help us determine if an application 
+context is appropriate 
+to remedy this problem approaches have been proposed to make 
+a selection of expansion terms after the application of relations 
+ typically one defines some sort of global relation 
+between the expansion term and the whole query which is usually 
+a sum of its relations to every query word although some 
+inappropriate expansion terms can be removed because they are 
+only weakly connected to some query terms many others remain 
+for example if the relation program→computer is strong 
+enough computer will have a strong global relation to the whole 
+query tv program and it still remains as an expansion term 
+it is possible to integrate stronger control on the utilization of 
+knowledge for example defined strong logical relations to 
+encode knowledge of different domains if the application of a 
+relation leads to a conflict with the query or with other pieces of 
+evidence then it is not applied however this approach requires 
+encoding all the logical consequences including contradictions in 
+knowledge which is difficult to implement in practice 
+in our earlier study a simpler and more general approach is 
+proposed to solve the problem at its source i e the lack of context 
+information in term relations by introducing stricter conditions in 
+a relation for example java program →computer and 
+ algorithm program →computer the applicability of the 
+relations will be naturally restricted to correct contexts as a 
+result computer will be used to expand queries java program 
+or program algorithm but not tv program this principle is 
+similar to that of for word sense disambiguation however 
+we do not explicitly assign a meaning to a word rather we try to 
+make differences between word usages in different contexts from 
+this point of view our approach is more similar to word sense 
+discrimination 
+in this paper we use the same approach and we will integrate it 
+into a more global model with other context factors as the 
+context words added into relations allow us to exploit the word 
+context within the query we call such factors context within 
+query within query context exists in many queries in fact users 
+often do not use a single ambiguous word such as java as query 
+ if they are aware of its ambiguity some context words are often 
+used together with it in these cases contexts within query are 
+created and can be exploited 
+query profile and other factors 
+many attempts have been made in ir to create query-specific 
+profiles we can consider implicit feedback or blind feedback 
+ in this family a short-term feedback model is 
+created for the given query from feedback documents which has 
+been proven to be effective to capture some aspects of the user s 
+intent behind the query in order to create a good query model 
+such a query-specific feedback model should be integrated 
+there are many other contextual factors that we do not deal 
+with in this paper however it seems clear that many factors are 
+complementary as found in a feedback model creates a local 
+context related to the query while the general knowledge or the 
+whole corpus defines a global context both types of contexts have 
+been proven useful domain model specifies yet another type 
+of useful information it reflects a set of specific background terms 
+for a domain for example pollution rain greenhouse etc 
+for the domain of environment these terms are often presumed 
+when a user issues a query such as waste cleanup in the domain 
+it is useful to add them into the query we see a clear 
+complementarity among these factors it is then useful to combine 
+them together in a single ir model 
+in this study we will integrate all the above factors within a 
+unified framework based on language modeling each component 
+contextual factor will determines a different ranking score and the 
+final document ranking combines all of them this is described in 
+the following section 
+ general ir model 
+in the language modeling framework a typical score function is 
+defined in kl-divergence as follows 
+ dq 
+vt 
+dq kltptpdqscore θθθθ log −∝ ∑∈ 
+ 
+where θd is a unigram language model created for a document d 
+θq a language model for the query q and v the vocabulary 
+smoothing on document model is recognized to be crucial 
+and one of common smoothing methods is the jelinek-mercer 
+interpolation smoothing 
+ cdd tptptp θλθλθ − 
+where λ is an interpolation parameter and θc the collection model 
+in the basic language modeling approaches the query model is 
+estimated by maximum likelihood estimation mle without any 
+smoothing in such a setting the basic retrieval operation is still 
+limited to keyword matching according to a few words in the 
+query to improve retrieval effectiveness it is important to create 
+a more complete query model that represents better the 
+information need in particular all the related and presumed words 
+should be included in the query model a more complete query 
+model by several methods have been proposed using feedback 
+documents or using term relations in these 
+cases we construct two models for the query the initial query 
+model containing only the original terms and a new model 
+containing the added terms they are then combined through 
+interpolation 
+in this paper we generalize this approach and integrate more 
+models for the query let us use 
+ 
+qθ to denote the original query 
+model 
+f 
+qθ for the feedback model created from feedback 
+documents 
+dom 
+qθ for a domain model and 
+k 
+qθ for a knowledge 
+model created by applying term relations 
+qθ can be created by 
+mle 
+f 
+qθ has been used in several previous studies in 
+this paper 
+f 
+qθ is extracted using the blind feedback 
+documents we will describe the details to construct dom 
+qθ and 
+k 
+qθ in section and 
+given these models we create the following final query model by 
+interpolation 
+∑∈ 
+ 
+xi 
+i 
+qiq tptp θαθ 
+where x dom k f is the set of all component models and 
+iα with ∑∈xi 
+iα are their mixture weights 
+then the document score in equation is extended as follows 
+ ∑∑∑ ∈∈ ∈ 
+ 
+xi 
+ii 
+vt xi 
+d 
+i 
+qi dqscoretptpdqscore log αθθα 
+where log d 
+vt 
+i 
+qi tptpdqscore θθ∑∈ 
+ is the score according to 
+each component model here we can see that our strategy of 
+enhancing the query model by contextual factors is equivalent to 
+document re-ranking which is used in 
+the remaining problem is to construct domain models and 
+knowledge model and to combine all the models parameter 
+setting we describe this in the following sections 
+ constructing and using domain 
+models 
+as in previous studies we exploit a set of documents already 
+classified in each domain these documents can be identified in 
+two different ways one can take advantages of an existing 
+domain hierarchy and the documents manually classified in them 
+such as odp in that case a new query should be classified into 
+the same domains either manually or automatically a user can 
+define his own domains by assigning a domain to his queries the 
+system can gather a set of answers to the queries automatically 
+which are then considered to be in-domain documents the 
+answers could be those that the user have read browsed through 
+or judged relevant to an in-domain query or they can be simply 
+the top-ranked retrieval results 
+an earlier study has compared the above two strategies using 
+trec queries - for which a domain has been manually 
+assigned these domains have been mapped to odp categories it 
+is found that both approaches mentioned above are equally 
+effective and result in comparable performance therefore in this 
+study we only use the second approach this choice is also 
+motivated by the possibility to compare between manual and 
+automatic assignment of domain to a new query this will be 
+explained in detail in our experiments 
+whatever the strategy we will obtain a set of documents for each 
+domain from which a language model can be extracted if 
+maximum likelihood estimation is used directly on these 
+documents the resulting domain model will contain both 
+domain-specific terms and general terms and the former do not emerge 
+therefore we employ an em process to extract the specific part of 
+the domain as follows we assume that the documents in a domain 
+are generated by a domain-specific model to be extracted and 
+general language model collection model then the likelihood of 
+a document in the domain can be formulated as follows 
+ 
+∏∈ 
+ − 
+dt 
+dtc 
+cdomdom tptpdp 
+ θηθηθ 
+where c t d is the count of t in document d and η is a 
+smoothing parameter which will be fixed at as in the 
+em algorithm is used to extract the domain model domθ that 
+maximizes p dom θ dom where dom is the set of documents in 
+the domain that is 
+ 
+ 
+∏ ∏∈ ∈ 
+ − 
+ 
+domd dt 
+dtc 
+cdom 
+domdom 
+tptp 
+domp 
+dom 
+dom 
+ 
+ 
+ maxarg 
+ maxarg 
+θηθη 
+θθ 
+θ 
+θ 
+ 
+this is the same process as the one used to extract feedback model 
+in it is able to extract the most specific words of the domain 
+from the documents while filtering out the common words of the 
+language this can be observed in the following table which 
+shows some words in the domain model of environment before 
+and after em iterations iterations 
+table term probabilities before after em 
+term initial final change term initial final change 
+air year - 
+environment system e- 
+- 
+rain program - 
+pollution million e- 
+- 
+storm make e- 
+- 
+flood company e- 
+- 
+tornado president e- 
+- 
+greenhouse month e- 
+- 
+given a set of domain models the related ones have to be assigned 
+to a new query this can be done manually by the user or 
+automatically by the system using query classification we will 
+compare both approaches 
+query classification has been investigated in several studies 
+ in this study we use a simple classification method the 
+selected domain is the one with which the query s kl-divergence 
+score is the lowest i e 
+ log minarg 
+dom 
+qt 
+q 
+dom 
+q tptp 
+dom 
+θθθ 
+θ 
+∑∈ 
+ 
+this classification method is an extension to naïve bayes as 
+shown in the score depending on the domain model is then 
+as follows 
+∑∈ 
+ 
+vt 
+d 
+dom 
+qdom tptpdqscore log θθ 
+although the above equation requires using all the terms in the 
+vocabulary in practice only the strongest terms in the domain 
+model are useful and the terms with low probabilities are often 
+noise therefore we only retain the top strongest terms the 
+same strategy is used for knowledge model 
+although domain models are more refined than a single user 
+profile the topics in a single domain can still be very different 
+making the domain model too large this is particularly true for 
+large domains such as science and technology defined in trec 
+queries using such a large domain model as the background can 
+introduce much noise terms therefore we further construct a 
+sub-domain model more related to the given query by using a subset 
+of in-domain documents that are related to the query these 
+documents are the top-ranked documents retrieved with the 
+original query within the domain this approach is indeed a 
+combination of domain and feedback models in our experiments 
+we will see that this further specification of sub-domain is 
+necessary in some cases but not in all especially when feedback 
+model is also used 
+ extracting context-dependent 
+term relations from documents 
+in this paper we extract term relations from the document 
+collection automatically 
+in general a term relation can be represented as a→b both a and 
+b have been restricted to single terms in previous studies a single 
+term in a means that the relation is applicable to all the queries 
+containing that term as we explained earlier this is the source of 
+many wrong applications the solution we propose is to add more 
+context terms into a so that it is applicable only when all the 
+terms in a appear in a query for example instead of creating a 
+context-independent relation java→program we will create 
+ java computer →program which means that program is 
+selected when both java and computer appear in a query the 
+term added in the condition specifies a stricter context to apply the 
+relation we call this type of relation context-dependent relation 
+in principle the addition is not restricted to one term however 
+we will make this restriction due to the following reasons 
+ user queries are usually very short adding more terms into the 
+condition will create many rarely applicable relations 
+ in most cases an ambiguous word such as java can be 
+effectively disambiguated by one useful context word such as 
+computer or hotel 
+ the addition of more terms will also lead to a higher space and 
+time complexity for extracting and storing term relations 
+the extraction of relations of type tj tk → ti can be performed 
+using mining algorithms for association rules here we use a 
+simple co-occurrence analysis windows of fixed size words 
+in our case are used to obtain co-occurrence counts of three 
+terms and the probability kji tttp is determined as follows 
+∑ 
+lt 
+kjlkjikji tttctttctttp 
+where kji tttc is the count of co-occurrences 
+in order to reduce space requirement we further apply the 
+following filtering criteria 
+ the two terms in the condition should appear at least certain 
+time together in the collection in our case and they should 
+be related we use the following pointwise mutual information 
+as a measure of relatedness mi 
+ 
+ 
+log 
+kj 
+kj 
+kj 
+tptp 
+ttp 
+ttmi 
+ the probability of a relation should be higher than a threshold 
+ in our case 
+having a set of relations the corresponding knowledge model is 
+defined as follows 
+ 
+ 
+ 
+ 
+ 
+ 
+qkqjkj 
+qtt 
+i 
+qkjkj 
+qtt 
+i 
+k 
+q 
+tptptttp 
+ttptttptp 
+kj 
+kj 
+θθ 
+θθ 
+∑ 
+∑ 
+∈ 
+∈ 
+ 
+ 
+ 
+where tj tk ∈q means any combination of two terms in the query 
+this is a direct extension of the translation model proposed in 
+to our context-dependent relations the score according to the 
+knowledge model is then defined as follows 
+∑ ∑∈ ∈ 
+ 
+vt 
+diqkqjkj 
+qtt 
+ik 
+i kj 
+tptptptttpdqscore log 
+ 
+θθθ 
+again only the top expansion terms are used 
+ model parameters 
+there are several parameters in our model λ in equation and 
+αi i∈ dom k f in equation as the parameter λ only 
+affects document model we will set it to the same value in all our 
+experiments the value λ is determined to maximize the 
+effectiveness of the baseline models see section on the 
+training data trec queries - and documents on disk 
+the mixture weights αi of component models are trained on the 
+same training data using the following method of line search 
+to maximize the mean average precision map each parameter 
+is considered as a search direction we start by searching in one 
+direction - testing all the values in that direction while keeping 
+the values in other directions unchanged each direction is 
+searched in turn until no improvement in map is observed 
+in order to avoid being trapped at a local maximum we started 
+from random points and the best setting is selected 
+ experiments 
+ setting 
+the main test data are those from trec - ad-hoc and filtering 
+tracks including queries - and documents on disks - the 
+choice of this test collection is due to the availability of manually 
+specified domain for each query this allows us to compare with 
+an approach using automatic domain identification below is an 
+example of topic 
+ num number 
+ dom domain law and government 
+ title topic welfare reform 
+we only use topic titles in all our tests queries - are used for 
+training and - for testing domains are defined in these 
+queries and their distributions among the two sets of queries are 
+shown in fig we can see that the distribution varies strongly 
+between domains and between the two query sets 
+we have also tested on trec and data for this series of tests 
+each collection is used in turn as training data while the other is 
+used for testing some statistics of the data are described in tab 
+all the documents are preprocessed using porter stemmer in 
+lemur and the standard stoplist is used some queries and 
+in the three query sets only contain one word for these queries 
+knowledge model is not applicable 
+on domain models we examine several questions 
+ when query domain is specified manually is it useful to 
+incorporate the domain model 
+ if the query domain is not specified can it be determined 
+automatically how effective is this method 
+ we described two ways to gather documents for a domain 
+either using documents judged relevant to queries in the domain 
+or using documents retrieved for these queries how do they 
+compare 
+on knowledge model in addition to testing its effectiveness we 
+also want to compare the context-dependent relations with 
+context-independent ones 
+finally we will see the impact of each component model when all 
+the factors are combined 
+ baseline methods 
+two baseline models are used the classical unigram model 
+without any expansion and the model with feedback in all the 
+experiments document models are created using jelinek-mercer 
+smoothing this choice is made according to the observation in 
+ that the method performs very well for long queries in our 
+case as queries are expanded they perform similarly to long 
+queries in our preliminary tests we also found this method 
+performed better than the other methods e g dirichlet especially 
+for the main baseline method with feedback model table shows 
+the retrieval effectiveness on all the collections 
+ knowledge models 
+this model is combined with both baseline models with or 
+without feedback we also compare the context-dependent 
+knowledge model with the traditional context-independent term 
+relations defined between two single terms which are used to 
+expand queries this latter selects expansion terms with strongest 
+global relation to the query this relation is measured by the sum 
+of relations to each of the query terms this method is equivalent 
+to it is also similar to the translation model we call it 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+environm 
+entfinance 
+int econom 
+ics 
+int finance 
+int politics 
+int r 
+elations 
+law 
+ g 
+ov 
+m 
+edical bio m 
+ilitarypolitics 
+sci tech 
+u 
+s 
+econom 
+ics 
+u 
+s 
+politics 
+query - 
+query - 
+figure distribution of domains 
+table trec collection statistics 
+collection document size gb voc of doc query 
+training disk - 
+disks - disks - - 
+trec disks - - 
+trec disks - - 
+co-occurrence model in table t-test is also performed for 
+statistical significance 
+as we can see simple co-occurrence relations can produce 
+relatively strong improvements but context-dependent relations 
+can produce much stronger improvements in all cases especially 
+when feedback is not used all the improvements over 
+cooccurrence model are statistically significant this is not shown in 
+the table the large differences between the two types of relation 
+clearly show that context-dependent relations are more appropriate 
+for query expansion this confirms the hypothesis we made that 
+by incorporating context information into relations we can better 
+determine the appropriate relations to apply and thus avoid 
+introducing inappropriate expansion terms the following 
+example can further confirm this observation where we show the 
+strongest expansion terms suggested by both types of relation for 
+the query space station moon 
+co-occurrence relations year power time 
+develop offic oper earth work 
+ radio system build includ 
+ state program nation open servic 
+ air space nuclear full make 
+ compani peopl project unit gener 
+ dai 
+context-dependent relations space mar earth man 
+ program project base orbit build 
+ mission call explor launch 
+develop shuttl plan flight station 
+intern energi oper power transport 
+ construct nasa nation perman 
+japan apollo lunar 
+in comparison with the baseline model with feedback tab we 
+see that the improvements made by knowledge model alone are 
+slightly lower however when both models are combined there 
+are additional improvements over the feedback model and these 
+improvements are statistically significant in cases out of this 
+demonstrates that the impacts produced by feedback and term 
+relations are different and complementary 
+ domain models 
+in this section we test several strategies to create and use domain 
+models by exploiting the domain information of the query set in 
+various ways 
+strategies for creating domain models 
+c - with the relevant documents for the in-domain queries this 
+strategy simulates the case where we have an existing directory in 
+which documents relevant to the domain are included 
+c - with the top- documents retrieved with the in-domain 
+queries this strategy simulates the case where the user specifies a 
+domain for his queries without judging document relevance and 
+the system gathers related documents from his search history 
+strategies for using domain models 
+u - the domain model is determined by the user manually 
+u - the domain model is determined by the system 
+ creating domain models 
+we test strategies c and c in this series of tests each of the 
+queries - is used in turn as the test query while the other 
+queries and their relevant documents c or top-ranked retrieved 
+documents c are used to create domain models the same 
+method is used on queries - to tune the parameters 
+table baseline models 
+unigram model 
+coll measure 
+without fb with fb 
+avgp 
+recall disks - 
+p  
+avgp 
+recall trec 
+p  
+avgp 
+recall trec 
+p  
+table knowledge models 
+co-occurrence knowledge model 
+coll measure 
+without fb with fb without fb with fb 
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+disks - 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+p  
+ the column withoutfb is compared to the baseline model without 
+feedback while withfb is compared to the baseline with feedback and 
+mean significant changes in t-test with respect to the baseline without 
+feedback at the level of p and p respectively and are similar 
+but compared to the baseline model with feedback table domain models with relevant documents c 
+domain sub-domain 
+coll measure 
+without fb with fb without fb with fb 
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+disks - 
+ u 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+ u 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+ u 
+p  
+table domain models with top- documents c 
+domain sub-domain 
+coll measure 
+without fb with fb without fb with fb 
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+disks - 
+ u 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+ u 
+p  
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+trec 
+ u 
+p  
+we also compare the domain models created with all the 
+indomain documents domain and with only the top- retrieved 
+documents in the domain with the query sub-domain in these 
+tests we use manual identification of query domain for disks - 
+ u but automatic identification for trec and u 
+first it is interesting to notice that the incorporation of domain 
+models can generally improve retrieval effectiveness in all the 
+cases the improvements on disks - and trec are statistically 
+significant however the improvement scales are smaller than 
+using feedback and relation models looking at the distribution 
+of the domains fig this observation is not surprising for 
+many domains we only have few training queries thus few 
+indomain documents to create domain models in addition topics in 
+the same domain can vary greatly in particular in large domains 
+such as science and technology international politics etc 
+second we observe that the two methods to create domain models 
+perform equally well tab vs tab in other words providing 
+relevance judgments for queries does not add much advantage for 
+the purpose of creating domain models this may seem surprising 
+an analysis immediately shows the reason a domain model in the 
+way we created only captures term distribution in the domain 
+relevant documents for all in-domain queries vary greatly 
+therefore in some large domains characteristic terms have 
+variable effects on queries on the other hand as we only use term 
+distribution even if the top documents retrieved for the in-domain 
+queries are irrelevant they can still contain domain characteristic 
+terms similarly to relevant documents thus both strategies 
+produce very similar effects this result opens the door for a 
+simpler method that does not require relevance judgments for 
+example using search history 
+third without feedback model the sub-domain models 
+constructed with relevant documents perform much better than the 
+whole domain models tab however once feedback model is 
+used the advantage disappears on one hand this confirms our 
+earlier hypothesis that a domain may be too large to be able to 
+suggest relevant terms for new queries in the domain it indirectly 
+validates our first hypothesis that a single user model or profile 
+may be too large so smaller domain models are preferred on the 
+other hand sub-domain models capture similar characteristics to 
+feedback model so when the latter is used sub-domain models 
+become superfluous however if domain models are constructed 
+with top-ranked documents tab sub-domain models make 
+much less differences this can be explained by the fact that the 
+domains constructed with top-ranked documents tend to be more 
+uniform than relevant documents with respect to term distribution 
+as the top retrieved documents usually have stronger statistical 
+correspondence with the queries than the relevant documents 
+ determining query domain automatically 
+it is not realistic to always ask users to specify a domain for their 
+queries here we examine the possibility to automatically identify 
+query domains table shows the results with this strategy using 
+both strategies for domain model construction we can observe 
+that the effectiveness is only slightly lower than those produced 
+with manual identification of query domain tab domain 
+models this shows that automatic domain identification is a way 
+to select domain model as effective as manual identification this 
+also demonstrates the feasibility to use domain models for queries 
+when no domain information is provided 
+looking at the accuracy of the automatic domain identification 
+however it is surprisingly low for queries - only of 
+the determined domains correspond to the manual identifications 
+this is much lower than the above rates reported in a 
+detailed analysis reveals that the main reason is the closeness of 
+several domains in trec queries e g international relations 
+international politics politics however in this situation 
+wrong domains assigned to queries are not always irrelevant and 
+useless for example even when a query in international 
+relations is classified in international politics the latter domain 
+can still suggest useful terms to the query therefore the relatively 
+low classification accuracy does not mean low usefulness of the 
+domain models 
+ complete models 
+the results with the complete model are shown in table this 
+model integrates all the components described in this paper 
+original query model feedback model domain model and 
+knowledge model we have tested both strategies to create 
+domain models but the differences between them are very small 
+so we only report the results with the relevant documents 
+our first observation is that the complete models produce the best 
+results all the improvements over the baseline model with 
+feedback are statistically significant this result confirms that the 
+integration of contextual factors is effective compared to the 
+other results we see consistent although small in some cases 
+improvements over all the partial models 
+looking at the mixture weights which may reflect the importance 
+of each model we observed that the best settings in all the 
+collections vary in the following ranges ≤α ≤ ≤αdom 
+≤ ≤αk ≤ and ≤αf ≤ we see that the most 
+important factor is feedback model this is also the single factor 
+which produced the highest improvements over the original query 
+model this observation seems to indicate that this model has the 
+highest capability to capture the information need behind the 
+query however even with lower weights the other models do 
+have strong impacts on the final effectiveness this demonstrates 
+the benefit of integrating more contextual factors in ir 
+table automatic query domain identification u 
+dom with rel doc c dom with top- doc c 
+coll measure 
+without fb with fb without fb with fb 
+avgp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+recall 
+disks 
+ - 
+ u 
+p  
+table complete models c 
+all doc domain 
+coll measure 
+man dom id u auto dom id u 
+avgp 
+recall 
+disks - 
+p  
+avgp 
+recall trec 
+p  
+n a 
+ 
+avgp 
+recall trec 
+p  
+n a 
+ 
+ conclusions 
+traditional ir approaches usually consider the query as the only 
+element available for the user information need many previous 
+studies have investigated the integration of some contextual 
+factors in ir models typically by incorporating a user profile in 
+this paper we argue that a single user profile or model can 
+contain a too large variety of different topics so that new queries 
+can be incorrectly biased similarly to some previous studies we 
+propose to model topic domains instead of the user 
+previous investigations on context focused on factors around the 
+query we showed in this paper that factors within the query are 
+also important - they help select the appropriate term relations to 
+apply in query expansion 
+we have integrated the above contextual factors together with 
+feedback model in a single language model our experimental 
+results strongly confirm the benefit of using contexts in ir this 
+work also shows that the language modeling framework is 
+appropriate for integrating many contextual factors 
+this work can be further improved on several aspects including 
+other methods to extract term relations to integrate more context 
+words in conditions and to identify query domains it would also 
+be interesting to test the method on web search using user search 
+history we will investigate these problems in our future research 
+ references 
+ bai j nie j y cao g context-dependent term relations 
+for information retrieval emnlp pp - 
+ belkin n j interaction with texts information retrieval as 
+information seeking behavior information retrieval von 
+der modellierung zu anwendung pp - konstanz 
+krause womser-hacker 
+ berger a lafferty j information retrieval as statistical 
+translation sigir pp - 
+ bouchard h nie j y modèles de langue appliqués à la 
+recherche d information contextuelle conf en recherche 
+d information et applications coria lyon 
+ chirita p a paiu r nejdl w kohlschütter c using 
+odp metadata to personalize search sigir pp - 
+ 
+ church k w hanks p word association norms mutual 
+information and lexicography acl pp - 
+ croft w b cronen-townsend s lavrenko v relevance 
+feedback and personalization a language modeling 
+perspective in the delos-nsf workshop on 
+personalization and recommender systems digital 
+libraries pp - 
+ croft w b wei x context-based topic models for query 
+modification ciir technical report university of 
+massachusetts 
+ dumais s cutrell e cadiz j jancke g sarin r 
+robbins d c stuff i ve seen a system for personal 
+information retrieval and re-use sigir pp - 
+ fang h zhai c semantic term matching in axiomatic 
+approaches to information retrieval sigir pp - 
+ 
+ gao j qi h xia x nie j -y linear discriminative 
+model for information retrieval sigir pp - 
+ 
+ goole personalized search http www google com psearch 
+ hipp j guntzer u nakhaeizadeh g algorithms for 
+association rule mining - a general survey and comparison 
+sigkdd explorations pp - 
+ ingwersen p jäverlin k information retrieval in context 
+irix sigir forum pp - 
+ kim h -r chan p k personalized ranking of search 
+results with learned user interest hierarchies from bookmarks 
+webkdd workshop at acm-kdd pp - 
+ lavrenko v croft w b relevance-based language 
+models sigir pp - 
+ lau r bruza p song d belief revision for adaptive 
+information retrieval sigir pp - 
+ liu f yu c meng w personalized web search by 
+mapping user queries to categories cikm pp - 
+ liu x croft w b cluster-based retrieval using language 
+models sigir pp - 
+ morris r c toward a user-centered information service 
+jasis pp - 
+ park t k toward a theory of user-based relevance a call 
+for a new paradigm of inquiry jasis pp - 
+ peng f schuurmans d wang s augmenting naive 
+bayes classifiers with statistical language models inf retr 
+ - pp - 
+ pitkow j schütze h cass t cooley r turnbull d 
+edmonds a adar e breuel t personalized search 
+communications of acm pp - 
+ qiu y frei h p concept based query expansion 
+sigir pp - 
+ sanderson m retrieving with good sense inf ret 
+pp - 
+ schamber l eisenberg m b nilan m s a 
+reexamination of relevance towards a dynamic situational 
+definition information processing and management 
+pp - 
+ schütze h pedersen j o a cooccurrence-based thesaurus 
+and two applications to information retrieval information 
+processing and management pp - 
+ shen d pan r sun j-t pan j j wu k yin j yang 
+q query enrichment for web-query classification 
+acmtois pp - 
+ shen x tan b zhai c context-sensitive information 
+retrieval using implicit feedback sigir pp - 
+ teevan j dumais s t horvitz e personalizing search 
+via automated analysis of interests and activities sigir 
+pp - 
+ voorhees e query expansion using lexical-semantic 
+relations sigir pp - 
+ xu j croft w b query expansion using local and global 
+document analysis sigir pp - 
+ yarowsky d unsupervised word sense disambiguation 
+rivaling supervised methods acl pp - 
+ zhou x hu x zhang x lin x song i-y 
+contextsensitive semantic smoothing for the language modeling 
+approach to genomic ir sigir pp - 
+ zhai c lafferty j model-based feedback in the language 
+modeling approach to information retrieval cikm pp 
+ - 
+ zhai c lafferty j a study of smoothing methods for 
+language models applied to ad-hoc information retrieval 
+sigir pp - 

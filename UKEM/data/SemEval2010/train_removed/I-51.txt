@@ -1,0 +1,965 @@
+learning and joint deliberation through argumentation in 
+multi-agent systems 
+santi ontañón 
+ccl cognitive computing lab 
+georgia institute of technology 
+atlanta ga 
+santi cc gatech edu 
+enric plaza 
+iiia artificial intelligence research institute 
+csic spanish council for scientific research 
+campus uab bellaterra catalonia 
+ spain 
+enric iiia csic es 
+abstract 
+in this paper we will present an argumentation framework for 
+learning agents amal designed for two purposes for joint 
+deliberation and for learning from communication the amal 
+framework is completely based on learning from examples the argument 
+preference relation the argument generation policy and the 
+counterargument generation policy are case-based techniques for join 
+deliberation learning agents share their experience by forming a 
+committee to decide upon some joint decision we experimentally 
+show that the argumentation among committees of agents improves 
+both the individual and joint performance for learning from 
+communication an agent engages into arguing with other agents in 
+order to contrast its individual hypotheses and receive 
+counterexamples the argumentation process improves their learning scope and 
+individual performance 
+categories and subject descriptors 
+i artificial intelligence learning i artificial 
+intelligence distributed artificial intelligence-multiagent systems 
+intelligent agents 
+ introduction 
+argumentation frameworks for multi-agent systems can be used 
+for different purposes like joint deliberation persuasion 
+negotiation and conflict resolution in this paper we will present an 
+argumentation framework for learning agents and show that it can be 
+used for two purposes joint deliberation and learning from 
+communication 
+argumentation-based joint deliberation involves discussion over 
+the outcome of a particular situation or the appropriate course of 
+action for a particular situation learning agents are capable of 
+learning from experience in the sense that past examples situations and 
+their outcomes are used to predict the outcome for the situation 
+at hand however since individual agents experience may be 
+limited individual knowledge and prediction accuracy is also limited 
+thus learning agents that are capable of arguing their individual 
+predictions with other agents may reach better prediction accuracy 
+after such an argumentation process 
+most existing argumentation frameworks for multi-agent 
+systems are based on deductive logic or some other deductive logic 
+formalism specifically designed to support argumentation such as 
+default logic usually an argument is seen as a logical 
+statement while a counterargument is an argument offered in opposition 
+to another argument agents use a preference relation to 
+resolve conflicting arguments however logic-based argumentation 
+frameworks assume agents with preloaded knowledge and 
+preference relation in this paper we focus on an argumentation-based 
+multi-agent learning amal framework where both knowledge 
+and preference relation are learned from experience thus we 
+consider a scenario with agents that work in the same domain using 
+a shared ontology are capable of learning from examples and 
+ communicate using an argumentative framework 
+having learning capabilities allows agents effectively use a 
+specific form of counterargument namely the use of 
+counterexamples counterexamples offer the possibility of agents learning 
+during the argumentation process moreover learning agents allow 
+techniques that use learnt experience to generate adequate 
+arguments and counterarguments specifically we will need to address 
+two issues how to define a technique to generate arguments 
+and counterarguments from examples and how to define a 
+preference relation over two conflicting arguments that have been 
+induced from examples 
+this paper presents a case-based approach to address both 
+issues the agents use case-based reasoning cbr to learn from 
+past cases where a case is a situation and its outcome in order 
+to predict the outcome of a new situation we propose an 
+argumentation protocol inside the amal framework at supports agents 
+in reaching a joint prediction over a specific situation or problem 
+- moreover the reasoning needed to support the argumentation 
+process will also be based on cases in particular we present two 
+case-based measures one for generating the arguments and 
+counterarguments adequate to a particular situation and another for 
+determining preference relation among arguments finally we 
+evaluate if argumentation between learning agents can produce a 
+joint prediction that improves over individual learning performance 
+and if learning from the counterexamples conveyed during the 
+argumentation process increases the individual performance with 
+precisely those cases being used while arguing among them 
+the paper is structured as follows section discusses the 
+relation among argumentation collaboration and learning then 
+section introduces our multi-agent cbr mac framework and the 
+notion of justified prediction after that section formally 
+defines our argumentation framework sections and present our 
+case-based preference relation and argument generation policies 
+respectively later section presents the argumentation protocol in 
+our amal framework after that section presents an 
+exemplification of the argumentation framework finally section presents 
+an empirical evaluation of our two main hypotheses the paper 
+closes with related work and conclusions sections 
+ argumentation collaboration 
+and learning 
+both learning and collaboration are ways in which an agent can 
+improve individual performance in fact there is a clear parallelism 
+between learning and collaboration in multi-agent systems since 
+both are ways in which agents can deal with their shortcomings 
+let us show which are the main motivations that an agent can have 
+to learn or to collaborate 
+ motivations to learn 
+- increase quality of prediction 
+- increase efficiency 
+- increase the range of solvable problems 
+ motivations to collaborate 
+- increase quality of prediction 
+- increase efficiency 
+- increase the range of solvable problems 
+- increase the range of accessible resources 
+looking at the above lists of motivation we can easily see that 
+learning and collaboration are very related in multi-agent systems 
+in fact with the exception of the last item in the motivations to 
+collaborate list they are two extremes of a continuum of strategies 
+to improve performance an agent may choose to increase 
+performance by learning by collaborating or by finding an intermediate 
+point that combines learning and collaboration in order to improve 
+performance 
+in this paper we will propose amal an argumentation 
+framework for learning agents and will also also show how amal can be 
+used both for learning from communication and for solving 
+problems in a collaborative way 
+ agents can solve problems in a collaborative way via 
+engaging an argumentation process about the prediction for the 
+situation at hand using this collaboration the prediction 
+can be done in a more informed way since the information 
+known by several agents has been taken into account 
+ agents can also learn from communication with other agents 
+by engaging an argumentation process agents that engage 
+in such argumentation processes can learn from the 
+arguments and counterexamples received from other agents and 
+use this information for predicting the outcomes of future 
+situations 
+in the rest of this paper we will propose an argumentation 
+framework and show how it can be used both for learning and for solving 
+problems in a collaborative way 
+ multi-agent cbr systems 
+a multi-agent case based reasoning system mac m 
+ a c an cn is a multi-agent system composed of a 
+ ai an a set of cbr agents where each agent ai ∈ a 
+possesses an individual case base ci each individual agent ai 
+in a mac is completely autonomous and each agent ai has 
+access only to its individual and private case base ci a case base 
+ci c cm is a collection of cases agents in a mac 
+system are able to individually solve problems but they can also 
+collaborate with other agents to solve problems 
+in this framework we will restrict ourselves to analytical tasks 
+i e tasks like classification where the solution of a problem is 
+achieved by selecting a solution class from an enumerated set of 
+solution classes in the following we will note the set of all the 
+solution classes by s s sk therefore a case c p s is 
+a tuple containing a case description p and a solution class s ∈ s 
+in the following we will use the terms problem and case 
+description indistinctly moreover we will use the dot notation to refer to 
+elements inside a tuple e g to refer to the solution class of a case 
+c we will write c s 
+therefore we say a group of agents perform joint deliberation 
+when they collaborate to find a joint solution by means of an 
+argumentation process however in order to do so an agent has to 
+be able to justify its prediction to the other agents i e generate an 
+argument for its predicted solution that can be examined and 
+critiqued by the other agents the next section addresses this issue 
+ justified predictions 
+both expert systems and cbr systems may have an explanation 
+component in charge of justifying why the system has 
+provided a specific answer to the user the line of reasoning of the 
+system can then be examined by a human expert thus increasing 
+the reliability of the system 
+most of the existing work on explanation generation focuses on 
+generating explanations to be provided to the user however in our 
+approach we use explanations or justifications as a tool for 
+improving communication and coordination among agents we are 
+interested in justifications since they can be used as arguments 
+for that purpose we will benefit from the ability of some machine 
+learning methods to provide justifications 
+a justification built by a cbr method after determining that the 
+solution of a particular problem p was sk is a description that 
+contains the relevant information from the problem p that the cbr 
+method has considered to predict sk as the solution of p in 
+particular cbr methods work by retrieving similar cases to the problem 
+at hand and then reusing their solutions for the current problem 
+expecting that since the problem and the cases are similar the 
+solutions will also be similar thus if a cbr method has retrieved a set 
+of cases c cn to solve a particular problem p the justification 
+built will contain the relevant information from the problem p that 
+made the cbr system retrieve that particular set of cases i e it 
+will contain the relevant information that p and c cn have in 
+common 
+for example figure shows a justification build by a cbr 
+system for a toy problem in the following sections we will show 
+justifications for real problems in the figure a problem has two 
+attributes traffic light and cars passing the retrieval mechanism 
+of the cbr system notices that by considering only the attribute 
+traffic light it can retrieve two cases that predict the same 
+solution wait thus since only this attribute has been used it is the 
+only one appearing in the justification the values of the rest of 
+attributes are irrelevant since whatever their value the solution class 
+would have been the same 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+problem 
+traffic light red 
+cars passing no 
+case 
+traffic light red 
+cars passing no 
+solution wait 
+case 
+traffic light red 
+cars passing yes 
+solution wait 
+case 
+traffic light green 
+cars passing yes 
+solution wait 
+case 
+traffic light green 
+cars passing no 
+solution cross 
+retrieved 
+cases 
+solution wait 
+justification 
+traffic light red 
+figure an example of justification generation in a cbr system notice that since the only relevant feature to decide is traffic light 
+ the only one used to retrieve cases it is the only one appearing in the justification 
+in general the meaning of a justification is that all or most of 
+the cases in the case base of an agent that satisfy the justification 
+ i e all the cases that are subsumed by the justification belong to 
+the predicted solution class in the rest of the paper we will use 
+to denote the subsumption relation in our work we use lid a 
+cbr method capable of building symbolic justifications such as the 
+one exemplified in figure when an agent provides a justification 
+for a prediction the agent generates a justified prediction 
+definition a justified prediction is a tuple j a p 
+s d where agent a considers s the correct solution for problem 
+p and that prediction is justified a symbolic description d such 
+that j d j p 
+justifications can have many uses for cbr systems in this 
+paper we are going to use justifications as arguments in order to 
+allow learning agents to engage in argumentation processes 
+ arguments and 
+counterarguments 
+for our purposes an argument α generated by an agent a is 
+composed of a statement s and some evidence d supporting s as 
+correct in the remainder of this section we will see how this 
+general definition of argument can be instantiated in specific kind of 
+arguments that the agents can generate in the context of mac 
+systems agents argue about predictions for new problems and can 
+provide two kinds of information a specific cases p s and b 
+justified predictions a p s d using this information we can 
+define three types of arguments justified predictions 
+counterarguments and counterexamples 
+a justified prediction α is generated by an agent ai to argue that 
+ai believes that the correct solution for a given problem p is α s 
+and the evidence provided is the justification α d in the 
+example depicted in figure an agent ai may generate the argument 
+α ai p wait traffic light red meaning that the agent ai 
+believes that the correct solution for p is wait because the attribute 
+traffic light equals red 
+a counterargument β is an argument offered in opposition to 
+another argument α in our framework a counterargument 
+consists of a justified prediction aj p s d generated by an agent 
+aj with the intention to rebut an argument α generated by another 
+agent ai that endorses a solution class s different from that of 
+α s for the problem at hand and justifies this with a justification 
+d in the example in figure if an agent generates the argument 
+α ai p walk cars passing no an agent that thinks that 
+the correct solution is wait might answer with the counterargument 
+β aj p wait cars passing no ∧ traffic light red 
+meaning that although there are no cars passing the traffic light is red 
+and the street cannot be crossed 
+a counterexample c is a case that contradicts an argument α 
+thus a counterexample is also a counterargument one that states 
+that a specific argument α is not always true and the evidence 
+provided is the case c specifically for a case c to be a 
+counterexample of an argument α the following conditions have to be met 
+α d c and α s c s i e the case must satisfy the justification 
+α d and the solution of c must be different than the predicted by 
+α 
+by exchanging arguments and counterarguments including 
+counterexamples agents can argue about the correct solution of a given 
+problem i e they can engage a joint deliberation process 
+however in order to do so they need a specific interaction protocol a 
+preference relation between contradicting arguments and a 
+decision policy to generate counterarguments including 
+counterexamples in the following sections we will present these elements 
+ preference relation 
+a specific argument provided by an agent might not be consistent 
+with the information known to other agents or even to some of the 
+information known by the agent that has generated the justification 
+due to noise in training data for that reason we are going to 
+define a preference relation over contradicting justified predictions 
+based on cases basically we will define a confidence measure for 
+each justified prediction that takes into account the cases owned by 
+each agent and the justified prediction with the highest confidence 
+will be the preferred one 
+the idea behind case-based confidence is to count how many of 
+the cases in an individual case base endorse a justified prediction 
+and how many of them are counterexamples of it the more the 
+endorsing cases the higher the confidence and the more the 
+counterexamples the lower the confidence specifically to assess the 
+confidence of a justified prediction α an agent obtains the set of 
+cases in its individual case base that are subsumed by α d with 
+them an agent ai obtains the y aye and n nay values 
+ y ai 
+α c ∈ ci α d c p ∧ α s c s is the number 
+of cases in the agent s case base subsumed by the justification 
+α d that belong to the solution class α s 
+ nai 
+α c ∈ ci α d c p ∧ α s c s is the number 
+of cases in the agent s case base subsumed by justification 
+α d that do not belong to that solution class 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+- 
+- 
+figure confidence of arguments is evaluated by contrasting them against the case bases of the agents 
+an agent estimates the confidence of an argument as 
+cai α 
+y ai 
+α 
+ y ai 
+α nai 
+α 
+i e the confidence on a justified prediction is the number of 
+endorsing cases divided by the number of endorsing cases plus 
+counterexamples notice that we add to the denominator this is to avoid 
+giving excessively high confidences to justified predictions whose 
+confidence has been computed using a small number of cases 
+notice that this correction follows the same idea than the laplace 
+correction to estimate probabilities figure illustrates the individual 
+evaluation of the confidence of an argument in particular three 
+endorsing cases and one counterexample are found in the case base 
+of agents ai giving an estimated confidence of 
+moreover we can also define the joint confidence of an argument 
+α as the confidence computed using the cases present in the case 
+bases of all the agents in the group 
+c α i y ai 
+α 
+ i y ai 
+α nai 
+α 
+notice that to collaboratively compute the joint confidence the 
+agents only have to make public the aye and nay values locally 
+computed for a given argument 
+in our framework agents use this joint confidence as the 
+preference relation a justified prediction α is preferred over another one 
+β if c α ≥ c β 
+ generation of arguments 
+in our framework arguments are generated by the agents from 
+cases using learning methods any learning method able to 
+provide a justified prediction can be used to generate arguments for 
+instance decision trees and lid are suitable learning methods 
+specifically in the experiments reported in this paper agents use 
+lid thus when an agent wants to generate an argument 
+endorsing that a specific solution class is the correct solution for a problem 
+p it generates a justified prediction as explained in section 
+for instance figure shows a real justification generated by 
+lid after solving a problem p in the domain of marine sponges 
+identification in particular figure shows how when an agent 
+receives a new problem to solve in this case a new sponge to 
+determine its order the agent uses lid to generate an argument 
+ consisting on a justified prediction using the cases in the case 
+base of the agent the justification shown in figure can be 
+interpreted saying that the predicted solution is hadromerida 
+because the smooth form of the megascleres of the spiculate 
+skeleton of the sponge is of type tylostyle the spikulate skeleton of the 
+sponge has no uniform length and there is no gemmules in the 
+external features of the sponge thus the argument generated will 
+be α a p hadromerida d 
+ generation of counterarguments 
+as previously stated agents may try to rebut arguments by 
+generating counterargument or by finding counterexamples let us 
+explain how they can be generated 
+an agent ai wants to generate a counterargument β to rebut an 
+argument α when α is in contradiction with the local case base of 
+ai moreover while generating such counterargument β ai 
+expects that β is preferred over α for that purpose we will present 
+a specific policy to generate counterarguments based on the 
+specificity criterion 
+the specificity criterion is widely used in deductive frameworks 
+for argumentation and states that between two conflicting 
+arguments the most specific should be preferred since it is in 
+principle more informed thus counterarguments generated based on 
+the specificity criterion are expected to be preferable since they are 
+more informed to the arguments they try to rebut however there 
+is no guarantee that such counterarguments will always win since 
+as we have stated in section agents in our framework use a 
+preference relation based on joint confidence moreover one may think 
+that it would be better that the agents generate counterarguments 
+based on the joint confidence preference relation however it is not 
+obvious how to generate counterarguments based on joint 
+confidence in an efficient way since collaboration is required in order to 
+evaluate joint confidence thus the agent generating the 
+counterargument should constantly communicate with the other agents at 
+each step of the induction algorithm used to generate 
+counterarguments presently one of our future research lines 
+thus in our framework when an agent wants to generate a 
+counterargument β to an argument α β has to be more specific than α 
+ i e α d β d 
+the generation of counterarguments using the specificity 
+criterion imposes some restrictions over the learning method although 
+lid or id can be easily adapted for this task for instance lid is 
+an algorithm that generates a description starting from scratch and 
+heuristically adding features to that term thus at every step the 
+description is made more specific than in the previous step and the 
+number of cases that are subsumed by that description is reduced 
+when the description covers only or almost only cases of a 
+single solution class lid terminates and predicts that solution class 
+to generate a counterargument to an argument α lid just has to 
+use as starting point the description α d instead of starting from 
+scratch in this way the justification provided by lid will always 
+be subsumed by α d and thus the resulting counterargument will 
+be more specific than α however notice that lid may sometimes 
+not be able to generate counterarguments since lid may not be 
+able to specialize the description α d any further or because the 
+agent ai has no case inci that is subsumed by α d figure shows 
+how an agent a that disagreed with the argument shown in 
+figure generates a counterargument using lid moreover figure 
+shows the generation of a counterargument β 
+ for the argument α 
+ 
+ in figure that is a specialization of α 
+ 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+solution hadromerida 
+justification d 
+sponge 
+spikulate 
+skeleton 
+external 
+features 
+external features 
+gemmules no 
+spikulate skeleton 
+megascleres 
+uniform length no 
+megascleres 
+smooth form tylostyle 
+case base 
+of a 
+lid 
+new 
+sponge 
+p 
+figure example of a real justification generated by lid in the marine sponges data set 
+specifically in our experiments when an agent ai wants to rebut 
+an argument α uses the following policy 
+ agent ai uses lid to try to find a counterargument β more 
+specific than α if found β is sent to the other agent as a 
+counterargument of α 
+ if not found then ai searches for a counterexample c ∈ ci 
+of α if a case c is found then c is sent to the other agent as 
+a counterexample of α 
+ if no counterexamples are found then ai cannot rebut the 
+argument α 
+ argumentation-based 
+multi-agent learning 
+the interaction protocol of amal allows a group of agents a 
+ an to deliberate about the correct solution of a problem p by 
+means of an argumentation process if the argumentation process 
+arrives to a consensual solution the joint deliberation ends 
+otherwise a weighted vote is used to determine the joint solution 
+moreover amal also allows the agents to learn from the 
+counterexamples received from other agents 
+the amal protocol consists on a series of rounds in the initial 
+round each agent states which is its individual prediction for p 
+then at each round an agent can try to rebut the prediction made 
+by any of the other agents the protocol uses a token passing 
+mechanism so that agents one at a time can send counterarguments or 
+counterexamples if they disagree with the prediction made by any 
+other agent specifically each agent is allowed to send one 
+counterargument or counterexample each time he gets the token notice 
+that this restriction is just to simplify the protocol and that it does 
+not restrict the number of counterargument an agent can sent since 
+they can be delayed for subsequent rounds when an agent 
+receives a counterargument or counterexample it informs the other 
+agents if it accepts the counterargument and changes its 
+prediction or not moreover agents have also the opportunity to answer 
+to counterarguments when they receive the token by trying to 
+generate a counterargument to the counterargument 
+when all the agents have had the token once the token returns 
+to the first agent and so on if at any time in the protocol all the 
+agents agree or during the last n rounds no agent has generated 
+any counterargument the protocol ends moreover if at the end of 
+the argumentation the agents have not reached an agreement then 
+a voting mechanism that uses the confidence of each prediction as 
+weights is used to decide the final solution thus amal follows 
+the same mechanism as human committees first each individual 
+member of a committee exposes his arguments and discuses those 
+of the other members joint deliberation and if no consensus is 
+reached then a voting mechanism is required 
+at each iteration agents can use the following performatives 
+ assert α the justified prediction held during the next round 
+will be α an agent can only hold a single prediction at each 
+round thus is multiple asserts are send only the last one is 
+considered as the currently held prediction 
+ rebut β α the agent has found a counterargument β to the 
+prediction α 
+we will define ht αt 
+ αt 
+n as the predictions that each 
+of the n agents hold at a round t moreover we will also define 
+contradict αt 
+i α ∈ ht α s αt 
+i s as the set of 
+contradicting arguments for an agent ai in a round t i e the set of 
+arguments at round t that support a different solution class than αt 
+i 
+the protocol is initiated because one of the agents receives a 
+problem p to be solved after that the agent informs all the other 
+agents about the problem p to solve and the protocol starts 
+ at round t each one of the agents individually solves p 
+and builds a justified prediction using its own cbr method 
+then each agent ai sends the performative assert α 
+i to 
+the other agents thus the agents know h α 
+i α 
+n 
+once all the predictions have been sent the token is given to 
+the first agent a 
+ at each round t other than the agents check whether their 
+arguments in ht agree if they do the protocol moves to step 
+ moreover if during the last n rounds no agent has sent any 
+counterexample or counterargument the protocol also moves 
+to step otherwise the agent ai owner of the token tries 
+to generate a counterargument for each of the opposing 
+arguments in contradict αt 
+i ⊆ ht see section then the 
+counterargument βt 
+i against the prediction αt 
+j with the 
+lowest confidence c αt 
+j is selected since αt 
+j is the prediction 
+more likely to be successfully rebutted 
+ if βt 
+i is a counterargument then ai locally compares 
+αt 
+i with βt 
+i by assessing their confidence against its 
+individual case base ci see section notice that ai is 
+comparing its previous argument with the 
+counterargument that ai itself has just generated and that is about 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+sponge 
+spikulate 
+skeleton 
+external 
+features 
+external features 
+gemmules no 
+growing 
+spikulate skeleton 
+megascleres 
+uniform length no 
+megascleres 
+smooth form tylostyle 
+growing 
+grow massive 
+case base 
+of a 
+lid 
+solution astrophorida 
+justification d 
+figure generation of a counterargument using lid in the sponges data set 
+to send to aj if cai βt 
+i cai αt 
+i then ai 
+considers that βt 
+i is stronger than its previous argument 
+changes its argument to βt 
+i by sending assert βt 
+i to 
+the rest of the agents the intuition behind this is that 
+since a counterargument is also an argument ai checks 
+if the newly counterargument is a better argument than 
+the one he was previously holding and rebut βt 
+i 
+αt 
+j to aj otherwise i e cai βt 
+i ≤ cai αt 
+i ai 
+will send only rebut βt 
+i αt 
+j to aj in any of the two 
+situations the protocol moves to step 
+ if βt 
+i is a counterexample c then ai sends rebut c αt 
+j 
+to aj the protocol moves to step 
+ if ai cannot generate any counterargument or 
+counterexample the token is sent to the next agent a new 
+round t starts and the protocol moves to state 
+ the agent aj that has received the counterargument βt 
+i 
+locally compares it against its own argument αt 
+j by locally 
+assessing their confidence if caj βt 
+i caj αt 
+j then 
+aj will accept the counterargument as stronger than its own 
+argument and it will send assert βt 
+i to the other agents 
+otherwise i e caj βt 
+i ≤ caj αt 
+j aj will not accept 
+the counterargument and will inform the other agents 
+accordingly any of the two situations start a new round t 
+ai sends the token to the next agent and the protocol moves 
+back to state 
+ the agent aj that has received the counterexample c retains 
+it into its case base and generates a new argument αt 
+j that 
+takes into account c and informs the rest of the agents by 
+sending assert αt 
+j to all of them then ai sends the 
+token to the next agent a new round t starts and the 
+protocol moves back to step 
+ the protocol ends yielding a joint prediction as follows if 
+the arguments in ht agree then their prediction is the joint 
+prediction otherwise a voting mechanism is used to decide 
+the joint prediction the voting mechanism uses the joint 
+confidence measure as the voting weights as follows 
+s arg max 
+sk∈s 
+αi∈ht αi s sk 
+c αi 
+moreover in order to avoid infinite iterations if an agent sends 
+twice the same argument or counterargument to the same agent the 
+message is not considered 
+ exemplification 
+let us consider a system composed of three agents a a and 
+a one of the agents a receives a problem p to solve and 
+decides to use amal to solve it for that reason invites a and a to 
+take part in the argumentation process they accept the invitation 
+and the argumentation protocol starts 
+initially each agent generates its individual prediction for p and 
+broadcasts it to the other agents thus all of them can compute 
+h α 
+ α 
+ α 
+ in particular in this example 
+ α 
+ a p hadromerida d 
+ α 
+ a p astrophorida d 
+ α 
+ a p axinellida d 
+a starts owning the token and tries to generate 
+counterarguments for α 
+ and α 
+ but does not succeed however it has one 
+counterexample c for α 
+ thus a sends the the message rebut 
+c α 
+ to a a incorporates c into its case base and tries to 
+solve the problem p again now taking c into consideration a 
+comes up with the justified prediction α 
+ a p hadromerida 
+d and broadcasts it to the rest of the agents with the message 
+assert α 
+ thus all of them know the new h α 
+ α 
+ α 
+ 
+round starts and a gets the token a tries to generate 
+counterarguments for α 
+ and α 
+ and only succeeds to generate a 
+counterargument β 
+ a p astrophorida d against α 
+ the 
+counterargument is sent to a with the message rebut β 
+ α 
+ 
+agent a receives the counterargument and assesses its local 
+confidence the result is that the individual confidence of the 
+counterargument β 
+ is lower than the local confidence of α 
+ therefore a 
+does not accept the counterargument and thus h α 
+ α 
+ α 
+ 
+round starts and a gets the token a generates a 
+counterargument β 
+ a p hadromerida d for α 
+ and sends it to 
+a with the message rebut β 
+ α 
+ agent a receives the 
+counterargument and assesses its local confidence the result is that the 
+local confidence of the counterargument β 
+ is higher than the local 
+confidence of α 
+ therefore a accepts the counterargument and 
+informs the rest of the agents with the message assert β 
+ after 
+that h α 
+ β 
+ α 
+ 
+at round since all the agents agree all the justified 
+predictions in h predict hadromerida as the solution class the 
+protocol ends and a the agent that received the problem considers 
+hadromerida as the joint solution for the problem p 
+ experimental evaluation 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+sponge 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+amal 
+voting 
+individual 
+soybean 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+amal 
+voting 
+individual 
+figure individual and joint accuracy for to agents 
+in this section we empirically evaluate the amal argumentation 
+framework we have made experiments in two different data sets 
+soybean from the uci machine learning repository and sponge a 
+relational data set the soybean data set has examples and 
+solution classes while the sponge data set has examples and 
+solution classes in an experimental run the data set is divided in 
+sets the training set and the test set the training set examples are 
+distributed among different agents without replication i e there 
+is no example shared by two agents in the testing stage problems 
+in the test set arrive randomly to one of the agents and their goal is 
+to predict the correct solution 
+the experiments are designed to test two hypotheses h that 
+argumentation is a useful framework for joint deliberation and can 
+improve over other typical methods such as voting and h that 
+learning from communication improves the individual performance 
+of a learning agent participating in an argumentation process 
+moreover we also expect that the improvement achieved from 
+argumentation will increase as the number of agents participating in the 
+argumentation increases since more information will be taken into 
+account 
+concerning h argumentation is a useful framework for joint 
+deliberation we ran experiments using and agents 
+respectively in all experiments each agent has a of the training 
+data since the training is always distributed among agents 
+figure shows the result of those experiments in the sponge and 
+soybean data sets classification accuracy is plotted in the 
+vertical axis and in the horizontal axis the number of agents that took 
+part in the argumentation processes is shown for each number of 
+agents three bars are shown individual voting and amal the 
+individual bar shows the average accuracy of individual agents 
+predictions the voting bar shows the average accuracy of the joint 
+prediction achieved by voting but without any argumentation and 
+finally the amal bar shows the average accuracy of the joint 
+prediction using argumentation the results shown are the average of 
+ -fold cross validation runs 
+figure shows that collaboration voting and amal 
+outperforms individual problem solving moreover as we expected the 
+accuracy improves as more agents collaborate since more 
+information is taken into account we can also see that amal always 
+outperforms standard voting proving that joint decisions are based 
+on better information as provided by the argumentation process 
+for instance the joint accuracy for agents in the sponge data 
+set is of for amal and for voting while individual 
+accuracy is just moreover the improvement achieved by 
+amal over voting is even larger in the soybean data set the 
+reason is that the soybean data set is more difficult in the sense that 
+agents need more data to produce good predictions these 
+experimental results show that amal effectively exploits the opportunity 
+for improvement the accuracy is higher only because more agents 
+have changed their opinion during argumentation otherwise they 
+would achieve the same result as voting 
+concerning h learning from communication in argumentation 
+processes improves individual prediction we ran the following 
+experiment initially we distributed a of the training set among 
+the five agents after that the rest of the cases in the training set is 
+sent to the agents one by one when an agent receives a new 
+training case it has several options the agent can discard it the agent 
+can retain it or the agent can use it for engaging an argumentation 
+process figure shows the result of that experiment for the two 
+data sets figure contains three plots where nl not learning 
+shows accuracy of an agent with no learning at all l learning 
+shows the evolution of the individual classification accuracy when 
+agents learn by retaining the training cases they individually 
+receive notice that when all the training cases have been retained at 
+ the accuracy should be equal to that of figure for 
+individual agents and finally lfc learning from communication shows 
+the evolution of the individual classification accuracy of learning 
+agents that also learn by retaining those counterexamples received 
+during argumentation i e they learn both from training examples 
+and counterexamples 
+figure shows that if an agent ai learns also from 
+communication ai can significantly improve its individual performance with 
+just a small number of additional cases those selected as relevant 
+counterexamples for ai during argumentation for instance in 
+the soybean data set individual agents have achieved an accuracy 
+of when they also learn from communication versus an 
+accuracy of when they only learn from their individual 
+experience the number of cases learnt from communication depends 
+on the properties of the data set in the sponges data set agents 
+have retained only very few additional cases and significantly 
+improved individual accuracy namely they retain cases in 
+average compared to the cases retained if they do not learn from 
+communication in the soybean data set more counterexamples are 
+learnt to significantly improve individual accuracy namely they 
+retain cases in average compared to cases retained if 
+they do not learn from communication finally the fact that both 
+data sets show a significant improvement points out the adaptive 
+nature of the argumentation-based approach to learning from 
+communication the useful cases are selected as counterexamples and 
+no more than those needed and they have the intended effect 
+ related work 
+concerning cbr in a multi-agent setting the first research was 
+on negotiated case retrieval among groups of agents our 
+work on multi-agent case-based learning started in later 
+mc ginty and smyth presented a multi-agent collaborative cbr 
+approach ccbr for planning finally another interesting 
+approach is multi-case-base reasoning mcbr that deals with 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+sponge 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+lfc 
+l 
+nl 
+soybean 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+lfc 
+l 
+nl 
+figure learning from communication resulting from argumentation in a system composed of agents 
+distributed systems where there are several case bases available for 
+the same task and addresses the problems of cross-case base 
+adaptation the main difference is that our mac approach is a way to 
+distribute the reuse process of cbr using a voting system while 
+retrieve is performed individually by each agent the other 
+multiagent cbr approaches however focus on distributing the retrieve 
+process 
+research on mas argumentation focus on several issues like a 
+logics protocols and languages that support argumentation b 
+argument selection and c argument interpretation approaches for 
+logic and languages that support argumentation include defeasible 
+logic and bdi models although argument selection is a 
+key aspect of automated argumentation see and most 
+research has been focused on preference relations among arguments 
+in our framework we have addressed both argument selection and 
+preference relations using a case-based approach 
+ conclusions and future work 
+in this paper we have presented an argumentation-based 
+framework for multi-agent learning specifically we have presented 
+amal a framework that allows a group of learning agents to 
+argue about the solution of a given problem and we have shown how 
+the learning capabilities can be used to generate arguments and 
+counterarguments the experimental evaluation shows that the 
+increased amount of information provided to the agents by the 
+argumentation process increases their predictive accuracy and specially 
+when an adequate number of agents take part in the argumentation 
+the main contributions of this work are a an argumentation 
+framework for learning agents b a case-based preference relation 
+over arguments based on computing an overall confidence 
+estimation of arguments c a case-based policy to generate 
+counterarguments and select counterexamples and d an argumentation-based 
+approach for learning from communication 
+finally in the experiments presented here a learning agent would 
+retain all counterexamples submitted by the other agent however 
+this is a very simple case retention policy and we will like to 
+experiment with more informed policies - with the goal that individual 
+learning agents could significantly improve using only a small set 
+of cases proposed by other agents finally our approach is focused 
+on lazy learning and future works aims at incorporating eager 
+inductive learning inside the argumentative framework for learning 
+from communication 
+ references 
+ agnar aamodt and enric plaza case-based reasoning 
+foundational issues methodological variations and system 
+approaches artificial intelligence communications 
+ - 
+ e armengol and e plaza lazy induction of descriptions for 
+relational case-based learning in ecml pages - 
+ 
+ gerhard brewka dynamic argument systems a formal 
+model of argumentation processes based on situation 
+calculus journal of logic and computation - 
+ 
+ carlos i chesñevar and guillermo r simari formalizing 
+defeasible argumentation using labelled deductive 
+systems journal of computer science technology 
+ - 
+ d leake and r sooriamurthi automatically selecting 
+strategies for multi-case-base reasoning in s craw and 
+a preece editors eccbr pages - berlin 
+ springer verlag 
+ francisco j martín enric plaza and josep-lluis arcos 
+knowledge and experience reuse through communications 
+among competent peer agents international journal of 
+software engineering and knowledge engineering 
+ - 
+ lorraine mcginty and barry smyth collaborative 
+case-based reasoning applications in personalized route 
+planning in i watson and q yang editors iccbr number 
+ in lnai pages - springer-verlag 
+ santi ontañón and enric plaza justification-based 
+multiagent learning in icml pages - morgan 
+kaufmann 
+ enric plaza eva armengol and santiago ontañón the 
+explanatory power of symbolic similarity in case-based 
+reasoning artificial intelligence review - 
+ 
+ david poole on the comparison of theories preferring the 
+most specific explanation in ijcai- pages - 
+ 
+ m v nagendra prassad victor r lesser and susan lander 
+retrieval and reasoning in distributed case bases technical 
+report umass computer science department 
+ k sycara s kraus and a evenchik reaching agreements 
+through argumentation a logical model and implementation 
+artificial intelligence journal - 
+ n r jennings s parsons c sierra agents that reason and 
+negotiate by arguing journal of logic and computation 
+ - 
+ bruce a wooley explanation component of software 
+systems acm crossroads 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

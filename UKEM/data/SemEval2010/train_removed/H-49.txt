@@ -1,0 +1,895 @@
+performance prediction using spatial autocorrelation 
+fernando diaz 
+center for intelligent information retrieval 
+department of computer science 
+university of massachusetts 
+amherst ma 
+fdiaz cs umass edu 
+abstract 
+evaluation of information retrieval systems is one of the core 
+tasks in information retrieval problems include the 
+inability to exhaustively label all documents for a topic 
+nongeneralizability from a small number of topics and 
+incorporating the variability of retrieval systems previous work 
+addresses the evaluation of systems the ranking of queries 
+by difficulty and the ranking of individual retrievals by 
+performance approaches exist for the case of few and even no 
+relevance judgments our focus is on zero-judgment 
+performance prediction of individual retrievals 
+one common shortcoming of previous techniques is the 
+assumption of uncorrelated document scores and judgments 
+if documents are embedded in a high-dimensional space as 
+they often are we can apply techniques from spatial data 
+analysis to detect correlations between document scores 
+we find that the low correlation between scores of 
+topically close documents often implies a poor retrieval 
+performance when compared to a state of the art baseline 
+we demonstrate that the spatial analysis of retrieval scores 
+provides significantly better prediction performance these 
+new predictors can also be incorporated with classic 
+predictors to improve performance further we also describe 
+the first large-scale experiment to evaluate zero-judgment 
+performance prediction for a massive number of retrieval 
+systems over a variety of collections in several languages 
+categories and subject descriptors 
+h information search and retrieval retrieval 
+models h systems and software performance 
+evaluation efficiency and effectiveness 
+general terms 
+performance design reliability experimentation 
+ introduction 
+in information retrieval a user poses a query to a system 
+the system retrieves n documents each receiving a 
+realvalued score indicating the predicted degree of relevance 
+if we randomly select pairs of documents from this set we 
+expect some pairs to share the same topic and other pairs to 
+not share the same topic take two topically-related 
+documents from the set and call them a and b if the scores of a 
+and b are very different we may be concerned about the 
+performance of our system that is if a and b are both on the 
+topic of the query we would like them both to receive a high 
+score if a and b are not on the topic of the query we would 
+like them both to receive a low score we might become more 
+worried as we find more differences between scores of related 
+documents we would be more comfortable with a retrieval 
+where scores are consistent between related documents 
+our paper studies the quantification of this inconsistency 
+in a retrieval from a spatial perspective spatial analysis is 
+appropriate since many retrieval models embed documents 
+in some vector space if documents are embedded in a space 
+proximity correlates with topical relationships score 
+consistency can be measured by the spatial version of 
+autocorrelation known as the moran coefficient or im in 
+this paper we demonstrate a strong correlation between im 
+and retrieval performance 
+the discussion up to this point is reminiscent of the 
+cluster hypothesis the cluster hypothesis states closely-related 
+documents tend to be relevant to the same request as we 
+shall see a retrieval function s spatial autocorrelation 
+measures the degree to which closely-related documents receive 
+similar scores because of this we interpret 
+autocorrelation as measuring the degree to which a retrieval function 
+satisfies the clustering hypothesis if this connection is 
+reasonable in section we present evidence that failure to 
+satisfy the cluster hypothesis correlates strongly with poor 
+performance 
+in this work we provide the following contributions 
+ a general robust method for predicting the 
+performance of retrievals with zero relevance judgments 
+ section 
+ a theoretical treatment of the similarities and 
+motivations behind several state-of-the-art performance 
+prediction techniques section 
+ the first large-scale experiments of zero-judgment 
+single run performance prediction sections and 
+ problem definition 
+given a query an information retrieval system produces 
+a ranking of documents in the collection encoded as a set 
+of scores associated with documents we refer to the set 
+of scores for a particular query-system combination as a 
+retrieval we would like to predict the performance of this 
+retrieval with respect to some evaluation measure eg mean 
+average precision in this paper we present results for 
+ranking retrievals from arbitrary systems we would like 
+this ranking to approximate the ranking of retrievals by the 
+evaluation measure this is different from ranking queries 
+by the average performance on each query it is also 
+different from ranking systems by the average performance on a 
+set of queries 
+scores are often only computed for the top n documents 
+from the collection we place these scores in the length 
+n vector y where yi refers to the score of the ith-ranked 
+document we adjust scores to have zero mean and unit 
+variance we use this method because of its simplicity and 
+its success in previous work 
+ spatial correlation 
+in information retrieval we often assume that the 
+representations of documents exist in some high-dimensional 
+vector space for example given a vocabulary v this vector 
+space may be an arbitrary v -dimensional space with cosine 
+inner-product or a multinomial simplex with a 
+distributionbased distance measure an embedding space is often 
+selected to respect topical proximity if two documents are 
+near they are more likely to share a topic 
+because of the prevalence and success of spatial models 
+of information retrieval we believe that the application of 
+spatial data analysis techniques are appropriate whereas 
+in information retrieval we are concerned with the score at 
+a point in a space in spatial data analysis we are concerned 
+with the value of a function at a point or location in a space 
+we use the term function here to mean a mapping from a 
+location to a real value for example we might be interested 
+in the prevalence of a disease in the neighborhood of some 
+city the function would map the location of a neighborhood 
+to an infection rate 
+if we want to quantify the spatial dependencies of a 
+function we would employ a measure referred to as the spatial 
+autocorrelation high spatial autocorrelation suggests 
+that knowing the value of a function at location a will tell 
+us a great deal about the value at a neighboring location 
+b there is a high spatial autocorrelation for a function 
+representing the temperature of a location since knowing 
+the temperature at a location a will tell us a lot about the 
+temperature at a neighboring location b low spatial 
+autocorrelation suggests that knowing the value of a function 
+at location a tells us little about the value at a neighboring 
+location b there is low spatial autocorrelation in a function 
+measuring the outcome of a coin toss at a and b 
+in this section we will begin by describing what we mean 
+by spatial proximity for documents and then define a 
+measure of spatial autocorrelation we conclude by extending 
+this model to include information from multiple retrievals 
+from multiple systems for a single query 
+ spatial representation of documents 
+our work does not focus on improving a specific similarity 
+measure or defining a novel vector space instead we choose 
+an inner product known to be effective at detecting 
+interdocument topical relationships specifically we adopt tf idf 
+document vectors 
+˜di di log 
+„ 
+ n − ci 
+ ci 
+ 
+ 
+where d is a vector of term frequencies c is the length- v 
+document frequency vector we use this weighting scheme 
+due to its success for topical link detection in the context 
+of topic detection and tracking tdt evaluations 
+assuming vectors are scaled by their l norm we use the inner 
+product ˜di ˜dj to define similarity 
+given documents and some similarity measure we can 
+construct a matrix which encodes the similarity between 
+pairs of documents recall that we are given the top n 
+documents retrieved in y we can compute an n × n 
+similarity matrix w an element of this matrix wij represents 
+the similarity between documents ranked i and j in 
+practice we only include the affinities for a document s k-nearest 
+neighbors in all of our experiments we have fixed k to 
+we leave exploration of parameter sensitivity to future work 
+we also row normalize the matrix so that 
+pn 
+j wij for 
+all i 
+ spatial autocorrelation of a retrieval 
+recall that we are interested in measuring the similarity 
+between the scores of spatially-close documents one such 
+suitable measure is the moran coefficient of spatial 
+autocorrelation assuming the function y over n locations this is 
+defined as 
+˜im 
+n 
+etwe 
+p 
+i j wijyiyj 
+p 
+i y 
+i 
+ 
+n 
+etwe 
+yt 
+wy 
+yty 
+ 
+where et 
+we 
+p 
+ij wij 
+we would like to compare autocorrelation values for 
+different retrievals unfortunately the bound for equation 
+is not consistent for different w and y therefore we use 
+the cauchy-schwartz inequality to establish a bound 
+˜im ≤ 
+n 
+etwe 
+s 
+ytwtwy 
+yty 
+and we define the normalized spatial autocorrelation as 
+im 
+yt 
+wy 
+p 
+yty × ytwtwy 
+notice that if we let ˜y wy then we can write this formula 
+as 
+im 
+yt 
+˜y 
+y ˜y 
+ 
+which can be interpreted as the correlation between the 
+original retrieval scores and a set of retrieval scores diffused 
+in the space 
+we present some examples of autocorrelations of functions 
+on a grid in figure 
+ correlation with other retrievals 
+sometimes we are interested in the performance of a single 
+retrieval but have access to scores from multiple systems for 
+ a im b im c im 
+figure the moran coefficient im for a several 
+binary functions on a grid the moran coefficient 
+is a local measure of function consistency from the 
+perspective of information retrieval each of these 
+grid spaces would represent a document and 
+documents would be organized so that they lay next to 
+topically-related documents binary retrieval scores 
+would define a pattern on this grid notice that 
+as the moran coefficient increases neighboring cells 
+tend to have similar values 
+the same query in this situation we can use combined 
+information from these scores to construct a surrogate for 
+a high-quality ranking we can treat the correlation 
+between the retrieval we are interested in and the combined 
+scores as a predictor of performance 
+assume that we are given m score functions yi for the 
+same n documents we will represent the mean of these 
+vectors as yµ 
+pm 
+i yi we use the mean vector as an 
+approximation to relevance since we use zero mean and unit 
+variance normalization work in metasearch suggests that 
+this assumption is justified because yµ represents a 
+very good retrieval we hypothesize that a strong similarity 
+between yµ and y will correlate positively with system 
+performance we use pearson s product-moment correlation to 
+measure the similarity between these vectors 
+ρ y yµ 
+yt 
+yµ 
+y yµ 
+ 
+we will comment on the similarity between equation and 
+ in section 
+of course we can combine ρ y ˜y and ρ y yµ if we 
+assume that they capture different factors in the prediction 
+one way to accomplish this is to combine these predictors 
+as independent variables in a linear regression an 
+alternative means of combination is suggested by the mathematical 
+form of our predictors since ˜y encodes the spatial 
+dependencies in y and yµ encodes the spatial properties of the 
+multiple runs we can compute a third correlation between 
+these two vectors 
+ρ ˜y yµ 
+˜yt 
+yµ 
+˜y yµ 
+ 
+we can interpret equation as measuring the correlation 
+between a high quality ranking yµ and a spatially smoothed 
+version of the retrieval ˜y 
+ relationship with other 
+predictors 
+one way to predict the effectiveness of a retrieval is to 
+look at the shared vocabulary of the top n retrieved 
+documents if we computed the most frequent content words 
+in this set we would hope that they would be consistent 
+with our topic in fact we might believe that a bad 
+retrieval would include documents on many disparate topics 
+resulting in an overlap of terminological noise the clarity 
+of a query attempts to quantify exactly this specifically 
+clarity measures the similarity of the words most frequently 
+used in retrieved documents to those most frequently used 
+in the whole corpus the conjecture is that a good retrieval 
+will use language distinct from general text the overlapping 
+language in a bad retrieval will tend to be more similar to 
+general text mathematically we can compute a 
+representation of the language used in the initial retrieval as a weighted 
+combination of document language models 
+p w θq 
+nx 
+i 
+p w θi 
+p q θi 
+z 
+ 
+where θi is the language model of the ith-ranked 
+document p q θi is the query likelihood score of the ith-ranked 
+document and z 
+pn 
+i p q θi is a normalization 
+constant the similarity between the multinomial p w θq 
+and a model of general text can be computed using the 
+kullback-leibler divergence dv 
+kl θq θc here the 
+distribution p w θc is our model of general text which can be 
+computed using term frequencies in the corpus in figure 
+ a we present clarity as measuring the distance between the 
+weighted center of mass of the retrieval labeled y and the 
+unweighted center of mass of the collection labeled o 
+clarity reaches a minimum when a retrieval assigns every 
+document the same score 
+let s again assume we have a set of n documents retrieved 
+for our query another way to quantify the dispersion of a 
+set of documents is to look at how clustered they are we 
+may hypothesize that a good retrieval will return a single 
+tight cluster a poorly performing retrieval will return a 
+loosely related set of documents covering many topics one 
+proposed method of quantifying this dispersion is to 
+measure the distance from a random document a to it s nearest 
+neighbor b a retrieval which is tightly clustered will on 
+average have a low distance between a and b a retrieval 
+which is less tightly-closed will on average have high 
+distances between a and b this average corresponds to using 
+the cox-lewis statistic to measure the randomness of the 
+top n documents retrieved from a system in figure 
+ a this is roughly equivalent to measuring the area of the 
+set n notice that we are throwing away information about 
+the retrieval function y therefore the cox-lewis statistic 
+is highly dependent on selecting the top n documents 
+remember that we have n documents and a set of scores 
+let s assume that we have access to the system which 
+provided the original scores and that we can also request scores 
+for new documents this suggests a third method for 
+predicting performance take some document a from the 
+retrieved set and arbitrarily add or remove words at random 
+to create a new document ˜a now we can ask our system 
+to score ˜a with respect to our query if on average over 
+the n documents the scores of a and ˜a tend to be very 
+different we might suspect that the system is failing on this 
+query so an alternative approach is to measure the 
+simi 
+the authors have suggested coupling the query with the 
+distance measure the information introduced by the 
+query though is retrieval-independent so that if two 
+retrievals return the same set of documents the approximate 
+cox-lewis statistic will be the same regardless of the 
+retrieval scores 
+yoy 
+ a global divergence 
+µ y ˜y 
+y 
+ b score perturbation 
+µ y 
+y 
+ c multirun averaging 
+figure representation of several performance predictors on a grid in figure a we depict predictors 
+which measure the divergence between the center of mass of a retrieval and the center of the embedding 
+space in figure b we depict predictors which compare the original retrieval y to a perturbed version of 
+the retrieval ˜y our approach uses a particular type of perturbation based on score diffusion finally in 
+figure c we depict prediction when given retrievals from several other systems on the same query here 
+we can consider the fusion of these retrieval as a surrogate for relevance 
+larity between the retrieval and a perturbed version of that 
+retrieval this can be accomplished by either 
+perturbing the documents or queries the similarity between 
+the two retrievals can be measured using some correlation 
+measure this is depicted in figure b the upper grid 
+represents the original retrieval y while the lower grid 
+represents the function after having been perturbed ˜y the 
+nature of the perturbation process requires additional 
+scorings or retrievals our predictor does not require access to 
+the original scoring function or additional retrievals so 
+although our method is similar to other perturbation methods 
+in spirit it can be applied in situations when the retrieval 
+system is inaccessible or costly to access 
+finally assume that we have in addition to the retrieval 
+we want to evaluate m retrievals from a variety of 
+different systems in this case we might take a document a 
+compare its rank in the retrieval to its average rank in the 
+m retrievals if we believe that the m retrievals provide a 
+satisfactory approximation to relevance then a very large 
+difference in rank would suggest that our retrieval is 
+misranking a if this difference is large on average over all 
+n documents then we might predict that the retrieval is 
+bad if on the other hand the retrieval is very consistent 
+with the m retrievals then we might predict that the 
+retrieval is good the similarity between the retrieval and 
+the combined retrieval may be computed using some 
+correlation measure this is depicted in figure c in previous 
+work the kullback-leibler divergence between the 
+normalized scores of the retrieval and the normalized scores of the 
+combined retrieval provides the similarity 
+ experiments 
+our experiments focus on testing the predictive power of 
+each of our predictors ρ y ˜y ρ y yµ and ρ ˜y yµ as 
+stated in section we are interested in predicting the 
+performance of the retrieval generated by an arbitrary system 
+our methodology is consistent with previous research in that 
+we predict the relative performance of a retrieval by 
+comparing a ranking based on our predictor to a ranking based on 
+average precision 
+we present results for two sets of experiments the first 
+set of experiments presents detailed comparisons of our 
+predictors to previously-proposed predictors using identical data 
+sets our second set of experiments demonstrates the 
+generalizability of our approach to arbitrary retrieval methods 
+corpus types and corpus languages 
+ detailed experiments 
+in these experiments we will predict the performance of 
+language modeling scores using our autocorrelation 
+predictor ρ y ˜y we do not consider ρ y yµ or ρ ˜y yµ 
+because in these detailed experiments we focus on ranking 
+the retrievals from a single system we use retrievals values 
+for baseline predictors and evaluation measures reported in 
+previous work 
+ topics and collections 
+these performance prediction experiments use language 
+model retrievals performed for queries associated with 
+collections in the trec corpora using trec collections 
+allows us to confidently associate an average precision with a 
+retrieval in these experiments we use the following topic 
+collections trec ad-hoc trec ad-hoc robust 
+terabyte and terabyte 
+ baselines 
+we provide two baselines our first baseline is the 
+classic clarity predictor presented in equation clarity is 
+designed to be used with language modeling systems our 
+second baseline is zhou and croft s ranking robustness 
+predictor this predictor corrupts the top k documents 
+from retrieval and re-computes the language model scores 
+for these corrupted documents the value of the predictor 
+is the spearman rank correlation between the original 
+ranking and the corrupted ranking in our tables we will label 
+results for clarity using dv 
+kl and the ranking robustness 
+predictor using p 
+ generalizability experiments 
+our predictors do not require a particular baseline 
+retrieval system the predictors can be computed for an 
+arbitrary retrieval regardless of how scores were generated we 
+believe that that is one of the most attractive aspects of our 
+algorithm therefore in a second set of experiments we 
+demonstrate the ability of our techniques to generalize to a 
+variety of collections topics and retrieval systems 
+ topics and collections 
+we gathered a diverse set of collections from all possible 
+trec corpora we cast a wide net in order to locate 
+collections where our predictors might fail our hypothesis is that 
+documents with high topical similarity should have 
+correlated scores therefore we avoided collections where scores 
+were unlikely to be correlated eg question-answering or 
+were likely to be negatively correlated eg novelty 
+nevertheless our collections include corpora where correlations 
+are weakly justified eg non-english corpora or not 
+justified at all eg expert search we use the ad-hoc tracks from 
+trec - trec robust - trec terabyte 
+ trec - spanish trec - chinese and trec 
+enterprise expert search in all cases we use only the 
+automatic runs for ad-hoc tracks submitted to nist 
+for all english and spanish corpora we construct the 
+matrix w according to the process described in section for 
+chinese corpora we use na¨ıve character-based tf idf vectors 
+for entities entries in w are proportional to the number of 
+documents in which two entities cooccur 
+ baselines 
+in our detailed experiments we used the clarity measure 
+as a baseline since we are predicting the performance of 
+retrievals which are not based on language modeling we 
+use a version of clarity referred to as ranked-list clarity 
+ ranked-list clarity converts document ranks to p q θi 
+values this conversion begins by replacing all of the scores 
+in y with the respective ranks our estimation of p q θi 
+from the ranks then is 
+p q θi 
+ 
+ c −yi 
+c c 
+if yi ≤ c 
+ otherwise 
+ 
+where c is a cutoff parameter as suggested by the authors 
+we fix the algorithm parameters c and λ so that c 
+and λ we use equation to estimate p w θq and 
+dv 
+kl θq θc to compute the value of the predictor we 
+will refer to this predictor as dv 
+kl superscripted by v to 
+indicate that the kullback-leibler divergence is with respect 
+to the term embedding space 
+when information from multiple runs on the same query is 
+available we use aslam and pavlu s document-space 
+multinomial divergence as a baseline this rank-based method 
+first normalizes the scores in a retrieval as an n-dimensional 
+multinomial as with ranked-list clarity we begin by 
+replacing all of the scores in y with their respective ranks 
+then we adjust the elements of y in the following way 
+ˆyi 
+ 
+ n 
+ 
+  
+nx 
+k yi 
+ 
+k 
+ 
+a 
+in our multirun experiments we only use the top 
+documents from each retrieval n this is within the range 
+of parameter values suggested by the authors however we 
+admit not tuning this parameter for either our system or the 
+baseline the predictor is the divergence between the 
+candidate distribution y and the mean distribution yµ with 
+the uniform linear combination of these m retrievals 
+represented as yµ we can compute the divergence as dn 
+kl ˆy ˆyµ 
+where we use the superscript n to indicate that the 
+summation is over the set of n documents this baseline was 
+developed in the context of predicting query difficulty but 
+we adopt it as a reasonable baseline for predicting retrieval 
+performance 
+ parameter settings 
+when given multiple retrievals we use documents in the 
+union of the top k documents from each of the m 
+retrievals for that query if the size of this union is ˜n then 
+yµ and each yi is of length ˜n in some cases a system 
+did not score a document in the union since we are 
+making a gaussian assumption about our scores we can sample 
+scores for these unseen documents from the negative tail 
+of the distribution specifically we sample from the part 
+of the distribution lower than the minimum value of in the 
+normalized retrieval this introduces randomness into our 
+algorithm but we believe it is more appropriate than 
+assigning an arbitrary fixed value 
+we optimized the linear regression using the square root 
+of each predictor we found that this substantially improved 
+fits for all predictors including the baselines we considered 
+linear combinations of pairs of predictors labeled by the 
+components and all predictors labeled as β 
+ evaluation 
+given a set of retrievals potentially from a combination 
+of queries and systems we measure the correlation of the 
+rank ordering of this set by the predictor and by the 
+performance metric in order to ensure comparability with 
+previous results we present kendall s τ correlation between the 
+predictor s ranking and ranking based on average precision 
+of the retrieval unless explicitly noted all correlations are 
+significant with p 
+predictors can sometimes perform better when linearly 
+combined although previous work has presented 
+the coefficient of determination r 
+ to measure the quality 
+of the regression this measure cannot be reliably used when 
+comparing slight improvements from combining predictors 
+therefore we adopt the adjusted coefficient of 
+determination which penalizes models with more variables the 
+adjusted r 
+allows us to evaluate the improvement in 
+prediction achieved by adding a parameter but loses the statistical 
+interpretation of r 
+ we will use kendall s τ to evaluate the 
+magnitude of the correlation and the adjusted r 
+to 
+evaluate the combination of variables 
+ results 
+we present results for our detailed experiments comparing 
+the prediction of language model scores in table although 
+the clarity measure is theoretically designed for language 
+model scores it consistently underperforms our system-agnostic 
+predictor ranking robustness was presented as an 
+improvement to clarity for web collections represented in our 
+experiments by the terabyte and terabyte collections 
+shifting the τ correlation from to for terabyte and 
+ to for terabyte however these improvements 
+are slight compared to the performance of autocorrelation 
+on these collections our predictor achieves a τ correlation 
+of for terabyte and for terabyte though 
+not always the strongest autocorrelation achieves 
+correlations competitive with baseline predictors when 
+examining the performance of linear combinations of predictors we 
+note that in every case autocorrelation factors as a 
+necessary component of a strong predictor we also note that the 
+adjusted r 
+for individual baselines are always significantly 
+improved by incorporating autocorrelation 
+we present our generalizability results in table we 
+begin by examining the situation in column a where we 
+are presented with a single retrieval and no information 
+from additional retrievals for every collection except one 
+we achieve significantly better correlations than ranked-list 
+clarity surprisingly we achieve relatively strong 
+correlations for spanish and chinese collections despite our na¨ıve 
+processing we do not have a ranked-list clarity correlation 
+for ent because entity modeling is itself an open research 
+question however our autocorrelation measure does not 
+achieve high correlations perhaps because relevance for 
+entity retrieval does not propagate according to the 
+cooccurrence links we use 
+as noted above the poor clarity performance on web 
+data is consistent with our findings in the detailed 
+experiments clarity also notably underperforms for several news 
+corpora trec trec and robust on the other hand 
+autocorrelation seems robust to the changes between different 
+corpora 
+next we turn to the introduction of information from 
+multiple retrievals we compare the correlations between 
+those predictors which do not use this information in column 
+ a and those which do in column b for every collection 
+the predictors in column b outperform the predictors in 
+column a indicating that the information from additional 
+runs can be critical to making good predictions 
+inspecting the predictors in column b we only draw 
+weak conclusions our new predictors tend to perform 
+better on news corpora and between our new predictors the 
+hybrid ρ ˜y yµ predictor tends to perform better recall 
+that our ρ ˜y yµ measure incorporates both spatial and 
+multiple retrieval information therefore we believe that 
+the improvement in correlation is the result of 
+incorporating information from spatial behavior 
+in column c we can investigate the utility of 
+incorporating spatial information with information from 
+multiple retrievals notice that in the cases where 
+autocorrelation ρ y ˜y alone performs well trec trec -spanish and 
+trec -chinese it is substantially improved by 
+incorporating multiple-retrieval information from ρ y yµ in the 
+linear regression β in the cases where ρ y yµ performs well 
+incorporating autocorrelation rarely results in a significant 
+improvement in performance in fact in every case where 
+our predictor outperforms the baseline it includes 
+information from multiple runs 
+ discussion 
+the most important result from our experiments involves 
+prediction when no information is available from multiple 
+runs tables and a this situation arises often in system 
+design for example a system may need to at retrieval 
+time assess its performance before deciding to conduct more 
+intensive processing such as pseudo-relevance feedback or 
+interaction assuming the presence of multiple retrievals is 
+unrealistic in this case 
+we believe that autocorrelation is like multiple-retrieval 
+algorithms approximating a good ranking in this case by 
+diffusing scores why is ˜y a reasonable surrogate we know 
+that diffusion of scores on the web graph and language model 
+graphs improves performance therefore if score 
+diffusion tends to in general improve performance then 
+diffused scores will in general provide a good surrogate for 
+relevance our results demonstrate that this approximation 
+is not as powerful as information from multiple retrievals 
+nevertheless in situations where this information is lacking 
+autocorrelation provides substantial information 
+the success of autocorrelation as a predictor may also 
+have roots in the clustering hypothesis recall that we 
+regard autocorrelation as the degree to which a retrieval 
+satisfies the clustering hypothesis our experiments then 
+demonstrate that a failure to respect the clustering 
+hypothesis correlates with poor performance why might systems 
+fail to conform to the cluster hypothesis query-based 
+information retrieval systems often score documents 
+independently the score of document a may be computed by 
+examining query term or phrase matches the document length 
+and perhaps global collection statistics once computed 
+a system rarely compares the score of a to the score of a 
+topically-related document b with some exceptions the 
+correlation of document scores has largely been ignored 
+we should make it clear that we have selected tasks where 
+topical autocorrelation is appropriate there are certainly 
+cases where there is no reason to believe that retrieval scores 
+will have topical autocorrelation for example ranked lists 
+which incorporate document novelty should not exhibit 
+spatial autocorrelation if anything autocorrelation should be 
+negative for this task similarly answer candidates in a 
+question-answering task may or may not exhibit 
+autocorrelation in this case the semantics of links is questionable 
+too it is important before applying this measure to confirm 
+that given the semantics for some link between two retrieved 
+items we should expect a correlation between scores 
+ related work 
+in this section we draw more general comparisons to other 
+work in performance prediction and spatial data analysis 
+there is a growing body of work which attempts to predict 
+the performance of individual retrievals we 
+have attempted to place our work in the context of much of 
+this work in section however a complete comparison is 
+beyond the scope of this paper we note though that our 
+experiments cover a larger and more diverse set of retrievals 
+collections and topics than previously examined 
+much previous work-particularly in the context of 
+trecfocuses on predicting the performance of systems here 
+each system generates k retrievals the task is given these 
+retrievals to predict the ranking of systems according to 
+some performance measure several papers attempt to 
+address this task under the constraint of few judgments 
+some work even attempts to use zero judgments by 
+leveraging multiple retrievals for the same query our task 
+differs because we focus on ranking retrievals independent 
+of the generating system the task here is not to test the 
+hypothesis system a is superior to system b but to test 
+the hypothesis retrieval a is superior to retrieval b 
+autocorrelation manifests itself in many classification tasks 
+neville and jensen define relational autocorrelation for 
+relational learning problems and demonstrate that many 
+classification tasks manifest autocorrelation temporal 
+autocorrelation of initial retrievals has also been used to predict 
+performance however temporal autocorrelation is 
+performed by projecting the retrieval function into the temporal 
+embedding space in our work we focus on the behavior of 
+the function over the relationships between documents 
+τ adjusted r 
+dv 
+kl p ρ y ˜y dv 
+kl p ρ y ˜y dv 
+kl p dv 
+kl ρ y ˜y pρ y ˜y β 
+trec 
+trec 
+robust 
+terabyte 
+terabyte 
+table comparison to robustness and clarity measures for language model scores evaluation replicates 
+experiments from we present correlations between the classic clarity measure dv 
+kl the ranking 
+robustness measure p and autocorrelation ρ y ˜y each with mean average precision in terms of kendall s 
+τ the adjusted coefficient of determination is presented to measure the effectiveness of combining predictors 
+measures in bold represent the strongest correlation for that test collection pair 
+multiple run 
+ a b c 
+τ τ adjusted r 
+dkl ρ y ˜y dn 
+kl ρ y yµ ρ ˜y yµ dn 
+kl ρ y ˜y ρ y yµ ρ ˜y yµ β 
+trec 
+trec 
+trec 
+trec 
+trec 
+trec 
+robust 
+robust 
+robust 
+terabyte 
+terabyte 
+trec -spanish 
+trec -spanish 
+trec -chinese 
+trec -chinese 
+ent - 
+table large scale prediction experiments we predict the ranking of large sets of retrievals for various 
+collections and retrieval systems kendall s τ correlations are computed between the predicted ranking and 
+a ranking based on the retrieval s average precision in column a we have predictors which do not use 
+information from other retrievals for the same query in columns b and c we present performance for 
+predictors which incorporate information from multiple retrievals the adjusted coefficient of determination 
+is computed to determine effectiveness of combining predictors measures in bold represent the strongest 
+correlation for that test collection pair 
+finally regularization-based re-ranking processes are also 
+closely-related to our work these techniques seek to 
+maximize the agreement between scores of related 
+documents by solving a constrained optimization problem the 
+maximization of consistency is equivalent to maximizing the 
+moran autocorrelation therefore we believe that our work 
+provides explanation for why regularization-based re-ranking 
+works 
+ conclusion 
+we have presented a new method for predicting the 
+performance of a retrieval ranking without any relevance 
+judgments we consider two cases first when making 
+predictions in the absence of retrievals from other systems our 
+predictors demonstrate robust strong correlations with 
+average precision this performance combined with a simple 
+implementation makes our predictors in particular very 
+attractive we have demonstrated this improvement for many 
+diverse settings to our knowledge this is the first large 
+scale examination of zero-judgment single-retrieval 
+performance prediction second when provided retrievals from 
+other systems our extended methods demonstrate 
+competitive performance with state of the art baselines our 
+experiments also demonstrate the limits of the usefulness of our 
+predictors when information from multiple runs is provided 
+our results suggest two conclusions first our results 
+could affect retrieval algorithm design retrieval algorithms 
+designed to consider spatial autocorrelation will conform to 
+the cluster hypothesis and improve performance second 
+our results could affect the design of minimal test collection 
+algorithms much of the recent work in ranking systems 
+sometimes ignores correlations between document labels and 
+scores we believe that these two directions could be 
+rewarding given the theoretical and experimental evidence in this 
+paper 
+ acknowledgments 
+this work was supported in part by the center for 
+intelligent information retrieval and in part by the defense 
+advanced research projects agency darpa under 
+contract number hr - -c- any opinions findings 
+and conclusions or recommendations expressed in this 
+material are the author s and do not necessarily reflect those 
+of the sponsor we thank yun zhou and desislava petkova 
+for providing data and andre gauthier for technical 
+assistance 
+ references 
+ j aslam and v pavlu query hardness estimation using 
+jensen-shannon divergence among multiple scoring 
+functions in ecir proceedings of the th european 
+conference on information retrieval 
+ j a aslam v pavlu and e yilmaz a statistical method 
+for system evaluation using incomplete judgments in 
+s dumais e n efthimiadis d hawking and k jarvelin 
+editors proceedings of the th annual international acm 
+sigir conference on research and development in 
+information retrieval pages - acm press august 
+ 
+ d carmel e yom-tov a darlow and d pelleg what 
+makes a query difficult in sigir proceedings of the 
+ th annual international acm sigir conference on 
+research and development in information retrieval pages 
+ - new york ny usa acm press 
+ b carterette j allan and r sitaraman minimal test 
+collections for retrieval evaluation in sigir 
+proceedings of the th annual international acm sigir 
+conference on research and development in information 
+retrieval pages - new york ny usa acm 
+press 
+ a d cliff and j k ord spatial autocorrelation pion 
+ltd 
+ m connell a feng g kumaran h raghavan c shah 
+and j allan umass at tdt technical report ciir 
+technical report ir - department of computer 
+science university of massachusetts 
+ s cronen-townsend y zhou and w b croft precision 
+prediction based on ranked list coherence inf retr 
+ - 
+ f diaz regularizing ad-hoc retrieval scores in cikm 
+proceedings of the th acm international conference on 
+information and knowledge management pages - 
+new york ny usa acm press 
+ f diaz and r jones using temporal profiles of queries for 
+precision prediction in sigir proceedings of the th 
+annual international acm sigir conference on research 
+and development in information retrieval pages - 
+new york ny usa acm press 
+ d a griffith spatial autocorrelation and spatial 
+filtering springer verlag 
+ b he and i ounis inferring query performance using 
+pre-retrieval predictors in the eleventh symposium on 
+string processing and information retrieval spire 
+ 
+ n jardine and c j v rijsbergen the use of hierarchic 
+clustering in information retrieval information storage and 
+retrieval - 
+ d jensen and j neville linkage and autocorrelation cause 
+feature selection bias in relational learning in icml 
+proceedings of the nineteenth international conference on 
+machine learning pages - san francisco ca 
+usa morgan kaufmann publishers inc 
+ o kurland and l lee corpus structure language models 
+and ad-hoc information retrieval in sigir 
+proceedings of the th annual international conference on 
+research and development in information retrieval pages 
+ - new york ny usa acm press 
+ m montague and j a aslam relevance score 
+normalization for metasearch in cikm proceedings of 
+the tenth international conference on information and 
+knowledge management pages - new york ny 
+usa acm press 
+ t qin t -y liu x -d zhang z chen and w -y ma a 
+study of relevance propagation for web search in sigir 
+ proceedings of the th annual international acm 
+sigir conference on research and development in 
+information retrieval pages - new york ny usa 
+ acm press 
+ i soboroff c nicholas and p cahan ranking retrieval 
+systems without relevance judgments in sigir 
+proceedings of the th annual international acm sigir 
+conference on research and development in information 
+retrieval pages - new york ny usa acm 
+press 
+ v vinay i j cox n milic-frayling and k wood on 
+ranking the effectiveness of searches in sigir 
+proceedings of the th annual international acm sigir 
+conference on research and development in information 
+retrieval pages - new york ny usa acm 
+press 
+ y zhou and w b croft ranking robustness a novel 
+framework to predict query performance in cikm 
+proceedings of the th acm international conference on 
+information and knowledge management pages - 
+new york ny usa acm press 

@@ -1,0 +1,980 @@
+analyzing feature trajectories for event detection 
+qi he 
+qihe pmail ntu edu sg 
+kuiyu chang 
+askychang ntu edu sg 
+ee-peng lim 
+aseplim ntu edu sg 
+school of computer engineering 
+nanyang technological university 
+block n nanyang avenue singapore 
+abstract 
+we consider the problem of analyzing word trajectories in 
+both time and frequency domains with the specific goal of 
+identifying important and less-reported periodic and 
+aperiodic words a set of words with identical trends can be 
+grouped together to reconstruct an event in a completely 
+unsupervised manner the document frequency of each word 
+across time is treated like a time series where each element 
+is the document frequency - inverse document frequency 
+ dfidf score at one time point in this paper we first 
+applied spectral analysis to categorize features for different 
+event characteristics important and less-reported periodic 
+and aperiodic modeled aperiodic features with gaussian 
+density and periodic features with gaussian mixture 
+densities and subsequently detected each feature s burst by the 
+truncated gaussian approach proposed an unsupervised 
+greedy event detection algorithm to detect both aperiodic 
+and periodic events all of the above methods can be 
+applied to time series data in general we extensively 
+evaluated our methods on the -year reuters news corpus and 
+showed that they were able to uncover meaningful aperiodic 
+and periodic events 
+categories and subject descriptors h 
+ information storage and retrieval information search and 
+retrieval 
+general terms algorithms experimentation 
+ introduction 
+there are more than online news sources in the 
+world manually monitoring all of them for important events 
+has become difficult or practically impossible in fact the 
+topic detection and tracking tdt community has for many 
+years been trying to come up with a practical solution to 
+help people monitor news effectively unfortunately the 
+holy grail is still elusive because the vast majority of tdt 
+solutions proposed for event detection 
+ are either too simplistic based on cosine similarity 
+or impractical due to the need to tune a large number of 
+parameters the ineffectiveness of current tdt 
+technologies can be easily illustrated by subscribing to any of 
+the many online news alerts services such as the 
+industryleading google news alerts which generates more than 
+ false alarms as further proof portals like yahoo 
+take a more pragmatic approach by requiring all machine 
+generated news alerts to go through a human operator for 
+confirmation before sending them out to subscribers 
+instead of attacking the problem with variations of the 
+same hammer cosine similarity and tfidf a 
+fundamental understanding of the characteristics of news stream data 
+is necessary before any major breakthroughs can be made in 
+tdt thus in this paper we look at news stories and 
+feature trends from the perspective of analyzing a time-series 
+word signal previous work like has attempted to 
+reconstruct an event with its representative features however 
+in many predictive event detection tasks i e retrospective 
+event detection there is a vast set of potential features 
+only for a fixed set of observations i e the obvious bursts 
+of these features often only a small number are expected 
+to be useful in particular we study the novel problem of 
+analyzing feature trajectories for event detection 
+borrowing a well-known technique from signal processing 
+identifying distributional correlations among all features by spectral 
+analysis to evaluate our method we subsequently propose 
+an unsupervised event detection algorithm for news streams 
+ 
+ 
+ 
+ 
+ 
+ 
+easter 
+april 
+ a aperiodic event 
+ 
+ 
+ 
+ 
+ 
+ 
+unaudited 
+ended 
+ b periodic event 
+figure feature correlation dfidf time 
+between a easter and april b unaudited and ended 
+as an illustrative example consider the correlation 
+between the words easter and april from the reuters 
+corpus 
+ from the plot of their normalized dfidf in figure 
+ a we observe the heavy overlap between the two words 
+circa which means they probably both belong to 
+the same event during that time easter feast in this 
+example the hidden event easter feast is a typical important 
+aperiodic event over -year data another example is given 
+by figure b where both the words unaudited and ended 
+ 
+reuters corpus is the default dataset for all examples 
+exhibit similar behaviour over periods of months these 
+two words actually originated from the same periodic event 
+net income-loss reports which are released quarterly by 
+publicly listed companies 
+other observations drawn from figure are the bursty 
+period of april is much longer than easter which suggests 
+that april may exist in other events during the same period 
+ unaudited has a higher average dfidf value than ended 
+which indicates unaudited to be more representative for the 
+underlying event these two examples are but the tip of 
+the iceberg among all word trends and correlations hidden 
+in a news stream like reuters if a large number of them 
+can be uncovered it could significantly aid tdt tasks in 
+particular it indicates the significance of mining correlating 
+features for detecting corresponding events to summarize 
+we postulate that an event is described by its 
+representative features a periodic event has a list of periodic 
+features and an aperiodic event has a list of aperiodic 
+features representative features from the same event share 
+similar distributions over time and are highly correlated 
+an important event has a set of active largely reported 
+representative features whereas an unimportant event has 
+a set of inactive less-reported representative features 
+a feature may be included by several events with overlaps 
+in time frames based on these observations we can 
+either mine representative features given an event or detect 
+an event from a list of highly correlated features in this 
+paper we focus on the latter i e how correlated features can 
+be uncovered to form an event in an unsupervised manner 
+ contributions 
+this paper has three main contributions 
+ to the best of our knowledge our approach is the first 
+to categorize word features for heterogenous events 
+specifically every word feature is categorized into one 
+of the following five feature types based on its power 
+spectrum strength and periodicity hh high power 
+and high long periodicity important aperiodic events 
+ hl high power and low periodicity important 
+periodic events lh low power and high periodicity 
+unimportant aperiodic events ll low power and 
+low periodicity non-events and sw stopwords 
+a higher power and periodicity subset of ll comprising 
+stopwords which contains no information 
+ we propose a simple and effective mixture 
+densitybased approach to model and detect feature bursts 
+ we come up with an unsupervised event detection 
+algorithm to detect both aperiodic and periodic events 
+our algorithm has been evaluated on a real news stream 
+to show its effectiveness 
+ related work 
+this work is largely motivated by a broader family of 
+problems collectively known as topic detection and 
+tracking tdt moreover most tdt 
+research so far has been concerned with clustering classifying 
+documents into topic types identifying novel sentences 
+for new events etc without much regard to analyzing the 
+word trajectory with respect to time swan and allan 
+first attempted using co-occuring terms to construct an event 
+however they only considered named entities and noun 
+phrase pairs without considering their periodicities on the 
+contrary our paper considers all of the above 
+recently there has been significant interest in modeling 
+an event in text streams as a burst of activities by 
+incorporating temporal information kleinberg s seminal work 
+described how bursty features can be extracted from text 
+streams using an infinite automaton model which 
+inspired a whole series of applications such as kumar s 
+identification of bursty communities from weblog graphs mei s 
+summarization of evolutionary themes in text streams 
+he s clustering of text streams using bursty features etc 
+nevertheless none of the existing work specifically identified 
+features for events except for fung et al who clustered 
+busty features to identify various bursty events our work 
+differs from in several ways we analyze every 
+single feature not only bursty features we classify features 
+along two categorical dimensions periodicity and power 
+yielding altogether five primary feature types we do not 
+restrict each feature to exclusively belong to only one event 
+spectral analysis techniques have previously been used by 
+vlachos et al to identify periodicities and bursts from 
+query logs their focus was on detecting multiple 
+periodicities from the power spectrum graph which were then used 
+to index words for query-by-burst search in this paper 
+we use spectral analysis to classify word features along two 
+dimensions namely periodicity and power spectrum with 
+the ultimate goal of identifying both periodic and aperiodic 
+bursty events 
+ data representation 
+let t be the duration period in days of a news stream 
+and f represents the complete word feature space in the 
+classical static vector space model vsm 
+ event periodicity classification 
+within t there may exist certain events that occur only 
+once e g tony blair elected as prime minister of u k and 
+other recurring events of various periodicities e g weekly 
+soccer matches we thus categorize all events into two types 
+aperiodic and periodic defined as follows 
+definition aperiodic event an event is aperiodic 
+within t if it only happens once 
+definition periodic event if events of a certain event 
+genre occur regularly with a fixed periodicity p ≤ t we 
+say that this particular event genre is periodic with each 
+member event qualified as a periodic event 
+note that the definition of aperiodic is relative i e it is 
+true only for a given t and may be invalid for any other 
+t t for example the event christmas feast is aperiodic 
+for t ≤ but periodic for t ≥ 
+ representative features 
+intuitively an event can be described very concisely by 
+a few discriminative and representative word features and 
+vice-versa e g hurricane sweep and strike could be 
+representative features of a hurricane genre event likewise 
+a set of strongly correlated features could be used to 
+reconstruct an event description assuming that strongly 
+correlated features are representative the representation vector 
+of a word feature is defined as follows 
+definition feature trajectory the trajectory of a 
+word feature f can be written as the sequence 
+yf yf yf yf t 
+where each element yf t is a measure of feature f at time t 
+which could be defined using the normalized dfidf score 
+yf t 
+dff t 
+n t 
+× log 
+n 
+dff 
+ 
+where dff t is the number of documents local df 
+containing feature f at day t dff is the total number of 
+documents global df containing feature f over t n t is the 
+number of documents for day t and n is the total number 
+of documents over t 
+ identifying features for events 
+in this section we show how representative features can 
+be extracted for un important or a periodic events 
+ spectral analysis for dominant period 
+given a feature f we decompose its feature trajectory 
+yf yf yf yf t into the sequence of t 
+complex numbers x xt via the discrete fourier 
+transform dft 
+xk 
+t 
+t 
+yf t e− πi 
+t 
+ k− t 
+ k t 
+dft can represent the original time series as a linear 
+combination of complex sinusoids which is illustrated by the 
+inverse discrete fourier transform idft 
+yf t 
+ 
+t 
+t 
+k 
+xke 
+ πi 
+t 
+ k− t 
+ t t 
+where the fourier coefficient xk denotes the amplitude of 
+the sinusoid with frequency k t 
+the original trajectory can be reconstructed with just the 
+dominant frequencies which can be determined from the 
+power spectrum using the popular periodogram estimator 
+the periodogram is a sequence of the squared magnitude of 
+the fourier coefficients xk 
+ 
+ k t which 
+indicates the signal power at frequency k t in the spectrum 
+from the power spectrum the dominant period is chosen as 
+the inverse of the frequency with the highest power 
+spectrum as follows 
+definition dominant period the dominant period 
+ dp of a given feature f is pf t arg max 
+k 
+xk 
+ 
+ 
+accordingly we have 
+definition dominant power spectrum the 
+dominant power spectrum dps of a given feature f is 
+sf xk 
+ 
+ with xk 
+ 
+≥ xj 
+ 
+ ∀j k 
+ categorizing features 
+the dps of a feature trajectory is a strong indicator of its 
+activeness at the specified frequency the higher the dps 
+the more likely for the feature to be bursty combining dps 
+with dp we therefore categorize all features into four types 
+ 
+we normalize yf t as yf t yf t t 
+i yf i so that it 
+could be interpreted as a probability 
+ hh high sf aperiodic or long-term periodic pf 
+t 
+ hl high sf short-term periodic pf ≤ t 
+ lh low sf aperiodic or long-term periodic 
+ ll low sf short-term periodic 
+the boundary between long-term and short-term periodic 
+is set to t however distinguishing between a high and 
+low dps is not straightforward which will be tackled later 
+properties of different feature sets 
+to better understand the properties of hh hl lh and ll 
+we select four features christmas soccer dbs and your as 
+illustrative examples since the boundary between high and 
+low power spectrum is unclear these chosen examples have 
+relative wide range of power spectrum values figure a 
+shows the dfidf trajectory for christmas with a distinct 
+burst around christmas day for the -year reuters dataset 
+christmas is classified as a typical aperiodic event with 
+pf and sf as shown in figure b clearly 
+the value of sf is reasonable for a well-known 
+bursty event like christmas 
+ 
+ 
+ 
+ 
+ 
+ a christmas dfidf time 
+ 
+ 
+ 
+ 
+ 
+p s 
+ b christmas s frequency 
+figure feature christmas with relative high sf 
+and long-term pf 
+the dfidf trajectory for soccer is shown in figure a 
+from which we can observe that there is a regular burst every 
+ days which is again verified by its computed value of pf 
+ as shown in figure b using the domain knowledge 
+that soccer games have more matches every saturday which 
+makes it a typical and heavily reported periodic event we 
+thus consider the value of sf to be high 
+ 
+ 
+ 
+ 
+ 
+ a soccer dfidf time 
+ 
+ 
+ 
+ 
+ 
+ 
+p s 
+ b soccer s frequency 
+figure feature soccer with relative high sf and 
+short-term pf 
+from the dfidf trajectory for dbs in figure a we 
+can immediately deduce dbs to be an infrequent word with 
+a trivial burst on corresponding to dbs land 
+raﬄes holdings plans this is confirmed by the long period 
+of pf and low power of sf as shown in 
+figure b moreover since this aperiodic event is only 
+reported in a few news stories over a very short time of few 
+days we therefore say that its low power value of sf 
+ is representative of unimportant events 
+the most confusing example is shown in figure for the 
+word feature your which looks very similar to the graph for 
+soccer in figure at first glance we may be tempted to 
+group both your and soccer into the same category of hl or 
+ll since both distributions look similar and have the same 
+dominant period of approximately a week however further 
+ 
+ 
+ 
+ 
+ 
+ a dbs dfidf time 
+ 
+ 
+ 
+ 
+ 
+ 
+p s 
+ b dbs s frequency 
+figure feature dbs with relative low sf and 
+long-term pf 
+analysis indicates that the periodicity of your is due to the 
+differences in document counts for weekdays average 
+per day and weekends 
+ average per day one would 
+have expected the periodicity of a stopword like your to 
+be a day moreover despite our dfidf normalization the 
+weekday weekend imbalance still prevailed stopwords 
+occur times more frequently on weekends than on weekdays 
+thus the dps remains the only distinguishing factor 
+between your sf and soccer sf however 
+it is very dangerous to simply conclude that a power value 
+of s corresponds to a stopword feature 
+ 
+ 
+ 
+ 
+ 
+ 
+ a your dfidf time 
+ 
+ 
+ 
+ 
+p s 
+ b your s frequency 
+figure feature your as an example confusing 
+with feature soccer 
+before introducing our solution to this problem let s look 
+at another ll example as shown in figure for beenb which 
+is actually a confirmed typo we therefore classify beenb as a 
+noisy feature that does not contribute to any event clearly 
+the trajectory of your is very different from beenb which 
+means that the former has to be considered separately 
+ 
+ 
+ 
+ 
+ 
+ 
+ a beenb dfidf time 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+p s e- 
+ b beenb s frequency 
+figure feature beenb with relative low sf and 
+short-term pf 
+stop words sw feature set 
+based on the above analysis we realize that there must be 
+another feature set between hl and ll that corresponds to 
+the set of stopwords features from this set has moderate 
+dps and low but known dominant period since it is hard 
+to distinguish this feature set from hl and ll only based 
+on dps we introduce another factor called average dfidf 
+ dfidf as shown in figure features like your usually 
+have a lower dps than a hl feature like soccer but have 
+a much higher dfidf than another ll noisy feature such 
+as beenb since such properties are usually characteristics 
+of stopwords we group features like your into the newly 
+defined stopword sw feature set 
+since setting the dps and dfidf thresholds for 
+identifying stopwords is more of an art than science we proposed 
+a heuristic hs algorithm algorithm the basic idea is to 
+only use news stories from weekdays to identify stopwords 
+ 
+the weekends here also include public holidays falling on 
+weekdays 
+the sw set is initially seeded with a small set of popular 
+stopwords utilized by google search engine 
+algorithm heuristic stopwords detection hs 
+input seed sw set weekday trajectories of all words 
+ from the seed set sw compute the maximum dps as 
+udps maximum dfidf as udfidf and minimum 
+of dfidf as ldfidf 
+ for fi ∈ f do 
+ compute dft for fi 
+ if sfi ≤ udps and dfidffi ∈ 
+ ldfidf udfidf then 
+ fi → sw 
+ f f − fi 
+ end if 
+ end for 
+overview of feature categorization 
+after the sw set is generated all stopwords are removed 
+from f we then set the boundary between high and low 
+dps to be the upper bound of the sw set s dps an overview 
+of all five feature sets is shown in figure 
+figure the feature sets for events 
+ identifying bursts for features 
+since only features from hh hl and lh are 
+meaningful and could potentially be representative to some events 
+we pruned all other feature classified as ll or sw in this 
+section we describe how bursts can be identified from the 
+remaining features unlike kleinberg s burst identification 
+algorithm we can identify both significant and trivial 
+bursts without the need to set any parameters 
+ detecting aperiodic features bursts 
+for each feature in hh and hl we truncate its 
+trajectory by keeping only the bursty period which is modeled 
+with a gaussian distribution for example figure shows 
+the word feature iraq with a burst circa 
+being modeled as a gaussian its bursty period is defined by 
+ μf − σf μf σf as shown in figure b 
+ detecting periodic features bursts 
+since we have computed the dp for a periodic feature f 
+we can easily model its periodic feature trajectory yf using 
+ 
+ 
+ 
+ 
+ 
+ 
+ a original dfidf time 
+ 
+ 
+ 
+ 
+ 
+ 
+burst μ-σ μ σ 
+ b identifying burst 
+figure modeling iraq s time series as a truncated 
+gaussian with μ and σ 
+a mixture of k t pf gaussians 
+f yf yf t θf 
+k 
+k 
+αk 
+ 
+ πσ 
+k 
+e 
+− 
+ σ 
+k 
+ yf t −µk 
+ 
+where the parameter set θf αk μk σk k 
+k comprises 
+ αk is the probability of assigning yf into the kth 
+ 
+gaussian αk ∀k ∈ k and k 
+k αk 
+ μk σk is mean standard deviation of the kth 
+gaussian 
+the well known expectation maximization em 
+algorithm is used to compute the mixing proportions αk as well 
+as the individual gaussian density parameters μk and σk 
+each gaussian represents one periodic event and is modeled 
+similarly as mentioned in section 
+ events from features 
+after identifying and modeling bursts for all features the 
+next task is to paint a picture of the event with a potential 
+set of representative features 
+ feature correlation 
+if two features fi and fj are representative of the same 
+event they must satisfy the following necessary conditions 
+ fi and fj are identically distributed yfi ∼ yfj 
+ fi and fj have a high document overlap 
+measuring feature distribution similarity 
+we measure the similarity between two features fi and fj 
+using discrete kl-divergence defined as follows 
+definition feature similarity kl fi fj is given by 
+max kl fi fj kl fj fi where 
+kl fi fj 
+t 
+t 
+f yfi t θfi log 
+f yfi t θfi 
+f yfj t θfj 
+ 
+since kl-divergence is not symmetric we define the 
+similarity between between fi and fj as the maximum of kl fi fj 
+and kl fj fi further the similarity between two 
+aperiodic features can be computed using a closed form of the 
+kl-divergence the same discrete kl-divergence 
+formula of eq is employed to compute the similarity between 
+two periodic features 
+next we define the overal similarity among a set of 
+features r using the maximum inter-feature kl-divergence 
+value as follows 
+definition set s similarity kl r max 
+∀fi fj ∈r 
+kl fi fj 
+document overlap 
+let mi be the set of all documents containing feature fi 
+given two features fi and fj the overlapping document set 
+containing both features is mi ∩ mj intuitively the higher 
+the mi ∩ mj the more likelty that fi and fj will be highly 
+correlated we define the degree of document overlap 
+between two features fi and fj as follows 
+definition feature df overlap d fi fj 
+ mi∩mj 
+min mi mj 
+ 
+accordingly the df overlap among a set of features r is 
+also defined 
+definition set df overlap d r min 
+∀fi fj ∈r 
+d fi fj 
+ unsupervised greedy event detection 
+we use features from hh to detect important aperiodic 
+events features from lh to detect less-reported unimportant 
+aperiodic events and features from hl to detect periodic 
+events all of them share the same algorithm given bursty 
+feature fi ∈ hh the goal is to find highly correlated 
+features from hh the set of features similar to fi can then 
+collectively describe an event specifically we need to find a 
+subset ri of hh that minimizes the following cost function 
+c ri 
+kl ri 
+d ri fj ∈ri 
+sfj 
+ ri ⊂ hh 
+the underlying event e associated with the burst of fi can 
+be represented by ri as 
+y e 
+fj ∈ri 
+sfj 
+fu∈ri 
+sfu 
+yfj 
+the burst analysis for event e is exactly the same as the 
+feature trajectory 
+the cost in eq can be minimized using our 
+unsupervised greedy ug event detection algorithm which is 
+described in algorithm the ug algorithm allows a feature 
+algorithm unsupervised greedy event detection ug 
+input hh document index for each feature 
+ sort and select features in descending dps order sf ≥ 
+sf ≥ ≥ sf hh 
+ 
+ k 
+ for fi ∈ hh do 
+ k k 
+ init ri ← fi c ri sfi and hh hh − fi 
+ while hh not empty do 
+ m arg min 
+m 
+c ri ∪ fm 
+ if c ri ∪ fm c ri then 
+ ri ← fm and hh hh − fm 
+ else 
+ break while 
+ end if 
+ end while 
+ output ek as eq 
+ end for 
+to be contained in multiple events so that we can detect 
+several events happening at the same time furthermore trivial 
+events only containing year month features i e an event 
+only containing feature aug could be identified over a 
+ year news stream could be removed although such events 
+will have inherent high cost and should already be ranked 
+very low note that our ug algorithm only requires one 
+data-dependant parameter the boundary between high and 
+low power spectrum to be set once and this parameter can 
+be easily estimated using the hs algorithm algorithm 
+ experiments 
+in this section we study the performances of our feature 
+categorizing method and event detection algorithm we first 
+introduce the dataset and experimental setup then we 
+subjectively evaluate the categorization of features for hh hl 
+lh ll and sw finally we study the a periodic event 
+detection problem with algorithm 
+ dataset and experimental setup 
+the reuters corpus contains english news stories 
+from to at a day resolution version 
+ of the open source lucene software was used to tokenize 
+the news text content and generate the document-word 
+vector in order to preserve the time-sensitive past present future 
+tenses of verbs and the differences between lower case nouns 
+and upper case named entities no stemming was done since 
+dynamic stopword removal is one of the functionalities of 
+our method no stopword was removed we did remove 
+nonenglish characters however after which the number of word 
+features amounts to all experiments were 
+implemented in java and conducted on a ghz pentium pc 
+running windows server with gb of memory 
+ categorizing features 
+we downloaded well-known stopwords utilized by the 
+google search engine as our seed training features which 
+includes a about an are as at be by de for from how 
+in is it of on or that the this to was what when 
+where who will with la com und en and www we 
+excluded the last five stopwords as they are uncommon in news 
+stories by only analyzing news stories over weekdays 
+we computed the upper bound of the power spectrum for 
+stopwords at and corresponding dfidf ranges from 
+ to any feature f satisfying sf 
+and dfidff over weekdays will be 
+considered a stopword in this manner stopwords were 
+found and removed as visualized in figure some detected 
+stopwords are a p s dfidf at 
+ p s dfidf gmt p 
+s dfidf and much p s 
+dfidf after the removal of these stopwords 
+the distribution of weekday and weekend news are more or 
+less matched and in the ensuing experiments we shall make 
+use of the full corpus weekdays and weekends 
+the upper bound power spectrum value of for 
+stopwords training was selected as the boundary between the 
+high power and low power spectrum the boundary 
+between high and low periodicity was set to 
+all − word features were categorized 
+into feature sets hh features hl features 
+lh features and ll features as shown 
+in figure in figure each gray level denotes the 
+relative density of features in a square region measured by 
+log dk where dk is the number of features within 
+the k-th square region from the figure we can make the 
+ 
+ 
+ 
+ 
+ 
+ 
+s f 
+p f 
+lh hh 
+ll hl 
+figure distribution of sw stopwords in the hh 
+hl lh and ll regions 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+s f 
+p f 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+lh hh 
+ll hl 
+figure distribution of categorized features over 
+the four quadrants shading in log scale 
+following observations 
+ most features have low s and are easily distinguishable 
+from those features having a much higher s which 
+allows us to detect important a periodic events from 
+trivial events by selecting features with high s 
+ features in the hh and lh quadrants are aperiodic 
+which are nicely separated big horizontal gap from 
+the periodic features this allows reliably detecting 
+aperiodic events and periodic events independently 
+ the vertical boundary between high and low power 
+spectrum is not as clearcut and the exact value will be 
+application specific 
+by checking the scatter distribution of features from sw on 
+hh hl lh and ll as shown in figure we found that 
+ of the detected stopwords originated from 
+ll the ll classification and high dfidf scores of 
+stopwords agree with the generally accepted notion that 
+stopwords are equally frequent over all time therefore setting 
+the boundary between high and low power spectrum using 
+the upper bound sf of sw is a reasonable heuristic 
+ detecting aperiodic events 
+we shall evaluate our two hypotheses important 
+aperiodic events can be defined by a set of hh features and 
+ less reported aperiodic events can be defined by a set of 
+lh features since no benchmark news streams exist for 
+event detection tdt datasets are not proper streams we 
+evaluate the quality of the automatically detected events by 
+comparing them to manually-confirmed events by searching 
+through the corpus 
+among the hh features we detected important 
+aperiodic events as shown in table e − e note that the 
+entire identification took less than second after 
+removing events containing only the month feature among the 
+ events other than the overlaps between e and e both 
+describes the same hostage event e and e both about 
+company reports the identified events are extremely 
+accurate and correspond very well to the major events of the 
+period for example the defeat of bob dole election of 
+tony blair missile attack on iraq etc recall that selecting 
+the features for one event should minimize the cost in eq 
+ such that the number of features span different events 
+and not all features relevant to an event will be selected 
+e g the feature clinton is representative to e but since 
+clinton relates to many other events its time domain signal 
+is far different from those of other representative features like 
+dole and bob the number of documents of a detected event 
+is roughly estimated by the number of indexed documents 
+containing the representative features we can see that all 
+ important aperiodic events are popularly reported events 
+after minutes of computation time we detected 
+less reported aperiodic events from lh features 
+table lists the top detected aperiodic events e − e 
+with respect to the cost we found that these events are 
+actually very trivial events with only a few news reports 
+and are usually subsumed by some larger topics for 
+example e is one of the rescue events in an airplane hijack 
+topic one advantage of our ug algorithm for discovering 
+less-reported aperiodic events is that we are able to precisely 
+detect the true event period 
+ detecting periodic events 
+among the hl features important periodic 
+events were detected within minutes of computing time 
+table lists the top detected periodic events with respect 
+to the cost e − e all of the detected periodic events 
+are indeed valid and correspond to real life periodic events 
+the gmm model is able to detect and estimate the bursty 
+period nicely although it cannot distinguish the slight 
+difference between every monday-friday and all weekdays as 
+shown in e we also notice that e is actually a subset 
+of e soccer game which is acceptable since the sheffield 
+league results are announced independently every weekend 
+ conclusions 
+this paper took a whole new perspective of analyzing 
+feature trajectories as time domain signals by 
+considering the word document frequencies in both time and 
+frequency domains we were able to derive many new 
+characteristics about news streams that were previously unknown 
+e g the different distributions of stopwords during 
+weekdays and weekends for the first time in the area of tdt 
+we applied a systematic approach to automatically detect 
+important and less-reported periodic and aperiodic events 
+the key idea of our work lies in the observations that 
+ a periodic events have a periodic representative features 
+and un important events have in active representative 
+features differentiated by their power spectrums and time 
+periods to address the real event detection problem a simple 
+and effective mixture density-based approach was used to 
+identify feature bursts and their associated bursty periods 
+we also designed an unsupervised greedy algorithm to 
+detect both aperiodic and periodic events which was successful 
+in detecting real events as shown in the evaluation on a real 
+news stream 
+although we have not made any benchmark comparison 
+against another approach simply because there is no 
+previous work in the addressed problem future work includes 
+evaluating the recall of detected events for a labeled news 
+stream and comparing our model against the closest 
+equivalent methods which currently are limited to the methods of 
+kleinberg which can only detect certain type of bursty 
+events depending on parameter settings fung et al and 
+swan and allan nevertheless we believe our simple 
+and effective method will be useful for all tdt 
+practitioners and will be especially useful for the initial exploratory 
+analysis of news streams 
+ references 
+ apache lucene-core http lucene apache org 
+ google news alerts http www google com alerts 
+ reuters corpus 
+http www reuters com researchandstandards corpus 
+ j allan topic detection and tracking event-based 
+information organization kluwer academic publishers 
+ j allan v lavrenko and h jin first story detection in tdt 
+is hard in cikm pages - 
+ j allan c wade and a bolivar retrieval and novelty 
+detection at the sentence level in sigir pages - 
+ t brants f chen and a farahat a system for new event 
+detection in sigir pages - 
+ a p dempster n m laird and d b rubin maximum 
+likelihood from incomplete data via the em algorithm journal 
+of the royal statistical society - 
+ g p c fung j x yu p s yu and h lu parameter free 
+bursty events detection in text streams in vldb pages 
+ - 
+ q he k chang and e -p lim a model for anticipatory 
+event detection in er pages - 
+ q he k chang e -p lim and j zhang bursty feature 
+reprensentation for clustering text streams in sdm accepted 
+ 
+ j kleinberg bursty and hierarchical structure in streams in 
+sigkdd pages - 
+ r kumar j novak p raghavan and a tomkins on the 
+bursty evolution of blogspace in www pages - 
+ g kumaran and j allan text classification and named 
+entities for new event detection in sigir pages - 
+ 
+ q mei and c zhai discovering evolutionary theme patterns 
+from text an exploration of temporal text mining in 
+sigkdd pages - 
+ w d penny kullback-liebler divergences of normal gamma 
+dirichlet and wishart densities technical report 
+ n stokes and j carthy combining semantic and syntactic 
+document classifiers to improve first story detection in sigir 
+pages - 
+ r swan and j allan automatic generation of overview 
+timelines in sigir pages - 
+ m vlachos c meek z vagena and d gunopulos 
+identifying similarities periodicities and bursts for online 
+search queries in sigmod pages - 
+ y yang t pierce and j carbonell a study of retrospective 
+and on-line event detection in sigir pages - 
+ y yang j zhang j carbonell and c jin topic-conditioned 
+novelty detection in sigkdd pages - 
+table all important aperiodic events e − e top less-reported aperiodic events e − e and top 
+important periodic events e − e 
+detected event and bursty period doc 
+ 
+true event 
+e sali berisha albania albanian march 
+ 
+ albanian s president sali berisha lost in an early election 
+and resigned - 
+e seko mobutu sese kabila - zaire s president mobutu sese coordinated the native 
+rebellion and failed on 
+e marxist peruvian - peru rebels tupac amaru revolutionary movement led 
+a hostage siege in lima in early 
+e movement tupac amaru lima hostage hostages 
+ - 
+ the same as e 
+e kinshasa kabila laurent congo 
+ 
+ zaire was renamed the democratic republic of congo on 
+ 
+e jospin lionel june - following the early general elections circa 
+lionel jospin was appointed prime minister on 
+e iraq missile - u s fired missile at iraq on and 
+e kurdish baghdad iraqi - iraqi troop fought with kurdish faction circa 
+e may blair - tony blair became the primary minister of the united 
+kingdom on 
+e slalom skiing - slalom game of alpine skiing in - 
+e interim months - tokyo released company interim results for the past 
+several months in - 
+e dole bob - dole bob lost the us presidential election 
+e july sen - cambodia s prime minister hun sen launched a bloody 
+military coup in 
+e hebron - hebron was divided into two sectors in early 
+e april easter - easter feasts circa for western and orthodox 
+e diluted group - tokyo released all group results in 
+ 
+e december christmas - christmas feast in late 
+e kolaceva winter together promenades zajedno 
+slobodan belgrade serbian serbia draskovic municipal 
+kragujevac 
+ university students organized a vigil on kolaceva street 
+against government on 
+e tutsi luvengi burundi uvira fuel banyamulenge 
+burundian kivu kiliba runingo kagunga bwegera 
+ 
+ fresh fighting erupted around uvira between zaire armed 
+forces and banyamulengs tutsi rebels on 
+e malantacchi korea guy rider unions labour 
+trade unions confederation rammed geneva stoppages 
+virgin hire myongdong metalworkers 
+ marcello malantacchi secretary general of the 
+international metalworkers federation and guy rider who heads 
+the geneva office of the international confederation of 
+free trade unions attacked the new labour law of south 
+korea on 
+e dbs raﬄes the list of the unit of singapore dbs land raﬄes 
+holdings plans on 
+e preserver fuel galawa huddle leul beausse 
+ 
+ rescued a woman and her baby during a hijacked 
+ethiopian plane that ran out of fuel and crashed into the 
+sea near le galawa beach on 
+e price listing mln maturity coupon 
+moody amt first iss type pay borrower 
+monday-friday week 
+ announce bond price on all weekdays 
+e unaudited ended months weighted provision cost 
+selling revenues loss income except shrs revs every 
+season 
+ net income-loss reports released by companies in every 
+season 
+e rating wall street ian monday-friday week stock reports from wall street on all weekdays 
+e sheffield league scoring goals striker games every 
+friday saturday and sunday 
+ match results of sheffield soccer league were published on 
+friday saturday and sunday times than other days 
+e soccer matches results season game cup match 
+victory beat played play division every friday 
+saturday and sunday 
+ soccer games held on friday saturday and sunday times 
+than other days 

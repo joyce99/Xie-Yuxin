@@ -1,0 +1,867 @@
+implementing commitment-based interactions 
+michael winikoff 
+school of computer science and it 
+rmit university 
+melbourne australia 
+michael winikoff rmit edu au 
+abstract 
+although agent interaction plays a vital role in mas and 
+messagecentric approaches to agent interaction have their drawbacks present 
+agent-oriented programming languages do not provide support for 
+implementing agent interaction that is flexible and robust instead 
+messages are provided as a primitive building block in this 
+paper we consider one approach for modelling agent interactions the 
+commitment machines framework this framework supports 
+modelling interactions at a higher level using social commitments 
+resulting in more flexible interactions we investigate how 
+commitmentbased interactions can be implemented in conventional agent-oriented 
+programming languages the contributions of this paper are a 
+mapping from a commitment machine to a collection of bdi-style 
+plans extensions to the semantics of bdi programming languages 
+and an examination of two issues that arise when distributing 
+commitment machines turn management and race conditions and 
+solutions to these problems 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligencemultiagent systems i artificial intelligence programming 
+languages and software 
+general terms 
+design 
+ introduction 
+agents are social and agent interaction plays a vital role in 
+multiagent systems consequently design and implementation of agent 
+interaction is an important research topic 
+the standard approach for designing agent interactions is 
+messagecentric interactions are defined by interaction protocols that give 
+the permissible sequences of messages specified using notations 
+such as finite state machines petri nets or agent uml 
+it has been argued that this message-centric approach to 
+interaction design is not a good match for intelligent agents intelligent 
+agents should exhibit the ability to persist in achieving their goals 
+in the face of failure robustness by trying different approaches 
+ flexibility on the other hand when following an interaction 
+protocol an agent has limited flexibility and robustness the ability to 
+persistently try alternative means to achieving the interaction s aim 
+is limited to those options that the protocol s designer provided and 
+in practice message-centric design processes do not tend to lead to 
+protocols that are flexible or robust 
+recognising these limitations of the traditional approach to 
+designing agent interactions a number of approaches have been 
+proposed in recent years that move away from message-centric 
+interaction protocols and instead consider designing agent interactions 
+using higher-level concepts such as social commitments 
+ or interaction goals there has also been work on richer 
+forms of interaction in specific settings such as teams of 
+cooperative agents 
+however although there has been work on designing flexible and 
+robust agent interactions there has been virtually no work on 
+providing programming language support for implementing such 
+interactions current agent oriented programming languages 
+ aopls do not provide support for implementing flexible and robust 
+agent interactions using higher-level concepts than messages 
+indeed modern aopls with virtually no exceptions provide 
+only simple message sending as the basis for implementing agent 
+interaction 
+this paper presents what to the best of our knowledge is the 
+second aopl to support high-level flexible and robust agent 
+interaction implementation the first such language staple was 
+proposed a few years ago but is not described in detail and is 
+arguably impractical for use by non-specialists due to its logical 
+basis and heavy reliance on temporal and modal logic 
+this paper presents a scheme for extending bdi-like aopls 
+to support direct implementation of agent interactions that are 
+designed using yolum singh s commitment machine cm 
+framework in the remainder of this paper we briefly review 
+commitment machines and present a simple abstraction of bdi aopls 
+which lies in the common subset of languages such as jason apl 
+and can we then present a scheme for translating commitment 
+machines to this language and indicate how the language needs 
+to be extended to support this we then extend our scheme to 
+address a range of issues concerned with distribution including turn 
+tracking and race conditions 
+ background 
+ commitment machines 
+the aim of the commitment machine framework is to allow for 
+the definition of interactions that are more flexible than traditional 
+message-centric approaches a commitment machine cm 
+specifies an interaction between entities e g agents services 
+processes in terms of actions that change the interaction state this 
+interact state consists of fluents predicates that change value over 
+time but also social commitments both base-level and conditional 
+a base-level social commitment is an undertaking by debtor a to 
+creditor b to bring about condition p denoted c a b p this is 
+sometimes abbreviated to c p where it is not important to specify 
+the identities of the entities in question for example a 
+commitment by customer c to merchant m to make the fluent paid true 
+would be written as c c m paid 
+a conditional social commitment is an undertaking by debtor a 
+to creditor b that should condition q become true a will then 
+commit to bringing about condition p this is denoted by cc a b q p 
+and where the identity of the entities involved is unimportant or 
+obvious is abbreviated to cc q p where the arrow is a 
+reminder of the causal link between q becoming true and the creation 
+of a commitment to make p true for example a commitment to 
+make the fluent paid true once goods have been received would be 
+written cc goods paid 
+the semantics of commitments both base-level and conditional 
+is defined with rules that specify how commitments change over 
+time for example the commitment c p or cc q p is 
+discharged when p becomes true and the commitment cc q p is 
+replaced by c p when q becomes true in this paper we use the 
+more symmetric semantics proposed by and subsequently 
+reformalised by in brief these semantics deal with a number of 
+more complex cases such as where commitments are created when 
+conditions already hold if p holds when cc p q is meant to 
+be created then c q is created instead of cc p q 
+an interaction is defined by specifying the entities involved the 
+possible contents of the interaction state both fluents and 
+commitments and most importantly the actions that each entity can 
+perform along with the preconditions and effects of each action 
+specified as add and delete lists 
+a commitment machine cm defines a range of possible 
+interactions that each start in some state 
+ and perform actions until 
+reaching a final state a final state is one that has no base-level 
+commitments one way of visualising the interactions that are 
+possible with a given commitment machine is to generate the finite 
+state machine corresponding to the cm for example figure gives 
+the fsm 
+corresponding to the netbill commitment machine 
+a simple cm where a customer c and merchant m attempt to 
+trade using the following actions 
+ 
+ 
+unlike standard interaction protocols or finite state machines 
+there is no designated initial state for the interaction 
+ 
+the finite state machine is software-generated the nodes and 
+connections were computed by an implementation of the axioms 
+ available from http www winikoff net cm and were then laid out by 
+graphviz http www graphviz org 
+ 
+we use the notation a x p ⇒ e to indicate that action a is 
+performed by entity x has precondition p with p omitted if 
+empty and effect e 
+ sendrequest c ⇒ request 
+ sendquote m ⇒ offer 
+where offer ≡ promisegoods ∧ promisereceipt and 
+promisegoods ≡ cc m c accept goods and 
+promisereceipt ≡ cc m c pay receipt 
+ sendaccept c ⇒ accept 
+where accept ≡ cc c m goods pay 
+ sendgoods m ⇒ promisereceipt ∧ goods 
+where promisereceipt ≡ cc m c pay receipt 
+ sendepo c goods ⇒ pay 
+ sendreceipt m pay ⇒ receipt 
+the commitment accept is the customer s promise to pay once 
+goods have been sent promisegoods is the merchant s promise 
+to send the goods once the customer accepts and promisereceipt 
+is the merchant s promise to send a receipt once payment has been 
+made 
+as seen in figure commitment machines can support a range 
+of interaction sequences 
+ an abstract agent programminglanguage 
+agent programming languages in the bdi tradition e g dmars 
+jam prs um-prs jack agentspeak l jason apl can 
+jadex define agent behaviour in terms of event-triggered plans 
+where each plan specifies what it is triggered by under what 
+situations it can be considered to be applicable defined using a so-called 
+context condition and a plan body a sequence of steps that can 
+include posting events which in turn triggers further plans given 
+a collection of plans and an event e that has been posted the agent 
+first collects all plans types that are triggered by that event the 
+relevant plans then evaluates the context conditions of these plans to 
+obtain a set of applicable plan instances one of these is chosen 
+and is executed 
+we now briefly define the formal syntax and semantics of a 
+simple abstract bdi agent programming language saapl this 
+language is intended to be an abstraction that is in the common 
+subset of such languages as jason chapter apl 
+chapter and can thus it is intentionally incomplete in some 
+areas for instance it doesn t commit to a particular mechanism for 
+dealing with plan failure since different mechanisms are used by 
+different aopls 
+an agent program denoted by π consists of a collection of plan 
+clauses of the form e c ← p where e is an event c is a context 
+condition a logical formula over the agent s beliefs and p is the 
+plan body the plan body is built up from the following constructs 
+we have the empty step which always succeeds and does nothing 
+operations to add b and delete −b beliefs sending a message 
+m to agent n ↑n 
+m and posting an event 
+ e these can be 
+sequenced p p 
+c b c ∧ c c ∨ c ¬c ∃x c 
+p b −b e ↑n 
+m p p 
+formal semantics for this language is given in figure this 
+semantics is based on the semantics for agentspeak given by 
+which in turn is based on the semantics for can the 
+semantics is in the style of plotkin s structural operational semantics 
+and assumes that operations exist that check whether a condition 
+ 
+we use ↓n 
+m as short hand for the event corresponding to 
+receiving message m from agent n 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure finite state machine for netbill shaded final states 
+follows from a belief set that add a belief to a belief set and that 
+delete a belief from a belief set in the case of beliefs being a set of 
+ground atoms these operations are respectively consequence 
+checking b c and set addition b ∪ b and deletion b \ b 
+more sophisticated belief management methods may be used but 
+are not considered here 
+we define a basic configuration s q n b p where q is a 
+ global message queue modelled as a sequence 
+where messages 
+are added at one end and removed from the other end n is the 
+name of the agent b is the beliefs of the agent and p is the plan 
+body being executed i e the intention we also define an agent 
+configuration where instead of a single plan body p there is a set 
+of plan instances γ finally a complete mas is a pair q as of a 
+global message queue q and a set of agent configurations without 
+the queue q the global message queue is a sequence of triplets 
+of the form sender recipient message 
+a transition s −→ s specifies that executing s a single step 
+yields s we annotate the arrow with an indication of whether 
+the configuration in question is basic an agent configuration or a 
+mas configuration the transition relation is defined using rules 
+of the form s −→ s or of the form 
+s −→ sr 
+s −→ sr the latter are 
+conditional with the top numerator being the premise and the bottom 
+ denominator being the conclusion 
+note that there is non-determinism in saapl e g the choice 
+of plan to execute from a set of applicable plans this is resolved 
+by using selection functions so selects one of the applicable plan 
+instances to handle a given event si selects which of the plan 
+instances that can be executed should be executed next and sa 
+selects which agent should execute a step next 
+ implementing commitment-based 
+interactions 
+in this section we present a mapping from a commitment 
+machine to a collection of saapl programs one for each role we 
+begin by considering the simple case of two interacting agents and 
+ 
+the operator is used to denote sequence concatenation 
+assume that the agents take turns to act in section we relax these 
+assumptions 
+each action a x p ⇒ e is mapped to a number of plans 
+there is a plan for agent x with context condition p that 
+performs the action i e applies the effects e to the agent s beliefs 
+and sends a message to the other agent and a plan for the other 
+agent that updates its state when a message is received from x 
+for example given the action sendaccept c ⇒ accept we have 
+the following plans where each plan is preceded by m or c 
+to indicate which agent that plan belongs to note that where the 
+identify of the sender respectively recipient is obvious i e the 
+other agent we abbreviate ↑n 
+m to ↑m resp ↓n 
+m to ↓m turn 
+taking is captured through the event ı short for interact the 
+agent that is active has an ı event that is being handled handling 
+the event involves sending a message to the other agent and then 
+doing nothing until a response is received 
+c ı true ← accept ↑sendaccept 
+m ↓sendaccept true ← accept ı 
+if the action has a non-trivial precondition then there are two plans 
+in the recipient one to perform the action if possible and another 
+to report an error if the action s precondition doesn t hold we 
+return to this in section for example the action sendreceipt m 
+pay ⇒ receipt generates the following plans 
+m ı pay ← receipt ↑sendreceipt 
+c ↓sendreceipt pay ← receipt ı 
+c ↓sendreceipt ¬pay ← report error 
+in addition to these plans we also need plans to start and finish 
+the interaction an interaction can be completed whenever there 
+are no base-level commitments so both agents have the following 
+plans 
+ı ¬∃p c p ← ↑done 
+↓done ¬∃p c p ← 
+↓done ∃p c p ← report error 
+an interaction is started by setting up an agent s initial beliefs and 
+then having it begin to interact exactly how to do this depends 
+on the agent platform e g the agent platform in question may 
+offer a simple way to load beliefs from a file a generic approach 
+that is a little cumbersome but is portable is to send each of the 
+agents involved in the interaction a sequence of init messages each 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+q n b b 
+basic 
+−→ q n b ∪ b 
+q n b −b 
+basic 
+−→ q n b \ b 
+δ piθ ti ci ← pi ∈ π ∧ tiθ e ∧ b ciθ 
+q n b e 
+basic 
+−→ q n b so δ 
+q n b p 
+basic 
+−→ q n b p 
+q n b p p 
+basic 
+−→ q n b p p 
+q n b p 
+basic 
+−→ q n b p 
+q n b ↑nb m 
+basic 
+−→ q n nb m n b 
+q na n m q 
+q n b γ 
+agent 
+−→ q n b γ ∪ ↓na m 
+p si γ q n b p 
+basic 
+−→ q n b p 
+q n b γ 
+agent 
+−→ q n b γ \ p ∪ p 
+p si γ p 
+q n b γ 
+agent 
+−→ q n b γ \ p 
+n b γ sa as q n b γ 
+agent 
+−→ q n b γ 
+q as 
+mas 
+−→ q as ∪ n b γ \ n b γ 
+figure operational semantics for saapl 
+containing a belief to be added and then send one of the agents a 
+start message which begins the interaction both agents thus have 
+the following two plans 
+↓init b true ← b 
+↓start true ← ı 
+figure gives the saapl programs for both merchant and 
+customer that implement the netbill protocol for conciseness the 
+error reporting plans are omitted 
+we now turn to refining the context conditions there are three 
+refinements that we consider firstly we need to prevent 
+performing actions that have no effect on the interaction state secondly 
+an agent may want to specify that certain actions that it is able to 
+perform should not be performed unless additional conditions hold 
+for example the customer may not want to agree to the merchant s 
+offer unless the goods have a certain price or property thirdly the 
+context conditions of the plans that terminate the interaction need to 
+be refined in order to avoid terminating the interaction prematurely 
+for each plan of the form ı p ← e ↑m we replace the 
+context condition p with the enhanced condition p ∧ p ∧ ¬e where 
+p is any additional conditions that the agent wishes to impose 
+and ¬e is the negation of the effects of the action for 
+example the customer s payment plan becomes assuming no additional 
+conditions i e no p ı goods ∧ ¬pay ← pay ↑sendepo 
+for each plan of the form ↓m p ← e ı we could add ¬e to 
+the precondition but this is redundant since it is already checked 
+by the performer of the action and if the action has no effect then 
+customer s plans 
+ı true ← request ↑sendrequest 
+ı true ← accept ↑sendaccept 
+ı goods ← pay ↑sendepo 
+↓sendquote true ← promisegoods 
+ promisereceipt ı 
+↓sendgoods true ← promisereceipt goods ı 
+↓sendreceipt pay ← receipt ı 
+merchant s plans 
+ı true ← promisegoods 
+ promisereceipt ↑sendquote 
+ı true ← promisereceipt goods ↑sendgoods 
+ı pay ← receipt ↑sendreceipt 
+↓sendrequest true ← request ı 
+↓sendaccept true ← accept ı 
+↓sendepo goods ← pay ı 
+shared plans i e plans of both agents 
+ı ¬∃p c p ← ↑done 
+↓done ¬∃p c p ← 
+↓init b true ← b 
+↓start true ← ı 
+where 
+accept ≡ cc goods pay 
+promisegoods ≡ cc accept goods 
+promisereceipt ≡ cc pay receipt 
+offer ≡ promisegoods ∧ promisereceipt 
+figure saapl implementation of netbill 
+the sender won t perform it and send the message see also the 
+discussion in section 
+when specifying additional conditions p some care needs to 
+be taken to avoid situations where progress cannot be made because 
+the only action s possible are prevented by additional conditions 
+one way of indicating preference between actions in many agent 
+platforms is to reorder the agent s plans this is clearly safe since 
+actions are not prevented just considered in a different order 
+the third refinement of context conditions concerns the plans 
+that terminate the interaction in the commitment machine 
+framework any state that has no base-level commitment is final in that 
+the interaction may end there or it may continue however only 
+some of these final states are desirable final states which final 
+states are considered to be desirable depends on the domain and 
+the desired interaction outcome in the netbill example the 
+desirable final state is one where the goods have been sent and paid 
+for and a receipt issued i e goods ∧ pay ∧ receipt in order to 
+prevent an agent from terminating the interaction too early we add 
+this as a precondition to the termination plan 
+ı goods ∧ pay ∧ receipt ∧ ¬∃p c p ← ↑done 
+figure shows the plans that are changed from figure 
+in order to support the realisation of cms we need to change 
+saapl in a number of ways these changes which are discussed 
+below can be applied to existing bdi languages to make them 
+commitment machine supportive we present the three changes 
+explain what they involve and for each change explain how the 
+change was implemented using the apl agent oriented 
+programming language the three changes are 
+ extending the beliefs of the agent so that they can contain 
+commitments 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+customer s plans 
+ı ¬request ← request ↑sendrequest 
+ı ¬accept ← accept ↑sendaccept 
+ı goods ∧ ¬pay ← pay ↑sendepo 
+merchant s plans 
+ı ¬offer ← promisegoods promisereceipt 
+↑sendquote 
+ı ¬ promisereceipt ∧ goods ← 
+ promisereceipt goods ↑sendgoods 
+ı pay ∧ ¬receipt ← receipt ↑sendreceipt 
+where 
+accept ≡ cc goods pay 
+promisegoods ≡ cc accept goods 
+promisereceipt ≡ cc pay receipt 
+offer ≡ promisegoods ∧ promisereceipt 
+figure saapl implementation of netbill with refined 
+context conditions changed plans only 
+ changing the definition of to encompass implied 
+commitments and 
+ whenever a belief is added updating existing commitments 
+according to the rules of commitment dynamics 
+extending the notion of beliefs to encompass commitments in 
+fact requires no change in agent platforms that are prolog-like and 
+support terms as beliefs e g jason apl can however other 
+agent platforms do require an extension for example jack which 
+is an extension of java would require changes to support 
+commitments that can be nested in the case of apl no change is needed 
+to support this 
+whenever a context condition contains commitments 
+determining whether the context condition is implied by the agent s beliefs 
+ b c needs to take into account the notion of implied 
+commitments in brief a commitment can be considered to follow 
+from a belief set b if the commitment is in the belief set c ∈ b 
+but also under other conditions for example a commitment to pay 
+c pay can be considered to be implied by a belief set containing 
+pay because the commitment may have held and been discharged 
+when pay was made true similar rules apply for conditional 
+commitments these rules which were introduced in were 
+subsequently re-formalised in a simpler form by resulting in the 
+four inference rules in the bottom part of figure 
+the change that needs to be made to saapl to support 
+commitment machine implementations is to extend the definition of to 
+include these four rules for apl this was realised by having each 
+agent include the following prolog clauses 
+holds x - clause x true 
+holds c p - holds p 
+holds c p - clause cc q p true holds q 
+holds cc q - holds q 
+holds cc q - holds c q 
+the first clause simply says that anything holds if it is in agent s 
+beliefs clause x true is true if x is a fact the 
+remaining four clauses correspond respectively to the inference rules c 
+c cc and cc to use these rules we then modify context 
+conditions in our program so that instead of writing for 
+example cc m c pay receipt we write holds cc m c 
+pay receipt 
+b norm b ∪ b 
+q n b b −→ q n b 
+function norm b 
+b ← b 
+for each b ∈ b do 
+if b c p ∧ b p then b ← b \ b 
+elseif b cc p q then 
+if b q then b ← b \ b 
+elseif b p then b ← b \ b ∪ c q 
+elseif b c q then b ← b \ b 
+endif 
+endif 
+endfor 
+return b 
+end function 
+b p 
+b c p 
+c 
+cc q p ∈ b b q 
+b p 
+c 
+b cc p q 
+b q 
+cc 
+b c q 
+b cc p q 
+cc 
+figure new operational semantics 
+the final change is to update commitments when a belief is 
+added formally this is done by modifying the semantic rule for 
+belief addition so that it applies an algorithm to update 
+commitments the modified rule and algorithm which mirrors the 
+definition of norm in can be found in the top part of figure 
+for apl this final change was achieved by manually inserting 
+update after updating beliefs and defining the following rules 
+for update 
+update - c p and holds p 
+ deletec p update 
+update - cc p q and holds q 
+ deletecc p q update 
+update - cc p q and holds p 
+ deletecc p q addc q update 
+update - cc p q and holds c q 
+ deletecc p q update 
+update - true skip 
+where deletec and deletecc delete respectively a base-level 
+and conditional commitment and addc adds a base-level 
+commitment 
+one aspect that doesn t require a change is linking commitments 
+and actions this is because commitments don t trigger actions 
+directly they may trigger actions indirectly but in general their effect 
+is to prevent completion of an interaction while there are 
+outstanding base level commitments 
+figure shows the message sequences from a number of runs of 
+a apl implementation of the netbill commitment machine 
+ in 
+order to illustrate the different possible interactions the code was 
+modified so that each agent selected randomly from the actions 
+that it could perform and a number of runs were made with the 
+customer as the initiator and then with the merchant as the 
+initiator there are other possible sequences of messages not shown 
+ 
+source code is available from http www winikoff net cm 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure sample runs from apl implementation alternating turns 
+including the obvious one request quote accept goods payment 
+receipt and then done 
+one minor difference between the apl implementation and 
+saapl concerns the semantics of messages in the semantics of 
+saapl and of most aopls receiving a message is treated as an 
+event however in apl receiving a message is modelled as the 
+addition to the agent s beliefs of a fact indicating that the message 
+was received thus in the apl implementation we have pg 
+rules that are triggered by these beliefs rather than by any event 
+one issue with this approach is that the belief remains there so we 
+need to ensure that the belief in question is either deleted once 
+handled or that we modify preconditions of plans to avoid handling it 
+more than once in our implementation we delete these received 
+beliefs when they are handled to avoid duplicate handling of 
+messages 
+ beyond two participants 
+generalising to more than two interaction participants requires 
+revisiting how turn management is done since it is no longer 
+possible to assume alternating turns 
+in fact perhaps surprisingly even in the two participant setting 
+an alternating turn setup is an unreasonable assumption for 
+example consider the path in figure from state to sendgoods 
+then to state sendaccept the result in an alternating turn 
+setup is a dead-end there is only a single possible action in state 
+ namely sendepo but this action is done by the customer and 
+it is the merchant s turn to act figure shows the fsm for netbill 
+with alternating initiative 
+a solution to this problem that works in this example but doesn t 
+generalise 
+ is to weaken the alternating turn taking regime by 
+allowing an agent to act twice in a row if its second action is driven 
+by a commitment 
+a general solution is to track whose turn it is to act this can be 
+done by working out which agents have actions that are able to be 
+performed in the current state if there is only a single active agent 
+then it is clearly that agent s turn to act however if more than 
+one agent is active then somehow the agents need to work out who 
+should act next working this out by negotiation is not a particularly 
+good solution for two reasons firstly this negotiation has to be 
+done at every step of the interaction where more than one agent is 
+active in the netbill this applies to seven out of sixteen states so 
+it is highly desirable to have a light-weight mechanism for doing 
+this secondly it is not clear how the negotiation can avoid an 
+infinite regress situation you go first no you go first 
+without imposing some arbitrary rule it is also possible to resolve 
+who should act by imposing an arbitrary rule for example that the 
+customer always acts in preference to the merchant or that each 
+agent has a numerical priority perhaps determined by the order in 
+which they joined the interaction that determines who acts 
+an alternative solution which exploits the symmetrical 
+properties of commitment machines is to not try and manage turn taking 
+ 
+consider actions a c ⇒ p a c ⇒ q and a m p ∧ 
+q ⇒ r 
+figure netbill with alternating initiative 
+instead of tracking and controlling whose turn it is we simply allow 
+the agents to act freely and rely on the properties of the interaction 
+space to ensure that things work out a notion that we shall make 
+precise and prove in the remainder of this section 
+the issue with having multiple agents be active simultaneously 
+is that instead of all agents agreeing on the current interaction state 
+agents can be in different states this can be visualised as each 
+agent having its own copy of the fsm that it navigates through 
+where it is possible for agents to follow different paths through the 
+fsm the two specific issues that need to be addressed are 
+ can agents end up in different final states 
+ can an agent be in a position where an error occurs because 
+it cannot perform an action corresponding to a received 
+message 
+we will show that because actions commute under certain 
+assumptions agents cannot end up in different final states and 
+furthermore that errors cannot occur again under certain 
+assumptions 
+by actions commute we mean that the state resulting from 
+performing a sequence of actions a an is the same regardless of 
+the order in which the actions are performed this means that even 
+if agents take different paths through the fsm they still end up in 
+the same resulting state because once all messages have been 
+processed all agents will have performed the same set of actions this 
+addresses the issue of ending up in different final states we return 
+to the possibility of errors occurring shortly 
+definition monotonicity an action is monotonic if it does not 
+delete 
+any fluents or commitments a commitment machine is 
+ 
+that is directly deletes it is fine to discharge commitments by 
+adding fluents commitments 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+monotonic if all of its actions are monotonic adapted from 
+definition 
+theorem if a and a are monotonic actions then performing 
+a followed by a has the same effect on the agent s beliefs as 
+performing a followed by a adapted from theorem 
+this assumes that both actions can be performed however it is 
+possible for the performance of a to disable a from being done 
+for example if a has the effect p and a has precondition 
+¬p then although both actions may be enabled in the initial state 
+they cannot be performed in either order we can prevent this by 
+ensuring that actions preconditions do not contain negation or 
+implication since a monotonic action cannot result in a precondition 
+that is negation-free becoming false note that this restriction only 
+applies to the original action precondition p not to any additional 
+preconditions imposed by the agent p this is because only p 
+is used to determine whether another agent is able to perform the 
+action 
+thus monotonic cms with preconditions that do not contain 
+negations have actions that commute however in fact the 
+restriction to monotonic cms is unnecessarily strong all that is needed 
+is that whenever there is a choice of agent that can act then the 
+possible actions are monotonic if there is only a single agent that 
+can act then no restriction is needed on the actions they may or 
+may not be monotonic 
+definition locally monotonic a commitment machine is 
+locally monotonic if for any state s either a only a single agent 
+has actions that can be performed or b all actions that can be 
+performed in s are monotonic 
+theorem in a locally monotonic cm once all messages have 
+been processed all agents will be in the same state furthermore 
+no errors can occur 
+proof once all messages have been processed we have that all 
+agents will have performed the same action set perhaps in a 
+different order the essence of the proof is to argue that as long as 
+agents haven t yet converged to the same state all actions must 
+be monotonic and hence that these actions commute and cannot 
+disable any other actions 
+consider the first point of divergence where an agent performs 
+action a and at the same time another agent call it xb performs 
+action b clearly this state has actions of more than one agent 
+enabled so since the cm is locally monotonic the relevant actions 
+must be monotonic therefore after doing a the action b must 
+still be enabled and so the message to do b can be processed by 
+updating the recipient agent s beliefs with the effects of b 
+furthermore because monotonic actions commute the result of doing 
+a before b is the same as doing b before a 
+s 
+a 
+−−−−−→ sa 
+ 
+ 
+yb b 
+ 
+ 
+y 
+sb −−−−−→ 
+a 
+sab 
+however what happens if the next action after a is not b but 
+c because b is enabled and c is not done by agent xb see 
+below we must have that c is also monotonic and hence a the 
+result of doing a and b and c is the same regardless of the order 
+in which the three actions are done and b c doesn t disable b 
+so b can still be done after c 
+s 
+a 
+−−−−−→ sa 
+c 
+−−−−−→ sac 
+ 
+ 
+yb b 
+ 
+ 
+y b 
+ 
+ 
+y 
+sb −−−−−→ 
+a 
+sab −−−−−→ 
+c 
+sabc 
+the reason why c cannot be done by xb is that messages are 
+processed in the order of their arrival 
+ from the perspective of 
+xb the action b was done before c and therefore from any other 
+agent s perspective the message saying that b was done must be 
+received and processed before a message saying that c is done 
+this argument can be extended to show that once agents start 
+taking different paths through the fsm all actions taken until the 
+point where they converge on a single state must be monotonic 
+and hence it is always possible to converge because actions aren t 
+disabled so the interaction is error free and the resulting state 
+once convergence occurs is the same because monotonic actions 
+commute 
+this theorem gives a strong theoretical guarantee that not 
+doing turn management will not lead to disaster this is analogous 
+to proving that disabling all traffic lights would not lead to any 
+accidents and is only possible because the refined cm axioms are 
+symmetrical 
+based on this theorem the generic transformation from cm to 
+code should allow agents to act freely which is achieved by simply 
+changing ı p ∧ p ∧ ¬e ← e ↑a to 
+ı p ∧ p ∧ ¬e ← e ↑a ı 
+for example instead of ı ¬request ← request ↑sendrequest 
+we have ı ¬request ← request ↑sendrequest ı 
+one consequence of the theorem is that it is not necessary to 
+ensure that agents process messages before continuing to 
+interact however in order to avoid unnecessary parallelism which can 
+make debugging harder it may still be desirable to process 
+messages before performing actions 
+figure shows a number of runs from the apl implementation 
+that has been modified to allow free non-alternating interaction 
+ discussion 
+we have presented a scheme for mapping commitment machines 
+to bdi platforms using saapl as an exemplar identified three 
+changes that needed to be made to saapl to support cm-based 
+interaction and shown that turn management can be avoided in 
+cmbased interaction provided the cm is locally monotonic the three 
+changes to saapl and the translation scheme from commitment 
+machine to bdi plans are both applicable to any bdi language 
+as we have mentioned in section there has been some work 
+on designing flexible and robust agent interaction but virtually no 
+work on implementing flexible and robust interactions 
+we have already discussed staple another piece of 
+work that is relevant is the work by cheong and winikoff on their 
+hermes methodology although the main focus of their work is 
+a pragmatic design methodology they also provide guidelines for 
+implementing hermes designs using bdi platforms specifically 
+jadex however since hermes does not yield a design that is 
+formal it is only possible to generate skeleton code that then needs 
+to be completed also they do not address the turn taking issue 
+how to decide which agent acts when more than one agent is able 
+to act 
+ 
+we also assume that the communication medium does not deliver 
+messages out of order which is the case for e g tcp 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure sample runs from apl implementation non-alternating turns 
+the work of kremer and flores e g also uses 
+commitments and deals with implementation however they provide 
+infrastructure support casa rather than a programming language 
+and do not appear to provide assistance to a programmer seeking to 
+implement agents 
+although we have implemented the netbill interaction using 
+ apl the changes to the semantics were done by modifying our 
+netbill apl program rather than by modifying the apl 
+implementation itself clearly it would be desirable to modify the 
+semantics of apl or of another language directly by changing 
+the implementation also although we have not done so it should 
+be clear that the translation from a cm to its implementation could 
+easily be automated 
+another area for further work is to look at how the assumptions 
+required to ensure that actions commute can be relaxed 
+finally there is a need to perform empirical evaluation there 
+has already been some work on comparing hermes with a 
+conventional message-centric approach to designing interaction and 
+this has shown that using hermes results in designs that are 
+significantly more flexible and robust it would be interesting to 
+compare commitment machines with hermes but since 
+commitment machines are a framework not a design methodology we 
+need to compare hermes with a methodology for designing 
+interactions that results in commitment machines 
+ references 
+ r h bordini m dastani j dix and a e f seghrouchni 
+editors multi-agent programming languages platforms 
+and applications springer 
+ c cheong and m winikoff hermes designing 
+goal-oriented agent interactions in proceedings of the th 
+international workshop on agent-oriented software 
+engineering aose- july 
+ c cheong and m winikoff hermes implementing 
+goal-oriented agent interactions in proceedings of the third 
+international workshop on programming multi-agent 
+systems promas july 
+ c cheong and m winikoff hermes versus prometheus a 
+comparative evaluation of two agent interaction design 
+approaches submitted for publication 
+ p r cohen and h j levesque teamwork nous 
+ - 
+ m dastani j van der ham and f dignum communication 
+for goal directed agents in proceedings of the agent 
+communication languages and conversation policies 
+workshop 
+ f p dignum and g a vreeswijk towards a testbed for 
+multi-party dialogues in advances in agent communication 
+pages - springer lncs 
+ r kremer and r flores using a performative subsumption 
+lattice to support commitment-based conversations in 
+f dignum v dignum s koenig s kraus m p singh and 
+m wooldridge editors autonomous agents and multi-agent 
+systems aamas pages - acm press 
+ s kumar and p r cohen staple an agent programming 
+language based on the joint intention theory in proceedings 
+of the third international joint conference on autonomous 
+agents multi-agent systems aamas pages 
+ - acm press july 
+ s kumar m j huber and p r cohen representing and 
+executing protocols as joint actions in proceedings of the 
+first international joint conference on autonomous agents 
+and multi-agent systems pages - bologna italy 
+ - july acm press 
+ m tambe and w zhang towards flexible teamwork in 
+persistent teams extended report journal of autonomous 
+agents and multi-agent systems special issue on 
+best of icmas 
+ m winikoff an agentspeak meta-interpreter and its 
+applications in third international workshop on 
+programming multi-agent systems promas pages 
+ - springer lncs post-proceedings 
+ 
+ m winikoff designing commitment-based agent 
+interactions in proceedings of the ieee wic acm 
+international conference on intelligent agent technology 
+ iat- 
+ m winikoff implementing flexible and robust agent 
+interactions using distributed commitment machines 
+multiagent and grid systems 
+ m winikoff w liu and j harland enhancing 
+commitment machines in j leite a omicini p torroni 
+and p yolum editors declarative agent languages and 
+technologies ii number in lecture notes in artificial 
+intelligence lnai pages - springer 
+ m winikoff l padgham j harland and j thangarajah 
+declarative procedural goals in intelligent agent systems 
+in proceedings of the eighth international conference on 
+principles of knowledge representation and reasoning 
+ kr toulouse france 
+ p yolum towards design tools for protocol development in 
+f dignum v dignum s koenig s kraus m p singh and 
+m wooldridge editors autonomous agents and multi-agent 
+systems aamas pages - acm press 
+ p yolum and m p singh flexible protocol specification and 
+execution applying event calculus planning using 
+commitments in proceedings of the st joint conference on 
+autonomous agents and multiagent systems aamas 
+pages - 
+ p yolum and m p singh reasoning about commitments in 
+the event calculus an approach for specifying and executing 
+protocols annals of mathematics and artificial intelligence 
+ amai 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

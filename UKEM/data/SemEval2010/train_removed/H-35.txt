@@ -1,0 +1,1009 @@
+adarank a boosting algorithm for information retrieval 
+jun xu 
+microsoft research asia 
+no zhichun road haidian distinct 
+beijing china 
+junxu microsoft com 
+hang li 
+microsoft research asia 
+no zhichun road haidian distinct 
+beijing china 
+hangli microsoft com 
+abstract 
+in this paper we address the issue of learning to rank for document 
+retrieval in the task a model is automatically created with some 
+training data and then is utilized for ranking of documents the 
+goodness of a model is usually evaluated with performance 
+measures such as map mean average precision and ndcg 
+ normalized discounted cumulative gain ideally a learning 
+algorithm would train a ranking model that could directly optimize the 
+performance measures with respect to the training data existing 
+methods however are only able to train ranking models by 
+minimizing loss functions loosely related to the performance measures 
+for example ranking svm and rankboost train ranking 
+models by minimizing classification errors on instance pairs to deal 
+with the problem we propose a novel learning algorithm within 
+the framework of boosting which can minimize a loss function 
+directly defined on the performance measures our algorithm 
+referred to as adarank repeatedly constructs  weak rankers on the 
+basis of re-weighted training data and finally linearly combines the 
+weak rankers for making ranking predictions we prove that the 
+training process of adarank is exactly that of enhancing the 
+performance measure used experimental results on four benchmark 
+datasets show that adarank significantly outperforms the baseline 
+methods of bm ranking svm and rankboost 
+categories and subject descriptors 
+h information search and retrieval retrieval models 
+general terms 
+algorithms experimentation theory 
+ introduction 
+recently  learning to rank has gained increasing attention in 
+both the fields of information retrieval and machine learning when 
+applied to document retrieval learning to rank becomes a task as 
+follows in training a ranking model is constructed with data 
+consisting of queries their corresponding retrieved documents and 
+relevance levels given by humans in ranking given a new query the 
+corresponding retrieved documents are sorted by using the trained 
+ranking model in document retrieval usually ranking results are 
+evaluated in terms of performance measures such as map mean 
+average precision and ndcg normalized discounted 
+cumulative gain ideally the ranking function is created so that the 
+accuracy of ranking in terms of one of the measures with respect to 
+the training data is maximized 
+several methods for learning to rank have been developed and 
+applied to document retrieval for example herbrich et al 
+propose a learning algorithm for ranking on the basis of support 
+vector machines called ranking svm freund et al take a 
+similar approach and perform the learning by using boosting 
+referred to as rankboost all the existing methods used for 
+document retrieval are designed to optimize loss 
+functions loosely related to the ir performance measures not loss 
+functions directly based on the measures for example ranking 
+svm and rankboost train ranking models by minimizing 
+classification errors on instance pairs 
+in this paper we aim to develop a new learning algorithm that 
+can directly optimize any performance measure used in document 
+retrieval inspired by the work of adaboost for classification 
+we propose to develop a boosting algorithm for information 
+retrieval referred to as adarank adarank utilizes a linear 
+combination of  weak rankers as its model in learning it repeats the 
+process of re-weighting the training sample creating a weak ranker 
+and calculating a weight for the ranker 
+we show that adarank algorithm can iteratively optimize an 
+exponential loss function based on any of ir performance measures 
+a lower bound of the performance on training data is given which 
+indicates that the ranking accuracy in terms of the performance 
+measure can be continuously improved during the training process 
+adarank offers several advantages ease in implementation 
+theoretical soundness efficiency in training and high accuracy in ranking 
+experimental results indicate that adarank can outperform the 
+baseline methods of bm ranking svm and rankboost on four 
+benchmark datasets including ohsumed wsj ap and gov 
+tuning ranking models using certain training data and a 
+performance measure is a common practice in ir as the number of 
+features in the ranking model gets larger and the amount of 
+training data gets larger the tuning becomes harder from the viewpoint 
+of ir adarank can be viewed as a machine learning method for 
+ranking model tuning 
+recently direct optimization of performance measures in 
+learning has become a hot research topic several methods for 
+classification and ranking have been proposed adarank can 
+be viewed as a machine learning method for direct optimization of 
+performance measures based on a different approach 
+the rest of the paper is organized as follows after a summary 
+of related work in section we describe the proposed adarank 
+algorithm in details in section experimental results and 
+discussions are given in section section concludes this paper and 
+gives future work 
+ related work 
+ information retrieval 
+the key problem for document retrieval is ranking specifically 
+how to create the ranking model function that can sort documents 
+based on their relevance to the given query it is a common practice 
+in ir to tune the parameters of a ranking model using some labeled 
+data and one performance measure for example the 
+state-ofthe-art methods of bm and lmir language models for 
+information retrieval all have parameters to tune as 
+the ranking models become more sophisticated more features are 
+used and more labeled data become available how to tune or train 
+ranking models turns out to be a challenging issue 
+recently methods of  learning to rank have been applied to 
+ranking model construction and some promising results have been 
+obtained for example joachims applies ranking svm to 
+document retrieval he utilizes click-through data to deduce 
+training data for the model creation cao et al adapt ranking 
+svm to document retrieval by modifying the hinge loss function 
+to better meet the requirements of ir specifically they introduce 
+a hinge loss function that heavily penalizes errors on the tops of 
+ranking lists and errors from queries with fewer retrieved 
+documents burges et al employ relative entropy as a loss function 
+and gradient descent as an algorithm to train a neural network 
+model for ranking in document retrieval the method is referred to 
+as  ranknet 
+ machine learning 
+there are three topics in machine learning which are related to 
+our current work they are  learning to rank boosting and direct 
+optimization of performance measures 
+learning to rank is to automatically create a ranking function 
+that assigns scores to instances and then rank the instances by 
+using the scores several approaches have been proposed to tackle 
+the problem one major approach to learning to rank is that of 
+transforming it into binary classification on instance pairs this 
+ pair-wise approach fits well with information retrieval and thus is 
+widely used in ir typical methods of the approach include 
+ranking svm rankboost and ranknet for other 
+approaches to learning to rank refer to 
+in the pair-wise approach to ranking the learning task is 
+formalized as a problem of classifying instance pairs into two categories 
+ correctly ranked and incorrectly ranked actually it is known 
+that reducing classification errors on instance pairs is equivalent to 
+maximizing a lower bound of map in that sense the 
+existing methods of ranking svm rankboost and ranknet are only 
+able to minimize loss functions that are loosely related to the ir 
+performance measures 
+boosting is a general technique for improving the accuracies of 
+machine learning algorithms the basic idea of boosting is to 
+repeatedly construct  weak learners by re-weighting training data 
+and form an ensemble of weak learners such that the total 
+performance of the ensemble is  boosted freund and schapire have 
+proposed the first well-known boosting algorithm called adaboost 
+ adaptive boosting which is designed for binary 
+classification - prediction later schapire singer have introduced a 
+generalized version of adaboost in which weak learners can give 
+confidence scores in their predictions rather than make - 
+decisions extensions have been made to deal with the problems 
+of multi-class classification regression and ranking 
+ in fact adaboost is an algorithm that ingeniously constructs 
+a linear model by minimizing the  exponential loss function with 
+respect to the training data our work in this paper can be 
+viewed as a boosting method developed for ranking particularly 
+for ranking in ir 
+recently a number of authors have proposed conducting direct 
+optimization of multivariate performance measures in learning for 
+instance joachims presents an svm method to directly 
+optimize nonlinear multivariate performance measures like the f 
+measure for classification cossock zhang find a way to 
+approximately optimize the ranking performance measure dcg 
+metzler et al also propose a method of directly maximizing 
+rank-based metrics for ranking on the basis of manifold learning 
+adarank is also one that tries to directly optimize multivariate 
+performance measures but is based on a different approach adarank 
+is unique in that it employs an exponential loss function based on 
+ir performance measures and a boosting technique 
+ our method adarank 
+ general framework 
+we first describe the general framework of learning to rank for 
+document retrieval in retrieval testing given a query the system 
+returns a ranking list of documents in descending order of the 
+relevance scores the relevance scores are calculated with a ranking 
+function model in learning training a number of queries and 
+their corresponding retrieved documents are given furthermore 
+the relevance levels of the documents with respect to the queries are 
+also provided the relevance levels are represented as ranks i e 
+categories in a total order the objective of learning is to construct 
+a ranking function which achieves the best results in ranking of the 
+training data in the sense of minimization of a loss function ideally 
+the loss function is defined on the basis of the performance measure 
+used in testing 
+suppose that y r r · · · r is a set of ranks where denotes 
+the number of ranks there exists a total order between the ranks 
+r r − · · · r where   denotes a preference relationship 
+in training a set of queries q q q · · · qm is given each 
+query qi is associated with a list of retrieved documents di di di 
+· · · di n qi and a list of labels yi yi yi · · · yi n qi where n qi 
+denotes the sizes of lists di and yi dij denotes the jth 
+document in 
+di and yij ∈ y denotes the rank of document di j a feature 
+vector xij ψ qi di j ∈ x is created from each query-document pair 
+ qi di j i · · · m j · · · n qi thus the training set 
+can be represented as s qi di yi m 
+i 
+the objective of learning is to create a ranking function f x → 
+ such that for each query the elements in its corresponding 
+document list can be assigned relevance scores using the function and 
+then be ranked according to the scores specifically we create a 
+permutation of integers π qi di f for query qi the 
+corresponding list of documents di and the ranking function f let di 
+ di di · · · di n qi be identified by the list of integers · · · n qi 
+then permutation π qi di f is defined as a bijection from · · · 
+n qi to itself we use π j to denote the position of item j i e 
+di j the learning process turns out to be that of minimizing the 
+loss function which represents the disagreement between the 
+permutation π qi di f and the list of ranks yi for all of the queries 
+table notations and explanations 
+notations explanations 
+qi ∈ q ith 
+query 
+di di di · · · di n qi list of documents for qi 
+yi j ∈ r r · · · r rank of di j w r t qi 
+yi yi yi · · · yi n qi list of ranks for qi 
+s qi di yi m 
+i training set 
+xij ψ qi dij ∈ x feature vector for qi di j 
+f xij ∈ ranking model 
+π qi di f permutation for qi di and f 
+ht xi j ∈ tth 
+weak ranker 
+e π qi di f yi ∈ − performance measure function 
+in the paper we define the rank model as a linear combination of 
+weak rankers f x t 
+t αtht x where ht x is a weak ranker αt 
+is its weight and t is the number of weak rankers 
+in information retrieval query-based performance measures are 
+used to evaluate the  goodness of a ranking function by query 
+based measure we mean a measure defined over a ranking list 
+of documents with respect to a query these measures include 
+map ndcg mrr mean reciprocal rank wta winners take 
+all and precision n we utilize a general function 
+e π qi di f yi ∈ − to represent the performance 
+measures the first argument of e is the permutation π created using 
+the ranking function f on di the second argument is the list of 
+ranks yi given by humans e measures the agreement between π 
+and yi table gives a summary of notations described above 
+next as examples of performance measures we present the 
+definitions of map and ndcg given a query qi the corresponding 
+list of ranks yi and a permutation πi on di average precision for qi 
+is defined as 
+avgpi 
+n qi 
+j pi j · yij 
+n qi 
+j yij 
+ 
+where yij takes on and as values representing being relevant or 
+irrelevant and pi j is defined as precision at the position of dij 
+pi j 
+k πi k ≤πi j yik 
+πi j 
+ 
+where πi j denotes the position of di j 
+given a query qi the list of ranks yi and a permutation πi on di 
+ndcg at position m for qi is defined as 
+ni ni · 
+j πi j ≤m 
+ yi j − 
+log πi j 
+ 
+where yij takes on ranks as values and ni is a normalization 
+constant ni is chosen so that a perfect ranking π 
+i s ndcg score at 
+position m is 
+ algorithm 
+inspired by the adaboost algorithm for classification we have 
+devised a novel algorithm which can optimize a loss function based 
+on the ir performance measures the algorithm is referred to as 
+ adarank and is shown in figure 
+adarank takes a training set s qi di yi m 
+i as input and 
+takes the performance measure function e and the number of 
+iterations t as parameters adarank runs t rounds and at each round it 
+creates a weak ranker ht t · · · t finally it outputs a ranking 
+model f by linearly combining the weak rankers 
+at each round adarank maintains a distribution of weights over 
+the queries in the training data we denote the distribution of weights 
+input s qi di yi m 
+i and parameters e and t 
+initialize p i m 
+for t · · · t 
+ create weak ranker ht with weighted distribution pt on 
+training data s 
+ choose αt 
+αt 
+ 
+ 
+· ln 
+m 
+i pt i e π qi di ht yi 
+m 
+i pt i − e π qi di ht yi 
+ 
+ create ft 
+ft x 
+t 
+k 
+αkhk x 
+ update pt 
+pt i 
+exp −e π qi di ft yi 
+m 
+j exp −e π qj dj ft yj 
+ 
+end for 
+output ranking model f x ft x 
+figure the adarank algorithm 
+at round t as pt and the weight on the ith 
+training query qi at round 
+t as pt i initially adarank sets equal weights to the queries at 
+each round it increases the weights of those queries that are not 
+ranked well by ft the model created so far as a result the learning 
+at the next round will be focused on the creation of a weak ranker 
+that can work on the ranking of those  hard queries 
+at each round a weak ranker ht is constructed based on training 
+data with weight distribution pt the goodness of a weak ranker is 
+measured by the performance measure e weighted by pt 
+m 
+i 
+pt i e π qi di ht yi 
+several methods for weak ranker construction can be considered 
+for example a weak ranker can be created by using a subset of 
+queries together with their document list and label list sampled 
+according to the distribution pt in this paper we use single features 
+as weak rankers as will be explained in section 
+once a weak ranker ht is built adarank chooses a weight αt 
+for the weak ranker intuitively αt measures the importance of ht 
+a ranking model ft is created at each round by linearly 
+combining the weak rankers constructed so far h · · · ht with weights 
+α · · · αt ft is then used for updating the distribution pt 
+ theoretical analysis 
+the existing learning algorithms for ranking attempt to minimize 
+a loss function based on instance pairs document pairs in 
+contrast adarank tries to optimize a loss function based on queries 
+furthermore the loss function in adarank is defined on the basis 
+of general ir performance measures the measures can be map 
+ndcg wta mrr or any other measures whose range is within 
+ − we next explain why this is the case 
+ideally we want to maximize the ranking accuracy in terms of a 
+performance measure on the training data 
+max 
+f∈f 
+m 
+i 
+e π qi di f yi 
+where f is the set of possible ranking functions this is equivalent 
+to minimizing the loss on the training data 
+min 
+f∈f 
+m 
+i 
+ − e π qi di f yi 
+it is difficult to directly optimize the loss because e is a 
+noncontinuous function and thus may be difficult to handle we instead 
+attempt to minimize an upper bound of the loss in 
+min 
+f∈f 
+m 
+i 
+exp −e π qi di f yi 
+because e−x 
+≥ − x holds for any x ∈ we consider the use of a 
+linear combination of weak rankers as our ranking model 
+f x 
+t 
+t 
+αtht x 
+the minimization in then turns out to be 
+min 
+ht∈h αt∈ 
+l ht αt 
+m 
+i 
+exp −e π qi di ft− αtht yi 
+where h is the set of possible weak rankers αt is a positive weight 
+and ft− αtht x ft− x αtht x several ways of computing 
+coefficients αt and weak rankers ht may be considered following 
+the idea of adaboost in adarank we take the approach of  forward 
+stage-wise additive modeling and get the algorithm in figure 
+ it can be proved that there exists a lower bound on the ranking 
+accuracy for adarank on training data as presented in theorem 
+t the following bound holds on the ranking 
+accuracy of the adarank algorithm on training data 
+ 
+m 
+m 
+i 
+e π qi di ft yi ≥ − 
+t 
+t 
+e−δt 
+min − ϕ t 
+where ϕ t m 
+i pt i e π qi di ht yi δt 
+min mini ··· m δt 
+i and 
+δt 
+i e π qi di ft− αtht yi − e π qi di ft− yi 
+−αte π qi di ht yi 
+for all i · · · m and t · · · t 
+a proof of the theorem can be found in appendix the theorem 
+implies that the ranking accuracy in terms of the performance 
+measure can be continuously improved as long as e−δt 
+min − ϕ t 
+holds 
+ advantages 
+adarank is a simple yet powerful method more importantly it 
+is a method that can be justified from the theoretical viewpoint as 
+discussed above in addition adarank has several other advantages 
+when compared with the existing learning to rank methods such as 
+ranking svm rankboost and ranknet 
+first adarank can incorporate any performance measure 
+provided that the measure is query based and in the range of − 
+notice that the major ir measures meet this requirement in 
+contrast the existing methods only minimize loss functions that are 
+loosely related to the ir measures 
+second the learning process of adarank is more efficient than 
+those of the existing learning algorithms the time complexity of 
+adarank is of order o k t ·m·n log n where k denotes the 
+number of features t the number of rounds m the number of queries 
+in training data and n is the maximum number of documents for 
+queries in training data the time complexity of rankboost for 
+example is of order o t · m · n 
+ 
+third adarank employs a more reasonable framework for 
+performing the ranking task than the existing methods specifically in 
+adarank the instances correspond to queries while in the existing 
+methods the instances correspond to document pairs as a result 
+adarank does not have the following shortcomings that plague the 
+existing methods a the existing methods have to make a strong 
+assumption that the document pairs from the same query are 
+independently distributed in reality this is clearly not the case and this 
+problem does not exist for adarank b ranking the most relevant 
+documents on the tops of document lists is crucial for document 
+retrieval the existing methods cannot focus on the training on the 
+tops as indicated in several methods for rectifying the problem 
+have been proposed e g however they do not seem to 
+fundamentally solve the problem in contrast adarank can naturally 
+focus on training on the tops of document lists because the 
+performance measures used favor rankings for which relevant documents 
+are on the tops c in the existing methods the numbers of 
+document pairs vary from query to query resulting in creating models 
+biased toward queries with more document pairs as pointed out in 
+ adarank does not have this drawback because it treats queries 
+rather than document pairs as basic units in learning 
+ differences from adaboost 
+adarank is a boosting algorithm in that sense it is similar to 
+adaboost but it also has several striking differences from adaboost 
+first the types of instances are different adarank makes use of 
+queries and their corresponding document lists as instances the 
+labels in training data are lists of ranks relevance levels adaboost 
+makes use of feature vectors as instances the labels in training 
+data are simply and − 
+second the performance measures are different in adarank 
+the performance measure is a generic measure defined on the 
+document list and the rank list of a query in adaboost the 
+corresponding performance measure is a specific measure for binary 
+classification also referred to as  margin 
+third the ways of updating weights are also different in 
+adaboost the distribution of weights on training instances is 
+calculated according to the current distribution and the performance of 
+the current weak learner in adarank in contrast it is calculated 
+according to the performance of the ranking model created so far 
+as shown in figure note that adaboost can also adopt the weight 
+updating method used in adarank for adaboost they are 
+equivalent cf page however this is not true for adarank 
+ construction of weak ranker 
+we consider an efficient implementation for weak ranker 
+construction which is also used in our experiments in the 
+implementation as weak ranker we choose the feature that has the optimal 
+weighted performance among all of the features 
+max 
+k 
+m 
+i 
+pt i e π qi di xk yi 
+creating weak rankers in this way the learning process turns out 
+to be that of repeatedly selecting features and linearly combining 
+the selected features note that features which are not selected in 
+the training phase will have a weight of zero 
+ experimental results 
+we conducted experiments to test the performances of adarank 
+using four benchmark datasets ohsumed wsj ap and gov 
+table features used in the experiments on ohsumed 
+wsj and ap datasets c w d represents frequency of word 
+w in document d c represents the entire collection n denotes 
+number of terms in query · denotes the size function and 
+id f · denotes inverse document frequency 
+ wi∈q d ln c wi d wi∈q d ln c 
+c wi c 
+ 
+ wi∈q d ln id f wi wi∈q d ln c wi d 
+ d 
+ 
+ wi∈q d ln c wi d 
+ d 
+· id f wi wi∈q d ln c wi d · c 
+ d ·c wi c 
+ 
+ ln bm score 
+ 
+ 
+ 
+ 
+ 
+map ndcg  ndcg  ndcg  ndcg  
+bm 
+ranking svm 
+rarnkboost 
+adarank map 
+adarank ndcg 
+figure ranking accuracies on ohsumed data 
+ experiment setting 
+ranking svm and rankboost were selected as 
+baselines in the experiments because they are the state-of-the-art 
+learning to rank methods furthermore bm was used as a 
+baseline representing the state-of-the-arts ir method we actually used 
+the tool lemur 
+ 
+for adarank the parameter t was determined automatically 
+during each experiment specifically when there is no 
+improvement in ranking accuracy in terms of the performance measure the 
+iteration stops and t is determined as the measure e map and 
+ndcg  were utilized the results for adarank using map and 
+ndcg  as measures in training are represented as adarank map 
+and adarank ndcg respectively 
+ experiment with ohsumed data 
+in this experiment we made use of the ohsumed dataset 
+to test the performances of adarank the ohsumed dataset 
+consists of documents and queries there are in total 
+ query-document pairs upon which relevance judgments are 
+made the relevance judgments are either  d definitely relevant 
+ p possibly relevant or  n not relevant the data have been 
+used in many experiments in ir for example 
+as features we adopted those used in document retrieval 
+table shows the features for example tf term frequency idf 
+ inverse document frequency dl document length and 
+combinations of them are defined as features bm score itself is also a 
+feature stop words were removed and stemming was conducted in 
+the data 
+we randomly divided queries into four even subsets and 
+conducted -fold cross-validation experiments we tuned the 
+parameters for bm during one of the trials and applied them to the other 
+trials the results reported in figure are those averaged over four 
+trials in map calculation we define the rank  d as relevant and 
+ 
+http www lemurproject com 
+table statistics on wsj and ap datasets 
+dataset queries retrieved docs docs per query 
+ap 
+wsj 
+ 
+ 
+ 
+ 
+ 
+map ndcg  ndcg  ndcg  ndcg  
+bm 
+ranking svm 
+rankboost 
+adarank map 
+adarank ndcg 
+figure ranking accuracies on wsj dataset 
+the other two ranks as irrelevant from figure we see that both 
+adarank map and adarank ndcg outperform bm ranking 
+svm and rankboost in terms of all measures we conducted 
+significant tests t-test on the improvements of adarank map over 
+bm ranking svm and rankboost in terms of map the 
+results indicate that all the improvements are statistically significant 
+ p-value we also conducted t-test on the improvements 
+of adarank ndcg over bm ranking svm and rankboost 
+in terms of ndcg  the improvements are also statistically 
+significant 
+ experiment with wsj and ap data 
+in this experiment we made use of the wsj and ap datasets 
+from the trec ad-hoc retrieval track to test the performances of 
+adarank wsj contains articles of wall street journals 
+from to and ap contains articles of 
+associated press in and queries are selected from the 
+trec topics no ∼ no each query has a number of 
+documents associated and they are labeled as  relevant or  irrelevant 
+ to the query following the practice in the queries that have 
+less than relevant documents were discarded table shows the 
+statistics on the two datasets 
+in the same way as in section we adopted the features listed 
+in table for ranking we also conducted -fold cross-validation 
+experiments the results reported in figure and are those 
+averaged over four trials on wsj and ap datasets respectively from 
+figure and we can see that adarank map and adarank ndcg 
+outperform bm ranking svm and rankboost in terms of all 
+measures on both wsj and ap we conducted t-tests on the 
+improvements of adarank map and adarank ndcg over bm 
+ranking svm and rankboost on wsj and ap the results 
+indicate that all the improvements in terms of map are statistically 
+significant p-value however only some of the improvements 
+in terms of ndcg  are statistically significant although overall 
+the improvements on ndcg scores are quite high - points 
+ experiment with gov data 
+in this experiment we further made use of the trec gov data 
+to test the performance of adarank for the task of web retrieval 
+the corpus is a crawl from the gov domain in early and 
+has been used at trec web track since there are a total 
+ 
+ 
+ 
+ 
+map ndcg  ndcg  ndcg  ndcg  
+bm 
+ranking svm 
+rankboost 
+adarank map 
+adarank ndcg 
+figure ranking accuracies on ap dataset 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+map ndcg  ndcg  ndcg  ndcg  
+bm 
+ranking svm 
+rankboost 
+adarank map 
+adarank ndcg 
+figure ranking accuracies on gov dataset 
+table features used in the experiments on gov dataset 
+ bm msra 
+ pagerank hostrank 
+ relevance propagation features 
+of web pages with hyperlinks in the data 
+the queries in the topic distillation task in the web track of 
+trec were used the ground truths for the queries are 
+provided by the trec committee with binary judgment relevant 
+or irrelevant the number of relevant pages vary from query to 
+query from to 
+we extracted features from each query-document pair 
+table gives a list of the features they are the outputs of some 
+well-known algorithms systems these features are different from 
+those in table because the task is different 
+again we conducted -fold cross-validation experiments the 
+results averaged over four trials are reported in figure from the 
+results we can see that adarank map and adarank ndcg 
+outperform all the baselines in terms of all measures we conducted 
+ttests on the improvements of adarank map and adarank ndcg 
+over bm ranking svm and rankboost some of the 
+improvements are not statistically significant this is because we have only 
+ queries used in the experiments and the number of queries is 
+too small 
+ discussions 
+we investigated the reasons that adarank outperforms the 
+baseline methods using the results of the ohsumed dataset as examples 
+first we examined the reason that adarank has higher 
+performances than ranking svm and rankboost specifically we 
+com 
+ 
+ 
+ 
+ 
+ 
+d-n d-p p-n 
+accuracy 
+pair type 
+ranking svm 
+rankboost 
+adarank map 
+adarank ndcg 
+figure accuracy on ranking document pairs with 
+ohsumed dataset 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofqueries 
+number of document pairs per query 
+figure distribution of queries with different number of 
+document pairs in training data of trial 
+pared the error rates between different rank pairs made by 
+ranking svm rankboost adarank map and adarank ndcg on the 
+test data the results averaged over four trials in the -fold cross 
+validation are shown in figure we use  d-n to stand for the pairs 
+between  definitely relevant and  not relevant  d-p the pairs 
+between  definitely relevant and  partially relevant and  p-n the 
+pairs between  partially relevant and  not relevant from 
+figure we can see that adarank map and adarank ndcg make 
+fewer errors for  d-n and  d-p which are related to the tops of 
+rankings and are important this is because adarank map and 
+adarank ndcg can naturally focus upon the training on the tops 
+by optimizing map and ndcg  respectively 
+we also made statistics on the number of document pairs per 
+query in the training data for trial the queries are clustered into 
+different groups based on the the number of their associated 
+document pairs figure shows the distribution of the query groups in 
+the figure for example   - k is the group of queries whose 
+number of document pairs are between and we can see that the 
+numbers of document pairs really vary from query to query next 
+we evaluated the accuracies of adarank map and rankboost in 
+terms of map for each of the query group the results are reported 
+in figure we found that the average map of adarank map 
+over the groups is two points higher than rankboost furthermore 
+it is interesting to see that adarank map performs particularly 
+better than rankboost for queries with small numbers of document 
+pairs e g   - k   k- k and   k- k the results indicate that 
+adarank map can effectively avoid creating a model biased 
+towards queries with more document pairs for adarank ndcg 
+similar results can be observed 
+ 
+ 
+ 
+ 
+map 
+query group 
+rankboost 
+adarank map 
+figure differences in map for different query groups 
+ 
+ 
+ 
+ 
+ 
+trial trial trial trial 
+map 
+adarank map 
+adarank ndcg 
+figure map on training set when model is trained with map 
+or ndcg  
+we further conducted an experiment to see whether adarank has 
+the ability to improve the ranking accuracy in terms of a measure 
+by using the measure in training specifically we trained ranking 
+models using adarank map and adarank ndcg and evaluated 
+their accuracies on the training dataset in terms of both map and 
+ndcg  the experiment was conducted for each trial figure 
+ and figure show the results in terms of map and ndcg  
+respectively we can see that adarank map trained with map 
+performs better in terms of map while adarank ndcg trained 
+with ndcg  performs better in terms of ndcg  the results 
+indicate that adarank can indeed enhance ranking performance in 
+terms of a measure by using the measure in training 
+finally we tried to verify the correctness of theorem that is 
+the ranking accuracy in terms of the performance measure can be 
+continuously improved as long as e−δt 
+min − ϕ t holds as 
+an example figure shows the learning curve of adarank map 
+in terms of map during the training phase in one trial of the cross 
+validation from the figure we can see that the ranking accuracy 
+of adarank map steadily improves as the training goes on until 
+it reaches to the peak the result agrees well with theorem 
+ conclusion and future work 
+in this paper we have proposed a novel algorithm for learning 
+ranking models in document retrieval referred to as adarank in 
+contrast to existing methods adarank optimizes a loss function 
+that is directly defined on the performance measures it employs 
+a boosting technique in ranking model learning adarank offers 
+several advantages ease of implementation theoretical soundness 
+efficiency in training and high accuracy in ranking experimental 
+results based on four benchmark datasets show that adarank can 
+significantly outperform the baseline methods of bm ranking 
+svm and rankboost 
+ 
+ 
+ 
+ 
+ 
+trial trial trial trial 
+ndcg  
+adarank map 
+adarank ndcg 
+figure ndcg  on training set when model is trained 
+with map or ndcg  
+ 
+ 
+ 
+ 
+ 
+map 
+number of rounds 
+figure learning curve of adarank 
+future work includes theoretical analysis on the generalization 
+error and other properties of the adarank algorithm and further 
+empirical evaluations of the algorithm including comparisons with 
+other algorithms that can directly optimize performance measures 
+ acknowledgments 
+we thank harry shum wei-ying ma tie-yan liu gu xu bin 
+gao robert schapire and andrew arnold for their valuable 
+comments and suggestions to this paper 
+ references 
+ r baeza-yates and b ribeiro-neto modern information 
+retrieval addison wesley may 
+ c burges r ragno and q le learning to rank with 
+nonsmooth cost functions in advances in neural 
+information processing systems pages - mit 
+press cambridge ma 
+ c burges t shaked e renshaw a lazier m deeds 
+n hamilton and g hullender learning to rank using 
+gradient descent in icml pages - 
+ y cao j xu t -y liu h li y huang and h -w hon 
+adapting ranking svm to document retrieval in sigir 
+pages - 
+ d cossock and t zhang subset ranking using regression 
+in colt pages - 
+ n craswell d hawking r wilkinson and m wu 
+overview of the trec web track in trec pages 
+ - 
+ n duffy and d helmbold boosting methods for regression 
+mach learn - - 
+ y freund r d iyer r e schapire and y singer an 
+efficient boosting algorithm for combining preferences 
+journal of machine learning research - 
+ y freund and r e schapire a decision-theoretic 
+generalization of on-line learning and an application to 
+boosting j comput syst sci - 
+ j friedman t hastie and r tibshirani additive logistic 
+regression a statistical view of boosting the annals of 
+statistics - 
+ g fung r rosales and b krishnapuram learning 
+rankings via convex hull separation in advances in neural 
+information processing systems pages - mit 
+press cambridge ma 
+ t hastie r tibshirani and j h friedman the elements of 
+statistical learning springer august 
+ r herbrich t graepel and k obermayer large margin 
+rank boundaries for ordinal regression mit press 
+cambridge ma 
+ w hersh c buckley t j leone and d hickam 
+ohsumed an interactive retrieval evaluation and new large 
+test collection for research in sigir pages - 
+ k jarvelin and j kekalainen ir evaluation methods for 
+retrieving highly relevant documents in sigir pages 
+ - 
+ t joachims optimizing search engines using clickthrough 
+data in sigkdd pages - 
+ t joachims a support vector method for multivariate 
+performance measures in icml pages - 
+ j lafferty and c zhai document language models query 
+models and risk minimization for information retrieval in 
+sigir pages - 
+ d a metzler w b croft and a mccallum direct 
+maximization of rank-based metrics for information 
+retrieval technical report ciir 
+ r nallapati discriminative models for information retrieval 
+in sigir pages - 
+ l page s brin r motwani and t winograd the 
+pagerank citation ranking bringing order to the web 
+technical report stanford digital library technologies 
+project 
+ j m ponte and w b croft a language modeling approach 
+to information retrieval in sigir pages - 
+ t qin t -y liu x -d zhang z chen and w -y ma a 
+study of relevance propagation for web search in sigir 
+pages - 
+ s e robertson and d a hull the trec- filtering track 
+final report in trec pages - 
+ r e schapire y freund p barlett and w s lee boosting 
+the margin a new explanation for the effectiveness of voting 
+methods in icml pages - 
+ r e schapire and y singer improved boosting algorithms 
+using confidence-rated predictions mach learn 
+ - 
+ r song j wen s shi g xin t yan liu t qin x zheng 
+j zhang g xue and w -y ma microsoft research asia at 
+web track and terabyte track of trec in trec 
+ a trotman learning to rank inf retr - 
+ j xu y cao h li and y huang cost-sensitive learning 
+of svm for ranking in ecml pages - 
+ g -r xue q yang h -j zeng y yu and z chen 
+exploiting the hierarchical structure for link analysis in 
+sigir pages - 
+ h yu svm selective sampling for ranking with application 
+to data retrieval in sigkdd pages - 
+appendix 
+here we give the proof of theorem 
+p set zt m 
+i exp −e π qi di ft yi and φ t 
+ 
+ 
+ϕ t according to the definition of αt we know that eαt φ t 
+ −φ t 
+ 
+zt 
+m 
+i 
+exp −e π qi di ft− αt ht yi 
+ 
+m 
+i 
+exp −e π qi di ft− yi − αt e π qi di ht yi − δt 
+i 
+≤ 
+m 
+i 
+exp −e π qi di ft− yi exp −αt e π qi di ht yi e−δt 
+min 
+ e−δt 
+min zt− 
+m 
+i 
+exp −e π qi di ft− yi 
+zt− 
+exp −αt e π qi di ht yi 
+ e−δt 
+min zt− 
+m 
+i 
+pt i exp −αt e π qi di ht yi 
+moreover if e π qi di ht yi ∈ − then 
+zt ≤ e−δt 
+minzt− 
+m 
+i 
+pt i 
+ e π qi di ht yi 
+ 
+e−αt 
+ 
+ −e π qi di ht yi 
+ 
+eαt 
+ e−δt 
+min zt− 
+ 
+φ t 
+ − φ t 
+φ t 
+ − φ t 
+φ t 
+ − φ t 
+ 
+ 
+ zt− e−δt 
+min φ t − φ t 
+≤ zt− 
+t 
+t t− 
+e−δt 
+min φ t − φ t 
+≤ z 
+t 
+t 
+e−δt 
+min φ t − φ t 
+ m 
+m 
+i 
+ 
+m 
+exp −e π qi di α h yi 
+t 
+t 
+e−δt 
+min φ t − φ t 
+ m 
+m 
+i 
+ 
+m 
+exp −α e π qi di h yi − δ 
+i 
+t 
+t 
+e−δt 
+min φ t − φ t 
+≤ me−δ 
+min 
+m 
+i 
+ 
+m 
+exp −α e π qi di h yi 
+t 
+t 
+e−δt 
+min φ t − φ t 
+≤ m e−δ 
+min φ − φ 
+t 
+t 
+e−δt 
+min φ t − φ t 
+ m 
+t 
+t 
+e−δt 
+min − ϕ t 
+∴ 
+ 
+m 
+m 
+i 
+e π qi di ft yi ≥ 
+ 
+m 
+m 
+i 
+ − exp −e π qi di ft yi 
+≥ − 
+t 
+t 
+e−δt 
+min − ϕ t 

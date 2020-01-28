@@ -1,0 +1,979 @@
+applying learning algorithms to preference elicitation 
+sebastien m lahaie 
+division of engineering and applied sciences 
+harvard university 
+cambridge ma 
+slahaie eecs harvard edu 
+david c parkes 
+division of engineering and applied sciences 
+harvard university 
+cambridge ma 
+parkes eecs harvard edu 
+abstract 
+we consider the parallels between the preference elicitation 
+problem in combinatorial auctions and the problem of 
+learning an unknown function from learning theory we show 
+that learning algorithms can be used as a basis for 
+preference elicitation algorithms the resulting elicitation 
+algorithms perform a polynomial number of queries we also 
+give conditions under which the resulting algorithms have 
+polynomial communication our conversion procedure 
+allows us to generate combinatorial auction protocols from 
+learning algorithms for polynomials monotone dnf and 
+linear-threshold functions in particular we obtain an 
+algorithm that elicits xor bids with polynomial 
+communication 
+categories and subject descriptors 
+f analysis of algorithms and problem 
+complexity general j social and behavioral sciences 
+economics i artificial intelligence learning 
+general terms 
+algorithms economics theory 
+ introduction 
+in a combinatorial auction agents may bid on bundles of 
+goods rather than individual goods alone since there are 
+an exponential number of bundles in the number of goods 
+communicating values over these bundles can be 
+problematic communicating valuations in a one-shot fashion can 
+be prohibitively expensive if the number of goods is only 
+moderately large furthermore it might even be hard for 
+agents to determine their valuations for single bundles 
+it is in the interest of such agents to have auction protocols 
+which require them to bid on as few bundles as possible 
+even if agents can efficiently compute their valuations they 
+might still be reluctant to reveal them entirely in the course 
+of an auction because such information may be valuable to 
+their competitors these considerations motivate the need 
+for auction protocols that minimize the communication and 
+information revelation required to determine an optimal 
+allocation of goods 
+there has been recent work exploring the links between 
+the preference elicitation problem in combinatorial auctions 
+and the problem of learning an unknown function from 
+computational learning theory in learning theory the 
+goal is to learn a function via various types of queries such 
+as what is the function s value on these inputs in 
+preference elicitation the goal is to elicit enough partial 
+information about preferences to be able to compute an optimal 
+allocation though the goals of learning and preference 
+elicitation differ somewhat it is clear that these problems share 
+similar structure and it should come as no surprise that 
+techniques from one field should be relevant to the other 
+we show that any exact learning algorithm with 
+membership and equivalence queries can be converted into a 
+preference elicitation algorithm with value and demand queries 
+the resulting elicitation algorithm guarantees elicitation in 
+a polynomial number of value and demand queries here 
+we mean polynomial in the number of goods agents and 
+the sizes of the agents valuation functions in a given 
+encoding scheme preference elicitation schemes have not 
+traditionally considered this last parameter we argue that 
+complexity guarantees for elicitation schemes should allow 
+dependence on this parameter introducing this parameter 
+also allows us to guarantee polynomial worst-case 
+communication which usually cannot be achieved in the number 
+of goods and agents alone finally we use our conversion 
+procedure to generate combinatorial auction protocols from 
+learning algorithms for polynomials monotone dnf and 
+linear-threshold functions 
+of course a one-shot combinatorial auction where agents 
+provide their entire valuation functions at once would also 
+have polynomial communication in the size of the agents 
+valuations and only require one query the advantage of 
+our scheme is that agents can be viewed as black-boxes 
+that provide incremental information about their valuations 
+there is no burden on the agents to formulate their 
+valuations in an encoding scheme of the auctioneer s choosing 
+we expect this to be an important consideration in practice 
+also with our scheme entire revelation only happens in the 
+worst-case 
+ 
+for now we leave the issue of incentives aside when 
+deriving elicitation algorithms our focus is on the time and 
+communication complexity of preference elicitation 
+regardless of incentive constraints and on the relationship between 
+the complexities of learning and preference elicitation 
+related work zinkevich et al consider the problem 
+of learning restricted classes of valuation functions which can 
+be represented using read-once formulas and toolbox dnf 
+read-once formulas can represent certain substitutabilities 
+but no complementarities whereas the opposite holds for 
+toolbox dnf since their work is also grounded in learning 
+theory they allow dependence on the size of the target 
+valuation as we do though read-once valuations can always be 
+succinctly represented anyway their work only makes use 
+of value queries which are quite limited in power because 
+we allow ourselves demand queries we are able to derive an 
+elicitation scheme for general valuation functions 
+blum et al provide results relating the complexities 
+of query learning and preference elicitation they consider 
+models with membership and equivalence queries in query 
+learning and value and demand queries in preference 
+elicitation they show that certain classes of functions can be 
+efficiently learned yet not efficiently elicited and vice-versa 
+in contrast our work shows that given a more general yet 
+still quite standard version of demand query than the type 
+they consider the complexity of preference elicitation is no 
+greater than the complexity of learning we will show that 
+demand queries can simulate equivalence queries until we 
+have enough information about valuations to imply a 
+solution to the elicitation problem 
+nisan and segal study the communication 
+complexity of preference elicitation they show that for many rich 
+classes of valuations the worst-case communication 
+complexity of computing an optimal allocation is exponential 
+their results apply to the black-box model of 
+computational complexity in this model algorithms are allowed to 
+ask questions about agent valuations and receive honest 
+responses without any insight into how the agents internally 
+compute their valuations this is in fact the basic 
+framework of learning theory our work also addresses the issue 
+of communication complexity and we are able to derive 
+algorithms that provide significant communication guarantees 
+despite nisan and segal s negative results their work 
+motivates the need to rely on the sizes of agents valuation 
+functions in stating worst-case results 
+ the models 
+ query learning 
+the query learning model we consider here is called exact 
+learning from membership and equivalence queries 
+introduced by angluin in this model the learning 
+algorithm s objective is to exactly identify an unknown target 
+function f x → y via queries to an oracle the target 
+function is drawn from a function class c that is known to 
+the algorithm typically the domain x is some subset of 
+ m 
+ and the range y is either or some subset 
+of the real numbers ê as the algorithm progresses it 
+constructs a manifest hypothesis ˜f which is its current estimate 
+of the target function upon termination the manifest 
+hypothesis of a correct learning algorithm satisfies ˜f x f x 
+for all x ∈ x 
+it is important to specify the representation that will be 
+used to encode functions from c for example consider the 
+following function from m 
+to ê f x if x 
+consists of m s and f x otherwise this function may 
+simply be represented as a list of m 
+values or it may be 
+encoded as the polynomial x · · · xm which is much more 
+succinct the choice of encoding may thus have a significant 
+impact on the time and space requirements of the learning 
+algorithm let size f be the size of the encoding of f with 
+respect to the given representation class most 
+representation classes have a natural measure of encoding size the 
+size of a polynomial can be defined as the number of non-zero 
+coefficients in the polynomial for example we will usually 
+only refer to representation classes the corresponding 
+function classes will be implied for example the representation 
+class of monotone dnf formulae implies the function class 
+of monotone boolean functions 
+two types of queries are commonly used for exact 
+learning membership and equivalence queries on a membership 
+query the learner presents some x ∈ x and the oracle replies 
+with f x on an equivalence query the learner presents 
+its manifest hypothesis ˜f the oracle either replies  yes if 
+˜f f or returns a counterexample x such that ˜f x f x 
+an equivalence query is proper if size ˜f ≤ size f at the 
+time the manifest hypothesis is presented 
+we are interested in efficient learning algorithms the 
+following definitions are adapted from kearns and vazirani 
+definition the representation class c is 
+polynomialquery exactly learnable from membership and 
+equivalence queries if there is a fixed polynomial p · · and an 
+algorithm l with access to membership and equivalence 
+queries of an oracle such that for any target function f ∈ c l 
+outputs after at most p size f m queries a function ˜f ∈ c 
+such that ˜f x f x for all instances x 
+similarly the representation class c is efficiently 
+exactly learnable from membership and equivalence 
+queries if the algorithm l outputs a correct hypothesis in 
+time p size f m for some fixed polynomial p · · 
+here m is the dimension of the domain since the target 
+function must be reconstructed we also necessarily allow 
+polynomial dependence on size f 
+ preference elicitation 
+in a combinatorial auction a set of goods m is to be 
+allocated among a set of agents n so as to maximize the sum of 
+the agents valuations such an allocation is called efficient 
+in the economics literature but we will refer to it as optimal 
+and reserve the term efficient to refer to computational 
+efficiency we let n n and m m an allocation 
+is a partition of the objects into bundles s sn such 
+that si ∩ sj ∅ for all distinct i j ∈ n let γ be the set 
+of possible allocations each agent i ∈ n has a valuation 
+function vi m 
+→ ê over the space of possible bundles 
+each valuation vi is drawn from a known class of valuations 
+vi the valuation classes do not need to coincide 
+we will assume that all the valuations considered are 
+normalized meaning v ∅ and that there are no 
+externalities meaning vi s sn vi si for all agents i ∈ n 
+for any allocation s sn ∈ γ that is an agent cares 
+only about the bundle allocated to her valuations 
+satisfying these conditions are called general valuations 
+we 
+ 
+often general valuations are made to satisfy the additional 
+ 
+also assume that agents have quasi-linear utility functions 
+meaning that agents utilities can be divided into monetary 
+and non-monetary components if an agent i is allocated 
+bundle s at price p it derives utility ui s p vi s − p 
+a valuation function may be viewed as a vector of m 
+− 
+non-negative real-values of course there may also be more 
+succinct representations for certain valuation classes and 
+there has been much research into concise bidding languages 
+for various types of valuations a classic example which 
+we will refer to again later is the xor bidding language 
+in this language the agent provides a list of atomic bids 
+which consist of a bundle together with its value to 
+determine the value of a bundle s given these bids one searches 
+for the bundle s of highest value listed in the atomic bids 
+such that s ⊆ s it is then the case that v s v s 
+as in the learning theory setting we will usually only refer 
+to bidding languages rather than valuation classes because 
+the corresponding valuation classes will then be implied for 
+example the xor bidding language implies the class of 
+valuations satisfying free-disposal which is the condition that 
+a ⊆ b ⇒ v a ≤ v b 
+we let size v vn 
+èn 
+i size vi that is the size 
+of a vector of valuations is the size of the concatenation of 
+the valuations representations in their respective encoding 
+schemes bidding languages 
+to make an analogy to computational learning theory we 
+assume that all representation classes considered are 
+polynomially interpretable meaning that the value of a bundle 
+may be computed in polynomial time given the valuation 
+function s representation more formally a representation 
+class bidding language c is polynomially interpretable if 
+there exists an algorithm that given as input some v ∈ c 
+and an instance x ∈ x computes the value v x in time 
+q size v m for some fixed polynomial q · · 
+in the intermediate rounds of an iterative auction the 
+auctioneer will have elicited information about the agents 
+valuation functions via various types of queries she will 
+thus have constructed a set of manifest valuations denoted 
+˜v ˜vn 
+the values of these functions may correspond 
+exactly to the true agent values or they may for example 
+be upper or lower bounds on the true values depending 
+on the types of queries made they may also simply be 
+default or random values if no information has been acquired 
+about certain bundles the goal in the preference elicitation 
+problem is to construct a set of manifest valuations such 
+that 
+arg max 
+ s sn ∈γ 
+i∈n 
+˜vi si ⊆ arg max 
+ s sn ∈γ 
+i∈n 
+vi si 
+that is the manifest valuations provide enough information 
+to compute an allocation that is optimal with respect to the 
+true valuations note that we only require one such optimal 
+allocation 
+condition of free-disposal monotonicity but we do not 
+need it at this point 
+ 
+this excludes or 
+ assuming p np because 
+interpreting bids from this language is np-hard by reduction from 
+weighted set-packing and there is no well-studied 
+representation class in learning theory that is clearly analogous to 
+or 
+ 
+ 
+this view of iterative auctions is meant to parallel the 
+learning setting in many combinatorial auctions manifest 
+valuations are not explicitly maintained but rather simply 
+implied by the history of bids 
+two typical queries used in preference elicitation are value 
+and demand queries on a value query the auctioneer 
+presents a bundle s ⊆ m and the agent responds with 
+her exact value for the bundle v s on a demand 
+query the auctioneer presents a vector of non-negative prices 
+p ∈ ê m 
+over the bundles together with a bundle s the 
+agent responds  yes if it is the case that 
+s ∈ arg max 
+s ⊆m 
+ 
+v s − p s 
+ 
+or otherwise presents a bundle s such that 
+v s − p s v s − p s 
+that is the agent either confirms that the presented bundle 
+is most preferred at the quoted prices or indicates a 
+better one 
+note that we include ∅ as a bundle so the 
+agent will only respond  yes if its utility for the proposed 
+bundle is non-negative note also that communicating 
+nonlinear prices does not necessarily entail quoting a price for 
+every possible bundle there may be more succinct ways of 
+communicating this vector as we show in section 
+we make the following definitions to parallel the query 
+learning setting and to simplify the statements of later 
+results 
+definition the representation classes v vn can 
+be polynomial-query elicited from value and demand 
+queries if there is a fixed polynomial p · · and an 
+algorithm l with access to value and demand queries of the 
+agents such that for any v vn ∈ v × × vn l 
+outputs after at most p size v vn m queries an 
+allocation s sn ∈ arg max s sn ∈γ 
+è 
+vi si 
+similarly the representation class c can be efficiently 
+elicited from value and demand queries if the 
+algorithm l outputs an optimal allocation with communication 
+p size v vn m for some fixed polynomial p · · 
+there are some key differences here with the query 
+learning definition we have dropped the term exactly since 
+the valuation functions need not be determined exactly in 
+order to compute an optimal allocation also an efficient 
+elicitation algorithm is polynomial communication rather 
+than polynomial time this reflects the fact that 
+communication rather than runtime is the bottleneck in elicitation 
+computing an optimal allocation of goods even when given 
+the true valuations is np-hard for a wide range of 
+valuation classes it is thus unreasonable to require polynomial 
+time in the definition of an efficient preference elicitation 
+algorithm we are happy to focus on the communication 
+complexity of elicitation because this problem is widely 
+believed to be more significant in practice than that of winner 
+determination 
+ 
+this differs slightly from the definition provided by blum 
+et al their demand queries are restricted to linear prices 
+over the goods where the price of a bundle is the sum of 
+the prices of its underlying goods in contrast our demand 
+queries allow for nonlinear prices i e a distinct price for 
+every possible bundle this is why the lower bound in their 
+theorem does not contradict our result that follows 
+ 
+though the winner determination problem is np-hard for 
+general valuations there exist many algorithms that solve 
+it efficiently in practice these range from special 
+purpose algorithms to approaches using off-the-shelf ip 
+solvers 
+ 
+since the valuations need not be elicited exactly it is 
+initially less clear whether the polynomial dependence on 
+size v vn is justified in this setting intuitively this 
+parameter is justified because we must learn valuations 
+exactly when performing elicitation in the worst-case we 
+address this in the next section 
+ parallelsbetween equivalence 
+and demand queries 
+we have described the query learning and preference 
+elicitation settings in a manner that highlights their similarities 
+value and membership queries are clear analogs slightly 
+less obvious is the fact that equivalence and demand queries 
+are also analogs to see this we need the concept of lindahl 
+prices lindahl prices are nonlinear and non-anonymous 
+prices over the bundles they are nonlinear in the sense 
+that each bundle is assigned a price and this price is not 
+necessarily the sum of prices over its underlying goods they 
+are non-anonymous in the sense that two agents may face 
+different prices for the same bundle of goods thus lindahl 
+prices are of the form pi s for all s ⊆ m for all i ∈ n 
+lindahl prices are presented to the agents in demand 
+queries 
+when agents have normalized quasi-linear utility 
+functions bikhchandani and ostroy show that there always 
+exist lindahl prices such that s sn is an optimal 
+allocation if and only if 
+si ∈ arg max 
+si 
+ 
+vi si − pi si 
+ 
+∀i ∈ n 
+ s sn ∈ arg max 
+ s sn ∈γ 
+i∈n 
+pi si 
+condition states that each agent is allocated a bundle 
+that maximizes its utility at the given prices condition 
+states that the allocation maximizes the auctioneer s 
+revenue at the given prices the scenario in which these 
+conditions hold is called a lindahl equilibrium or often a 
+competitive equilibrium we say that the lindahl prices support 
+the optimal allocation it is therefore sufficient to announce 
+supporting lindahl prices to verify an optimal allocation 
+once we have found an allocation with supporting lindahl 
+prices the elicitation problem is solved 
+the problem of finding an optimal allocation with respect 
+to the manifest valuations can be formulated as a linear 
+program whose solutions are guaranteed to be integral 
+the dual variables to this linear program are supporting 
+lindahl prices for the resulting allocation the objective 
+function to the dual program is 
+min 
+pi s 
+πs 
+ 
+i∈n 
+πi 
+with πi max 
+s⊆m 
+ ˜vi s − pi s 
+πs 
+ max 
+ s sn ∈γ 
+i∈n 
+pi si 
+the optimal values of πi and πs 
+correspond to the maximal 
+utility to agent i with respect to its manifest valuation and 
+the maximal revenue to the seller 
+there is usually a range of possible lindahl prices 
+supporting a given optimal allocation the agent s manifest 
+valuations are in fact valid lindahl prices and we refer to 
+them as maximal lindahl prices out of all possible 
+vectors of lindahl prices maximal lindahl prices maximize the 
+utility of the auctioneer in fact giving her the entire 
+social welfare conversely prices that maximize the 
+è 
+i∈n πi 
+component of the objective the sum of the agents utilities 
+are minimal lindahl prices any lindahl prices will do for 
+our results but some may have better elicitation 
+properties than others note that a demand query with maximal 
+lindahl prices is almost identical to an equivalence query 
+since in both cases we communicate the manifest valuation 
+to the agent we leave for future work the question of which 
+lindahl prices to choose to minimize preference elicitation 
+considering now why demand and equivalence queries are 
+direct analogs first note that given the πi in some lindahl 
+equilibrium setting 
+pi s max ˜vi s − πi 
+for all i ∈ n and s ⊆ m yields valid lindahl prices these 
+prices leave every agent indifferent across all bundles with 
+positive price and satisfy condition thus demand 
+queries can also implicitly communicate manifest valuations 
+since lindahl prices will typically be an additive constant 
+away from these by equality in the following lemma we 
+show how to obtain counterexamples to equivalence queries 
+through demand queries 
+lemma suppose an agent replies with a preferred 
+bundle s when proposed a bundle s and supporting lindahl 
+prices p s supporting with respect to the the agent s 
+manifest valuation then either ˜v s v s or ˜v s v s 
+proof we have the following inequalities 
+˜v s − p s ≥ ˜v s − p s 
+⇒ ˜v s − ˜v s ≤ p s − p s 
+v s − p s v s − p s 
+⇒ v s − v s p s − p s 
+inequality holds because the prices support the proposed 
+allocation with respect to the manifest valuation inequality 
+ holds because the agent in fact prefers s to s given the 
+prices according to its response to the demand query if it 
+were the case that ˜v s v s and ˜v s v s these 
+inequalities would represent a contradiction thus at least 
+one of s and s is a counterexample to the agent s manifest 
+valuation 
+finally we justify dependence on size v vn in 
+elicitation problems nisan and segal proposition 
+and parkes theorem show that supporting lindahl 
+prices must necessarily be revealed in the course of any 
+preference elicitation protocol which terminates with an optimal 
+allocation furthermore nisan and segal lemma 
+state that in the worst-case agents prices must coincide with 
+their valuations up to a constant when the valuation class 
+is rich enough to contain dual valuations as will be the 
+case with most interesting classes since revealing lindahl 
+prices is a necessary condition for establishing an optimal 
+allocation and since lindahl prices contain the same 
+information as valuation functions in the worst-case allowing 
+for dependence on size v vn in elicitation problems is 
+entirely natural 
+ 
+ from learning to preference 
+elicitation 
+the key to converting a learning algorithm to an 
+elicitation algorithm is to simulate equivalence queries with 
+demand and value queries until an optimal allocation is found 
+because of our lindahl price construction when all agents 
+reply  yes to a demand query we have found an optimal 
+allocation analogous to the case where an agent replies  yes 
+to an equivalence query when the target function has been 
+exactly learned otherwise we can obtain a 
+counterexample to an equivalence query given an agent s response to a 
+demand query 
+theorem the representation classes v vn can 
+be polynomial-query elicited from value and demand queries 
+if they can each be polynomial-query exactly learned from 
+membership and equivalence queries 
+proof consider the elicitation algorithm in figure 
+each membership query in step is simulated with a value 
+query since these are in fact identical consider step if all 
+agents reply  yes condition holds condition holds 
+because the computed allocation is revenue-maximizing for 
+the auctioneer regardless of the agents true valuations 
+thus an optimal allocation has been found otherwise at 
+least one of si or si is a counterexample to ˜vi by lemma 
+we identify a counterexample by performing value queries 
+on both these bundles and provide it to ai as a response to 
+its equivalence query 
+this procedure will halt since in the worst-case all agent 
+valuations will be learned exactly in which case the 
+optimal allocation and lindahl prices will be accepted by all 
+agents the procedure performs a polynomial number of 
+queries since a an are all polynomial-query learning 
+algorithms 
+note that the conversion procedure results in a 
+preference elicitation algorithm not a learning algorithm that 
+is the resulting algorithm does not simply learn the 
+valuations exactly then compute an optimal allocation rather 
+it elicits partial information about the valuations through 
+value queries and periodically tests whether enough 
+information has been gathered by proposing an allocation to the 
+agents through demand queries it is possible to generate a 
+lindahl equilibrium for valuations v vn using an 
+allocation and prices derived using manifest valuations ˜v ˜vn 
+and finding an optimal allocation does not imply that the 
+agents valuations have been exactly learned the use of 
+demand queries to simulate equivalence queries enables this 
+early halting we would not obtain this property with 
+equivalence queries based on manifest valuations 
+ communication complexity 
+in this section we turn to the issue of the 
+communication complexity of elicitation nisan and segal show 
+that for a variety of rich valuation spaces such as general 
+and submodular valuations the worst-case communication 
+burden of determining lindahl prices is exponential in the 
+number of goods m the communication burden is 
+measured in terms of the number of bits transmitted between 
+agents and auctioneer in the case of discrete communication 
+or in terms of the number of real numbers transmitted in the 
+case of continuous communication 
+converting efficient learning algorithms to an elicitation 
+algorithm produces an algorithm whose queries have sizes 
+polynomial in the parameters m and size v vn 
+theorem the representation classes v vn can 
+be efficiently elicited from value and demand queries if they 
+can each be efficiently exactly learned from membership and 
+equivalence queries 
+proof the size of any value query is o m the 
+message consists solely of the queried bundle to communicate 
+lindahl prices to agent i it is sufficient to communicate 
+the agent s manifest valuation function and the value πi by 
+equality note that an efficient learning algorithm never 
+builds up a manifest hypothesis of superpolynomial size 
+because the algorithm s runtime would then also be 
+superpolynomial contradicting efficiency thus communicating the 
+manifest valuation requires size at most p size vi m for 
+some polynomial p that upper-bounds the runtime of the 
+efficient learning algorithm representing the surplus πi to 
+agent i cannot require space greater than q size ˜vi m for 
+some fixed polynomial q because we assume that the chosen 
+representation is polynomially interpretable and thus any 
+value generated will be of polynomial size we must also 
+communicate to i its allocated bundle so the total 
+message size for a demand query is at most p size vi m 
+q p size vi m m o m clearly an agent s response to 
+a value or demand query has size at most q size vi m 
+o m thus the value and demand queries and the 
+responses to these queries are always of polynomial size an 
+efficient learning algorithm performs a polynomial number of 
+queries so the total communication of the resulting 
+elicitation algorithm is polynomial in the relevant parameters 
+there will often be explicit bounds on the number of 
+membership and equivalence queries performed by a learning 
+algorithm with constants that are not masked by big-o 
+notation these bounds can be translated to explicit bounds 
+on the number of value and demand queries made by the 
+resulting elicitation algorithm we upper-bounded the size 
+of the manifest hypothesis with the runtime of the learning 
+algorithm in theorem we are likely to be able to do 
+much better than this in practice recall that an 
+equivalence query is proper if size ˜f ≤ size f at the time the 
+query is made if the learning algorithm s equivalence 
+queries are all proper it may then also be possible to provide 
+tight bounds on the communication requirements of the 
+resulting elicitation algorithm 
+theorem show that elicitation algorithms that depend 
+on the size v vn parameter sidestep nisan and 
+segal s negative results on the worst-case communication 
+complexity of efficient allocation problems they provide 
+guarantees with respect to the sizes of the instances of 
+valuation functions faced at any run of the algorithm these 
+algorithms will fare well if the chosen representation class 
+provides succinct representations for the simplest and most 
+common of valuations and thus the focus moves back to one 
+of compact yet expressive bidding languages we consider 
+these issues below 
+ applications 
+in this section we demonstrate the application of our 
+methods to particular representation classes for 
+combinatorial valuations we have shown that the preference 
+elicitation problem for valuation classes v vn can be reduced 
+ 
+given exact learning algorithms a an for valuations classes v vn respectively 
+loop until there is a signal to halt 
+ run a an in parallel on their respective agents until each requires a response to an 
+equivalence query or has halted with the agent s exact valuation 
+ compute an optimal allocation s sn and corresponding lindahl prices with respect to 
+the manifest valuations ˜v ˜vn determined so far 
+ present the allocation and prices to the agents in the form of a demand query 
+ if they all reply  yes output the allocation and halt otherwise there is some agent i that 
+has replied with some preferred bundle si perform value queries on si and si to find a 
+counterexample to ˜vi and provide it to ai 
+figure converting learning algorithms to an elicitation algorithm 
+to the problem of finding an efficient learning algorithm for 
+each of these classes separately this is significant because 
+there already exist learning algorithms for a wealth of 
+function classes and because it may often be simpler to solve 
+each learning subproblem separately than to attack the 
+preference elicitation problem directly we can develop an 
+elicitation algorithm that is tailored to each agent s valuation 
+with the underlying learning algorithms linked together at 
+the demand query stages in an algorithm-independent way 
+we show that existing learning algorithms for 
+polynomials monotone dnf formulae and linear-threshold functions 
+can be converted into preference elicitation algorithms for 
+general valuations valuations with free-disposal and 
+valuations with substitutabilities respectively we focus on 
+representations that are polynomially interpretable because 
+the computational learning theory literature places a heavy 
+emphasis on computational tractability 
+in interpreting the methods we emphasize the 
+expressiveness and succinctness of each representation class the 
+representation class which in combinatorial auction terms 
+defines a bidding language must necessarily be expressive 
+enough to represent all possible valuations of interest and 
+should also succinctly represent the simplest and most 
+common functions in the class 
+ polynomial representations 
+schapire and sellie give a learning algorithm for sparse 
+multivariate polynomials that can be used as the basis for 
+a combinatorial auction protocol the equivalence queries 
+made by this algorithm are all proper specifically their 
+algorithm learns the representation class of t-sparse 
+multivariate polynomials over the real numbers where the variables 
+may take on values either or a t-sparse polynomial 
+has at most t terms where a term is a product of variables 
+e g x x x a polynomial over the real numbers has 
+coefficients drawn from the real numbers polynomials are 
+expressive every valuation function v m 
+→ ê can be 
+uniquely written as a polynomial 
+to get an idea of the succinctness of polynomials as a 
+bidding language consider the additive and single-item 
+valuations presented by nisan in the additive valuation 
+the value of a bundle is the number of goods the bundle 
+contains in the single-item valuation all bundles have value 
+ except ∅ which has value i e the agent is satisfied as 
+soon as it has acquired a single item it is not hard to show 
+that the single-item valuation requires polynomials of size 
+ m 
+− while polynomials of size m suffice for the additive 
+valuation polynomials are thus appropriate for valuations 
+that are mostly additive with a few substitutabilities and 
+complementarities that can be introduced by adjusting 
+coefficients 
+the learning algorithm for polynomials makes at most 
+mti equivalence queries and at most mti t 
+i ti 
+membership queries to an agent i where ti is the sparcity of 
+the polynomial representing vi we therefore obtain an 
+algorithm that elicits general valuations with a polynomial 
+number of queries and polynomial communication 
+ xor representations 
+the xor bidding language is standard in the 
+combinatorial auctions literature recall that an xor bid is 
+characterized by a set of bundles b ⊆ m 
+and a value function 
+w b → ê defined on those bundles which induces the 
+valuation function 
+v b max 
+ b ∈b b ⊆b 
+w b 
+xor bids can represent valuations that satisfy free-disposal 
+ and only such valuations which again is the property that 
+a ⊆ b ⇒ v a ≤ v b 
+the xor bidding language is slightly less expressive than 
+polynomials because polynomials can represent valuations 
+that do not satisfy free-disposal however xor is as 
+expressive as required in most economic settings nisan notes 
+that xor bids can represent the single-item valuation with 
+m atomic bids but m 
+− atomic bids are needed to 
+represent the additive valuation since the opposite holds for 
+polynomials these two languages are incomparable in 
+succinctness and somewhat complementary for practical use 
+blum et al note that monotone dnf formulae are the 
+analogs of xor bids in the learning theory literature a 
+monotone dnf formula is a disjunction of conjunctions in 
+which the variables appear unnegated for example x x ∨ 
+x ∨ x x x note that such formulae can be represented 
+as xor bids where each atomic bid has value thus xor 
+bids generalize monotone dnf formulae from boolean to 
+real-valued functions these insights allow us to generalize 
+a classic learning algorithm for monotone dnf theorem 
+ 
+note that theorem applies even if valuations do not 
+satisfy free-disposal 
+ 
+ theorem b to a learning algorithm for xor bids 
+lemma an xor bid containing t atomic bids can be 
+exactly learned with t equivalence queries and at most 
+tm membership queries 
+proof the algorithm will identify each atomic bid in 
+the target xor bid in turn initialize the manifest valuation 
+˜v to the bid that is identically zero on all bundles this is an 
+xor bid containing atomic bids present ˜v as an 
+equivalence query if the response is  yes we are done otherwise 
+we obtain a bundle s for which v s ˜v s create a 
+bundle t as follows first initialize t s for each item i in t 
+check via a membership query whether v t v t − i 
+if so set t t − i otherwise leave t as is and proceed 
+to the next item 
+we claim that t v t is an atomic bid of the target 
+xor bid for each item i in t we have v t v t − i 
+to see this note that at some point when generating t we 
+had a ¯t such that t ⊆ ¯t ⊆ s and v ¯t v ¯t − i so that 
+i was kept in ¯t note that v s v ¯t v t because the 
+value of the bundle s is maintained throughout the process 
+of deleting items now assume v t v t − i then 
+v ¯t v t v t − i v ¯t − i 
+which contradicts free-disposal since t − i ⊆ ¯t − i 
+thus v t v t − i for all items i in t this implies 
+that t v t is an atomic bid of v if this were not the case 
+t would take on the maximum value of its strict subsets by 
+the definition of an xor bid and we would have 
+v t max 
+i∈t 
+ max 
+t ⊆t − i 
+v t max 
+i∈t 
+ v t − i v t 
+which is a contradiction 
+we now show that v t ˜v t which will imply that 
+ t v t is not an atomic bid of our manifest hypothesis by 
+induction assume that every atomic bid r ˜v r 
+identified so far is indeed an atomic bid of v meaning r is indeed 
+listed in an atomic bid of v as having value v r ˜v r 
+this assumption holds vacuously when the manifest 
+valuation is initialized using the notation from let ˜b ˜w be 
+our hypothesis and b w be the target function we have 
+˜b ⊆ b and ˜w b w b for b ∈ ˜b by assumption thus 
+˜v s max 
+ b∈ ˜b b⊆s 
+˜w b 
+ max 
+ b∈ ˜b b⊆s 
+w b 
+≤ max 
+ b∈b b⊆s 
+w b 
+ v s 
+now assume v t ˜v t then 
+˜v t v t v s ˜v s 
+the second equality follows from the fact that the value 
+remains constant when we derive t from s the last 
+inequality holds because s is a counterexample to the 
+manifest valuation from equation and free-disposal we 
+ 
+the cited algorithm was also used as the basis for zinkevich 
+et al s elicitation algorithm for toolbox dnf recall 
+that toolbox dnf are polynomials with non-negative 
+coefficients for these representations an equivalence query can 
+be simulated with a value query on the bundle containing 
+all goods 
+have ˜v t ˜v s then again from equation it 
+follows that v s ˜v s this contradicts so we in fact 
+have v t ˜v t thus t v t is not currently in our 
+hypothesis as an atomic bid or we would correctly have 
+˜v t v t by the induction hypothesis we add t v t 
+to our hypothesis and repeat the process above 
+performing additional equivalence queries until all atomic bids have 
+been identified 
+after each equivalence query an atomic bid is identified 
+with at most m membership queries each counterexample 
+leads to the discovery of a new atomic bid thus we make at 
+most tm membership queries and exactly t equivalence 
+queries 
+the number of time steps required by this algorithm is 
+essentially the same as the number of queries performed so 
+the algorithm is efficient applying theorem we therefore 
+obtain the following corollary 
+theorem the representation class of xor bids can 
+be efficiently elicited from value and demand queries 
+this contrasts with blum et al s negative results 
+theorem stating that monotone dnf and hence xor bids 
+cannot be efficiently elicited when the demand queries are 
+restricted to linear and anonymous prices over the goods 
+ linear-threshold representations 
+polynomials xor bids and all languages based on the 
+or bidding language such as xor-of-or or-of-xor 
+and or 
+ fail to succinctly represent the majority 
+valuation in this valuation bundles have value if they 
+contain at least m items and value otherwise more 
+generally consider the r-of-s family of valuations where bundles 
+have value if they contain at least r items from a specified 
+set of items s ⊆ m and value otherwise the 
+majority valuation is a special case of the r-of-s valuation with 
+r m and s m these valuations are appropriate for 
+representing substitutabilities once a required set of items 
+has been obtained no other items can add value 
+letting k s such valuations are succinctly represented 
+by r-of-k threshold functions these functions take the form 
+of linear inequalities 
+xi xik ≥ r 
+where the function has value if the inequality holds and 
+ otherwise here i ik are the items in s littlestone s 
+winnow algorithm can learn such functions using 
+equivalence queries only using at most r 
+ k kr ln m 
+queries to provide this guarantee r must be known to 
+the algorithm but s and k are unknown the elicitation 
+algorithm that results from winnow uses demand 
+queries only value queries are not necessary here because the 
+values of counterexamples are implied when there are only 
+two possible values 
+note that r-of-k threshold functions can always be 
+succinctly represented in o m space thus we obtain an 
+algorithm that can elicit such functions with a polynomial 
+number of queries and polynomial communication in the 
+parameters n and m alone 
+ 
+ conclusions and future work 
+we have shown that exact learning algorithms with 
+membership and equivalence queries can be used as a basis for 
+preference elicitation algorithms with value and demand 
+queries at the heart of this result is the fact that demand 
+queries may be viewed as modified equivalence queries 
+specialized to the problem of preference elicitation our result 
+allows us to apply the wealth of available learning algorithms 
+to the problem of preference elicitation 
+a learning approach to elicitation also motivates a 
+different approach to designing elicitation algorithms that 
+decomposes neatly across agent types if the designer knowns 
+beforehand what types of preferences each agent is likely to 
+exhibit mostly additive many substitutes etc she can 
+design learning algorithms tailored to each agents 
+valuations and integrate them into an elicitation scheme the 
+resulting elicitation algorithm makes a polynomial number 
+of queries and makes polynomial communication if the 
+original learning algorithms are efficient 
+we do not require that agent valuations can be learned 
+with value and demand queries equivalence queries can 
+only be and need only be simulated up to the point where 
+an optimal allocation has been computed this is the 
+preference elicitation problem theorem implies that elicitation 
+with value and demand queries is no harder than learning 
+with membership and equivalence queries but it does not 
+provide any asymptotic improvements over the learning 
+algorithms complexity it would be interesting to find 
+examples of valuation classes for which elicitation is easier than 
+learning blum et al provide such an example when 
+considering membership value queries only theorem 
+in future work we plan to address the issue of 
+incentives when converting learning algorithms to elicitation 
+algorithms in the learning setting we usually assume that 
+oracles will provide honest responses to queries in the 
+elicitation setting agents are usually selfish and will provide 
+possibly dishonest responses so as to maximize their utility 
+we also plan to implement the algorithms for learning 
+polynomials and xor bids as elicitation algorithms and test 
+their performance against other established combinatorial 
+auction protocols an interesting question here is 
+which lindahl prices in the maximal to minimal range are 
+best to quote in order to minimize information revelation 
+we conjecture that information revelation is reduced when 
+moving from maximal to minimal lindahl prices namely as 
+we move demand queries further away from equivalence 
+queries finally it would be useful to determine whether the 
+or 
+bidding language can be efficiently learned and 
+hence elicited given this language s expressiveness and 
+succinctness for a wide variety of valuation classes 
+acknowledgements 
+we would like to thank debasis mishra for helpful 
+discussions this work is supported in part by nsf grant 
+iis 
+ references 
+ a andersson m tenhunen and f ygge integer 
+programming for combinatorial auction winner 
+determination in proceedings of the fourth 
+international conference on multiagent systems 
+ icmas- 
+ d angluin learning regular sets from queries and 
+counterexamples information and computation 
+ - november 
+ d angluin queries and concept learning machine 
+learning - 
+ s bikhchandani and j ostroy the package 
+assignment model journal of economic theory 
+ december 
+ a blum j jackson t sandholm and m zinkevich 
+preference elicitation and query learning in proc 
+ th annual conference on computational learning 
+theory colt washington dc 
+ w conen and t sandholm partial-revelation vcg 
+mechanism for combinatorial auctions in proc the 
+ th national conference on artificial intelligence 
+ aaai 
+ y fujishima k leyton-brown and y shoham 
+taming the computational complexity of 
+combinatorial auctions optimal and approximate 
+approaches in proc the th international joint 
+conference on artificial intelligence ijcai pages 
+ - 
+ b hudson and t sandholm using value queries in 
+combinatorial auctions in proc th acm conference 
+on electronic commerce acm-ec san diego ca 
+june 
+ m j kearns and u v vazirani an introduction to 
+computational learning theory mit press 
+ n littlestone learning quickly when irrelevant 
+attributes abound a new linear-threshold algorithm 
+machine learning - 
+ n nisan bidding and allocation in combinatorial 
+auctions in proc the acm conference on electronic 
+commerce pages - 
+ n nisan and i segal the communication 
+requirements of efficient allocations and supporting 
+lindahl prices working paper hebrew university 
+ 
+ d c parkes price-based information certificates for 
+minimal-revelation combinatorial auctions in 
+padget et al editor agent-mediated electronic 
+commerce iv lnai pages - 
+springer-verlag 
+ d c parkes auction design with costly preference 
+elicitation in special issues of annals of mathematics 
+and ai on the foundations of electronic commerce 
+forthcoming 
+ d c parkes and l h ungar iterative combinatorial 
+auctions theory and practice in proc th national 
+conference on artificial intelligence aaai- pages 
+ - 
+ t sandholm s suri a gilpin and d levine 
+cabob a fast optimal algorithm for combinatorial 
+auctions in proc the th international joint 
+conference on artificial intelligence ijcai pages 
+ - 
+ r schapire and l sellie learning sparse multivariate 
+polynomials over a field with queries and 
+counterexamples in proceedings of the sixth annual 
+acm workshop on computational learning theory 
+pages - acm press 
+ 
+ l valiant a theory of the learnable commun acm 
+ - nov 
+ m zinkevich a blum and t sandholm on 
+polynomial-time preference elicitation with 
+value-queries in proc th acm conference on 
+electronic commerce acm-ec san diego ca 
+june 
+ 

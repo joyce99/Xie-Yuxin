@@ -1,0 +1,865 @@
+learning consumer preferences using semantic 
+similarity 
+reyhan aydo˘gan 
+reyhan aydogan gmail com 
+pınar yolum 
+pinar yolum boun edu tr 
+department of computer engineering 
+bo˘gaziçi university 
+bebek istanbul turkey 
+abstract 
+in online dynamic environments the services requested by 
+consumers may not be readily served by the providers this requires 
+the service consumers and providers to negotiate their service needs 
+and offers multiagent negotiation approaches typically assume 
+that the parties agree on service content and focus on finding a 
+consensus on service price in contrast this work develops an 
+approach through which the parties can negotiate the content of a 
+service this calls for a negotiation approach in which the parties 
+can understand the semantics of their requests and offers and learn 
+each other s preferences incrementally over time accordingly we 
+propose an architecture in which both consumers and producers 
+use a shared ontology to negotiate a service through repetitive 
+interactions the provider learns consumers needs accurately and 
+can make better targeted offers to enable fast and accurate 
+learning of preferences we develop an extension to version space and 
+compare it with existing learning techniques we further develop 
+a metric for measuring semantic similarity between services and 
+compare the performance of our approach using different 
+similarity metrics 
+categories and subject descriptors 
+i distributed artificial intelligence multiagent systems 
+general terms 
+algorithms experimentation 
+ introduction 
+current approaches to e-commerce treat service price as the 
+primary construct for negotiation by assuming that the service content 
+is fixed however negotiation on price presupposes that other 
+properties of the service have already been agreed upon 
+nevertheless many times the service provider may not be offering the exact 
+requested service due to lack of resources constraints in its 
+business policy and so on when this is the case the producer and 
+the consumer need to negotiate the content of the requested service 
+ 
+however most existing negotiation approaches assume that all 
+features of a service are equally important and concentrate on the 
+price however in reality not all features may be relevant and 
+the relevance of a feature may vary from consumer to consumer 
+for instance completion time of a service may be important for one 
+consumer whereas the quality of the service may be more important 
+for a second consumer without doubt considering the preferences 
+of the consumer has a positive impact on the negotiation process 
+for this purpose evaluation of the service components with 
+different weights can be useful some studies take these weights as a 
+priori and uses the fixed weights on the other hand mostly 
+the producer does not know the consumer s preferences before the 
+negotiation hence it is more appropriate for the producer to learn 
+these preferences for each consumer 
+preference learning as an alternative we propose an 
+architecture in which the service providers learn the relevant features 
+of a service for a particular customer over time we represent 
+service requests as a vector of service features we use an ontology 
+in order to capture the relations between services and to construct 
+the features for a given service by using a common ontology we 
+enable the consumers and producers to share a common 
+vocabulary for negotiation the particular service we have used is a wine 
+selling service the wine seller learns the wine preferences of the 
+customer to sell better targeted wines the producer models the 
+requests of the consumer and its counter offers to learn which 
+features are more important for the consumer since no information is 
+present before the interactions start the learning algorithm has to 
+be incremental so that it can be trained at run time and can revise 
+itself with each new interaction 
+service generation even after the producer learns the important 
+features for a consumer it needs a method to generate offers that 
+are the most relevant for the consumer among its set of possible 
+services in other words the question is how the producer uses the 
+information that was learned from the dialogues to make the best 
+offer to the consumer for instance assume that the producer has 
+learned that the consumer wants to buy a red wine but the producer 
+can only offer rose or white wine what should the producer s offer 
+ 
+ - - - - rps c ifaamas 
+contain white wine or rose wine if the producer has some domain 
+knowledge about semantic similarity e g knows that the red and 
+rose wines are taste-wise more similar than white wine then it can 
+generate better offers however in addition to domain knowledge 
+this derivation requires appropriate metrics to measure similarity 
+between available services and learned preferences 
+the rest of this paper is organized as follows section explains 
+our proposed architecture section explains the learning 
+algorithms that were studied to learn consumer preferences section 
+studies the different service offering mechanisms section 
+contains the similarity metrics used in the experiments the details of 
+the developed system is analyzed in section section provides 
+our experimental setup test cases and results finally section 
+discusses and compares our work with other related work 
+ architecture 
+our main components are consumer and producer agents which 
+communicate with each other to perform content-oriented 
+negotiation figure depicts our architecture the consumer agent 
+represents the customer and hence has access to the preferences of the 
+customer the consumer agent generates requests in accordance 
+with these preferences and negotiates with the producer based on 
+these preferences similarly the producer agent has access to the 
+producer s inventory and knows which wines are available or not 
+a shared ontology provides the necessary vocabulary and hence 
+enables a common language for agents this ontology describes 
+the content of the service further since an ontology can represent 
+concepts their properties and their relationships semantically the 
+agents can reason the details of the service that is being negotiated 
+since a service can be anything such as selling a car reserving a 
+hotel room and so on the architecture is independent of the 
+ontology used however to make our discussion concrete we use the 
+well-known wine ontology with some modification to 
+illustrate our ideas and to test our system the wine ontology describes 
+different types of wine and includes features such as color body 
+winery of the wine and so on with this ontology the service that 
+is being negotiated between the consumer and the producer is that 
+of selling wine 
+the data repository in figure is used solely by the producer 
+agent and holds the inventory information of the producer the 
+data repository includes information on the products the producer 
+owns the number of the products and ratings of those products 
+ratings indicate the popularity of the products among customers 
+those are used to decide which product will be offered when there 
+exists more than one product having same similarity to the request 
+of the consumer agent 
+the negotiation takes place in a turn-taking fashion where the 
+consumer agent starts the negotiation with a particular service 
+request the request is composed of significant features of the 
+service in the wine example these features include color winery and 
+so on this is the particular wine that the customer is interested in 
+purchasing if the producer has the requested wine in its inventory 
+the producer offers the wine and the negotiation ends otherwise 
+the producer offers an alternative wine from the inventory when 
+the consumer receives a counter offer from the producer it will 
+evaluate it if it is acceptable then the negotiation will end 
+otherwise the customer will generate a new request or stick to the 
+previous request this process will continue until some service is 
+accepted by the consumer agent or all possible offers are put 
+forward to the consumer by the producer 
+one of the crucial challenges of the content-oriented negotiation 
+is the automatic generation of counter offers by the service 
+producer when the producer constructs its offer it should consider 
+figure proposed negotiation architecture 
+three important things the current request consumer preferences 
+and the producer s available services both the consumer s current 
+request and the producer s own available services are accessible by 
+the producer however the consumer s preferences in most cases 
+will not be available hence the producer will have to understand 
+the needs of the consumer from their interactions and generate a 
+counter offer that is likely to be accepted by the consumer this 
+challenge can be studied in three stages 
+ preference learning how can the producers learn about 
+each customer s preferences based on requests and counter 
+offers section 
+ service offering how can the producers revise their offers 
+based on the consumer s preferences that they have learned 
+so far section 
+ similarity estimation how can the producer agent estimate 
+similarity between the request and available services 
+ section 
+ preference learning 
+the requests of the consumer and the counter offers of the 
+producer are represented as vectors where each element in the vector 
+corresponds to the value of a feature the requests of the consumers 
+represent individual wine products whereas their preferences are 
+constraints over service features for example a consumer may 
+have preference for red wine this means that the consumer is 
+willing to accept any wine offered by the producers as long as the 
+color is red accordingly the consumer generates a request where 
+the color feature is set to red and other features are set to arbitrary 
+values e g medium strong red 
+at the beginning of negotiation the producer agent does not 
+know the consumer s preferences but will need to learn them 
+using information obtained from the dialogues between the producer 
+and the consumer the preferences denote the relative importance 
+of the features of the services demanded by the consumer agents 
+for instance the color of the wine may be important so the 
+consumer insists on buying the wine whose color is red and rejects all 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table how dcea works 
+type sample the most the most 
+general set specific set 
+ full strong white full strong white 
+ -full 
+- full delicate rose -delicate full strong white 
+ -rose 
+ -full full strong white 
+ medium moderate red -delicate medium moderate red 
+ -rose 
+the offers involving the wine whose color is white or rose on the 
+contrary the winery may not be as important as the color for this 
+customer so the consumer may have a tendency to accept wines 
+from any winery as long as the color is red 
+to tackle this problem we propose to use incremental learning 
+algorithms this is necessary since no training data is 
+available before the interactions start we particularly investigate two 
+approaches the first one is inductive learning this technique is 
+applied to learn the preferences as concepts we elaborate on 
+candidate elimination algorithm cea for version space cea 
+is known to perform poorly if the information to be learned is 
+disjunctive interestingly most of the time consumer preferences are 
+disjunctive say we are considering an agent that is buying wine 
+the consumer may prefer red wine or rose wine but not white wine 
+to use cea with such preferences a solid modification is 
+necessary the second approach is decision trees decision trees can 
+learn from examples easily and classify new instances as positive 
+or negative a well-known incremental decision tree is id r 
+however id r is known to suffer from high computational 
+complexity for this reason we instead use the id algorithm and 
+iteratively build decision trees to simulate incremental learning 
+ cea 
+cea is one of the inductive learning algorithms that learns 
+concepts from observed examples the algorithm maintains two 
+sets to model the concept to be learned the first set is the most 
+general set g g contains hypotheses about all the possible values 
+that the concept may obtain as the name suggests it is a 
+generalization and contains all possible values unless the values have 
+been identified not to represent the concept the second set is the 
+most specific set s s contains only hypotheses that are known to 
+identify the concept that is being learned at the beginning of the 
+algorithm g is initialized to cover all possible concepts while s is 
+initialized to be empty 
+during the interactions each request of the consumer can be 
+considered as a positive example and each counter offer generated by 
+the producer and rejected by the consumer agent can be thought of 
+as a negative example at each interaction between the producer 
+and the consumer both g and s are modified the negative 
+samples enforce the specialization of some hypotheses so that g does 
+not cover any hypothesis accepting the negative samples as 
+positive when a positive sample comes the most specific set s should 
+be generalized in order to cover the new training instance as a 
+result the most general hypotheses and the most special hypotheses 
+cover all positive training samples but do not cover any negative 
+ones incrementally g specializes and s generalizes until g and 
+s are equal to each other when these sets are equal the algorithm 
+converges by means of reaching the target concept 
+ disjunctive cea 
+unfortunately cea is primarily targeted for conjunctive 
+concepts on the other hand we need to learn disjunctive concepts in 
+the negotiation of a service since consumer may have several 
+alternative wishes there are several studies on learning disjunctive 
+concepts via version space some of these approaches use multiple 
+version space for instance hong et al maintain several version 
+spaces by split and merge operation to be able to learn 
+disjunctive concepts they create new version spaces by examining the 
+consistency between g and s 
+we deal with the problem of not supporting disjunctive concepts 
+of cea by extending our hypothesis language to include 
+disjunctive hypothesis in addition to the conjunctives and negation each 
+attribute of the hypothesis has two parts inclusive list which holds 
+the list of valid values for that attribute and exclusive list which is 
+the list of values which cannot be taken for that feature 
+example assume that the most specific set is light 
+delicate red and a positive example light delicate white comes 
+the original cea will generalize this as light delicate 
+meaning the color can take any value however in fact we only know 
+that the color can be red or white in the dcea we generalize it as 
+ light delicate white red only when all the values exist 
+in the list they will be replaced by in other words we let the 
+algorithm generalize more slowly than before 
+we modify the cea algorithm to deal with this change the 
+modified algorithm dcea is given as algorithm note that 
+compared to the previous studies of disjunctive versions our 
+approach uses only a single version space rather than multiple version 
+space the initialization phase is the same as the original algorithm 
+ lines if any positive sample comes we add the sample to the 
+special set as before line however we do not eliminate the 
+hypotheses in g that do not cover this sample since g now contains a 
+disjunction of many hypotheses some of which will be conflicting 
+with each other removing a specific hypothesis from g will result 
+in loss of information since other hypotheses are not guaranteed 
+to cover it after some time some hypotheses in s can be merged 
+and can construct one hypothesis lines 
+when a negative sample comes we do not change s as before 
+we only modify the most general hypotheses not to cover this 
+negative sample lines - different from the original cea we 
+try to specialize the g minimally the algorithm removes the 
+hypothesis covering the negative sample line then we generate 
+new hypotheses as the number of all possible attributes by using 
+the removed hypothesis 
+for each attribute in the negative sample we add one of them 
+at each time to the exclusive list of the removed hypothesis thus 
+all possible hypotheses that do not cover the negative sample are 
+generated line note that exclusive list contains the values that 
+the attribute cannot take for example consider the color attribute 
+if a hypothesis includes red in its exclusive list and in its inclusive 
+list this means that color may take any value except red 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+algorithm disjunctive candidate elimination algorithm 
+ g ←the set of maximally general hypotheses in h 
+ s ←the set of maximally specific hypotheses in h 
+ for each training example d 
+ if d is a positive example then 
+ add d to s 
+ if s in s can be combined with d to make one element then 
+ combine s and d into sd sd is the rule covers s and d 
+ end if 
+ end if 
+ if d is a negative example then 
+ for each hypothesis g in g does cover d 
+ assume g x x xn and d d d dn 
+ - remove g from g 
+ - add hypotheses g g gn where g x -d x xn 
+g x x -d xn and gn x x xn-dn 
+ - remove from g any hypothesis that is less general than 
+another hypothesis in g 
+ end if 
+example table illustrates the first three interactions and 
+the workings of dcea the most general set and the most specific 
+set show the contents of g and s after the sample comes in after 
+the first positive sample s is generalized to also cover the instance 
+the second sample is negative thus we replace by three 
+disjunctive hypotheses each hypothesis being minimally 
+specialized in this process at each time one attribute value of negative 
+sample is applied to the hypothesis in the general set the third 
+sample is positive and generalizes s even more 
+note that in table we do not eliminate -full from 
+the general set while having a positive sample such as full strong 
+white this stems from the possibility of using this rule in the 
+generation of other hypotheses for instance if the example continues 
+with a negative sample full strong red we can specialize the 
+previous rule such as -full -red by algorithm we 
+do not miss any information 
+ id 
+id is an algorithm that constructs decision trees in a 
+topdown fashion from the observed examples represented in a vector 
+with attribute-value pairs applying this algorithm to our system 
+with the intention of learning the consumer s preferences is 
+appropriate since this algorithm also supports learning disjunctive 
+concepts in addition to conjunctive concepts 
+the id algorithm is used in the learning process with the 
+purpose of classification of offers there are two classes positive and 
+negative positive means that the service description will possibly 
+be accepted by the consumer agent whereas the negative implies 
+that it will potentially be rejected by the consumer consumer s 
+requests are considered as positive training examples and all rejected 
+counter-offers are thought as negative ones 
+the decision tree has two types of nodes leaf node in which the 
+class labels of the instances are held and non-leaf nodes in which 
+test attributes are held the test attribute in a non-leaf node is one of 
+the attributes making up the service description for instance body 
+flavor color and so on are potential test attributes for wine service 
+when we want to find whether the given service description is 
+acceptable we start searching from the root node by examining the 
+value of test attributes until reaching a leaf node 
+the problem with this algorithm is that it is not an 
+incremental algorithm which means all the training examples should exist 
+before learning to overcome this problem the system keeps 
+consumer s requests throughout the negotiation interaction as positive 
+examples and all counter-offers rejected by the consumer as 
+negative examples after each coming request the decision tree is 
+rebuilt without doubt there is a drawback of reconstruction such 
+as additional process load however in practice we have evaluated 
+id to be fast and the reconstruction cost to be negligible 
+ service offering 
+after learning the consumer s preferences the producer needs to 
+make a counter offer that is compatible with the consumer s 
+preferences 
+ service offering via cea and dcea 
+to generate the best offer the producer agent uses its service 
+ontology and the cea algorithm the service offering mechanism 
+is the same for both the original cea and dcea but as explained 
+before their methods for updating g and s are different 
+when producer receives a request from the consumer the 
+learning set of the producer is trained with this request as a positive 
+sample the learning components the most specific set s and the 
+most general set g are actively used in offering service the most 
+general set g is used by the producer in order to avoid offering the 
+services which will be rejected by the consumer agent in other 
+words it filters the service set from the undesired services since 
+g contains hypotheses that are consistent with the requests of the 
+consumer the most specific set s is used in order to find best 
+offer which is similar to the consumer s preferences since the most 
+specific set s holds the previous requests and the current request 
+estimating similarity between this set and every service in the 
+service list is very convenient to find the best offer from the service 
+list 
+when the consumer starts the interaction with the producer agent 
+producer agent loads all related services to the service list object 
+this list constitutes the provider s inventory of services upon 
+receiving a request if the producer can offer an exactly matching 
+service then it does so for example for a wine this corresponds 
+to selling a wine that matches the specified features of the 
+consumer s request identically when the producer cannot offer the 
+service as requested it tries to find the service that is most similar 
+to the services that have been requested by the consumer during the 
+negotiation to do this the producer has to compute the similarity 
+between the services it can offer and the services that have been 
+requested in s 
+we compute the similarities in various ways as will be explained 
+in section after the similarity of the available services with the 
+current s is calculated there may be more than one service with 
+the maximum similarity the producer agent can break the tie in a 
+number of ways here we have associated a rating value with each 
+service and the producer prefers the higher rated service to others 
+ service offering via id 
+if the producer learns the consumer s preferences with id a 
+similar mechanism is applied with two differences first since id 
+does not maintain g the list of unaccepted services that are 
+classified as negative are removed from the service list second the 
+similarities of possible services are not measured with respect to s 
+but instead to all previously made requests 
+ alternative service offering mechanisms 
+in addition to these three service offering mechanisms service 
+offering with cea service offering with dcea and service 
+offering with id we include two other mechanisms 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ random service offering ro the producer generates a 
+counter offer randomly from the available service list 
+without considering the consumer s preferences 
+ service offering considering only the current request scr 
+the producer selects a counter offer according to the 
+similarity of the consumer s current request but does not consider 
+previous requests 
+ similarity estimation 
+similarity can be estimated with a similarity metric that takes 
+two entries and returns how similar they are there are several 
+similarity metrics used in case based reasoning system such as weighted 
+sum of euclidean distance hamming distance and so on 
+the similarity metric affects the performance of the system while 
+deciding which service is the closest to the consumer s request we 
+first analyze some existing metrics and then propose a new 
+semantic similarity metric named rp similarity 
+ tversky s similarity metric 
+tversky s similarity metric compares two vectors in terms of 
+the number of exactly matching features in equation 
+common represents the number of matched attributes whereas 
+different represents the number of the different attributes our 
+current assumption is that α and β is equal to each other 
+smpq 
+α common 
+α common β different 
+ 
+here when two features are compared we assign zero for 
+dissimilarity and one for similarity by omitting the semantic closeness 
+among the feature values 
+tversky s similarity metric is designed to compare two feature 
+vectors in our system whereas the list of services that can be 
+offered by the producer are each a feature vector the most specific 
+set s is not a feature vector s consists of hypotheses of feature 
+vectors therefore we estimate the similarity of each hypothesis 
+inside the most specific set s and then take the average of the 
+similarities 
+example assume that s contains the following two 
+hypothesis light moderate red white full strong rose 
+take service s as light strong rose then the similarity of the 
+first one is equal to and the second one is equal to in 
+accordance with equation normally we take the average of it 
+and obtain equally however the first 
+hypothesis involves the effect of two requests and the second hypothesis 
+involves only one request as a result we expect the effect of the 
+first hypothesis to be greater than that of the second therefore 
+we calculate the average similarity by considering the number of 
+samples that hypotheses cover 
+let ch denote the number of samples that hypothesis h covers 
+and sm h service denote the similarity of hypothesis h with the 
+given service we compute the similarity of each hypothesis with 
+the given service and weight them with the number of samples they 
+cover we find the similarity by dividing the weighted sum of the 
+similarities of all hypotheses in s with the service by the number 
+of all samples that are covered in s 
+av g−sm service s 
+ s 
+ h ch sm h service 
+ s 
+ h ch 
+ 
+figure sample taxonomy for similarity estimation 
+example for the above example the similarity of light 
+strong rose with the specific set is equally 
+ the possible number of samples that a hypothesis covers can 
+be estimated with multiplying cardinalities of each attribute for 
+example the cardinality of the first attribute is two and the others 
+is equal to one for the given hypothesis such as light moderate 
+ red white when we multiply them we obtain two 
+ 
+ lin s similarity metric 
+a taxonomy can be used while estimating semantic similarity 
+between two concepts estimating semantic similarity in a is-a 
+taxonomy can be done by calculating the distance between the nodes 
+related to the compared concepts the links among the nodes can 
+be considered as distances then the length of the path between the 
+nodes indicates how closely similar the concepts are an 
+alternative estimation to use information content in estimation of semantic 
+similarity rather than edge counting method was proposed by lin 
+ the equation shows lin s similarity where c and c 
+are the compared concepts and c is the most specific concept that 
+subsumes both of them besides p c represents the probability 
+of an arbitrary selected object belongs to concept c 
+similarity c c 
+ × log p c 
+log p c log p c 
+ 
+ wu palmer s similarity metric 
+different from lin wu and palmer use the distance between the 
+nodes in is-a taxonomy the semantic similarity is 
+represented with equation here the similarity between c and 
+c is estimated and c is the most specific concept subsuming these 
+classes n is the number of edges between c and c n is the 
+number of edges between c and c n is the number of is-a 
+links of c from the root of the taxonomy 
+simw u p almer c c 
+ × n 
+n n × n 
+ 
+ rp semantic metric 
+we propose to estimate the relative distance in a taxonomy 
+between two concepts using the following intuitions we use figure 
+ to illustrate these intuitions 
+ parent versus grandparent parent of a node is more 
+similar to the node than grandparents of that generalization of 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+a concept reasonably results in going further away that 
+concept the more general concepts are the less similar they 
+are for example anywinecolor is parent of reddishcolor 
+and reddishcolor is parent of red then we expect the 
+similarity between reddishcolor and red to be higher than that 
+of the similarity between anywinecolor and red 
+ parent versus sibling a node would have higher similarity 
+to its parent than to its sibling for instance red and rose 
+are children of reddishcolor in this case we expect the 
+similarity between red and reddishcolor to be higher than 
+that of red and rose 
+ sibling versus grandparent a node is more similar to it s 
+sibling then to its grandparent to illustrate anywinecolor 
+is grandparent of red and red and rose are siblings 
+therefore we possibly anticipate that red and rose are more 
+similar than anywinecolor and red 
+as a taxonomy is represented in a tree that tree can be traversed 
+from the first concept being compared through the second concept 
+at starting node related to the first concept the similarity value is 
+constant and equal to one this value is diminished by a constant 
+at each node being visited over the path that will reach to the node 
+including the second concept the shorter the path between the 
+concepts the higher the similarity between nodes 
+algorithm estimate-rp-similarity c c 
+require the constants should be m n m 
+where m n ∈ 
+r 
+ similarity ← 
+ if c is equal to c then 
+ return similarity 
+ end if 
+ commonparent ← findcommonparent c c 
+ commonparent is the most specific concept that covers 
+both c and c 
+ n ← finddistance commonparent c 
+ n ← finddistance commonparent c n n are 
+the number of links between the concept and parent concept 
+ if commonparent c or commonparent c then 
+ similarity ← similarity m n n 
+ else 
+ similarity ← similarity n m n n − 
+ end if 
+ return similarity 
+relative distance between nodes c and c is estimated in the 
+following way starting from c the tree is traversed to reach c 
+at each hop the similarity decreases since the concepts are getting 
+farther away from each other however based on our intuitions 
+not all hops decrease the similarity equally 
+let m represent the factor for hopping from a child to a parent 
+and n represent the factor for hopping from a sibling to another 
+sibling since hopping from a node to its grandparent counts as 
+two parent hops the discount factor of moving from a node to its 
+grandparent is m 
+ according to the above intuitions our constants 
+should be in the form m n m 
+where the value of m and n 
+should be between zero and one algorithm shows the distance 
+calculation 
+according to the algorithm firstly the similarity is initialized 
+with the value of one line if the concepts are equal to each other 
+then similarity will be one lines - otherwise we compute the 
+common parent of the two nodes and the distance of each concept 
+to the common parent without considering the sibling lines - 
+if one of the concepts is equal to the common parent then there 
+is no sibling relation between the concepts for each level we 
+multiply the similarity by m and do not consider the sibling factor 
+in the similarity estimation as a result we decrease the similarity 
+at each level with the rate of m line otherwise there has to be 
+a sibling relation this means that we have to consider the effect of 
+n when measuring similarity recall that we have counted n n 
+edges between the concepts since there is a sibling relation two of 
+these edges constitute the sibling relation hence when calculating 
+the effect of the parent relation we use n n − edges line 
+some similarity estimations related to the taxonomy in figure 
+are given in table in this example m is taken as and n is 
+taken as 
+table sample similarity estimation over sample taxonomy 
+similarity reddishcolor rose 
+similarity red rose 
+similarity anyw inecolor rose 
+ 
+similarity w hite rose 
+for all semantic similarity metrics in our architecture the 
+taxonomy for features is held in the shared ontology in order to evaluate 
+the similarity of feature vector we firstly estimate the similarity for 
+feature one by one and take the average sum of these similarities 
+then the result is equal to the average semantic similarity of the 
+entire feature vector 
+ developed system 
+we have implemented our architecture in java to ease testing 
+of the system the consumer agent has a user interface that allows 
+us to enter various requests the producer agent is fully automated 
+and the learning and service offering operations work as explained 
+before in this section we explain the implementation details of the 
+developed system 
+we use owl as our ontology language and jena as our 
+ontology reasoner the shared ontology is the modified version of 
+the wine ontology it includes the description of wine as a 
+concept and different types of wine all participants of the 
+negotiation use this ontology for understanding each other according 
+to the ontology seven properties make up the wine concept the 
+consumer agent and the producer agent obtain the possible values 
+for the these properties by querying the ontology thus all 
+possible values for the components of the wine concept such as color 
+body sugar and so on can be reached by both agents also a 
+variety of wine types are described in this ontology such as burgundy 
+chardonnay cheninblanc and so on intuitively any wine type 
+described in the ontology also represents a wine concept this allows 
+us to consider instances of chardonnay wine as instances of wine 
+class 
+in addition to wine description the hierarchical information of 
+some features can be inferred from the ontology for instance 
+we can represent the information europe continent covers 
+western country western country covers french region which covers 
+some territories such as loire bordeaux and so on this 
+hierarchical information is used in estimation of semantic similarity in this 
+part some reasoning can be made such as if a concept x covers y 
+and y covers z then concept x covers z for example europe 
+continent covers bordeaux 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+for some features such as body flavor and sugar there is no 
+hierarchical information but their values are semantically leveled 
+when that is the case we give the reasonable similarity values for 
+these features for example the body can be light medium or 
+strong in this case we assume that light is similar to medium 
+but only to strong 
+winestock ontology is the producer s inventory and describes 
+a product class as wineproduct this class is necessary for the 
+producer to record the wines that it sells ontology involves the 
+individuals of this class the individuals represent available services 
+that the producer owns we have prepared two separate winestock 
+ontologies for testing in the first ontology there are available 
+wine products and in the second ontology there are products 
+ performance evaluation 
+we evaluate the performance of the proposed systems in respect 
+to learning technique they used dcea and id by comparing 
+them with the cea ro for random offering and scr offering 
+based on current request only 
+we apply a variety of scenarios on this dataset in order to see the 
+performance differences each test scenario contains a list of 
+preferences for the user and number of matches from the product list 
+table shows these preferences and availability of those products 
+in the inventory for first five scenarios note that these preferences 
+are internal to the consumer and the producer tries to learn these 
+during negotiation 
+table availability of wines in different test scenarios 
+id preference of consumer availability out of 
+ dry wine 
+ red and dry wine 
+ red dry and moderate wine 
+ red and strong wine 
+ red or rose and strong 
+ comparison of learning algorithms 
+in comparison of learning algorithms we use the five scenarios 
+in table here first we use tversky s similarity measure with 
+these test cases we are interested in finding the number of 
+iterations that are required for the producer to generate an acceptable 
+offer for the consumer since the performance also depends on the 
+initial request we repeat our experiments with different initial 
+requests consequently for each case we run the algorithms five 
+times with several variations of the initial requests in each 
+experiment we count the number of iterations that were needed to reach 
+an agreement we take the average of these numbers in order to 
+evaluate these systems fairly as is customary we test each 
+algorithm with the same initial requests 
+table compares the approaches using different learning 
+algorithm when the large parts of inventory is compatible with the 
+customer s preferences as in the first test case the performance of 
+all techniques are nearly same e g scenario as the number of 
+compatible services drops ro performs poorly as expected the 
+second worst method is scr since it only considers the customer s 
+most recent request and does not learn from previous requests 
+cea gives the best results when it can generate an answer but 
+cannot handle the cases containing disjunctive preferences such as the 
+one in scenario id and dcea achieve the best results their 
+performance is comparable and they can handle all cases including 
+scenario 
+table comparison of learning algorithms in terms of average 
+number of interactions 
+run dcea scr ro cea id 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario no offer 
+avg of all cases no offer 
+ comparison of similarity metrics 
+to compare the similarity metrics that were explained in 
+section we fix the learning algorithm to dcea in addition to the 
+scenarios shown in table we add following five new scenarios 
+considering the hierarchical information 
+ the customer wants to buy wine whose winery is located in 
+california and whose grape is a type of white grape 
+moreover the winery of the wine should not be expensive there 
+are only four products meeting these conditions 
+ the customer wants to buy wine whose color is red or rose 
+and grape type is red grape in addition the location of wine 
+should be in europe the sweetness degree is wished to be 
+dry or off dry the flavor should be delicate or moderate 
+where the body should be medium or light furthermore the 
+winery of the wine should be an expensive winery there are 
+two products meeting all these requirements 
+ the customer wants to buy moderate rose wine which is 
+located around french region the category of winery should 
+be moderate winery there is only one product meeting 
+these requirements 
+ the customer wants to buy expensive red wine which is 
+located around california region or cheap white wine which 
+is located in around texas region there are five available 
+products 
+ the customer wants to buy delicate white wine whose 
+producer in the category of expensive winery there are two 
+available products 
+the first seven scenarios are tested with the first dataset that 
+contains a total of services and the last three scenarios are tested 
+with the second dataset that contains services 
+table gives the performance evaluation in terms of the number 
+of interactions needed to reach a consensus tversky s metric gives 
+the worst results since it does not consider the semantic similarity 
+lin s performance are better than tversky but worse than others 
+wu palmer s metric and rp similarity measure nearly give the same 
+performance and better than others when the results are examined 
+considering semantic closeness increases the performance 
+ discussion 
+we review the recent literature in comparison to our work tama 
+et al propose a new approach based on ontology for 
+negotiation according to their approach the negotiation protocols used 
+in e-commerce can be modeled as ontologies thus the agents can 
+perform negotiation protocol by using this shared ontology without 
+the need of being hard coded of negotiation protocol details while 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+table comparison of similarity metrics in terms of number 
+of interactions 
+run tversky lin wu palmer rp 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+scenario 
+average of all cases 
+tama et al model the negotiation protocol using ontologies we 
+have instead modeled the service to be negotiated further we have 
+built a system with which negotiation preferences can be learned 
+sadri et al study negotiation in the context of resource 
+allocation agents have limited resources and need to require 
+missing resources from other agents a mechanism which is based on 
+dialogue sequences among agents is proposed as a solution the 
+mechanism relies on observe-think-action agent cycle these 
+dialogues include offering resources resource exchanges and offering 
+alternative resource each agent in the system plans its actions to 
+reach a goal state contrary to our approach sadri et al s study is 
+not concerned with learning preferences of each other 
+brzostowski and kowalczyk propose an approach to select an 
+appropriate negotiation partner by investigating previous multi-attribute 
+negotiations for achieving this they use case-based reasoning 
+their approach is probabilistic since the behavior of the partners 
+can change at each iteration in our approach we are interested in 
+negotiation the content of the service after the consumer and 
+producer agree on the service price-oriented negotiation mechanisms 
+can be used to agree on the price 
+fatima et al study the factors that affect the negotiation such as 
+preferences deadline price and so on since the agent who 
+develops a strategy against its opponent should consider all of them 
+in their approach the goal of the seller agent is to sell the service 
+for the highest possible price whereas the goal of the buyer agent 
+is to buy the good with the lowest possible price time interval 
+affects these agents differently compared to fatima et al our focus 
+is different while they study the effect of time on negotiation our 
+focus is on learning preferences for a successful negotiation 
+faratin et al propose a multi-issue negotiation mechanism where 
+the service variables for the negotiation such as price quality of 
+the service and so on are considered traded-offs against each other 
+ i e higher price for earlier delivery they generate a 
+heuristic model for trade-offs including fuzzy similarity estimation and a 
+hill-climbing exploration for possibly acceptable offers although 
+we address a similar problem we learn the preferences of the 
+customer by the help of inductive learning and generate counter-offers 
+in accordance with these learned preferences faratin et al only 
+use the last offer made by the consumer in calculating the 
+similarity for choosing counter offer unlike them we also take into 
+account the previous requests of the consumer in their experiments 
+faratin et al assume that the weights for service variables are fixed 
+a priori on the contrary we learn these preferences over time 
+in our future work we plan to integrate ontology reasoning into 
+the learning algorithm so that hierarchical information can be learned 
+from subsumption hierarchy of relations further by using 
+relationships among features the producer can discover new 
+knowledge from the existing knowledge these are interesting directions 
+that we will pursue in our future work 
+ references 
+ j brzostowski and r kowalczyk on possibilistic 
+case-based reasoning for selecting partners for 
+multi-attribute agent negotiation in proceedings of the th 
+intl joint conference on autonomous agents and 
+multiagent systems aamas pages - 
+ l busch and i horstman a comment on issue-by-issue 
+negotiations games and economic behavior - 
+ 
+ j k debenham managing e-market negotiation in context 
+with a multiagent system in proceedings st international 
+conference on knowledge based systems and applied 
+artificial intelligence es 
+ p faratin c sierra and n r jennings using similarity 
+criteria to make issue trade-offs in automated negotiations 
+artificial intelligence - 
+ s fatima m wooldridge and n jennings optimal agents 
+for multi-issue negotiation in proceeding of the nd intl 
+joint conference on autonomous agents and multiagent 
+systems aamas pages - 
+ c giraud-carrier a note on the utility of incremental 
+learning ai communications - 
+ t -p hong and s -s tseng splitting and merging version 
+spaces to learn disjunctive concepts ieee transactions on 
+knowledge and data engineering - 
+ d lin an information-theoretic definition of similarity in 
+proc th international conf on machine learning pages 
+ - morgan kaufmann san francisco ca 
+ p maes r h guttman and a g moukas agents that buy 
+and sell communications of the acm - 
+ t m mitchell machine learning mcgraw hill ny 
+ owl owl web ontology language guide 
+http www w org tr cr-owl-guide- 
+ s k pal and s c k shiu foundations of soft case-based 
+reasoning john wiley sons new jersey 
+ j r quinlan induction of decision trees machine learning 
+ - 
+ f sadri f toni and p torroni dialogues for negotiation 
+agent varieties and dialogue sequences in atal 
+revised papers volume of lnai pages - 
+springer-verlag 
+ m p singh value-oriented electronic commerce ieee 
+internet computing - 
+ v tamma s phelps i dickinson and m wooldridge 
+ontologies for supporting negotiation in e-commerce 
+engineering applications of artificial intelligence 
+ - 
+ a tversky features of similarity psychological review 
+ - 
+ p e utgoff incremental induction of decision trees 
+machine learning - 
+ wine 
+http www w org tr cr-owl-guide wine rdf 
+ z wu and m palmer verb semantics and lexical selection 
+in nd annual meeting of the association for 
+computational linguistics pages - 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

@@ -1,0 +1,1595 @@
+generalized value decomposition and structured 
+multiattribute auctions 
+yagil engel and michael p wellman 
+university of michigan computer science engineering 
+ hayward st ann arbor mi - usa 
+ yagil wellman  umich edu 
+abstract 
+multiattribute auction mechanisms generally either remain 
+agnostic about traders preferences or presume highly restrictive forms 
+such as full additivity real preferences often exhibit 
+dependencies among attributes yet may possess some structure that can be 
+usefully exploited to streamline communication and simplify 
+operation of a multiattribute auction we develop such a structure 
+using the theory of measurable value functions a cardinal utility 
+representation based on an underlying order over preference 
+differences a set of local conditional independence relations over 
+such differences supports a generalized additive preference 
+representation which decomposes utility across overlapping clusters of 
+related attributes we introduce an iterative auction mechanism that 
+maintains prices on local clusters of attributes rather than the full 
+space of joint configurations when traders preferences are 
+consistent with the auction s generalized additive structure the 
+mechanism produces approximately optimal allocations at approximate 
+vcg prices 
+categories and subject descriptors j computer 
+applications social and behavioral sciences-economics 
+general terms algorithms economics 
+ introduction 
+multiattribute trading mechanisms extend traditional price-only 
+mechanisms by facilitating the negotiation over a set of predefined 
+attributes representing various non-price aspects of the deal rather 
+than negotiating over a fully defined good or service a 
+multiattribute mechanism delays commitment to specific configurations 
+until the most promising candidates are identified for example 
+a procurement department of a company may use a multiattribute 
+auction to select a supplier of hard drives supplier offers may be 
+evaluated not only over the price they offer but also over various 
+qualitative attributes such as volume rpm access time latency 
+transfer rate and so on in addition suppliers may offer different 
+contract conditions such as warranty delivery time and service 
+in order to account for traders preferences the auction 
+mechanism must extract evaluative information over a complex domain 
+of multidimensional configurations constructing and 
+communicating a complete preference specification can be a severe burden 
+for even a moderate number of attributes therefore practical 
+multiattribute auctions must either accommodate partial specifications 
+or support compact expression of preferences assuming some 
+simplified form by far the most popular multiattribute form to adopt 
+is the simplest an additive representation where overall value is a 
+linear combination of values associated with each attribute for 
+example several recent proposals for iterative multiattribute auctions 
+ require additive preference representations 
+such additivity reduces the complexity of preference 
+specification exponentially compared to the general discrete case but 
+precludes expression of any interdependencies among the attributes in 
+practice however interdependencies among natural attributes are 
+quite common for example the buyer may exhibit complementary 
+preferences for size and access time since the performance effect 
+is more salient if much data is involved or may view a strong 
+warranty as a good substitute for high reliability ratings similarly the 
+seller s production characteristics such as increasing access time 
+is harder for larger hard drives can easily violate additivity in 
+such cases an additive value function may not be able to provide 
+even a reasonable approximation of real preferences 
+on the other hand fully general models are intractable and it 
+is reasonable to expect multiattribute preferences to exhibit some 
+structure our goal therefore is to identify the subtler yet more 
+widely applicable structured representations and exploit these 
+properties of preferences in trading mechanisms 
+we propose an iterative auction mechanism based on just such a 
+flexible preference structure our approach is inspired by the 
+design of an iterative multiattribute procurement auction for additive 
+preferences due to parkes and kalagnanam pk pk 
+propose two types of iterative auctions the first nld makes no 
+assumptions about traders preferences and lets sellers bid on the full 
+multidimensional attribute space because nld maintains an 
+exponential price structure it is suitable only for small domains the 
+other auction ad assumes additive buyer valuation and seller cost 
+functions it collects sell bids per attribute level and for a single 
+discount term the price of a configuration is defined as the sum of 
+the prices of the chosen attribute levels minus the discount 
+the auction we propose also supports compact price spaces 
+albeit for levels of clusters of attributes rather than singletons we 
+employ a preference decomposition based on generalized additive 
+independence gai a model flexible enough to accommodate 
+interdependencies to the exact degree of accuracy desired yet 
+providing a compact functional form to the extent that interdependence 
+can be limited given its roots in multiattribute utility theory 
+ 
+the gai condition is defined with respect to the expected utility 
+function to apply it for modeling values for certain outcomes 
+therefore requires a reinterpretation for preference under certainty 
+to this end we exploit the fact that auction outcomes are associated 
+with continuous prices which provide a natural scale for assessing 
+magnitude of preference 
+we first lay out a representation framework for preferences that 
+captures in addition to simple orderings among attribute 
+configuration values the difference in the willingness to pay wtp for each 
+that is we should be able not only to compare outcomes but also 
+decide whether the difference in quality is worth a given difference 
+in price next we build a direct formally justified link from 
+preference statements over priced outcomes to a generalized additive 
+decomposition of the wtp function after laying out this 
+infrastructure we employ this representation tool for the development of a 
+multiattribute iterative auction mechanism that allows traders to 
+express their complex preferences in gai format we then study the 
+auction s allocational computational and practical properties 
+in section we present essential background on our 
+representation framework the measurable value function mvf section 
+develops new multiattribute structures for mvf supporting 
+generalized additive decompositions next we show the applicability of 
+the theoretical framework to preferences in trading the rest of the 
+paper is devoted to the proposed auction mechanism 
+ multiattribute preferences 
+as mentioned most tools facilitating expression of multiattribute 
+value for trading applications assume that agents preferences can 
+be represented in an additive form by way of background we start 
+by introducing the formal prerequisites justifying the additive 
+representation as provided by multiattribute utility theory we then 
+present the generalized additive form and develop the formal 
+underpinnings for measurable value needed to extend this model to 
+the case of choice under certainty 
+ preferential independence 
+let θ denote the space of possible outcomes with a 
+preference relation weak total order over θ let a a am 
+be a set of attributes describing θ capital letters denote subsets 
+of variables small letters with or without numeric subscripts 
+denote specific variables and ¯x denotes the complement of x with 
+respect to a we indicate specific variable assignments with prime 
+signs or superscripts to represent an instantiation of subsets x y 
+at the same time we use a sequence of instantiation symbols as in 
+x y 
+definition a set of attributes y ⊂ a is preferentially 
+independent pi of its complement z a \ y if the conditional 
+preference order over y given a fixed level z 
+of z is the same 
+regardless of the choice of z 
+ 
+in other words the preference order over the projection of a on the 
+attributes in y is the same for any instantiation of the attributes in 
+z 
+definition a a am is mutually preferentially 
+independent mpi if any subset of a is preferentially independent 
+of its complement 
+the preference relation when no uncertainty is modeled is 
+usually represented by a value function v the following 
+fundamental result greatly simplifies the value function representation 
+theorem a preference order over set of attributes 
+a has an additive value function representation 
+v a am 
+mx 
+i 
+vi ai 
+iff a is mutually preferential independent 
+essentially the additive forms used in trading mechanisms assume 
+mutual preferential independence over the full set of attributes 
+including the money attribute intuitively that means that willingness 
+to pay for value of an attribute or attributes cannot be affected by 
+the value of other attributes 
+a cardinal value function representing an ordering over certain 
+outcomes need not in general coincide with the cardinal utility 
+function that represents preference over lotteries or expected utility 
+ eu nevertheless eu functions may possess structural 
+properties analogous to that for value functions such as additive 
+decomposition since the present work does not involve decisions under 
+uncertainty we do not provide a full exposition of the eu concept 
+however we do make frequent reference to the following additive 
+independence relations 
+definition let x y z be a partition of the set of attributes 
+a x and y are conditionally additive independent given z 
+denoted as cai x y z if preferences over lotteries on a depend 
+only on their marginal conditional probability distributions over x 
+and y 
+definition let i ig ⊆ a such that 
+sg 
+i ii a 
+i ig are called generalized additive independent gai if 
+preferences over lotteries on a depend only on their marginal 
+distributions over i ig 
+an expected utility function u · can be decomposed additively 
+according to its possibly overlapping gai sub-configurations 
+theorem let i ig be gai then there exist 
+functions f fg such that 
+u a am 
+g 
+x 
+r 
+fr ir 
+what is now known as the gai condition was originally 
+introduced by fishburn for eu and was named gai and brought to 
+the attention of ai researchers by bacchus and grove 
+graphical models and elicitation procedures for gai decomposable utility 
+were developed for eu for a cardinal representation of 
+the ordinal value function and for an ordinal preference 
+relations corresponding to a tcp-net structure by brafman et al 
+apart from the work on gai in the context of preference handling 
+that were discussed above gai have been recently used in the 
+context of mechanism design by hyafil and boutilier as an aid in 
+direct revelation mechanisms 
+as shown by bacchus and grove gai structure can be 
+identified based on a set of cai conditions which are much easier to 
+detect and verify in general utility functions may exhibit gai 
+structure not based on cai however to date all proposals for 
+reasoning and eliciting utility in gai form take advantage of the gai 
+structure primarily to the extent that it represents a collection of 
+cai conditions for example gai trees employ triangulation 
+of the cai map and braziunas and boutilier s conditional set 
+cj of a set ij corresponds to the cai separating set of ij 
+since the cai condition is also defined based on preferences 
+over lotteries we cannot apply bacchus and grove s result 
+without first establishing an alternative framework based on priced 
+outcomes we develop such a framework using the theory of 
+measurable value functions ultimately producing a gai decomposition 
+ 
+ eq of the wtp function readers interested primarily in the 
+multiattribute auction and willing to grant the well-foundedness of 
+the preference structure may skip down to section 
+ measurable value functions 
+trading decisions represent a special case of decisions under 
+certainty where choices involve multiattribute outcomes and 
+corresponding monetary payments in such problems the key decision 
+often hinges on relative valuations of price differences compared 
+to differences in alternative configurations of goods and services 
+theoretically price can be treated as just another attribute 
+however such an approach fails to exploit the special character of the 
+money dimension and can significantly add to complexity due to 
+the inherent continuity and typical wide range of possible monetary 
+outcome values 
+we build on the fundamental work of dyer and sarin on 
+measurable value functions mvfs as we show below wtp 
+functions in a quasi-linear setting can be interpreted as mvfs however 
+we first present the mvf framework in a more generic way where 
+the measurement is not necessarily monetary we present the 
+essential definitions and refer to dyer and sarin for more detailed 
+background and axiomatic treatment the key concept is that of 
+preference difference let θ 
+ θ 
+ ϑ 
+ ϑ 
+∈ θ such that θ 
+θ 
+and ϑ 
+ϑ 
+ θ 
+ θ 
+ denotes the preference difference between 
+θ 
+and θ 
+ interpreted as the strength or degree to which θ 
+is 
+preferred over θ 
+ let 
+denote a preference order over θ × θ we 
+interpret the statement 
+ θ 
+ θ 
+ 
+ ϑ 
+ ϑ 
+ 
+as the preference of ϑ 
+over ϑ 
+is at least as strong as the 
+preference of θ 
+over θ 
+ we use the symbol ∼ 
+to represent equality of 
+preference differences 
+definition u d → is a measurable value function 
+ mvf wrt 
+if for any θ 
+ θ 
+ ϑ 
+ ϑ 
+∈ d 
+ θ 
+ θ 
+ 
+ ϑ 
+ ϑ 
+ ⇔ 
+u θ 
+ − u θ 
+ ≤ u ϑ 
+ − u ϑ 
+ 
+note that an mvf can also be used as a value function representing 
+ since θ θ 
+ θ θ iff θ θ 
+definition attribute set x ⊂ a is called 
+difference independent of ¯x if for any two assignments x ¯x x ¯x 
+ x ¯x x ¯x ∼ 
+ x ¯x x ¯x 
+for any assignment ¯x 
+or in words the preference differences on assignments to x given 
+a fixed level of ¯x do not depend on the particular level chosen for 
+¯x 
+as with additive independence for eu this condition is stronger 
+than preferential independence of x also analogously to eu 
+mutual preferential independence combined with other conditions 
+leads to additive decomposition of the mvf moreover dyer and 
+sarin have defined analogs of utility independence for 
+mvf and worked out a parallel set of decomposition results 
+ advanced mvf structures 
+ conditional difference independence 
+our first step is to generalize definition to a conditional 
+version 
+definition let x y z be a partition of the set of attributes 
+a x is conditionally difference independent of y given z 
+denoted as cdi x y z if 
+∀ instantiations ˆz x 
+ x 
+ y 
+ y 
+ x 
+y ˆz x 
+y ˆz ∼ x 
+y ˆz x 
+y ˆz 
+since the conditional set is always the complement we sometimes 
+leave it implicit using the abbreviated notation cdi x y 
+cdi leads to a decomposition similar to that obtained from cai 
+ 
+lemma let u a be an mvf representing preference 
+differences then cdi x y z iff 
+u a u x 
+ y z u x y 
+ z − u x 
+ y 
+ z 
+to complete the analogy with cai we generalize lemma as 
+follows 
+proposition cdi x y z iff there exist functions 
+ψ x z and ψ y z such that 
+u x y z ψ x z ψ y z 
+an immediate result of proposition is that cdi is a symmetric 
+relation 
+the conditional independence condition is much more 
+applicable than the unconditional one for example if attributes a ∈ x 
+and b ∈ x are complements or substitutes x cannot be difference 
+independent of ¯x however x \ a may still be cdi of ¯x given 
+a 
+ gai structure for mvf 
+a single cdi condition decomposes the value function into two 
+parts we seek a finer-grain global decomposition of the utility 
+function similar to that obtained from mutual preferential 
+independence for this purpose we are now ready to employ the results 
+of bacchus and grove who establish that the cai condition 
+has a perfect map that is there exists a graph whose nodes 
+correspond to the set a and its node separation reflects exactly the 
+complete set of cai conditions on a moreover they show that the 
+utility function decomposes over the set of maximal cliques of the 
+perfect map their proofs can be easily adapted to cdi since they 
+only rely on the decomposition property of cai that is also implied 
+by cdi according to proposition 
+theorem let g a e be a perfect map for the cdi 
+conditions on a then 
+u a 
+g 
+x 
+r 
+fr ir 
+where i ig are overlapping subsets of a each 
+corresponding to a maximal clique of g 
+given theorem we can now identify an mvf gai structure 
+from a collection of cdi conditions the cdi conditions in turn 
+are particularly intuitive to detect when the preference differences 
+carry a direct interpretation as in the case with monetary 
+differences discussed below moreover the assumption or detection of 
+cdi conditions can be performed incrementally until the mvf is 
+decomposed to a reasonable dimension this is in contrast with the 
+fully additive decomposition of mvf that requires mutual 
+preferential independence 
+theorem defines a decomposition structure but to represent 
+the actual mvf we need to specify the functions over the cliques 
+ 
+the next theorem establishes that the functional constituents of 
+mvf are the same as those for gai decompositions as defined by 
+fishburn for eu we adopt the following conventional 
+notation let a 
+ a 
+m be a predefined vector called the reference 
+outcome for any i ⊆ a the function u i stands for the 
+projection of u a to i where the rest of the attributes are fixed at their 
+reference levels 
+theorem let g a e be a perfect map for the cdi 
+condition on a and i ig a set of maximal cliques as 
+defined in theorem then the functional decomposition from that 
+theorem can be defined as 
+f u i and for r g 
+fr u ir 
+r− x 
+k 
+ − k 
+x 
+ ≤i ··· ik r 
+u 
+k\ 
+s 
+iis ∩ ir 
+the proof directly shows that if graph g a e is a perfect 
+map of cdi u a decomposes to a sum over the functions defined 
+in 
+thus this proof does not rely on the decomposition result 
+of theorem only on the existence of the perfect map 
+to summarize the results of this section generalize additive mvf 
+theory in particular it justifies the application of methods recently 
+developed under the eu framework to representation 
+of value under certainty 
+ willingness-to-pay as an mvf 
+ construction 
+in this section we apply measurable value to represent 
+differences of willingness to pay for outcomes we assume that the agent 
+has a preference order over outcome space represented by a set of 
+attributes a and an attribute p representing monetary consequence 
+note that in evaluating a purchase decision p would correspond to 
+the agent s money holdings net of the transaction i e wealth 
+after purchase not the purchase price an outcome in this space is 
+represented for example by θ p where θ is an instantiation of 
+a and p is a value of p we further assume that preferences are 
+quasi-linear in p that is there exists a value function of the form 
+v a p u a l p where l is a positive linear function 
+the quasi-linear form immediately qualifies money as a 
+measure of preference differences and establishes a monetary scale for 
+u a 
+definition let v a p u a l p represent where 
+p is the attribute representing money we call u a a 
+willingnessto-pay wtp function 
+note that wtp may also refer to the seller s willingness to accept 
+function the wtp u a is a cardinal function unique up to a 
+positive linear transformation since 
+ θ p θ p ⇔ u θ − u θ ≤ l p − p 
+ where θ θ ∈ θ the domain of a the wtp function can be used 
+to choose among priced outcomes 
+ 
+this proof and most other proofs in this paper are omitted for 
+space consideration and are available in an online appendix 
+ 
+in many procurement applications the deals in question are small 
+relative to the enterprises involved so the quasi-linearity 
+assumption is warranted this assumption can be relaxed to a condition 
+called corresponding tradeoffs which does not require the 
+value over money to be linear to simplify the presentation 
+however we maintain the stronger assumption 
+naturally elicitation of wtp function is most intuitive when 
+using direct monetary values in other words we elicit a function in 
+which l p p so v a p u a p we define a reference 
+outcome θ 
+ p 
+ and assuming continuity of p for any assignment 
+ˆθ there exists a ˆp such that ˆθ ˆp ∼ θ 
+ p 
+ as v is normalized 
+such that v θ 
+ p 
+ ˆp is interpreted as the wtp for ˆθ or the 
+reserve price of ˆθ 
+proposition the wtp function is an mvf over differences 
+in the reserve prices 
+we note that the wtp function is used extensively in economics 
+and that all the development in section could be performed 
+directly in terms of wtp relying on quasi-linearity for preference 
+measurement and without formalization using mvfs this 
+formalization however aligns this work with the fundamental 
+difference independence theory by dyer and sarin 
+in addition to facilitating the detection of gai structure the cdi 
+condition supports elicitation using local queries similar to how 
+cai is used by braziunas and boutilier we adopt their 
+definition of conditional set of ir noted here sr as the set of neighbors 
+of attributes in ir not including the attributes of ir clearly sr is 
+the separating set of ir in the cdi map hence cdi ir vr where 
+vr a \ ir ∪ sr from the definition of cdi for any v 
+r v 
+r 
+we have 
+u i 
+r s 
+r v 
+r − u i 
+r s 
+r v 
+r u i 
+r s 
+r v 
+r − u i 
+r s 
+r v 
+r 
+eliciting the wtp function therefore amounts to eliciting the 
+utility wtp of one full outcome the reference outcome θ 
+ and then 
+obtaining the function over each maximal clique using monetary 
+differences between its possible assignments technique known as 
+pricing out keeping the variables in the conditional set fixed 
+these ceteris paribus elicitation queries are local in the sense that 
+the agent does not need to consider the values of the rest of the 
+attributes furthermore in eliciting mvfs we can avoid the global 
+scaling step that is required for eu functions since the preference 
+differences are extracted with respect to specific amounts of the 
+attribute p the utility is already scaled according to that external 
+measure hence once the conditional utility functions u ij are 
+obtained we can calculate u a according to 
+this last step may require in the worst case computation of a 
+number of terms that is exponential in the number of max cliques 
+in practice however we do not expect the intersection of the cliques 
+to go that deep intersection of more than just a few max cliques 
+would normally be empty to take advantage of that we can use the 
+search algorithm suggested by braziunas and boutilier which 
+efficiently finds all the nonempty intersections for each clique 
+ optimization 
+as shown the wtp function can be used directly for pairwise 
+comparisons of priced outcomes another preference query often 
+treated in the literature is optimization or choice of best outcome 
+possibly under constraints 
+typical decisions about exchange of a good or service exhibit 
+what we call first-order preferential independence fopi under 
+which most or all single attributes have a natural ordering of quality 
+independent of the values of the rest 
+for example when 
+choosing a pc we always prefer more memory faster cpu longer 
+warranty and so on under fopi the unconstrained optimization of 
+ 
+this should not be mistaken with the highly demanding 
+condition of mutual preferential independence that requires all tradeoffs 
+between attributes to be independent 
+ 
+unpriced outcomes is trivial hence we consider choice among 
+attribute points with prices since any outcome can be best given 
+enough monetary compensation this problem is not well-defined 
+unless the combinations are constrained somehow 
+a particularly interesting optimization problem arises in the 
+context of negotiation where we consider the utility of both buyers and 
+sellers the multiattribute matching problem mmp is 
+concerned with finding an attribute point that maximizes the surplus of 
+a trade or the difference between the utilities of the buyer and the 
+seller ub a − us a gai as an additive decomposition has the 
+property that if ub and us are in gai form then ub a −us a is in 
+gai form as well we can therefore use combinatorial optimization 
+procedures for gai decomposition based on the well studied 
+variable elimination schemes e g to find the best trading point 
+similarly this optimization can be done to maximize surplus 
+between a trader s utility function and a pricing system that assigns a 
+price to each level of each gai element and this way guide traders 
+to their optimal bidding points in the rest of the paper we develop 
+a multiattribute procurement auction that builds on this idea 
+ gai in multiattribute auctions 
+ the multiattribute procurement problem 
+in the procurement setting a single buyer wishes to procure a 
+single good in some configuration θ ∈ θ from one of the 
+candidate sellers s sn the buyer has some private valuation 
+function wtp ub θ → r and similarly each seller si has a 
+private valuation function willingness-to-accept for compliance 
+with the procurement literature we refer to seller si s valuation as a 
+cost function denoted by ci the multiattribute allocation problem 
+ map is the welfare optimization problem in procurement 
+over a discrete domain and it is defined as 
+i 
+ θ 
+ arg max 
+i θ 
+ ub θ − ci θ 
+to illustrate the need for a gai price space we consider the case 
+of traders with non-additive preferences bidding in an additive price 
+space such as in pk s auction ad if the buyer s preferences are 
+not additive choosing preferred levels per attribute as in auction 
+ad admits undesired combinations and fails to guide the sellers to 
+the efficient configurations non-additive sellers face an exposure 
+problem somewhat analogous to traders with complementary 
+preferences that participate in simultaneous auctions a value a 
+for 
+attribute a may be optimal given that the value of another attribute 
+b is b 
+ and arbitrarily suboptimal given other values of b 
+therefore bidding a 
+and b 
+may result in a poor allocation if the seller 
+is outbid on b 
+but left holding a 
+ 
+instead of assuming full additivity the auction designer can come 
+up with a gai preference structure that captures the set of common 
+interdependencies between attributes if traders could bid on 
+clusters of interdependent attributes it would solve the problems 
+discussed above for example if a and b are interdependent meaning 
+cdi a b does not hold we should be able to bid on the cluster 
+ab if b in turn depends on c we need another cluster bc this 
+is still better than a general pricing structure that solicits bids for 
+the cluster abc we stress that each trader may have a different set 
+of interdependencies and therefore to be completely general the 
+ 
+if only the sellers are non-additive the auction design could 
+potentially alleviate this problem by collecting a new set of bids each 
+round and forgetting bids from previous rounds and also guiding 
+non-additive sellers to bid on only one level per attribute in order 
+to avoid undesired combinations 
+ya 
+yb 
+ 
+ 
+ yc 
+z 
+z 
+z 
+ i 
+ 
+ 
+¨ 
+©a b 
+ 
+ 
+¨ 
+©b c 
+ ii 
+figure i cdi map for a b c reflecting the single 
+condition cdi a c ii the corresponding gai network 
+gai structure needs to account for all 
+however in practice many 
+domains have natural dependencies that are mutual to traders 
+ gai trees 
+assume that preferences of all traders are reflected in a gai 
+structure i ig we call each ir a gai element and any 
+assignment to ir a sub-configuration we use θr to denote the 
+subconfiguration formed by projecting configuration θ to element ir 
+definition let α be an assignment to ir and β an 
+assignment to ir the sub-configurations α and β are consistent if for 
+any attribute aj ∈ ir ∩ ir α and β agree on the value of aj a 
+collection ν of sub-configurations is consistent if all pairs α β ∈ ν 
+are consistent the collection is called a cover if it contains 
+exactly one sub-configuration αr corresponding to each element ir 
+r ∈ g 
+note that a consistent cover α αg represents a full 
+configuration which we denote by α αg 
+a gai network is a graph g whose nodes correspond to the gai 
+elements i ig with an edge between ir ir iff ir ∩ ir ∅ 
+equivalently a gai network is the clique graph of a cdi-map 
+in order to justify the compact pricing structure we require that 
+for any set of optimal configurations wrt a given utility function 
+with a corresponding collection of sub-configurations γ all 
+consistent covers in γ must be optimal configurations as well to ensure 
+this see lemmas and we assume a gai decomposition in 
+the form of a tree or a forest the gai tree a tree structure can 
+be achieved for any set of cdi conditions by triangulation of the 
+cdi-map prior to construction of the clique graph gai networks 
+and gai trees are defined by gonzales and perny who also 
+provide a triangulation algorithm under gai the buyer s value 
+function ub and sellers cost functions ci can be decomposed as in 
+ we use fb r and fi r to denote the local functions of buyer and 
+sellers respectively according to 
+for example consider the procurement of a good with three 
+attributes a b c each attribute s domain has two values e g 
+ a 
+ a 
+ is the domain of a let the gai structure be i 
+ a b i b c figure shows the simple cdi map and 
+the corresponding gai network which is a gai tree here 
+subconfigurations are assignments of the form a 
+b 
+ a 
+b 
+ b 
+c 
+ and 
+so on the set of sub-configurations a 
+b 
+ b 
+c 
+ is a consistent 
+cover corresponding to the configuration a 
+b 
+c 
+ in contrast the 
+set a 
+b 
+ b 
+c 
+ is inconsistent 
+ the gai auction 
+we define an iterative multiattribute auction that maintains a gai 
+pricing structure that is a price pt 
+ · corresponding to each 
+subconfiguration of each gai-tree element the price of a 
+configuration θ at time t is defined as 
+pt 
+ θ 
+g 
+x 
+r 
+pt 
+ θr − δ 
+ 
+we relax this requirement in section 
+ 
+bidders submit sub-bids on sub-configurations and on an 
+additional global discount term δ 
+sub-bids are always submitted for 
+current prices and need to be resubmitted at each round therefore 
+they do not need to explicitly carry the price the set of full bids 
+of a seller contains all consistent covers that can be generated from 
+that seller s current set of sub-bids the existence of a full bid over 
+a configuration θ represents the seller s willingness to accept the 
+price pt 
+ θ for supplying θ 
+at the start of the auction the buyer reports to the auction not 
+to sellers her complete valuation in gai form the initial prices 
+of sub-configurations are set at some level above the buyer s 
+valuations that is p 
+ θr fb r θr for all θr the discount δ is 
+initialized to zero the auction has the dynamics of a descending 
+clock auction at each round t bids are collected for current prices 
+and then prices are reduced according to price rules a seller is 
+considered active in a round if she submits at least one full bid in 
+round t only sellers who where active in round t − are 
+allowed to participate and the auction terminates when no more than 
+a single seller is active we denote the set of sub-bids submitted by 
+si by bt 
+i and the corresponding set of full bids is 
+bt 
+i θ θ θg ∈ θ ∀r θr ∈ bt 
+i 
+in our example a seller could submit sub-bids on a set of 
+subconfigurations such as a 
+b 
+and b 
+c 
+ and that combines to a full 
+bid on a 
+b 
+c 
+ 
+the auction proceeds in two phases in the first phase a at 
+each round t the auction computes a set of preferred 
+sub-configurations mt 
+ section shows how to define mt 
+to ensure 
+convergence and section shows how to efficiently compute it 
+in phase a the auction adjusts prices after each round reducing 
+the price of every sub-configuration that has received a bid but is 
+not in the preferred set let be the prespecified price increment 
+parameter specifically the phase a price change rule is applied to 
+all θr ∈ 
+sn 
+i bt 
+i \ mt 
+ 
+pt 
+ θr ← max pt 
+ θr − 
+g 
+ fb r θr a 
+the rhs maximum ensures that prices do not get reduced below 
+the buyer s valuation in phase a 
+let mt 
+denote the set of configurations that are consistent covers 
+in mt 
+ 
+mt 
+ θ θ θg ∈ θ ∀r θr ∈ mt 
+ 
+the auction switches to phase b when all active sellers have at 
+least one full bid in the buyer s preferred set 
+∀i bt 
+i ∅ ∨ bt 
+i ∩ mt 
+ ∅ switch 
+let t be the round at which switch becomes true at this 
+point the auction selects the buyer-optimal full bid ηi for each 
+seller si 
+ηi arg max 
+θ∈bt 
+i 
+ ub θ − pt 
+ θ 
+in phase b si may bid only on ηi the prices of sub-configurations 
+are fixed at pt 
+ · during this phase the only adjustment in phase b 
+is to δ which is increased in every round by the auction 
+terminates when at most one seller if exactly one designate it sˆi is 
+active there are four distinct cases 
+ all sellers drop out in phase a i e before rule switch 
+holds the auction returns with no allocation 
+ 
+the discount term could be replaced with a uniform price 
+reduction across all sub-configurations 
+ all active sellers drop out in the same round in phase b the 
+auction selects the best seller sˆi from the preceding round 
+and applies the applicable case below 
+ the auction terminates in phase b with a final price above 
+buyer s valuation pt 
+ ηˆi − δ ub ηˆi the auction offers 
+the winner sˆi an opportunity to supply ηˆi at price ub ηˆi 
+ the auction terminates in phase b with a final price pt 
+ ηˆi − 
+δ ≤ ub ηˆi this is the ideal situation where the auction 
+allocates the chosen configuration and seller at this resulting 
+price 
+the overall auction is described by high-level pseudocode in 
+algorithm as explained in section the role of phase a is 
+to guide the traders to their efficient configurations phase b is a 
+one-dimensional competition over the surplus that remaining seller 
+candidates can provide to the buyer in section we discuss the 
+computational tasks associated with the auction and section 
+provides a detailed example 
+algorithm gai-based multiattribute auction 
+collect a reported valuation ˆv from the buyer 
+set high initial prices p 
+ θr on each level θr and set δ 
+while not switch do 
+collect sub-bids from sellers 
+compute mt 
+apply price change by a 
+end while 
+compute ηi 
+while more than one active seller do 
+increase δ by 
+collect bids on ηi δ from sellers 
+end while 
+implement allocation and payment to winning seller 
+ economic analysis 
+when the optimal solution to map provides negative 
+welfare and sellers do not bid below their cost the auction 
+terminates in phase a no trade occurs and the auction is trivially 
+efficient we therefore assume throughout the analysis that the optimal 
+ seller configuration pair provides non-negative welfare 
+the buyer profit from a configuration θ is defined as 
+πb θ ub θ − p θ 
+and similarly πi θ p θ − ci θ is the profit of si in 
+addition for μ ⊆ g we denote the corresponding set of 
+subconfigurations by θμ and define the profit from a configuration θ 
+over the subset μ as 
+πb θμ 
+x 
+r∈μ 
+ fb r θr − p θr 
+πi θμ is defined similarly for si crucially for any μ and its 
+complement ¯μ and for any trader τ 
+πτ θ πτ θμ πτ θ¯μ 
+the function σi θ → r represents the welfare or surplus 
+function ub · − ci · for any price system p 
+σi θ πb θ πi θ 
+ 
+we drop the t superscript in generic statements involving price 
+and profit functions understanding that all usage is with respect to 
+the currently applicable prices 
+ 
+since we do not assume anything about the buyer s strategy the 
+analysis refers to profit and surplus with respect to the face value 
+of the buyer s report the functions πi and σi refer to the true cost 
+functions of si 
+definition a seller is called straightforward bidder sb 
+if at each round t she bids on bt 
+i as follows if maxθ∈θ πt 
+i θ 
+then bt 
+i ∅ otherwise let 
+ωt 
+i ⊆ arg max 
+θ∈θ 
+πt 
+i θ 
+bt 
+i θr θ ∈ ωt 
+i r ∈ g 
+intuitively an sb seller follows a myopic best response strategy 
+ mbr meaning they bid myopically rather than strategically by 
+optimizing their profit with respect to current prices to 
+calculate bt 
+i sellers need to optimize their current profit function as 
+discussed in section 
+the following lemma bridges the apparent gap between the 
+compact pricing and bid structure and the global optimization performed 
+by the traders 
+lemma let ψ be a set of configurations all maximizing 
+profit for a trader τ seller or buyer at the relevant prices let 
+φ θr θ ∈ ψ r ∈ g then any consistent cover in φ 
+is also a profit-maximizing configuration for τ 
+proof sketch full proof in the online appendix a source of an 
+element θr is a configuration ˜θ ∈ ψ from which it originated 
+ meaning ˜θr θr starting from the supposedly suboptimal cover θ 
+ 
+we build a series of covers θ 
+ θl 
+ at each θj 
+we flip the value 
+of a set of sub-configurations μj corresponding to a subtree with 
+the sub-configurations of the configuration ˆθj 
+∈ ψ which is the 
+source of the parent γj of μj that ensures that all elements in 
+μj ∪ γj have a mutual source ˆθj 
+ we show that all θj 
+are 
+consistent and that they must all be suboptimal as well and since all 
+elements of θl 
+have a mutual source meaning θl 
+ ˆθl 
+∈ ψ it 
+contradicts optimality of ψ 
+corollary for sb seller si 
+∀t ∀θ ∈ bt 
+i πt 
+i θ max 
+θ∈θ 
+πt 
+i θ 
+next we consider combinations of configurations that are only 
+within some δ of optimality 
+lemma let ψ be a set of configurations all are within δ 
+of maximizing profit for a trader τ at the prices and φ defined 
+as in lemma then any consistent cover in φ is within δg of 
+maximizing utility for τ 
+this bound is tight that is for any gai tree and a non-trivial 
+domain we can construct a set ψ as above in which there exists a 
+consistent cover whose utility is exactly δg below the maximal 
+next we formally define mt 
+ for connected gai trees mt 
+is 
+the set of sub-configurations that are part of a configuration within 
+of optimal when the gai tree is in fact a forest we apportion 
+the error proportionally across the disconnected trees let g be 
+comprised of trees g gh we use θj to denote the projection 
+of a configuration θ on the tree gj and gj denotes the number of 
+gai elements in gj 
+mt 
+j θr πt 
+b θj ≥ max 
+θj ∈θj 
+πt 
+b θj − gj 
+g 
+ r ∈ gj 
+then define mt 
+ 
+sh 
+j mt 
+j 
+let ej gj − denote the number of edges in gj we define the 
+connectivity parameter e maxj h ej as shown below this 
+connectivity parameter is an important factor in the performance of 
+the auction 
+corollary 
+∀θ ∈ mt 
+ πt 
+b θ ≥ max 
+θ∈θ 
+πt 
+b θ − e 
+in the fully additive case this loss of efficiency reduces to on the 
+other extreme if the gai network is connected then e g we 
+also note that without assuming any preference structure meaning 
+that the cdi map is fully connected g and the efficiency loss 
+is again 
+lemmas through show that through the price system the 
+choice of buyer preferred configurations and price change rules 
+phase a leads the buyer and each of the sellers to their mutually 
+efficient configuration 
+lemma maxθ∈θ πt 
+b θ does not change in any round t of 
+phase a 
+proof we prove the lemma per each tree gj the optimal 
+values for disconnected components are independent of each other 
+hence if the maximal profit for each component does not change 
+the combined maximal profit does not change as well if the price 
+of θj was reduced during phase a that is pt 
+ θj pt 
+ θj − δ 
+it must be the case that some w ≤ gj sub-configurations of θj are 
+not in mt 
+j and δ w 
+g 
+ the definition of mt 
+j ensures 
+πt 
+b θj max 
+θ∈θ 
+πt 
+b θj − gj 
+g 
+ 
+therefore 
+πt 
+b θ πt 
+ θ δ πt 
+ θ 
+w 
+g 
+≤ max 
+θ∈θ 
+πt 
+b θj 
+this is true for any configuration whose profit improves 
+therefore the maximal buyer profit does not change during phase a 
+lemma the price of at least one sub-configuration must 
+be reduced at every round in phase a 
+proof in each round t t of phase a there exists an active 
+seller i for whom bt 
+i ∩ mt 
+ ∅ however to be active in round t 
+bt 
+i ∅ let ˆθ ∈ bt 
+i if ∀r ˆθr ∈ mt 
+ then ˆθ ∈ mt 
+by definition 
+of mt 
+ therefore there must be ˆθr ∈ mt 
+ we need to prove that 
+for at least one of these sub-configurations πt 
+b ˆθr to ensure 
+activation of rule a 
+assume for contradiction that for any ˆθr ∈ ¯mt 
+ πt 
+b ˆθr ≥ 
+for simplicity we assume that for any θr π 
+b θr is some product 
+of g 
+ that can be easily done and that ensures that πt 
+b ˆθr 
+because once profit hits it cannot increase by rule a 
+if ˆθr ∈ ¯mt 
+ ∀r g then πt 
+b ˆθ this contradicts 
+lemma since we set high initial prices therefore some of the 
+sub-configurations of ˆθ are in mt 
+ and wlog we assume it is 
+ˆθ ˆθk to be in mt 
+these k sub-configurations must have been 
+in some preferred full configuration meaning there exists θ ∈ mt 
+such that 
+θ ˆθ ˆθk θk θg 
+since ˆθ ∈ mt 
+it must be that case that πt 
+b ˆθ πt 
+b θ therefore 
+πt 
+b θk θg πt 
+b ˆθk ˆθg 
+hence for at least one r ∈ k g πt 
+b θr 
+contradicting rule a 
+ 
+lemma when the solution to map provides positive 
+surplus and at least the best seller is sb the auction must reach 
+phase b 
+proof by lemma prices must go down in every round 
+of phase a rule a sets a lower bound on all prices therefore 
+the auction either terminates in phase a or must reach condition 
+ switch 
+we set the initial prices are high such that maxθ∈θ π 
+b θ 
+and by lemma maxθ∈θ πt 
+b θ during phase a we 
+assume that the efficient allocation θ 
+ i 
+ provides positive welfare 
+that is σi θ 
+ πt 
+b θ 
+ πt 
+i θ 
+ si is sb therefore 
+she will leave the auction only when πt 
+i θ 
+ this can 
+happen only when πt 
+b θ 
+ therefore si does not drop in 
+phase a hence the auction cannot terminate before reaching 
+condition switch 
+lemma for sb seller si ηi is e -efficient 
+proof ηi is chosen to maximize the buyer s surplus out of bt 
+i 
+at the end of phase a since bt 
+i ∩ mt 
+ ∅ clearly ηi ∈ mt 
+ from 
+corollary and corollary for any ˜θ 
+πt 
+b ηi ≥ πt 
+b ˜θ − e 
+πt 
+i ηi ≥ πt 
+i ˜θ 
+⇒ σi ηi ≥ σi ˜θ − e 
+this establishes the approximate bilateral efficiency of the results 
+of phase a at this point under the assumption of sb based on 
+phase b s simple role as a single-dimensional bidding competition 
+over the discount we next assert that the overall result is efficient 
+under sb which in turn proves to be an approximately ex-post 
+equilibrium strategy in the two phases 
+lemma if sellers si and sj are sb and si is active at least 
+as long as sj is active in phase b then 
+σi ηi ≥ max 
+θ∈θ 
+σj θ − e 
+ 
+theorem given a truthful buyer and sb sellers the 
+auction is e -efficient the surplus of the final allocation is within 
+ e of the maximal surplus 
+following pk we rely on an equivalence to the one-sided vcg 
+auction to establish incentive properties for the sellers in the 
+onesided multiattribute vcg auction buyer and sellers report 
+valuation and cost functions ˆub ˆci and the buyer pays the sell-side vcg 
+payment to the winning seller 
+definition let θ 
+ i 
+ be the optimal solution to map 
+let ˜θ ˜i be the best solution to map when i 
+does not participate 
+the sell-side vcg payment is 
+v cg ˆub ˆci ˆub θ 
+ − ˆub ˜θ − ˆc˜i ˜θ 
+it is well-known that truthful bidding is a dominant strategy for 
+sellers in the one-sided vcg auction it is also shown by pk that 
+the maximal regret for buyers from bidding truthfully in this 
+mechanism is ub θ 
+ − ci θ 
+ − ub ˜θ − ˆc˜i ˜θ that is the marginal 
+product of the efficient seller 
+usually in iterative auctions the vcg outcome is only nearly 
+achieved but the deviation is bounded by the minimal price change 
+we show a similar result and therefore define δ-vcg payments 
+definition sell-side δ-vcg payment for map is a 
+payment p such that 
+v cg ˆub ˆci − δ ≤ p ≤ v cg ˆub ˆci δ 
+when payment is guaranteed to be δ-vcg sellers can only affect 
+their payment within that range therefore their gain by falsely 
+reporting their cost is bounded by δ 
+lemma when sellers are sb the payment in the end of 
+gai auction is sell-side e -vcg 
+theorem sb is an e ex-post nash equilibrium 
+for sellers in gai auction that is sellers cannot gain more than 
+ e by deviating 
+in practice however sellers are unlikely to have the information 
+that would let them exploit that potential gain they are much more 
+likely to lose from bidding on their less attractive configurations 
+ computation and complexity 
+the size of the price space maintained in the auction is equal to 
+the total number of sub-configurations meaning it is exponential in 
+maxr ir this is also equivalent to the tree-width plus one of the 
+original cdi-map for the purpose of the computational analysis 
+let dj denote the domain of attribute aj and i 
+sg 
+r 
+q 
+j∈ir 
+dj 
+the collection of all sub-configurations the first purpose of this 
+sub-section is to show that the complexity of all the computations 
+required for the auction depends only on i i e no computation 
+depends on the size of the full exponential domain 
+we are first concerned with the computation of mt 
+ since mt 
+grows monotonically with t a naive application of optimization 
+algorithm to generate the best outcomes sequentially might end up 
+enumerating significant portions of the fully exponential domain 
+however as shown below this plain enumeration can be avoided 
+proposition the computation of mt 
+can be done in time 
+o i 
+ moreover the total time spent on this task throughout the 
+auction is o i i t 
+the bounds are in practice significantly lower based on results on 
+similar problems from the probabilistic reasoning literature 
+one of the benefits of the compact pricing structure is the 
+compact representation it lends for bids sellers submit only sub-bids 
+and therefore the number of them submitted and stored per seller 
+is bounded by i since the computation tasks bt 
+i ∅ rule 
+ switch and choice of ηi are all involving the set bt 
+i it is 
+important to note that their performance only depend on the size of 
+the set bt 
+i since they are all subsumed by the combinatorial 
+optimization task over bt 
+i or bt 
+i ∩ mt 
+ 
+next we analyze the number of rounds it takes for the auction 
+to terminate phase b requires maxi n πt 
+i ηi 
+ since this is 
+equivalent to price-only auctions the concern is only with the time 
+complexity of phase a since prices cannot go below fb r θr an 
+upper bound on the number of rounds required is 
+t ≤ 
+x 
+θr∈i 
+ p 
+ θr − fb r θr 
+g 
+however phase a may converge faster let the initial negative 
+profit chosen by the auctioneer be m maxθ∈θ π 
+b θ in the 
+worst case phase a needs to run until ∀θ ∈ θ πb θ m this 
+happens for example when ∀θr ∈ i pt 
+ θr fb r θr m 
+g 
+ in 
+general the closer the initial prices reflect buyer valuation the 
+faster phase a converges one extreme is to choose p 
+ θr 
+ 
+i i 
+a 
+b 
+a 
+b 
+a 
+b 
+a 
+b 
+b 
+c 
+b 
+c 
+b 
+c 
+b 
+c 
+fb 
+f 
+f 
+table gai utility functions for the example domain fb 
+represents the buyer s valuation and f and f costs of the sellers 
+s and s 
+fb r θr m 
+g 
+ that would make phase a redundant at the cost of 
+full initial revelation of buyer s valuation as done in other 
+mechanisms discussed below between this option and the other extreme 
+which is ∀α ˆα ∈ i p 
+ α p 
+ ˆα the auctioneer has a range of 
+choices to determine the right tradeoff between convergence time 
+and information revelation in the example below the choice of a 
+lower initial price for the domain of i provides some speedup by 
+revealing a harmless amount of information 
+another potential concern is the communication cost associated 
+with the japanese auction style the sellers need to send their bids 
+over and over again at each round a simple change can be made 
+to avoid much of the redundant communication the auction can 
+retain sub-bids from previous rounds on sub-configurations whose 
+price did not change since combinations of sub-bids from different 
+rounds can yield sub-optimal configurations each sub-bid should 
+be tagged with the number of the latest round in which it was 
+submitted and only consistent combinations from the same round are 
+considered to be full bids with this implementation sellers need 
+not resubmit their bid until a price of at least one sub-configuration 
+has changed 
+ example 
+we use the example settings introduced in section recall 
+that the gai structure is i a b i b c note that e 
+table shows the gai utilities for the buyer and the two sellers 
+s s the efficient allocation is s a 
+b 
+c 
+ with a surplus of 
+the maximal surplus of the second best seller s is achieved 
+by a 
+b 
+c 
+ a 
+b 
+c 
+ and a 
+b 
+c 
+ we set all initial prices over i 
+to and all initial prices over i to we set meaning 
+that price reduction for sub-configurations is though with these 
+numbers it is not guaranteed by theorem we expect s to win on 
+either the efficient allocation or on a 
+b 
+c 
+which provides a surplus 
+of the reason is that these are the only two configurations 
+which are within e of being efficient for s therefore 
+one of them must be chosen by phase a and both provide more 
+than surplus over s s most efficient configuration and this is 
+sufficient in order to win in phase b 
+table shows the progress of phase a initially all configuration 
+have the same cost so sellers bid on their lowest cost 
+configuration which is a 
+b 
+c 
+for both with profit to s and to s 
+and that translates to sub-bids on a 
+b 
+and b 
+c 
+ m 
+contains the 
+sub-configurations a 
+b 
+and b 
+c 
+of the highest value configuration 
+a 
+b 
+c 
+ price is therefore decreased on a 
+b 
+and b 
+c 
+ after the 
+price change s has higher profit on a 
+b 
+c 
+and she therefore 
+bids on a 
+b 
+and b 
+c 
+ now round their prices go down 
+reducing the profit on a 
+b 
+c 
+to and therefore in round s prefers 
+a 
+b 
+c 
+ profit after the next price change the configurations 
+a 
+b 
+c 
+and a 
+b 
+c 
+both become optimal profit and the 
+subbids a 
+b 
+ b 
+c 
+and b 
+c 
+capture the two these configurations stay 
+optimal for another round with profit at this point s has 
+a full bid in fact two full bids a 
+b 
+c 
+and a 
+b 
+c 
+ in m 
+ and 
+i i 
+t a b a b a b a b b c b c b c b c 
+ 
+s s s s 
+ 
+s s s s 
+ 
+s s s s 
+ 
+s s s s s 
+ 
+s s s s s 
+ 
+s s s s s 
+ 
+s s s s s 
+ 
+ s s s s s 
+ 
+ s s s s s 
+table auction progression in phase a sell bids and 
+designation of mt 
+ using are shown below the price of each 
+subconfiguration 
+therefore she no longer changes her bids since the price of her 
+optimal configurations does not decrease s sticks to a 
+b 
+c 
+during 
+the first four rounds switching to a 
+b 
+c 
+in round it takes four 
+more rounds for s and mt 
+to converge m 
+∩b 
+ a 
+b 
+c 
+ 
+after round the auction sets η a 
+b 
+c 
+ which yields more 
+buyer profit than a 
+b 
+c 
+ and η a 
+b 
+c 
+ for the next round 
+ δ increased by for each subsequent round note that 
+p 
+ a 
+b 
+c 
+ and c a 
+b 
+c 
+ therefore πt 
+ η 
+ in round δ meaning p 
+ a 
+b 
+c 
+ and that 
+causes s to drop out setting the final allocation to s a 
+b 
+c 
+ 
+and p 
+ a 
+b 
+c 
+ − that leaves the buyer with a 
+profit of and s with a profit of less than below the vcg 
+profit 
+the welfare achieved in this case is optimal to illustrate how 
+some efficiency loss could occur consider the case that c b 
+c 
+ 
+ in that case in round the configuration a 
+b 
+c 
+provides the 
+same profit as a 
+b 
+c 
+ and s bids on both while a 
+b 
+c 
+is 
+no longer optimal after the price change a 
+b 
+c 
+remains optimal 
+on subsequent rounds because b 
+c 
+∈ mt 
+ and the price change 
+of a 
+b 
+affects both a 
+b 
+c 
+and the efficient configuration a 
+b 
+c 
+ 
+when phase a ends b 
+ ∩ m 
+ a 
+b 
+c 
+ so the auction 
+terminates with the slightly suboptimal configuration and surplus 
+ discussion 
+ preferential assumptions 
+a key aspect in implementing gai based auctions is the choice 
+of the preference structure that is the elements i ig in 
+some domains the structure can be more or less robust over time 
+and over different decision makers when this is not the case 
+extracting reliable structure from sellers in the form of cdi 
+conditions is a serious challenge this could have been a deal breaker 
+for such domains but in fact it can be overcome it turns out that 
+we can run this auction without any assumptions on sellers 
+preference structure the only place where this assumption is used in our 
+analysis is for lemma if sellers whose preference structure does 
+not agree with the one used by the auction are guided to submit 
+only one full bid at each round or a set of bids that does not yield 
+undesired consistent combinations all the properties of the auction 
+ 
+still hold locally the sellers can optimize their profit functions 
+using the union of their gai structure with the auction s structure 
+it is therefore essential only that the buyer s preference structure is 
+accurately modeled of course capturing sellers structures as well 
+is still preferred since it can speed up the execution and let sellers 
+take advantage of the compact bid representation 
+in both cases the choice of clusters may significantly affect the 
+complexity of the price structure and the runtime of the auction 
+it is sometimes better to ignore some weaker interdependencies in 
+order to reduce dimensionality the complexity of the structure 
+also affects the efficiency of the auction through the value of e 
+ information revelation properties 
+in considering information properties of this mechanism we 
+compare to the standard approach for iterative multiattribute auctions 
+which is based on the theoretical foundations of che in most of 
+these mechanisms the buyer reveals a scoring function and then the 
+mechanism solicits bids from the sellers the 
+mechanisms suggested by beil and wein is different since buyers 
+can modify their scoring function each round but the goal there is 
+to maximize the buyer s profit whereas these iterative 
+procurement mechanisms tend to relieve the burden of information 
+revelation from the sellers a major drawback is that the buyer s 
+utility function must be revealed to the sellers before receiving any 
+commitment in the mechanisms suggested by pk and in our gai 
+auction above buyer information is revealed only in exchange for 
+sell commitments in particular sellers learn nothing beyond the 
+initial price upper bound which can be arbitrarily loose about the 
+utility of configurations for which no bid was submitted when 
+bids are submitted for a configuration θ sellers would be able to 
+infer its utility relative to the current preferred configurations only 
+after the price of θ is driven down sufficiently to make it a preferred 
+configuration as well 
+ conclusions 
+we propose a novel exploitation of preference structure in 
+multiattribute auctions rather than assuming full additivity or no 
+structure at all we model preferences using the gai decomposition 
+we developed an iterative auction mechanism directly relying on 
+the decomposition and also provided direct means of constructing 
+the representation from relatively simple statements of 
+willingnessto-pay our auction mechanism generalizes pk s preference 
+modeling while in essence retaining their information revelation 
+properties it allows for a range of tradeoffs between accuracy of 
+preference representation and both the complexity of the pricing structure 
+and efficiency of the auction as well as tradeoffs between buyer s 
+information revelation and the time required for convergence 
+ acknowledgments 
+this work was supported in part by nsf grants iis- 
+and iis- and the stiet program under nsf igert grant 
+ we are grateful to comments from anonymous reviewers 
+ references 
+ f bacchus and a grove graphical models for preference 
+and utility in eleventh conference on uncertainty in 
+artificial intelligence pages - montreal 
+ d r beil and l m wein an inverse-optimization-based 
+auction for multiattribute rfqs management science 
+ - 
+ m bichler the future of e-markets multi-dimensional 
+market mechanisms cambridge university press 
+ c boutilier f bacchus and r i brafman ucp-networks 
+a directed graphical representation of conditional utilities in 
+seventeenth conference on uncertainty in artificial 
+intelligence pages - seattle 
+ r i brafman c domshlak and t kogan compact 
+value-function representations for qualitative preferences in 
+twentieth conference on uncertainty in artificial 
+intelligence pages - banff 
+ d braziunas and c boutilier local utility elicitation in gai 
+models in twenty-first conference on uncertainty in 
+artificial intelligence pages - edinburgh 
+ y -k che design competition through multidimensional 
+auctions rand journal of economics - 
+ 
+ e david r azoulay-schwartz and s kraus an english 
+auction protocol for multi-attribute items in agent mediated 
+electronic commerce iv designing mechanisms and 
+systems volume of lecture notes in artificial 
+intelligence pages - springer 
+ g debreu topological methods in cardinal utility theory in 
+k arrow s karlin and p suppes editors mathematical 
+methods in the social sciences stanford univ press 
+ j s dyer and r k sarin an axiomatization of cardinal 
+additive conjoint measurement theory working paper 
+wmsi ucla february 
+ j s dyer and r k sarin measurable multiattribute value 
+functions operations research - 
+ y engel m p wellman and k m lochner bid 
+expressiveness and clearing algorithms in multiattribute 
+double auctions in seventh acm conference on electronic 
+commerce pages - ann arbor mi 
+ p c fishburn interdependence and additivity in 
+multivariate unidimensional expected utility theory intl 
+economic review - 
+ c gonzales and p perny gai networks for utility 
+elicitation in ninth intl conf on the principles of 
+knowledge representation and reasoning pages - 
+whistler bc 
+ c gonzales and p perny gai networks for decision making 
+under certainty in ijcai- workshop on advances in 
+preference handling edinburgh 
+ n hyafil and c boutilier regret-based incremental partial 
+revelation mechanisms in twenty-first national conference 
+on artificial intelligence pages - boston ma 
+ r l keeney and h raiffa decisions with multiple 
+objectives preferences and value tradeoffs wiley 
+ d nilsson an efficient algorithm for finding the m most 
+probable configurations in probabilistic expert systems 
+statistics and computinge - 
+ d c parkes and j kalagnanam models for iterative 
+multiattribute procurement auctions management science 
+ - 
+ j pearl and a paz graphoids a graph based logic for 
+reasoning about relevance relations in b du boulay editor 
+advances in artificial intelligence ii 
+ j shachat and j t swarthout procurement auctions for 
+differentiated goods ibm research report rc ibm 
+t j watson research laboratory 
+ n vulkan and n r jennings efficient mechanisms for the 
+supply of services in multi-agent environments decision 
+support systems - 
+ 

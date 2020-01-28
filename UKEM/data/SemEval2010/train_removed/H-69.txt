@@ -1,0 +1,1227 @@
+ranking web objects from multiple communities 
+le chen 
+ 
+le chen idiap ch 
+lei zhang 
+leizhang  
+microsoft com 
+feng jing 
+fengjing  
+microsoft com 
+ke-feng deng 
+kefengdeng hotmail com 
+wei-ying ma 
+wyma microsoft com 
+microsoft research asia 
+ f sigma center no zhichun road 
+haidian district beijing p r china 
+abstract 
+vertical search is a promising direction as it leverages 
+domainspecific knowledge and can provide more precise information 
+for users in this paper we study the web object-ranking 
+problem one of the key issues in building a vertical search 
+engine more specifically we focus on this problem in cases 
+when objects lack relationships between different web 
+communities and take high-quality photo search as the test bed 
+for this investigation we proposed two score fusion methods 
+that can automatically integrate as many web communities 
+ web forums with rating information as possible the 
+proposed fusion methods leverage the hidden links discovered 
+by a duplicate photo detection algorithm and aims at 
+minimizing score differences of duplicate photos in different 
+forums both intermediate results and user studies show the 
+proposed fusion methods are practical and efficient solutions 
+to web object ranking in cases we have described though 
+the experiments were conducted on high-quality photo 
+ranking the proposed algorithms are also applicable to other 
+ranking problems such as movie ranking and music 
+ranking 
+categories and subject descriptors 
+h information storage and retrieval 
+information search and retrieval g discrete 
+mathematics graph theory h information storage and 
+retrieval online information services - web-based services 
+general terms 
+algorithms experimentation 
+ introduction 
+despite numerous refinements and optimizations general 
+purpose search engines still fail to find relevant results for 
+many queries as a new trend vertical search has shown 
+promise because it can leverage domain-specific knowledge 
+and is more effective in connecting users with the 
+information they want there are many vertical search engines 
+including some for paper search e g libra citeseer 
+ and google scholar product search e g froogle 
+ movie search image search video search 
+local search as well as news search we believe the 
+vertical search engine trend will continue to grow 
+essentially building vertical search engines includes data 
+crawling information extraction object identification and 
+integration and object-level web information retrieval or 
+web object ranking among which ranking is one of the 
+most important factors this is because it deals with the 
+core problem of how to combine and rank objects coming 
+from multiple communities 
+although object-level ranking has been well studied in 
+building vertical search engines there are still some kinds 
+of vertical domains in which objects cannot be effectively 
+ranked for example algorithms that evolved from 
+pagerank poprank and linkfusion were proposed 
+to rank objects coming from multiple communities but can 
+only work on well-defined graphs of heterogeneous data 
+well-defined means that like objects e g authors in 
+paper search can be identified in multiple communities e g 
+conferences this allows heterogeneous objects to be well 
+linked to form a graph through leveraging all the 
+relationships e g cited-by authored-by and published-by among 
+the multiple communities 
+however this assumption does not always stand for some 
+domains high-quality photo search movie search and news 
+search are exceptions for example a photograph forum 
+ 
+website usually includes three kinds of objects photos 
+authors and reviewers yet different photo forums seem to 
+lack any relationships as there are no cited-by relationships 
+this makes it difficult to judge whether two authors cited 
+are the same author or two photos are indeed identical 
+photos consequently although each photo has a rating score 
+in a forum it is non-trivial to rank photos coming from 
+different photo forums similar problems also exist in movie 
+search and news search although two movie titles can be 
+identified as the same one by title and director in different 
+movie discussion groups it is non-trivial to combine 
+rating scores from different discussion groups and rank movies 
+effectively we call such non-trivial object relationship in 
+which identification is difficult incomplete relationships 
+other related work includes rank aggregation for the web 
+ and learning algorithm for rank such as rankboost 
+ ranksvm and ranknet we will contrast 
+differences of these methods with the proposed methods 
+after we have described the problem and our methods 
+we will specifically focus on web object-ranking 
+problem in cases that lack object relationships or have with 
+incomplete object relationships and take high-quality photo 
+search as the test bed for this investigation in the following 
+we will introduce rationale for building high-quality photo 
+search 
+ high-quality photo search 
+in the past ten years the internet has grown to become 
+an incredible resource allowing users to easily access a huge 
+number of images however compared to the more than 
+billion images indexed by commercial search engines actual 
+queries submitted to image search engines are relatively 
+minor and occupy only - percent of total image and text 
+queries submitted to commercial search engines this 
+is partially because user requirements for image search are 
+far less than those for general text search on the other 
+hand current commercial search engines still cannot well 
+meet various user requirements because there is no 
+effective and practical solution to understand image content 
+to better understand user needs in image search we 
+conducted a query log analysis based on a commercial search 
+engine the result shows that more than of image 
+search queries are related to nature and places and daily 
+life categories users apparently are interested in enjoying 
+high-quality photos or searching for beautiful images of 
+locations or other kinds however such user needs are not 
+well supported by current image search engines because of 
+the difficulty of the quality assessment problem 
+ideally the most critical part of a search engine - the 
+ranking function - can be simplified as consisting of two 
+key factors relevance and quality for the relevance 
+factor search in current commercial image search engines 
+provide most returned images that are quite relevant to queries 
+except for some ambiguity however as to quality factor 
+there is still no way to give an optimal rank to an image 
+though content-based image quality assessment has been 
+investigated over many years it is still far from 
+ready to provide a realistic quality measure in the immediate 
+future 
+seemingly it really looks pessimistic to build an image 
+search engine that can fulfill the potentially large 
+requirement of enjoying high-quality photos various proliferating 
+web communities however notices us that people today 
+have created and shared a lot of high-quality photos on the 
+web on virtually any topics which provide a rich source for 
+building a better image search engine 
+in general photos from various photo forums are of higher 
+quality than personal photos and are also much more 
+appealing to public users than personal photos in addition 
+photos uploaded to photo forums generally require rich 
+metadata about title camera setting category and description to 
+be provide by photographers these metadata are actually 
+the most precise descriptions for photos and undoubtedly 
+can be indexed to help search engines find relevant results 
+more important there are volunteer users in web 
+communities actively providing valuable ratings for these photos 
+the rating information is generally of great value in solving 
+the photo quality ranking problem 
+motivated by such observations we have been attempting 
+to build a vertical photo search engine by extracting rich 
+metadata and integrating information form various photo 
+web forums in this paper we specifically focus on how to 
+rank photos from multiple web forums 
+intuitively the rating scores from different photo forums 
+can be empirically normalized based on the number of 
+photos and the number of users in each forum however such 
+a straightforward approach usually requires large manual 
+effort in both tedious parameter tuning and subjective 
+results evaluation which makes it impractical when there are 
+tens or hundreds of photo forums to combine to address 
+this problem we seek to build relationships links between 
+different photo forums that is we first adopt an efficient 
+algorithm to find duplicate photos which can be considered 
+as hidden links connecting multiple forums we then 
+formulate the ranking challenge as an optimization problem 
+which eventually results in an optimal ranking function 
+ main contributions and organization 
+the main contributions of this paper are 
+ we have proposed and built a vertical image search 
+engine by leveraging rich metadata from various photo 
+forum web sites to meet user requirements of searching 
+for and enjoying high-quality photos which is 
+impossible in traditional image search engines 
+ we have proposed two kinds of web object-ranking 
+algorithms for photos with incomplete relationships 
+which can automatically and efficiently integrate as 
+many as possible web communities with rating 
+information and achieves an equal qualitative result 
+compared with the manually tuned fusion scheme 
+the rest of this paper is organized as follows in section 
+ we present in detail the proposed solutions to the 
+ranking problem including how to find hidden links between 
+different forums normalize rating scores obtain the 
+optimal ranking function and contrast our methods with some 
+other related research in section we describe the 
+experimental setting and experiments and user studies conducted 
+to evaluate our algorithm our conclusion and a discussion 
+of future work is in section 
+it is worth noting that although we treat vertical photo 
+search as the test bed in this paper the proposed ranking 
+algorithm can also be applied to rank other content that 
+includes video clips poems short stories drawings 
+sculptures music and so on 
+ 
+ algorithm 
+ overview 
+the difficulty of integrating multiple web forums is in 
+their different rating systems where there are generally two 
+kinds of freedom the first kind of freedom is the rating 
+interval or rating scale including the minimal and maximal 
+ratings for each web object for example some forums use 
+a -point rating scale whereas other forums use -point or 
+ -point rating scales it seems easy to fix this freedom but 
+detailed analysis of the data and experiments show that it 
+is a non-trivial problem 
+the second kind of freedom is the varying rating criteria 
+found in different web forums that is the same score does 
+not mean the same quality in different forums intuitively if 
+we can detect same photographers or same photographs we 
+can build relationships between any two photo forums and 
+therefore can standardize the rating criterion by score 
+normalization and transformation fortunately we find that 
+quite a number of duplicate photographs exist in various 
+web photo forums this fact is reasonable when 
+considering that photographers sometimes submit a photo to more 
+than one forum to obtain critiques or in hopes of widespread 
+publicity in this work we adopt an efficient duplicate photo 
+detection algorithm to find these photos 
+the proposed methods below are based on the following 
+considerations faced with the need to overcome a ranking 
+problem a standardized rating criterion rather than a 
+reasonable rating criterion is needed therefore we can take 
+a large scale forum as the reference forum and align other 
+forums by taking into account duplicate web objects 
+ duplicate photos in this work ideally the scores of duplicate 
+photos should be equal even though they are in different 
+forums yet we can deem that scores in different 
+forumsexcept for the reference forum - can vary in a parametric 
+space this can be determined by minimizing the objective 
+function defined by the sum of squares of the score 
+differences by formulating the ranking problem as an 
+optimization problem that attempts to make the scores of duplicate 
+photos in non-reference forums as close as possible to those 
+in the reference forum we can effectively solve the ranking 
+problem 
+for convenience the following notations are employed 
+ski and ¯ski denote the total score and mean score of ith web 
+object photo in the kth web site respectively the total 
+score refers to the sum of the various rating scores e g 
+novelty rating and aesthetic rating and the mean score refers 
+to the mean of the various rating scores suppose there are 
+a total of k web sites we further use 
+ skl 
+i i ikl k l k k l 
+to denote the set of scores for web objects photos in kth 
+web forums that are duplicate with the lth web forums 
+where ikl is the total number of duplicate web objects 
+between these two web sites in general score fusion can be 
+seen as the procedure of finding k transforms 
+ψk ski eski k k 
+such that eski can be used to rank web objects from different 
+web sites the objective function described in the above 
+figure web community integration each web 
+community forms a subgraph and all communities 
+are linked together by some hidden links dashed 
+lines 
+paragraph can then be formulated as 
+min 
+ ψk k k 
+kx 
+k 
+ik x 
+i 
+¯wk 
+i 
+ 
+s k 
+i − ψk sk 
+i 
+ 
+ 
+where we use k as the reference forum and thus ψ s i 
+s i ¯wk 
+i ≥ is the weight coefficient that can be set 
+heuristically according to the numbers of voters reviewers or 
+commenters in both the reference forum and the non-reference 
+forum the more reviewers the more popular the photo is 
+and the larger the corresponding weight ¯wk 
+i should be in 
+this work we do not inspect the problem of how to choose ¯wk 
+i 
+and simply set them to one but we believe the proper use 
+of ¯wk 
+i which leverages more information can significantly 
+improve the results 
+figure illustrates the aforementioned idea the web 
+community is the reference community the dashed lines 
+are links indicating that the two linked web objects are 
+actually the same the proposed algorithm will try to find the 
+best ψk k k which has certain parametric forms 
+according to certain models so as to minimize the cost 
+function defined in eq the summation is taken on all the 
+red dashed lines 
+we will first discuss the score normalization methods in 
+section which serves as the basis for the following work 
+before we describe the proposed ranking algorithms we first 
+introduce a manually tuned method in section which is 
+laborious and even impractical when the number of 
+communities become large in section we will briefly explain 
+how to precisely find duplicate photos between web forums 
+then we will describe the two proposed methods linear 
+fusion and non-linear fusion and a performance measure for 
+result evaluation in section finally in section we 
+will discuss the relationship of the proposed methods with 
+some other related work 
+ score normalization 
+since different web photo forums on the web usually 
+have different rating criteria it is necessary to normalize 
+them before applying different kinds of fusion methods in 
+addition as there are many kinds of ratings such as 
+ratings for novelty ratings for aesthetics etc it is reasonable 
+to choose a common one - total score or average 
+scorethat can always be extracted in any web forum or 
+calculated by corresponding ratings this allows the 
+normaliza 
+tion method on the total score or average score to be viewed 
+as an impartial rating method between different web 
+forums 
+it is straightforward to normalize average scores by 
+linearly transforming them to a fixed interval we call this 
+kind of score as scaled mean score the difficulty however 
+of using this normalization method is that if there are only 
+a few users rating an object say a photo in a photo forum 
+the average score for the object is likely to be spammed or 
+skewed 
+total score can avoid such drawbacks that contain more 
+information such as a web object s quality and popularity 
+the problem is thus how to normalize total scores in 
+different web forums the simplest way may be normalization 
+by the maximal and minimal scores the drawback of this 
+normalization method is it is non robust or in other words 
+it is sensitive to outliers 
+to make the normalization insensitive to unusual data 
+we propose the mode- percentile normalization method 
+here the mode score represents the total score that has been 
+assigned to more photos than any other total score and the 
+high percentile score e g represents the total score for 
+which the high percentile of images have a lower total score 
+this normalization method utilizes the mode and 
+percentile as two reference points to align two rating systems 
+which makes the distributions of total scores in different 
+forums more consistent the underlying assumption for 
+example in different photo forums is that even the qualities of 
+top photos in different forums may vary greatly and be less 
+dependent on the forum quality the distribution of photos 
+of middle-level quality from mode to percentile should 
+be almost of the same quality up to the freedom which 
+reflects the rating criterion strictness of web forums 
+photos of this middle-level in a web forum usually occupy more 
+than of total photos in that forum 
+we will give more detailed analysis of the scores in section 
+ 
+ manual fusion 
+the web movie forum imdb proposed to use a 
+bayesian-ranking function to normalize rating scores within 
+one community motivated by this ranking function we 
+propose this manual fusion method for the kth web site we 
+use the following formula 
+eski αk · 
+„ 
+nk · ¯ski 
+nk n 
+k 
+ 
+n 
+k · s 
+k 
+nk n 
+k 
+ 
+ 
+to rank photos where nk is the number of votes and n 
+k 
+s 
+k and αk are three parameters this ranking function first 
+takes a balance between the original mean score ¯ski and a 
+reference score s 
+k to get a weighted mean score which may 
+be more reliable than ¯ski then the weighted mean score is 
+scaled by αk to get the final score fski 
+for n web communities there are then about n 
+parameters in αk n 
+k s 
+k k n to tune though this 
+method can achieves pretty good results after careful and 
+thorough manual tuning on these parameters when n 
+becomes increasingly large say there are tens or hundreds of 
+web communities crawled and indexed this method will 
+become more and more laborious and will eventually become 
+impractical it is therefore desirable to find an effective 
+fusion method whose parameters can be automatically 
+determined 
+ duplicate photo detection 
+we use dedup an efficient and effective duplicate 
+image detection algorithm to find duplicate photos between 
+any two photo forums this algorithm uses hash function 
+to map a high dimensional feature to a bits hash code 
+ see below for how to construct the hash code its 
+computational complexity to find all the duplicate images among 
+n images is about o n log n the low-level visual feature 
+for each photo is extracted on k × k regular grids based 
+on all features extracted from the image database a pca 
+model is built the visual features are then transformed to 
+a relatively low-dimensional and zero mean pca space or 
+ dimensions in our system then the hash code for each 
+photo is built as follows each dimension is transformed to 
+one if the value in this dimension is greater than and 
+otherwise photos in the same bucket are deemed potential 
+duplicates and are further filtered by a threshold in terms 
+of euclidean similarity in the visual feature space 
+figure illustrates the hashing procedure where visual 
+features - mean gray values - are extracted on both × 
+and × grids the -dimensional features are transformed 
+to a -dimensional vector and the hash code is generated 
+according to the signs 
+figure hashing procedure for duplicate photo 
+dectection 
+ score fusion 
+in this section we will present two solutions on score 
+fusion based on different parametric form assumptions of ψk 
+in eq 
+ linear fusion by duplicate photos 
+intuitively the most straightforward way to factor out the 
+uncertainties caused by the different criterion is to scale 
+rel 
+ative to a given center the total scores of each unreferenced 
+web photo forum with respect to the reference forum more 
+strictly we assume ψk has the following form 
+ψk ski αkski tk k k 
+ψ s i s i 
+which means that the scores of k th forum should be 
+scaled by αk relative to the center tk 
+ −αk 
+as shown in figure 
+ 
+then if we substitute above ψk to eq we get the 
+following objective function 
+min 
+ αk tk k k 
+kx 
+k 
+ik x 
+i 
+¯wk 
+i 
+h 
+s k 
+i − αksk 
+i − tk 
+i 
+ 
+by solving the following set of functions 
+ 
+∂f 
+∂αk 
+ 
+∂f 
+∂tk 
+ 
+ k k 
+where f is the objective function defined in eq we get 
+the closed form solution as 
+„ 
+αk 
+tk 
+ 
+ a− 
+k lk 
+where 
+ak 
+„ p 
+i ¯wi sk 
+i p 
+i ¯wisk 
+ip 
+i ¯wisk 
+i 
+p 
+i ¯wi 
+ 
+ 
+lk 
+„ p 
+i ¯wis k 
+i sk 
+ip 
+i ¯wis k 
+i 
+ 
+ 
+and k k 
+this is a linear fusion method it enjoys simplicity and 
+excellent performance in the following experiments 
+figure linear fusion method 
+ nonlinear fusion by duplicate photos 
+sometimes we want a method which can adjust scores on 
+intervals with two endpoints unchanged as illustrated in 
+figure the method can tune scores between c c while 
+leaving scores c and c unchanged this kind of fusion 
+method is then much finer than the linear ones and 
+contains many more parameters to tune and expect to further 
+improve the results 
+here we propose a nonlinear fusion solution to satisfy 
+such constraints first we introduce a transform 
+ηc c α x 
+ 
+x−c 
+c −c 
+α 
+ c − c c if x ∈ c c 
+x otherwise 
+where α this transform satisfies that for x ∈ c c 
+ηc c α x ∈ c c with ηc c α c c and ηc c α c 
+c then we can utilize this nonlinear transform to adjust 
+the scores in certain interval say m t 
+ψk ski ηm t α ski 
+figure nonlinear fusion method we intent to 
+finely adjust the shape of the curves in each segment 
+even there is no closed-form solution for the following 
+optimization problem 
+min 
+ αk k∈ k 
+kx 
+k 
+ik x 
+i 
+¯wk 
+i 
+h 
+s k 
+i − ηm t α ski 
+i 
+it is not hard to get the numeric one under the same 
+assumptions made in section we can use this method to 
+adjust scores of the middle-level from the mode point to 
+the percentile 
+this more complicated non-linear fusion method is 
+expected to achieve better results than the linear one 
+however difficulties in evaluating the rank results block us from 
+tuning these parameters extensively the current 
+experiments in section do not reveal any advantages over the 
+simple linear model 
+ performance measure of the fusion results 
+since our objective function is to make the scores of the 
+same web objects e g duplicate photos between a 
+nonreference forum and the reference forum as close as possible 
+it is natural to investigate how close they become to each 
+other and how the scores of the same web objects change 
+between the two non-reference forums before and after score 
+fusion 
+taken figure as an example the proposed algorithms 
+minimize the score differences of the same web objects in 
+two web forums the reference forum the web community 
+ and a non-reference forum which corresponds to 
+minimizing the objective function on the red dashed hidden 
+links after the optimization we must ask what happens to 
+the score differences of the same web objects in two 
+nonreference forums or in other words whether the scores 
+of two objects linked by the green dashed hidden links 
+become more consistent 
+we therefore define the following performance 
+measureδ measure - to quantify the changes for scores of the same 
+web objects in different web forums as 
+δkl sim slk 
+ skl 
+ − sim slk 
+ skl 
+ 
+ 
+where skl 
+ skl 
+ skl 
+ikl 
+ t 
+ skl 
+ eskl 
+ eskl 
+ikl 
+ t 
+and 
+sim a b 
+a · b 
+ a b 
+ 
+δkl means after score fusion scores on the same web 
+objects between kth and lth web forum become more 
+consistent which is what we expect on the contrary if δkl 
+those scores become more inconsistent 
+although we cannot rely on this measure to evaluate our 
+final fusion results as ranking photos by their popularity and 
+qualities is such a subjective process that every person can 
+have its own results it can help us understand the 
+intermediate ranking results and provide insights into the final 
+performances of different ranking methods 
+ contrasts with other related work 
+we have already mentioned the differences of the proposed 
+methods with the traditional methods such as pagerank 
+ poprank and linkfusion algorithms in 
+section here we discuss some other related works 
+the current problem can also be viewed as a rank 
+aggregation one as we deal with the problem of how to 
+combine several rank lists however there are 
+fundamental differences between them first of all unlike the web 
+pages which can be easily and accurately detected as the 
+same pages detecting the same photos in different web 
+forums is a non-trivial work and can only be implemented by 
+some delicate algorithms while with certain precision and 
+recall second the numbers of the duplicate photos from 
+different web forums are small relative to the whole photo 
+sets see table in another words the top k rank lists 
+of different web forums are almost disjointed for a given 
+query under this condition both the algorithms proposed 
+in and their measurements - kendall tau distance or 
+spearman footrule distance - will degenerate to some 
+trivial cases 
+another category of rank fusion aggregation methods is 
+based on machine learning algorithms such as ranksvm 
+ rankboost and ranknet all of these 
+methods entail some labelled datasets to train a model in 
+current settings it is difficult or even impossible to get these 
+datasets labelled as to their level of professionalism or 
+popularity since the photos are too vague and subjective to rank 
+instead the problem here is how to combine several ordered 
+sub lists to form a total order list 
+ experiments 
+in this section we carry out our research on high-quality 
+photo search we first briefly introduce the newly proposed 
+vertical image search engine - enjoyphoto in section 
+then we focus on how to rank photos from different web 
+forums in order to do so we first normalize the scores 
+ ratings for photos from different multiple web forums in 
+section then we try to find duplicate photos in section 
+ some intermediate results are discussed using δ measure 
+in section finally a set of user studies is carried out 
+carefully to justify our proposed method in section 
+ enjoyphoto high-quality photo search 
+engine 
+in order to meet user requirement of enjoying high-quality 
+photos we propose and build a high-quality photo search 
+engine - enjoyphoto which accounts for the following three 
+key issues how to crawl and index photos how to 
+determine the qualities of each photo and how to 
+display the search results in order to make the search process 
+enjoyable for a given text based query this system ranks 
+the photos based on certain combination of relevance of the 
+photo to this query issue and the quality of the photo 
+ issue and finally displays them in an enjoyable manner 
+ issue 
+as for issue we devise the interface of the system 
+deliberately in order to smooth the users process of enjoying 
+high-quality photos techniques such as fisheye and slides 
+show are utilized in current system figure shows the 
+interface we will not talk more about this issue as it is not 
+an emphasis of this paper 
+figure enjoyphoto an enjoyable high-quality 
+photo search engine where records are 
+returned for the query fall in about seconds 
+as for issue we extracted from a commercial search 
+engine a subset of photos coming from various photo forums 
+all over the world and explicitly parsed the web pages 
+containing these photos the number of photos in the data 
+collection is about million after the parsing each photo 
+was associated with its title category description camera 
+setting exif data 
+ when available for digital images 
+location when available in some photo forums and many 
+kinds of ratings all these metadata are generally precise 
+descriptions or annotations for the image content which are 
+then indexed by general text-based search technologies 
+ in current system the ranking function was 
+specifically tuned to emphasize title categorization and rating 
+information 
+issue is essentially dealt with in the following sections 
+which derive the quality of photos by analyzing ratings 
+provided by various web photo forums here we chose six photo 
+forums to study the ranking problem and denote them as 
+web-a web-b web-c web-d web-e and web-f 
+ photo score normalization 
+detailed analysis of different score normalization 
+methods are analyzed in this section in this analysis the zero 
+ 
+digital cameras save jpeg jpg files with exif 
+ exchangeable image file data camera settings and scene 
+information are recorded by the camera into the image file 
+www digicamhelp com what-is-exif 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ a web-a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ b web-b 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ c web-c 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ d web-d 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ e web-e 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ f web-f 
+figure distributions of mean scores normalized 
+to 
+scores that usually occupy about than of the total 
+number of photos for some web forums are not currently taken 
+into account how to utilize these photos is left for future 
+explorations 
+in figure we list the distributions of the mean score 
+which is transformed to a fixed interval the 
+distributions of the average scores of these web forums look quite 
+different distributions in figure a b and e looks 
+like gaussian distributions while those in figure d and 
+ f are dominated by the top score the reason of these 
+eccentric distributions for web-d and web-f lies in their 
+coarse rating systems in fact web-d and web-f use or 
+ point rating scales whereas other web forums use or 
+point rating scales therefore it will be problematic if we 
+directly use these averaged scores furthermore the average 
+score is very likely to be spammed if there are only a few 
+users rating a photo 
+figure shows the total score normalization method by 
+maximal and minimal scores which is one of our base line 
+system all the total scores of a given web forum are 
+normalized to according to the maximal score and 
+minimal score of corresponding web forum we notice that total 
+score distribution of web-a in figure a has two larger 
+tails than all the others to show the shape of the 
+distributions more clearly we only show the distributions on 
+in figure b c d e and f 
+figure shows the mode- percentile normalization 
+method where the modes of the six distributions are 
+normalized to and the percentile to we can see that 
+this normalization method makes the distributions of total 
+scores in different forums more consistent the two proposed 
+algorithms are all based on these normalization methods 
+ duplicate photo detection 
+targeting at computational efficiency the dedup 
+algorithm may lose some recall rate but can achieve a high 
+precision rate we also focus on finding precise hidden links 
+rather than all hidden links figure shows some duplicate 
+detection examples the results are shown in table and 
+verify that large numbers of duplicate photos exist in any 
+two web forums even with the strict condition for dedup 
+where we chose first bits as the hash code since there 
+are only a few parameters to estimate in the proposed fusion 
+methods the numbers of duplicate photos shown table are 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ a web-a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ b web-b 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ c web-c 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ d web-d 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ e web-e 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ f web-f 
+figure maxmin normalization 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ a web-a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ b web-b 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ c web-c 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+normalized score 
+totalnumber 
+ d web-d 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ e web-e 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized score 
+totalnumber 
+ f web-f 
+figure mode- percentile normalization 
+sufficient to determine these parameters the last table 
+column lists the total number of photos in the corresponding 
+web forums 
+ δ measure 
+the parameters of the proposed linear and nonlinear 
+algorithms are calculated using the duplicate data shown in 
+table where the web-c is chosen as the reference web 
+forum since it shares the most duplicate photos with other 
+forums 
+table and show the δ measure on the linear model and 
+nonlinear model as δkl is symmetric and δkk we only 
+show the upper triangular part the nan values in both 
+tables lie in that no duplicate photos have been detected by 
+the dedup algorithm as reported in table 
+the linear model guarantees that the δ measures related 
+table number of duplicate photos between each 
+pair of web forums 
+a b c d e f scale 
+a k 
+b k 
+c k 
+d k 
+e k 
+f k 
+ 
+figure some results of duplicate photo detection 
+table δ measure on the linear model 
+web-b web-c web-d web-e web-f 
+web-a nan 
+web-b - 
+web-c - - 
+web-d - - - 
+web-e - - - - 
+to the reference community should be no less than 
+theoretically it is indeed the case see the underlined numbers 
+in table but this model can not guarantee that the δ 
+measures on the non-reference communities can also be no 
+less than as the normalization steps are based on 
+duplicate photos between the reference community and a 
+nonreference community results shows that all the numbers in 
+the δ measure are greater than see all the non-underlined 
+numbers in table which indicates that it is probable that 
+this model will give optimal results 
+on the contrary the nonlinear model does not guarantee 
+that δ measures related to the reference community should 
+be no less than as not all duplicate photos between the 
+two web forums can be used when optimizing this model 
+in fact the duplicate photos that lie in different intervals 
+will not be used in this model it is these specific duplicate 
+photos that make the δ measure negative as a result there 
+are both negative and positive items in table but overall 
+the number of positive ones are greater than negative ones 
+ that indicates the model may be better than the 
+normalization only method see next subsection which has an 
+all-zero δ measure and worse than the linear model 
+ user study 
+because it is hard to find an objective criterion to evaluate 
+table δ measure on the nonlinear model 
+web-b web-c web-d web-e web-f 
+web-a - - nan 
+web-b - - - - 
+web-c - - 
+web-d - - - 
+web-e - - - - 
+which ranking function is better we chose to employ user 
+studies for subjective evaluations ten subjects were invited 
+to participate in the user study they were recruited from 
+nearby universities as search engines of both text search 
+and image search are familiar to university students there 
+was no prerequisite criterion for choosing students 
+we conducted user studies using internet explorer on 
+windows xp with -inch lcd monitors set at pixels 
+by pixels in -bit color data was recorded with 
+server logs and paper-based surveys after each task 
+figure user study interface 
+we specifically device an interface for user study as shown 
+in figure for each pair of fusion methods participants 
+were encouraged to try any query they wished for those 
+without specific ideas two combo boxes category list and 
+query list were listed on the bottom panel where the top 
+ image search queries from a commercial search engine 
+were provided after a participant submitted a query the 
+system randomly selected the left or right frame to display 
+each of the two ranking results the participant were then 
+required to judge which ranking result was better of the two 
+ranking results or whether the two ranking results were of 
+equal quality and submit the judgment by choosing the 
+corresponding radio button and clicking the submit button 
+for example in figure query sunset is submitted to 
+the system then photos were returned and ranked 
+by the minmax fusion method in the left frame and linear 
+fusion method in the right frame a participant then 
+compares the two ranking results without knowing the ranking 
+methods and submits his her feedback by choosing answers 
+in the your option 
+table results of user study 
+norm only manually linear 
+linear 
+ nonlinear 
+table shows the experimental results where linear 
+denotes the linear fusion method nonlinear denotes the 
+non linear fusion method norm only means maxmin 
+normalization method manually means the manually tuned 
+method the three numbers in each item say 
+mean that judgments prefer the linear fusion results 
+ 
+judgments prefer the normalization only method and 
+judgments consider these two methods as equivalent 
+we conduct the anova analysis and obtain the 
+following conclusions 
+ both the linear and nonlinear methods are significantly 
+better than the norm only method with respective 
+p-values and this 
+result is consistent with the δ-measure evaluation 
+result the norm only method assumes that the top 
+ photos in different forums are of the same 
+quality however this assumption does not stand in 
+general for example a top photo in a top tier photo 
+forum is generally of higher quality than a top 
+photo in a second-tier photo forum this is similar 
+to that those top students in a top-tier 
+university and those in a second-tier university are generally 
+of different quality both linear and nonlinear fusion 
+methods acknowledge the existence of such differences 
+and aim at quantizing the differences therefore they 
+perform better than the norm only method 
+ the linear fusion method is significantly better than 
+the nonlinear one with p-value × − 
+ this 
+result is rather surprising as this more complicated 
+ranking method is expected to tune the ranking more 
+finely than the linear one the main reason for this 
+result may be that it is difficult to find the best 
+intervals where the nonlinear tuning should be carried out 
+and yet simply the middle part of the mode- 
+percentile normalization method was chosen the 
+timeconsuming and subjective evaluation methods - user 
+studies - blocked us extensively tuning these 
+parameters 
+ the proposed linear and nonlinear methods perform 
+almost the same with or slightly better than the 
+manually tuned method given that the linear nonlinear 
+fusion methods are fully automatic approaches they 
+are considered practical and efficient solutions when 
+more communities e g dozens of communities need 
+to be integrated 
+ conclusions and future work 
+in this paper we studied the web object-ranking 
+problem in the cases of lacking object relationships where 
+traditional ranking algorithms are no longer valid and took 
+high-quality photo search as the test bed for this 
+investigation we have built a vertical high-quality photo search 
+engine and proposed score fusion methods which can 
+automatically integrate as many data sources web forums as 
+possible the proposed fusion methods leverage the hidden 
+links discovered by duplicate photo detection algorithm and 
+minimize score differences of duplicate photos in different 
+forums both the intermediate results and the user 
+studies show that the proposed fusion methods are a practical 
+and efficient solution to web object ranking in the 
+aforesaid relationships though the experiments were conducted 
+on high-quality photo ranking the proposed algorithms are 
+also applicable to other kinds of web objects including video 
+clips poems short stories music drawings sculptures and 
+so on 
+current system is far from being perfect in order to make 
+this system more effective more delicate analysis for the 
+vertical domain e g web photo forums are needed the 
+following points for example may improve the searching 
+results and will be our future work more subtle 
+analysis and then utilization of different kinds of ratings e g 
+novelty ratings aesthetic ratings differentiating various 
+communities who may have different interests and 
+preferences or even distinct culture understandings 
+incorporating more useful information including photographers and 
+reviewers information to model the photos in a 
+heterogeneous data space instead of the current homogeneous one 
+we will further utilize collaborative filtering to recommend 
+relevant high-quality photos to browsers 
+one open problem is whether we can find an objective and 
+efficient criterion for evaluating the ranking results instead 
+of employing subjective and inefficient user studies which 
+blocked us from trying more ranking algorithms and tuning 
+parameters in one algorithm 
+ acknowledgments 
+we thank bin wang and zhi wei li for providing dedup 
+codes to detect duplicate photos zhen li for helping us 
+design the interface of enjoyphoto ming jing li longbin 
+chen changhu wang yuanhao chen and li zhuang etc 
+for useful discussions special thanks go to dwight daniels 
+for helping us revise the language of this paper 
+ references 
+ google image search http images google com 
+ google local search http local google com 
+ google news search http news google com 
+ google paper search http scholar google com 
+ google product search http froogle google com 
+ google video search http video google com 
+ scientific literature digital library 
+http citeseer ist psu edu 
+ yahoo image search http images yahoo com 
+ r baeza-yates and b ribeiro-neto modern 
+information retrieval new york acm press 
+harlow england addison-wesley 
+ w bin l zhiwei l ming jing and m wei-ying 
+large-scale duplicate detection for web image search 
+in proceedings of the international conference on 
+multimedia and expo page 
+ s brin and l page the anatomy of a large-scale 
+hypertextual web search engine in computer 
+networks volume pages - 
+ c burges t shaked e renshaw a lazier 
+m deeds n hamilton and g hullender learning 
+to rank using gradient descent in proceedings of the 
+ nd international conference on machine learning 
+pages - 
+ c dwork r kumar m naor and d sivakumar 
+rank aggregation methods for the web in proceedings 
+ th international conference on world wide web 
+pages - hong-kong 
+ r fagin r kumar and d sivakumar comparing 
+top k lists siam journal on discrete mathematics 
+ - 
+ y freund r iyer r e schapire and y singer an 
+efficient boosting algorithm for combining preferences 
+ 
+journal of machine learning research 
+ - 
+ imdb formula for calculating the top rated titles 
+in imdb http www imdb com chart top 
+ t joachims optimizing search engines using 
+clickthrough data in proceedings of the eighth acm 
+sigkdd international conference on knowledge 
+discovery and data mining pages - 
+ j m kleinberg authoritative sources in a 
+hyperlinked environment journal of the acm 
+ - 
+ r nallapati discriminative models for information 
+retrieval in proceedings of the th annual 
+international acm sigir conference on research and 
+development in information retrieval pages - 
+ 
+ z nie y ma j -r wen and w -y ma object-level 
+web information retrieval in technical report of 
+microsoft research volume msr-tr- - 
+ z nie y zhang j -r wen and w -y ma 
+object-level ranking bringing order to web objects 
+in proceedings of the th international conference on 
+world wide web pages - chiba japan 
+ 
+ l page s brin r motwani and t winograd the 
+pagerank citation ranking bringing order to the web 
+in technical report stanford digital libraries 
+ a savakis s etz and a loui evaluation of image 
+appeal in consumer photography in spie human 
+vision and electronic imaging pages - 
+ d sullivan hitwise search engine ratings search 
+engine watch articles http searchenginewatch 
+com reports article php august 
+ s susstrunk and s winkler color image quality on 
+the internet in is t spie electronic imaging 
+internet imaging v volume pages - 
+ 
+ h tong m li z h j j he and z c s 
+classification of digital photos taken by photographers 
+or home users in pacific-rim conference on 
+multimedia pcm pages - 
+ w xi b zhang z chen y lu s yan w -y ma 
+and e a fox link fusion a unified link analysis 
+framework for multi-type interrelated data objects in 
+proceedings of the th international conference on 
+world wide web pages - 
+ 

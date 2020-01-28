@@ -1,0 +1,980 @@
+hits hits 
+trecexploring ir evaluation results with network analysis 
+stefano mizzaro 
+dept of mathematics and computer science 
+university of udine 
+via delle scienze - udine italy 
+mizzaro dimi uniud it 
+stephen robertson 
+microsoft research 
+ jj thomson avenue 
+cambridge cb fb uk 
+ser microsoft com 
+abstract 
+we propose a novel method of analysing data gathered from 
+trec or similar information retrieval evaluation 
+experiments we define two normalized versions of average 
+precision that we use to construct a weighted bipartite graph 
+of trec systems and topics we analyze the meaning of 
+well known - and somewhat generalized - indicators from 
+social network analysis on the systems-topics graph we 
+apply this method to an analysis of trec data among 
+the results we find that authority measures systems 
+performance that hubness of topics reveals that some topics are 
+better than others at distinguishing more or less effective 
+systems that with current measures a system that wants to 
+be effective in trec needs to be effective on easy topics 
+and that by using different effectiveness measures this is no 
+longer the case 
+categories and subject descriptors 
+h information storage and retrieval information 
+search and retrieval 
+general terms 
+measurement experimentation 
+ introduction 
+evaluation is a primary concern in the information 
+retrieval ir field trec text retrieval conference 
+ is an annual benchmarking exercise that has become a 
+de facto standard in ir evaluation before the actual 
+conference trec provides to participants a collection of 
+documents and a set of topics representations of information 
+needs participants use their systems to retrieve and 
+submit to trec a list of documents for each topic after the 
+lists have been submitted and pooled the trec organizers 
+employ human assessors to provide relevance judgements on 
+the pooled set this defines a set of relevant documents for 
+each topic system effectiveness is then measured by well 
+established metrics mean average precision being the most 
+used other conferences such as ntcir inex clef 
+provide comparable data 
+network analysis is a discipline that studies features and 
+properties of usually large networks or graphs of 
+particular importance is social network analysis that studies 
+networks made up by links among humans friendship 
+acquaintance co-authorship bibliographic citation etc 
+network analysis and ir fruitfully meet in web search 
+engine implementation as is already described in textbooks 
+ current search engines use link analysis techniques to 
+help rank the retrieved documents some indicators and 
+the corresponding algorithms that compute them have been 
+found useful in this respect and are nowadays well known 
+inlinks the number of links to a web page pagerank 
+and hits hyperlink-induced topic search several 
+extensions to these algorithms have been and are being 
+proposed these indicators and algorithms might be quite 
+general in nature and can be used for applications which are 
+very different from search result ranking one example is 
+using hits for stemming as described by agosti et al 
+in this paper we propose and demonstrate a method 
+for constructing a network specifically a weighted complete 
+bidirectional directed bipartite graph on a set of trec 
+topics and participating systems links represent effectiveness 
+measurements on system-topic pairs we then apply 
+analysis methods originally developed for search applications to 
+the resulting network this reveals phenomena previously 
+hidden in trec data in passing we also provide a small 
+generalization to kleinberg s hits algorithm as well as to 
+inlinks and pagerank 
+the paper is organized as follows sect gives some 
+motivations for the work sect presents the basic ideas of 
+normalizing average precision and of constructing a 
+systemstopics graph whose properties are analyzed in sect sect 
+presents some experiments on trec data sect 
+discusses some issues and sect closes the paper 
+ motivations 
+we are interested in the following hypotheses 
+ some systems are more effective than others 
+t · · · tn map 
+s ap s t · · · ap s tn map s 
+ 
+ 
+ 
+sm ap sm t · · · ap sm tn map sm 
+aap aap t · · · aap tn 
+ a 
+t t · · · map 
+s · · · 
+s · · · · · · 
+ 
+ 
+ 
+ 
+aap · · · 
+ b 
+table ap map and aap 
+ some topics are easier than others 
+ some systems are better than others at distinguishing 
+easy and difficult topics 
+ some topics are better than others at distinguishing 
+more or less effective systems 
+the first of these hypotheses needs no further justification 
+- every reported significant difference between any two 
+systems supports it there is now also quite a lot of evidence 
+for the second centered on the trec robust track 
+our primary interest is in the third and fourth the third 
+might be regarded as being of purely academic interest 
+however the fourth has the potential for being of major 
+practical importance in evaluation studies if we could identify 
+a relatively small number of topics which were really good 
+at distinguishing effective and ineffective systems we could 
+save considerable effort in evaluating systems 
+one possible direction from this point would be to attempt 
+direct identification of such small sets of topics however in 
+the present paper we seek instead to explore the 
+relationships suggested by the hypotheses between what different 
+topics tell us about systems and what different systems tell 
+us about topics we seek methods of building and analysing 
+a matrix of system-topic normalised performances with a 
+view to giving insight into the issue and confirming or 
+refuting the third and fourth hypotheses it turns out that 
+the obvious symmetry implied by the above formulation of 
+the hypotheses is a property worth investigating and the 
+investigation does indeed give us valuable insights 
+ the idea 
+ st step average precision table 
+from trec results one can produce an average 
+precision ap table see tab a each ap si tj value 
+measures the ap of system si on topic tj 
+besides ap values the table shows mean average 
+precision map values i e the mean of the ap values for a 
+single system over all topics and what we call average 
+average precision aap values i e the average of the ap 
+values for a single topic over all systems 
+map si 
+ 
+n 
+nx 
+j 
+ap si tj 
+aap tj 
+ 
+m 
+mx 
+i 
+ap si tj 
+maps are indicators of systems performance higher map 
+means good system aap are indicators of the performance 
+on a topic higher aap means easy topic - a topic on which 
+all or most systems have good performance 
+ critique of pure ap 
+map is a standard well known and widely used ir 
+effectiveness measure single ap values are used too e g 
+in ap histograms topic difficulty is often discussed e g 
+in trec robust track although aap values are not 
+used and to the best of our knowledge have never been 
+proposed the median not the average of ap on a topic 
+is used to produce trec ap histograms however 
+the ap values in tab present two limitations which are 
+symmetric in some respect 
+ problem they are not reliable to compare the 
+effectiveness of a system on different topics relative 
+to the other systems if for example ap s t 
+ap s t can we infer that s is a good system i e 
+has a good performance on t and a bad system on 
+t the answer is no t might be an easy topic with 
+high aap and t a difficult one low aap see an 
+example in tab b s is outperformed on average 
+by the other systems on t and it outperforms the 
+other systems on t 
+ problem conversely if for example ap s t 
+ap s t can we infer that t is considered easier 
+by s than by s no we cannot s might be a good 
+system with high map and s a bad one low map 
+see an example in tab b 
+these two problems are a sort of breakdown of the well 
+known high influence of topics on ir evaluation again our 
+formulation makes explicit the topics systems symmetry 
+ nd step normalizations 
+to avoid these two problems we can normalize the ap 
+table in two ways the first normalization removes the 
+influence of the single topic ease on system performance each 
+ap si tj value in the table depends on both system 
+goodness and topic ease the value will increase if a system is 
+good and or the topic is easy by subtracting from each 
+ap si tj the aap tj value we obtain normalized ap 
+values apa si tj normalized ap according to aap 
+apa si tj ap si tj − aap tj 
+that depend on system performance only the value will 
+increase only if system performance is good see tab a 
+the second normalization removes the influence of the 
+single system effectiveness on topic ease by subtracting from 
+each ap si tj the map si value we obtain normalized 
+ap values apm si tj normalized ap according to map 
+apm si tj ap si tj − map si 
+that depend on topic ease only the value will increase only 
+if the topic is easy i e all systems perform well on that 
+topic see tab b 
+in other words apa avoids problem apa s t values 
+measure the performance of system s on topic t normalized 
+t · · · tn map 
+s apa s t · · · apa s tn map s 
+ 
+ 
+ 
+sm apa sm t · · · apa sm tn map sm 
+ · · · 
+ a 
+t · · · tn 
+s apm s t · · · apm s tn 
+ 
+ 
+ 
+sm apm sm t · · · apm sm tn 
+aap aap t · · · aap tn 
+ b 
+t t · · · map 
+s − · · · 
+s · · · · · · 
+ 
+ 
+ 
+ · · · 
+t t · · · 
+s − − · · · 
+s · · · · · · 
+ 
+ 
+ 
+aap · · · 
+ c d 
+table normalizations apa and map normalized 
+ap apa and map map a normalized ap apm 
+and aap aap b a numeric example c and d 
+according to the ease of the topic easy topics will not have 
+higher apa values now if for example apa s t 
+apa s t we can infer that s is a good system on t and 
+a bad system on t see tab c vice versa apm avoids 
+problem apm s t values measure the ease of topic t 
+according to system s normalized according to goodness 
+of the system good systems will not lead to higher apm 
+values if for example apm s t apm s t we 
+can infer that t is considered easier by s than by s see 
+tab d 
+on the basis of tables a and b we can also define two 
+new measures of system effectiveness and topic ease i e a 
+normalized map map obtained by averaging the apa 
+values on one row in tab a and a normalized aap aap 
+obtained by averaging the apm values on one column in 
+tab b 
+map si 
+ 
+n 
+nx 
+j 
+apa si tj 
+aap tj 
+ 
+m 
+mx 
+i 
+apm si tj 
+thus overall system performance can be measured 
+besides by means of map also by means of map moreover 
+map is equivalent to map as can be immediately proved 
+by using eqs and 
+map si 
+ 
+n 
+nx 
+j 
+ ap si tj − aap tj 
+ map si − 
+ 
+n 
+nx 
+j 
+aap tj 
+ and 
+n 
+pn 
+j aap tj is the same for all systems and 
+conversely overall topic ease can be measured besides by 
+t · · · tn 
+s 
+ apm 
+sm 
+t · · · tn 
+s 
+ apa 
+sm 
+s · · · sm t · · · tn 
+s 
+ apm 
+sm 
+t 
+ apa 
+t 
+ 
+tn 
+map aap 
+figure construction of the adjacency matrix 
+apa 
+t 
+is the transpose of apa 
+means of aap also by means of aap and this is equivalent 
+ the proof is analogous and relies on eqs and 
+the two tables a and b are interesting per se and can 
+be analyzed in several different ways in the following we 
+propose an analysis based on network analysis techniques 
+mainly kleinberg s hits algorithm there is a little further 
+discussion of these normalizations in sect 
+ rd step systems-topics graph 
+the two tables a and b can be merged into a single one 
+with the procedure shown in fig the obtained matrix 
+can be interpreted as the adjacency matrix of a complete 
+weighted bipartite graph that we call systems-topics graph 
+arcs and weights in the graph can be interpreted as follows 
+ weight on arc s → t how much the system s thinks 
+that the topic t is easy - assuming that a system has 
+no knowledge of the other systems or in other words 
+how easy we might think the topic is knowing only 
+the results for this one system this corresponds to 
+apm values i e to normalized topic ease fig a 
+ weight on arc s ← t how much the topic t thinks 
+that the system s is good - assuming that a topic has 
+no knowledge of the other topics or in other words 
+how good we might think the system is knowing only 
+the results for this one topic this corresponds to 
+apa normalized system effectiveness fig b 
+figs c and d show the systems-topics complete weighted 
+bipartite graph on a toy example with systems and 
+topics the graph is split in two parts to have an understandable 
+graphical representation arcs in fig c are labeled with 
+apm values arcs in fig d are labeled with apa values 
+ analysis of the graph 
+ weighted inlinks outlinks pagerank 
+the sum of weighted outlinks i e the sum of the weights 
+on the outgoing arcs from each node is always zero 
+ the outlinks on each node corresponding to a system 
+s fig c is the sum of all the corresponding apm 
+values on one row of the matrix in tab b 
+ the outlinks on each node corresponding to a topic 
+t fig d is the sum of all the corresponding apa 
+ a b 
+ c d 
+figure the relationships between systems and 
+topics a and b and the systems-topics graph for 
+a toy example c and d dashed arcs correspond 
+to negative values 
+h 
+ a 
+s 
+ 
+sm 
+t 
+ 
+tn 
+ 
+s · · · sm t · · · tn 
+s 
+ apm 
+ apa 
+sm 
+t 
+ apa 
+t 
+ 
+tn apm 
+t 
+ 
+· 
+a 
+ h 
+s 
+ 
+sm 
+t 
+ 
+tn 
+figure hub and authority computation 
+values on one row of the transpose of the matrix in 
+tab a 
+the average 
+of weighted inlinks is 
+ map for each node corresponding to a system s this 
+corresponds to the average of all the corresponding 
+apa values on one column of the apa 
+t 
+part of the 
+adjacency matrix see fig 
+ aap for each node corresponding to a topic t this 
+corresponds to the average of all the corresponding 
+apm values on one column of the apm part of the 
+adjacency matrix see fig 
+therefore weighted inlinks measure either system 
+effectiveness or topic ease weighted outlinks are not meaningful we 
+could also apply the pagerank algorithm to the network 
+the meaning of the pagerank of a node is not quite so 
+obvious as inlinks and outlinks but it also seems a sensible 
+measure of either system effectiveness or topic ease if a 
+system is effective it will have several incoming links with high 
+ 
+usually the sum of the weights on the incoming arcs to 
+each node is used in place of the average since the graph is 
+complete it makes no difference 
+weights apa if a topic is easy it will have high weights 
+ apm on the incoming links too we will see experimental 
+confirmation in the following 
+ hubs and authorities 
+let us now turn to more sophisticated indicators 
+kleinberg s hits algorithm defines for a directed graph two 
+indicators hubness and authority we reiterate here some of 
+the basic details of the hits algorithm in order to 
+emphasize both the nature of our generalization and the 
+interpretation of the hits concepts in this context usually hubness 
+and authority are defined as h x 
+p 
+x→y a y and a x 
+p 
+y→x h y and described intuitively as a good hub links 
+many good authorities a good authority is linked from many 
+good hubs as it is well known an equivalent formulation 
+in linear algebra terms is see also fig 
+h aa and a at 
+h 
+ where h is the hubness vector with the hub values for all 
+the nodes a is the authority vector a is the adjacency 
+matrix of the graph and at 
+its transpose usually a 
+contains s and s only corresponding to presence and absence 
+of unweighted directed arcs but eq can be immediately 
+generalized to in fact it is already valid for a containing 
+any real value i e to weighted graphs 
+therefore we can have a generalized version or rather 
+a generalized interpretation since the formulation is still 
+the original one of hubness and authority for all nodes in 
+a graph an intuitive formulation of this generalized hits 
+is still available although slightly more complex a good 
+hub links by means of arcs having high weights many good 
+authorities a good authority is linked by means of arcs 
+having high weights from many good hubs since arc weights 
+can be in general negative hub and authority values can be 
+negative and one could speak of unhubness and unauthority 
+the intuitive formulation could be completed by adding that 
+a good hub links good unauthorities by means of links with 
+highly negative weights a good authority is linked by good 
+unhubs by means of links with highly negative weights 
+and also a good unhub links positively good 
+unauthorities and negatively good authorities a good unauthority 
+is linked positively from good unhubs and negatively from 
+good hubs 
+let us now apply generalized hits to our systems-topics 
+graph we compute a s h s a t and h t intuitively 
+we expect that a s is somehow similar to inlinks so it 
+should be a measure of either systems effectiveness or topic 
+ease similarly hubness should be more similar to outlinks 
+thus less meaningful although the interplay between hub 
+and authority might lead to the discovery of something 
+different let us start by remarking that authority of topics 
+and hubness of systems depend only on each other similarly 
+hubness of topics and authority of systems depend only on 
+each other see figs c d and 
+thus the two graphs in figs c and d can be analyzed 
+independently in fact the entire hits analysis could be 
+done in one direction only with just apm s t values or 
+alternatively with just apa s t as discussed below 
+probably most interest resides in the hubness of topics and the 
+authority of systems so the latter makes sense however in 
+this paper we pursue both analyses together because the 
+symmetry itself is interesting 
+considering fig c we can state that 
+ authority a t of a topic node t increases when 
+- if h si apm si t increases 
+ or if apm si t h si increases 
+- if h si apm si t decreases 
+ or if apm si t h si decreases 
+ hubness h s of a system node s increases when 
+- if a tj apm s tj increases 
+ or if apm s tj a tj increases 
+- if a tj apm s tj decreases 
+ or if apm s tj a tj decreases 
+we can summarize this as a t is high if apm s t is high 
+for those systems with high h s h s is high if apm s t 
+is high for those topics with high a t intuitively authority 
+a t of a topic measures topic ease hubness h s of a system 
+measures system s capability to recognize easy topics a 
+system with high unhubness negative hubness would tend 
+to regard easy topics as hard and hard ones as easy 
+the situation for fig d i e for a s and h t is 
+analogous authority a s of a system node s measures system 
+effectiveness it increases with the weight on the arc i e 
+apa s tj and the hubness of the incoming topic nodes tj 
+hubness h t of a topic node t measures topic capability to 
+recognize effective systems if h t it increases further 
+if apa s tj increases if h t it increases if apa s tj 
+decreases 
+intuitively we can state that a system has a higher 
+authority if it is more effective on topics with high hubness 
+and a topic has a higher hubness if it is easier for those 
+systems which are more effective in general conversely for 
+system hubness and topic authority a topic has a higher 
+authority if it is easier on systems with high hubness and 
+a system has a higher hubness if it is more effective for 
+those topics which are easier in general 
+therefore for each system we have two indicators 
+authority a s measuring system effectiveness and hubness 
+ h s measuring system capability to estimate topic ease 
+and for each topic we have two indicators authority a t 
+measuring topic ease and hubness h t measuring topic 
+capability to estimate systems effectiveness we can define 
+them formally as 
+a s 
+x 
+t 
+h t · apa s t h t 
+x 
+s 
+a s · apa s t 
+a t 
+x 
+s 
+h s · apm s t h s 
+x 
+t 
+a t · apm s t 
+we observe that the hubness of topics may be of particular 
+interest for evaluation studies it may be that we can 
+evaluate the effectiveness of systems efficiently by using relatively 
+few high-hubness topics 
+ experiments 
+we now turn to discuss if these indicators are meaningful 
+and useful in practice and how they correlate with standard 
+measures used in trec we have built the systems-topics 
+graph for trec data featuring 
+systems - actually 
+ 
+actually trec data features systems due to 
+some bug in our scripts we did not include one system 
+ manext d n but the results should not be affected 
+ 
+ 
+ 
+ 
+- - 
+napm 
+napa 
+ap 
+figure distributions of ap apa and apm values 
+in trec data 
+map in pr h a 
+map 
+inlinks 
+pagerank 
+hub 
+ a 
+aap in pr h a 
+aap 
+inlinks 
+pagerank 
+hub 
+ b 
+table correlations between network analysis 
+measures and map a and aap b 
+runs - on topics this section illustrates the results 
+obtained mining these data according to the method presented 
+in previous sections 
+fig shows the distributions of ap apa and apm 
+whereas ap is very skewed both apa and apm are much 
+more symmetric as it should be since they are constructed 
+by subtracting the mean tables a and b show the 
+pearson s correlation values between inlinks pagerank hub 
+authority and respectively map or aap outlinks 
+values are not shown since they are always zero as seen in 
+sect as expected inlinks and pagerank have a perfect 
+correlation with map and aap authority has a very high 
+correlation too with map and aap hub assumes slightly 
+lower values 
+let us analyze the correlations more in detail the 
+correlations chart in figs a and b demonstrate the high 
+correlation between authority and map or aap hubness 
+presents interesting phenomena both fig c correlation 
+with map and fig d correlation with aap show that 
+correlation is not exact but neither is it random this given 
+the meaning of hubness capability in estimating topic ease 
+and system effectiveness means two things i more 
+effective systems are better at estimating topic ease and ii 
+easier topics are better at estimating system effectiveness 
+whereas the first statement is fine there is nothing against 
+it the second is a bit worrying it means that system 
+effectiveness in trec is affected more by easy topics than by 
+difficult topics which is rather undesirable for quite obvious 
+reasons a system capable of performing well on a difficult 
+topic i e on a topic on which the other systems perform 
+badly would be an important result for ir effectiveness 
+con- e- 
+- e- 
+- e- 
+- e- 
+ e 
+ e- 
+ e- 
+ e- 
+ 
+- e- 
+- e- 
+- e- 
+ e 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+ a b 
+ e 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+ e 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+ c d 
+figure correlations map x axis and authority y axis of systems a aap and authority of topics 
+ b map and hub of systems c and aap and hub of topics d 
+versely a system capable of performing well on easy topics 
+is just a confirmation of the state of the art indeed the 
+correlation between hubness and aap statement i above is 
+higher than the correlation between hubness and map 
+ corresponding to statement ii vs however this 
+phenomenon is quite strong this is also confirmed by the 
+work being done on the trec robust track 
+in this respect it is interesting to see what happens if we 
+use a different measure from map and aap the gmap 
+ geometric map metric is defined as the geometric mean of 
+ap values or equivalently as the arithmetic mean of the 
+logarithms of ap values gmap has the property of giving 
+more weight to the low end of the ap scale i e to low ap 
+values and this seems reasonable since intuitively a 
+performance increase in map values from to should 
+be more important than an increase from to to 
+use gmap in place of map and aap we only need to take 
+the logarithms of initial ap values i e those in tab a 
+ zero values are modified into ε we then repeat 
+the same normalization process with gmap and gaap 
+- geometric aap - replacing map and aap whereas 
+authority values still perfectly correlate with gmap 
+and gaap the correlation with hubness largely 
+disappears values are − and − - slightly negative but 
+not enough to concern us 
+this is yet another confirmation that trec effectiveness 
+as measured by map depends mainly on easy topics gmap 
+appears to be a more balanced measure note that 
+perhaps surprisingly gmap is indeed fairly well balanced not 
+biased in the opposite direction - that is it does not 
+overemphasize the difficult topics 
+in sect below we discuss another transformation 
+replacing the log function used in gmap with logit this has 
+a similar effect the correlation of mean logitap and average 
+logitap with hubness are now small positive numbers 
+and respectively still comfortably away from the high 
+correlations with regular map and aap i e not presenting 
+the problematic phenomenon ii above over-dependency on 
+easy topics 
+we also observe that hub values are positive whereas 
+authority assumes as predicted both positive and negative 
+values an intuitive justification is that negative hubness 
+would indicate a node which disagrees with the other nodes 
+e g a system which does better on difficult topics or a 
+topic on which bad systems do better such systems and 
+topics would be quite strange and probably do not appear 
+in trec finally although one might think that topics with 
+several relevant documents are more important and difficult 
+this is not the case there is no correlation between hub or 
+any other indicator and the number of documents relevant 
+to a topic 
+ discussion 
+ related work 
+there has been considerable interest in recent years in 
+questions of statistical significance of effectiveness 
+comparisons between systems e g and related questions of 
+how many topics might be needed to establish differences 
+ e g we regard some results of the present study as 
+in some way complementary to this work in that we make a 
+step towards answering the question which topics are best 
+for establishing differences 
+the results on evaluation without relevance judgements 
+such as show that to some extent good systems agree 
+on which are the good documents we have not addressed 
+the question of individual documents in the present analysis 
+but this effect is certainly analogous to our results 
+ are normalizations necessary 
+at this point it is also worthwhile to analyze what would 
+happen without the map- and aap-normalizations defined 
+in sect indeed the process of graph construction 
+ sect is still valid both the apm and apa matrices 
+are replaced by the ap one and then everything goes on as 
+above therefore one might think that the normalizations 
+are unuseful in this setting 
+this is not the case from the theoretical point of view 
+the ap-only graph does not present the interesting 
+properties above discussed since the ap-only graph is 
+symmetrical the weight on each incoming link is equal to the weight 
+on the corresponding outgoing link inlinks and outlinks 
+assume the same values there is symmetry also in 
+computing hub and authority that assume the same value for each 
+node since the weights on the incoming and outgoing arcs 
+are the same this could be stated in more precise and 
+formal terms but one might still wonder if on the overall graph 
+there are some sort of counterbalancing effects it is 
+therefore easier to look at experimental data which confirm that 
+the normalizations are needed the correlations between ap 
+inlinks outlinks hub and or authority are all very close 
+to one none of them is below 
+ are these normalizations sufficient 
+it might be argued that in the case of apa for example 
+the amount we have subtracted from each ap value is 
+topicdependent therefore the range of the resulting apa value 
+is also topic-dependent e g the maximum is − aap tj 
+and the minimum is − aap tj this suggests that the 
+cross-topic comparisons of these values suggested in sect 
+may not be reliable a similar issue arises for apm and 
+comparisons across systems 
+one possible way to overcome this would be to use an 
+unconstrained measure whose range is the full real line note 
+that in applying the method to gmap by using log ap we 
+avoid the problem with the lower limit but retain it for the 
+upper limit one way to achieve an unconstrainted range 
+would be to use the logit function rather than the log 
+we have also run this variant as already reported in 
+sect above and it appears to provide very similar 
+results to the gmap results already given this is not 
+surprising since in practice the two functions are very similar 
+over most of the operative range the normalizations thus 
+seem reliable 
+ on aat 
+and at 
+a 
+it is well known that h and a vectors are the principal 
+left eigenvectors of aat 
+and at 
+a respectively this can 
+be easily derived from eqs and that in the case of 
+citation graphs aat 
+and at 
+a represent respectively 
+bibliographic coupling and co-citations what is the meaning 
+if any of aat 
+and at 
+a in our systems-topics graph it 
+is easy to derive that 
+aat 
+ i j 
+ 
+ 
+ 
+ 
+ 
+if i ∈ s ∧ j ∈ t 
+or i ∈ t ∧ j ∈ s 
+p 
+k a i k · a j k otherwise 
+at 
+a i j 
+ 
+ 
+ 
+ 
+ 
+if i ∈ s ∧ j ∈ t 
+or i ∈ t ∧ j ∈ s 
+p 
+k a k i · a k j otherwise 
+ where s is the set of indices corresponding to systems and t 
+the set of indices corresponding to topics thus aat 
+and 
+at 
+a are block diagonal matrices with two blocks each one 
+relative to systems and one relative to topics 
+ a if i j ∈ s then aat 
+ i j 
+p 
+k∈t apm i k ·apm j k 
+measures how much the two systems i and j agree in 
+estimating topics ease apm high values mean that 
+the two systems agree on topics ease 
+ b if i j ∈ t then aat 
+ i j 
+p 
+k∈s apa k i ·apa k j 
+measures how much the two topics i and j agree in 
+estimating systems effectiveness apa high values mean 
+that the two topics agree on systems effectiveness and 
+that trec results would not change by leaving out one 
+of the two topics 
+ c if i j ∈ s then at 
+a i j 
+p 
+k∈t apa i k · apa j k 
+measures how much agreement on the effectiveness of 
+two systems i and j there is over all topics high 
+values mean that many topics quite agree on the two 
+systems effectiveness low values single out systems that 
+are somehow controversial and that need several topics 
+to have a correct effectiveness assessment 
+ d if i j ∈ t then at 
+a i j 
+p 
+k∈s apm k i ·apm k j 
+measures how much agreement on the ease of the two 
+topics i and j there is over all systems high values mean 
+that many systems quite agree on the two topics ease 
+therefore these matrices are meaningful and somehow 
+interesting for instance the submatrix b corresponds to 
+a weighted undirected complete graph whose nodes are the 
+topics and whose arc weights are a measure of how much 
+two topics agree on systems effectiveness two topics that 
+are very close on this graph give the same information and 
+therefore one of them could be discarded without changes in 
+trec results it would be interesting to cluster the topics 
+on this graph furthermore the matrix graph a could be 
+useful in trec pool formation systems that do not agree 
+on topic ease would probably find different relevant 
+documents and should therefore be complementary in pool 
+formation note that no notion of single documents is involved 
+in the above analysis 
+ insights 
+as indicated the primary contribution of this paper has 
+been a method of analysis however in the course of 
+applying this method to one set of trec results we have 
+achieved some insights relating to the hypotheses formulated 
+in sect 
+ we confirm hypothesis above that some topics are 
+easier than others 
+ differences in the hubness of systems reveal that some 
+systems are better than others at distinguishing easy 
+and difficult topics thus we have some confirmation of 
+hypothesis 
+ there are some relatively idiosyncratic systems which 
+do badly on some topics generally considered easy but 
+well on some hard topics however on the whole the 
+more effective systems are better at distinguishing easy 
+and difficult topics this is to be expected a really 
+bad system will do badly on everything while even a 
+good system may have difficulty with some topics 
+ differences in the hubness of topics reveal that some 
+topics are better than others at distinguising more or 
+less effective systems thus we have some confirmation 
+of hypothesis 
+ if we use map as the measure of effectiveness it is 
+also true that the easiest topics are better at 
+distinguishing more or less effective systems as argued in 
+sect this is an undesirable property gmap is more 
+balanced 
+clearly these ideas need to be tested on other data sets 
+however they reveal that the method of analysis proposed 
+in this paper can provide valuable information 
+ selecting topics 
+the confirmation of hypothesis leads as indicated to 
+the idea that we could do reliable system evaluation on a 
+much smaller set of topics provided we could select such an 
+appropriate set this selection may not be straightforward 
+however it is possible that simply selecting the high 
+hubness topics will achieve this end however it is also possible 
+that there are significant interactions between topics which 
+would render such a simple rule ineffective this 
+investigation would therefore require serious experimentation for 
+this reason we have not attempted in this paper to point to 
+the specific high hubness topics as being good for evaluation 
+this is left for future work 
+ conclusions and future 
+developments 
+the contribution of this paper is threefold 
+ we propose a novel way of normalizing ap values 
+ we propose a novel method to analyse trec data 
+ the method applied on trec data does indeed reveal 
+some hidden properties 
+more particularly we propose average average precision 
+ aap a measure of topic ease and a novel way of 
+normalizing the average precision measure in trec on the basis 
+of both map mean average precision and aap the 
+normalized measures apm and apa are used to build a 
+bipartite weighted systems-topics graph that is then 
+analyzed by means of network analysis indicators widely known 
+in the social network analysis field but somewhat 
+generalised we note that no such approach to trec data 
+analysis has been proposed so far the analysis shows that 
+with current measures a system that wants to be effective 
+in trec needs to be effective on easy topics also it is 
+suggested that a cluster analysis on topic similarity can lead to 
+relying on a lower number of topics 
+our method of analysis as described in this paper can 
+be applied only a posteriori i e once we have all the 
+topics and all the systems available adding removing a new 
+system topic would mean re-computing hubness and 
+authority indicators moreover we are not explicitly proposing 
+a change to current trec methodology although this could 
+be a by-product of these - and further - analyses 
+this is an initial work and further analyses could be 
+performed for instance other effectiveness metrics could be 
+used in place of ap other centrality indicators widely 
+used in social network analysis could be computed although 
+probably with similar results to pagerank it would be 
+interesting to compute the higher-order eigenvectors of at 
+a 
+and aat 
+ the same kind of analysis could be performed at 
+the document level measuring document ease hopefully 
+further analyses of the graph defined in this paper 
+according to the approach described can be insightful for a better 
+understanding of trec or similar data 
+acknowledgments 
+we would like to thank nick craswell for insightful 
+discussions and the anonymous referees for useful remarks part 
+of this research has been carried on while the first author 
+was visiting microsoft research cambridge whose financial 
+support is acknowledged 
+ references 
+ m agosti m bacchin n ferro and m melucci 
+improving the automatic retrieval of text documents 
+in proceedings of the rd clef workshop volume 
+ of lncs pages - 
+ c buckley and e voorhees evaluating evaluation 
+measure stability in rd sigir pages - 
+ s chakrabarti mining the web morgan kaufmann 
+ 
+ g v cormack and t r lynam statistical precision 
+of information retrieval evaluation in th sigir 
+pages - 
+ j kleinberg authoritative sources in a hyperlinked 
+environment j of the acm - 
+ m levene an introduction to search engines and 
+web navigation addison wesley 
+ l page s brin r motwani and t winograd the 
+pagerank citation ranking bringing order to the 
+web 
+http dbpubs stanford edu pub - 
+ s robertson on gmap - and other transformations 
+in th cikm pages - 
+ m sanderson and j zobel information retrieval 
+system evaluation effort sensitivity and reliability in 
+ th sigir pages - 
+http doi acm org 
+ i soboroff c nicholas and p cahan ranking 
+retrieval systems without relevance judgments in th 
+sigir pages - 
+ trec common evaluation measures 
+http trec nist gov pubs trec appendices 
+ce measures pdf last visit jan 
+ text retrieval conference trec 
+http trec nist gov last visit jan 
+ e voorhees and c buckley the effect of topic set 
+size on retrieval experiment error in th sigir 
+pages - 
+ e m voorhees overview of the trec robust 
+retrieval track in trec proceedings 
+ e m voorhees and d k harman 
+trecexperiment and evaluation in information retrieval 
+mit press 
+ s wasserman and k faust social network analysis 
+cambridge university press cambridge uk 

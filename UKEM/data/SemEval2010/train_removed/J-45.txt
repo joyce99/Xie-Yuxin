@@ -1,0 +1,1453 @@
+empirical mechanism design methods with application 
+to a supply-chain scenario 
+yevgeniy vorobeychik christopher kiekintveld and michael p wellman 
+university of michigan 
+computer science engineering 
+ann arbor mi - usa 
+ yvorobey ckiekint wellman  umich edu 
+abstract 
+our proposed methods employ learning and search techniques to 
+estimate outcome features of interest as a function of mechanism 
+parameter settings we illustrate our approach with a design task 
+from a supply-chain trading competition designers adopted 
+several rule changes in order to deter particular procurement behavior 
+but the measures proved insufficient our empirical mechanism 
+analysis models the relation between a key design parameter and 
+outcomes confirming the observed behavior and indicating that no 
+reasonable parameter settings would have been likely to achieve the 
+desired effect more generally we show that under certain 
+conditions the estimator of optimal mechanism parameter setting based 
+on empirical data is consistent 
+categories and subject descriptors 
+i computing methodologies simulation and modeling j 
+ computer applications social and behavioral 
+sciences-economics 
+general terms 
+algorithms economics design 
+ motivation 
+we illustrate our problem with an anecdote from a supply chain 
+research exercise the and trading agent competition 
+ tac supply chain management scm game tac scm 
+defines a scenario where agents compete to maximize their profits 
+as manufacturers in a supply chain the agents procure components 
+from the various suppliers and assemble finished goods for sale to 
+customers repeatedly over a simulated year 
+as it happened the specified negotiation behavior of suppliers 
+provided a great incentive for agents to procure large quantities of 
+components on day the very beginning of the simulation during 
+the early rounds of the scm competition several agent 
+developers discovered this and the apparent success led to most agents 
+performing the majority of their purchasing on day although 
+jockeying for day- procurement turned out to be an interesting 
+strategic issue in itself the phenomenon detracted from other 
+interesting problems such as adapting production levels to varying 
+demand since component costs were already sunk and dynamic 
+management of production sales and inventory several 
+participants noted that the predominance of day- procurement 
+overshadowed other key research issues such as factory scheduling and 
+optimizing bids for customer orders after the 
+tournament there was a general consensus in the tac community that 
+the rules should be changed to deter large day- procurement 
+the task facing game organizers can be viewed as a problem in 
+mechanism design the designers have certain game features 
+under their control and a set of objectives regarding game outcomes 
+unlike most academic treatments of mechanism design the 
+objective is a behavioral feature moderate day- procurement rather 
+than an allocation feature like economic efficiency and the allowed 
+mechanisms are restricted to those judged to require only an 
+incremental modification of the current game replacing the 
+supplychain negotiation procedures with a one-shot direct mechanism for 
+example was not an option we believe that such operational 
+restrictions and idiosyncratic objectives are actually quite typical of 
+practical mechanism design settings where they are perhaps more 
+commonly characterized as incentive engineering problems 
+in response to the problem the tac scm designers adopted 
+several rule changes intended to penalize large day- orders these 
+included modifications to supplier pricing policies and introduction 
+of storage costs assessed on inventories of components and finished 
+goods despite the changes day- procurement was very high in 
+the early rounds of the competition in a drastic measure the 
+gamemaster imposed a fivefold increase of storage costs midway 
+through the tournament even this did not stem the tide and day- 
+procurement in the final rounds actually increased by some 
+measures from 
+the apparent difficulty in identifying rule modifications that 
+effect moderation in day- procurement is quite striking although 
+the designs were widely discussed predictions for the effects of 
+various proposals were supported primarily by intuitive arguments 
+or at best by back-of-the-envelope calculations much of the 
+difficulty of course is anticipating the agents and their 
+developers responses without essentially running a gaming exercise for 
+this purpose the episode caused us to consider whether new 
+ap 
+proaches or tools could enable more systematic analysis of design 
+options standard game-theoretic and mechanism design methods 
+are clearly relevant although the lack of an analytic description of 
+the game seems to be an impediment under the assumption that 
+the simulator itself is the only reliable source of outcome 
+computation we refer to our task as empirical mechanism design 
+in the sequel we develop some general methods for empirical 
+mechanism design and apply them to the tac scm redesign 
+problem our analysis focuses on the setting of storage costs taking 
+other game modifications as fixed since this is the most direct 
+deterrent to early procurement adopted our results confirm the basic 
+intuition that incentives for day- purchasing decrease as storage 
+costs rise we also confirm that the high day- procurement 
+observed in the tournament is a rational response to the setting 
+of storage costs used finally we conclude from our data that it is 
+very unlikely that any reasonable setting of storage costs would 
+result in acceptable levels of day- procurement so a different design 
+approach would have been required to eliminate this problem 
+overall we contribute a formal framework and a set of methods 
+for tackling indirect mechanism design problems in settings where 
+only a black-box description of players utilities is available our 
+methods incorporate estimation of sets of nash equilibria and 
+sample nash equilibria used in conjuction to support general claims 
+about the structure of the mechanism designer s utility as well as a 
+restricted probabilistic analysis to assess the likelihood of 
+conclusions we believe that most realistic problems are too complex to 
+be amenable to exact analysis consequently we advocate the 
+approach of gathering evidence to provide indirect support of specific 
+hypotheses 
+ preliminaries 
+a normal form game 
+is denoted by i ri ui r where i 
+refers to the set of players and m i is the number of players 
+ri is the set of strategies available to player i ∈ i with r 
+r × ×rm representing the set of joint strategies of all players 
+we designate the set of pure strategies available to player i by ai 
+and denote the joint set of pure strategies of all players by a 
+a × ×am it is often convenient to refer to a strategy of player 
+i separately from that of the remaining players to accommodate 
+this we use a−i to denote the joint strategy of all players other than 
+player i 
+let si be the set of all probability distributions mixtures over 
+ai and similarly s be the set of all distributions over a an s ∈ s 
+is called a mixed strategy profile when the game is finite i e a 
+and i are both finite the probability that a ∈ a is played under 
+s is written s a s ai a−i when the distribution s is not 
+correlated we can simply say si ai when referring to the probability 
+player i plays ai under s 
+next we define the payoff utility function of each player i by 
+ui a ×· · ·×am → r where ui ai a−i indicates the payoff to 
+player i to playing pure strategy ai when the remaining players play 
+a−i we can extend this definition to mixed strategies by assuming 
+that ui are von neumann-morgenstern vnm utilities as follows 
+ui s es ui where es is the expectation taken with respect to 
+the probability distribution of play induced by the players mixed 
+strategy s 
+ 
+by employing the normal form we model agents as playing a 
+single action with decisions taken simultaneously this is appropriate 
+for our current study which treats strategies agent programs as 
+atomic actions we could capture finer-grained decisions about 
+action over time in the extensive form although any extensive game 
+can be recast in normal form doing so may sacrifice compactness 
+and blur relevant distinctions e g subgame perfection 
+occasionally we write ui x y to mean that x ∈ ai or si and 
+y ∈ a−i or s−i depending on context we also express the set of 
+utility functions of all players as u · u · um · 
+we define a function r → r interpreted as the maximum 
+benefit any player can obtain by deviating from its strategy in the 
+specified profile 
+ r max 
+i∈i 
+max 
+ai∈ai 
+ ui ai r−i − ui r 
+where r belongs to some strategy set r of either pure or mixed 
+strategies 
+faced with a game an agent would ideally play its best strategy 
+given those played by the other agents a configuration where all 
+agents play strategies that are best responses to the others 
+constitutes a nash equilibrium 
+definition a strategy profile r r rm constitutes 
+a nash equilibrium of game i ri ui r if for every i ∈ i 
+ri ∈ ri ui ri r−i ≥ ui ri r−i 
+when r ∈ a the above defines a pure strategy nash equilibrium 
+otherwise the definition describes a mixed strategy nash 
+equilibrium we often appeal to the concept of an approximate or -nash 
+equilibrium where is the maximum benefit to any agent for 
+deviating from the prescribed strategy thus r as defined above 
+is such that profile r is an -nash equilibrium iff r ≤ 
+in this study we devote particular attention to games that exhibit 
+symmetry with respect to payoffs rendering agents strategically 
+identical 
+definition a game i ri ui r is symmetric if for 
+all i j ∈ i a ri rj and b ui ri r−i uj rj r−j 
+whenever ri rj and r−i r−j 
+ the model 
+we model the strategic interactions between the designer of the 
+mechanism and its participants as a two-stage game the designer 
+moves first by selecting a value θ from a set of allowable 
+mechanism settings θ all the participant agents observe the mechanism 
+parameter θ and move simultaneously thereafter for example the 
+designer could be deciding between a first-price and second-price 
+sealed-bid auction mechanisms with the presumption that after the 
+choice has been made the bidders will participate with full 
+awareness of the auction rules 
+since the participants play with full knowledge of the 
+mechanism parameter we define a game between them in the second stage 
+as γθ i ri ui r θ we refer to γθ as a game induced 
+by θ let n θ be the set of strategy profiles considered solutions 
+of the game γθ 
+suppose that the goal of the designer is to optimize the value 
+of some welfare function w r θ dependent on the mechanism 
+parameter and resulting play r we define a pessimistic measure 
+w ˆr θ inf w r θ r ∈ ˆr representing the worst-case 
+welfare of the game induced by θ assuming that agents play some 
+joint strategy in ˆr typically we care about w n θ θ the 
+worst-case outcome of playing some solution 
+on some problems we can gain considerable advantage by 
+using an aggregation function to map the welfare outcome of a game 
+ 
+we generally adopt nash equilibrium as the solution concept and 
+thus take n θ to be the set of equilibria however much of the 
+methodology developed here could be employed with alternative 
+criteria for deriving agent behavior from a game definition 
+ 
+again alternatives are available for example if one has a 
+probability distribution over the solution set n θ it would be natural 
+to take the expectation of w r θ instead 
+ 
+specified in terms of agent strategies to an equivalent welfare 
+outcome specified in terms of a lower-dimensional summary 
+definition a function φ r × · · · × rm → rq 
+is an 
+aggregation function if m ≥ q and w r θ v φ r θ for 
+some function v 
+we overload the function symbol to apply to sets of strategy 
+profiles φ ˆr φ r r ∈ ˆr for convenience of exposition we 
+write φ 
+ θ to mean φ n θ 
+using an aggregation function yields a more compact 
+representation of strategy profiles for example suppose-as in our 
+application below-that an agent s strategy is defined by a numeric 
+parameter if all we care about is the total value played we may 
+take φ a 
+pm 
+i ai if we have chosen our aggregator carefully 
+we may also capture structure not obvious otherwise for example 
+φ 
+ θ could be decreasing in θ whereas n θ might have a more 
+complex structure 
+given a description of the solution correspondence n θ 
+ equivalently φ 
+ θ the designer faces a standard optimization 
+problem alternatively given a simulator that could produce an 
+unbiased sample from the distribution of w n θ θ for any θ the 
+designer would be faced with another much appreciated problem 
+in the literature simulation optimization 
+however even for a game γθ with known payoffs it may be 
+computationally intractable to solve for nash equilibria particularly if 
+the game has large or infinite strategy sets additionally we wish 
+to study games where the payoffs are not explicitly given but must 
+be determined from simulation or other experience with the game 
+accordingly we assume that we are given a possibly noisy data 
+set of payoff realizations do θ 
+ a 
+ u 
+ θk 
+ ak 
+ uk 
+ 
+where for every data point θi 
+is the observed mechanism parameter 
+setting ai 
+is the observed pure strategy profile of the participants 
+and ui 
+is the corresponding realization of agent payoffs we may 
+also have additional data generated by a possibly noisy simulator 
+ds θk 
+ ak 
+ uk 
+ θk l 
+ ak l 
+ uk l 
+ let d 
+ do ds be the combined data set either do or ds may be null 
+for a particular problem 
+in the remainder of this paper we apply our modeling approach 
+together with several empirical game-theoretic methods in order to 
+answer questions regarding the design of the tac scm scenario 
+ empirical design analysis 
+since our data comes in the form of payoff experience and not as 
+the value of an objective function for given settings of the control 
+variable we can no longer rely on the methods for optimizing 
+functions using simulations indeed a fundamental aspect of our design 
+problem involves estimating the nash equilibrium correspondence 
+furthermore we cannot rely directly on the convergence results 
+that abound in the simulation optimization literature and must 
+establish probabilistic analysis methods tailored for our problem 
+setting 
+ tac scm design problem 
+we describe our empirical design analysis methods by presenting 
+a detailed application to the tac scm scenario introduced above 
+recall that during the tournament the designers of the 
+supplychain game chose to dramatically increase storage costs as a 
+measure aimed at curbing day- procurement to little avail here we 
+systematically explore the relationship between storage costs and 
+ 
+this is often the case for real games of interest where natural 
+language or algorithmic descriptions may substitute for a formal 
+specification of strategy and payoff functions 
+the aggregate quantity of components procured on day in 
+equilibrium in doing so we consider several questions raised during and 
+after the tournament first does increasing storage costs actually 
+reduce day- procurement second was the excessive day- 
+procurement that was observed during the tournament rational 
+and third could increasing storage costs sufficiently have reduced 
+day- procurement to an acceptable level and if so what should 
+the setting of storage costs have been it is this third question that 
+defines the mechanism design aspect of our analysis 
+to apply our methods we must specify the agent strategy sets 
+the designer s welfare function the mechanism parameter space 
+and the source of data we restrict the agent strategies to be a 
+multiplier on the quantity of the day- requests by one of the 
+finalists deep maize in the tac scm tournament we further 
+restrict it to the set since any strategy below is illegal 
+and strategies above are extremely aggressive thus unlikely to 
+provide refuting deviations beyond those available from included 
+strategies and certainly not part of any desirable equilibrium all 
+other behavior is based on the behavior of deep maize and is 
+identical for all agents this choice can provide only an estimate of the 
+actual tournament behavior of a typical agent however we 
+believe that the general form of the results should be robust to changes 
+in the full agent behavior 
+we model the designer s welfare function as a threshold on the 
+sum of day- purchases let φ a 
+p 
+i ai be the 
+aggregation function representing the sum of day- procurement of the six 
+agents participating in a particular supply-chain game for mixed 
+strategy profiles s we take expectation of φ with respect to the 
+mixture the designer s welfare function w n θ θ is then given by 
+i sup φ 
+ θ ≤ α where α is the maximum acceptable level of 
+day- procurement and i is the indicator function the designer 
+selects a value θ of storage costs expressed as an annual 
+percentage of the baseline value of components in the inventory charged 
+daily from the set θ r 
+ since the designer s decision 
+depends only on φ 
+ θ we present all of our results in terms of the 
+value of the aggregation function 
+ estimating nash equilibria 
+the objective of tac scm agents is to maximize profits 
+realized over a game instance thus if we fix a strategy for each agent 
+at the beginning of the simulation and record the corresponding 
+profits at the end we will have obtained a data point in the form 
+ a u a if we also have fixed the parameter θ of the simulator 
+the resulting data point becomes part of our data set d this data 
+set then contains data only in the form of pure strategies of 
+players and their corresponding payoffs and consequently in order to 
+formulate the designer s problem as optimization we must first 
+determine or approximate the set of nash equilibria of each game γθ 
+thus we need methods for approximating nash equilibria for 
+infinite games below we describe the two methods we used in our 
+study the first has been explored empirically before whereas the 
+second is introduced here as the method specifically designed to 
+approximate a set of nash equilibria 
+ payoff function approximation 
+the first method for estimating nash equilibria based on data 
+uses supervised learning to approximate payoff functions of 
+mech 
+we do not address whether and how other measures e g 
+constraining procurement directly could have achieved design 
+objectives our approach takes as given some set of design options in 
+this case defined by the storage cost parameter in principle our 
+methods could be applied to a different or larger design space 
+though with corresponding complexity growth 
+ 
+anism participants from a data set of game experience once 
+approximate payoff functions are available for all players the nash 
+equilibria may be either found analytically or approximated using 
+numerical techniques depending on the learning model in what 
+follows we estimate only a sample nash equilibrium using this 
+technique although this restriction can be removed at the expense 
+of additional computation time 
+one advantage of this method is that it can be applied to any 
+data set and does not require the use of a simulator thus we can 
+apply it when ds ∅ if a simulator is available we can generate 
+additional data to build confidence in our initial estimates 
+we tried the following methods for approximating payoff 
+functions quadratic regression qr locally weighted average lwa 
+and locally weighted linear regression lwlr we also used 
+control variates to reduce the variance of payoff estimates as in our 
+previous empirical game-theoretic analysis of tac scm- 
+the quadratic regression model makes it possible to compute 
+equilibria of the learned game analytically for the other methods 
+we applied replicator dynamics to a discrete approximation of 
+the learned game the expected total day- procurement in 
+equilibrium was taken as the estimate of an outcome 
+ search in strategy profile space 
+when we have access to a simulator we can also use directed 
+search through profile space to estimate the set of nash equilibria 
+which we describe here after presenting some additional notation 
+definition a strategic neighbor of a pure strategy profile 
+a is a profile that is identical to a in all but one strategy we define 
+snb a d as the set of all strategic neighbors of a available in 
+the data set d similarly we define snb a ˜d to be all strategic 
+neighbors of a not in d finally for any a ∈ snb a d we define 
+the deviating agent as i a a 
+definition the -bound ˆ of a pure strategy profile a is 
+defined as maxa ∈snb a d max ui a a a −ui a a a we 
+say that a is a candidate δ-equilibrium for δ ≥ ˆ 
+when snb a ˜d ∅ i e all strategic neighbors are represented 
+in the data a is confirmed as an ˆ-nash equilibrium 
+our search method operates by exploring deviations from 
+candidate equilibria we refer to it as bestfirstsearch as it selects 
+with probability one a strategy profile a ∈ snb a ˜d that has the 
+smallest ˆin d 
+finally we define an estimator for a set of nash equilibria 
+definition for a set k define co k to be the convex 
+hull of k let bδ be the set of candidates at level δ we define 
+ˆφ 
+ θ co φ a a ∈ bδ for a fixed δ to be an estimator of 
+φ 
+ θ 
+in words the estimate of a set of equilibrium outcomes is the 
+convex hull of all aggregated strategy profiles with -bound below 
+some fixed δ this definition allows us to exploit structure 
+arising from the aggregation function if two profiles are close in terms 
+of aggregation values they may be likely to have similar -bounds 
+in particular if one is an equilibrium the other may be as well we 
+present some theoretical support for this method of estimating the 
+set of nash equilibria below 
+since the game we are interested in is infinite it is necessary to 
+terminate bestfirstsearch before exploring the entire space of 
+strat 
+for example we can use active learning techniques to improve 
+the quality of payoff function approximation in this work we 
+instead concentrate on search in strategy profile space 
+egy profiles we currently determine termination time in a 
+somewhat ad-hoc manner based on observations about the current set of 
+candidate equilibria 
+ data generation 
+our data was collected by simulating tac scm games on a 
+local version of the tac scm server which has a configuration 
+setting for the storage cost agent strategies in simulated games 
+were selected from the set in order to have 
+positive probability of generating strategic neighbors 
+a 
+baseline data set do was generated by sampling randomly generated 
+strategy profiles for each θ ∈ between 
+and games were run for each profile after discarding games that 
+had various flaws 
+we used search to generate a simulated data 
+set ds performing between and iterations of bestfirstsearch 
+for each of the above settings of θ since simulation cost is 
+extremely high a game takes nearly hour to run we were able to 
+run a total of games over the span of more than six months 
+for comparison to get the entire description of an empirical game 
+defined by the restricted finite joint strategy space for each value 
+of θ ∈ would have required at least 
+games sampling each profile times 
+ results 
+ analysis of the baseline data set 
+we applied the three learning methods described above to the 
+baseline data set do additionally we generated an estimate of the 
+nash equilibrium correspondence ˆφ 
+ θ by applying definition 
+with δ e the results are shown in figure as we can see 
+the correspondence ˆφ 
+ θ has little predictive power based on do 
+and reveals no interesting structure about the game in contrast all 
+three learning methods suggest that total day- procurement is a 
+decreasing function of storage costs 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+storage cost 
+totalday- procurement 
+lwa 
+lwlr 
+qr 
+baselinemin 
+baselinemax 
+figure aggregate day- procurement estimates based on do 
+the correspondence ˆφ 
+ θ is the interval between 
+baselinemin and baselinemax 
+ 
+generally search is terminated once the set of candidate equilibria 
+is small enough to draw useful conclusions about the likely range 
+of equilibrium strategies in the game 
+ 
+of course we do not restrict our nash equilibrium estimates to 
+stay in this discrete subset of 
+ 
+for example if we detected that any agent failed during the 
+game failures included crashes network connectivity problems 
+and other obvious anomalies the game would be thrown out 
+ 
+ analysis of search data 
+to corroborate the initial evidence from the learning methods 
+we estimated ˆφ 
+ θ again using δ e on the data set d 
+ do ds where ds is data generated through the application of 
+bestfirstsearch the results of this estimate are plotted against the 
+results of the learning methods trained on do 
+ 
+in figure first 
+we note that the addition of the search data narrows the range of 
+potential equilibria substantially furthermore the actual point 
+predictions of the learning methods and those based on -bounds 
+after search are reasonably close combining the evidence gathered 
+from these two very different approaches to estimating the outcome 
+correspondence yields a much more compelling picture of the 
+relationship between storage costs and day- procurement than either 
+method used in isolation 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+storage cost 
+totayday- procurement 
+lwa 
+lwlr 
+qr 
+searchmin 
+searchmax 
+figure aggregate day- procurement estimates based on 
+search in strategy profile space compared to function 
+approximation techniques trained on do the correspondence ˆφ 
+ θ 
+for d do ds is the interval between searchmin and 
+searchmax 
+this evidence supports the initial intuition that day- 
+procurement should be decreasing with storage costs it also confirms that 
+high levels of day- procurement are a rational response to the 
+tournament setting of average storage cost which corresponds to 
+θ the minimum prediction for aggregate procurement at 
+this level of storage costs given by any experimental methods is 
+approximately this is quite high as it corresponds to an 
+expected commitment of of the total supplier capacity for the 
+entire game the maximum prediction is considerably higher at 
+in the actual competition aggregate day- procurement was 
+equivalent to on the scale used here our predictions 
+underestimate this outcome to some degree but show that any rational 
+outcome was likely to have high day- procurement 
+ extrapolating the solution correspondence 
+we have reasonably strong evidence that the outcome 
+correspondence is decreasing however the ultimate goal is to be able to 
+either set the storage cost parameter to a value that would curb day- 
+procurement in equilibrium or conclude that this is not possible 
+to answer this question directly suppose that we set a 
+conservative threshold α on aggregate day- procurement 
+linear 
+ 
+it is unclear how meaningful the results of learning would be if 
+ds were added to the training data set indeed the additional data 
+may actually increase the learning variance 
+ 
+recall that designer s objective is to incentivize aggergate day- 
+procurement that is below the threshold α our threshold here still 
+represents a commitment of over of the suppliers capacity for 
+extrapolation of the maximum of the outcome correspondence 
+estimated from d yields θ 
+the data for θ were collected in the same way as for other 
+storage cost settings with randomly generated profiles followed 
+by iterations of bestfirstsearch figure shows the detailed 
+-bounds for all profiles in terms of their corresponding values of 
+φ 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ e 
+ 
+total day- procurement 
+ε−boundfigure values of ˆ for profiles explored using search when 
+θ strategy profiles explored are presented in terms of 
+the corresponding values of φ a the gray region corresponds 
+to ˆφ 
+ with δ m 
+the estimated set of aggregate day- outcomes is very close to 
+that for θ indicating that there is little additional benefit 
+to raising storage costs above observe that even the lower 
+bound of our estimated set of nash equilibria is well above the 
+target day- procurement of furthermore payoffs to agents are 
+almost always negative at θ consequently increasing the 
+costs further would be undesirable even if day- procurement could 
+eventually be curbed since we are reasonably confident that φ 
+ θ 
+is decreasing in θ we also do not expect that setting θ somewhere 
+between and will achieve the desired result 
+we conclude that it is unlikely that day- procurement could ever 
+be reduced to a desirable level using any reasonable setting of the 
+storage cost parameter that our predictions tend to underestimate 
+tournament outcomes reinforces this conclusion to achieve the 
+desired reduction in day- procurement requires redesigning other 
+aspects of the mechanism 
+ probabilistic analysis 
+our empirical analysis has produced evidence in support of the 
+conclusion that no reasonable setting of storage cost was likely to 
+sufficiently curb excessive day- procurement in tac scm 
+all of this evidence has been in the form of simple interpolation and 
+extrapolation of estimates of the nash equilibrium correspondence 
+these estimates are based on simulating game instances and are 
+subject to sampling noise contributed by the various stochastic 
+elements of the game in this section we develop and apply methods 
+for evaluating the sensitivity of our -bound calculations to such 
+stochastic effects 
+suppose that all agents have finite and small pure strategy sets 
+a thus it is feasible to sample the entire payoff matrix of the 
+game additionally suppose that noise is additive with zero-mean 
+the entire game on average so in practice we would probably want 
+the threshold to be even lower 
+ 
+and finite variance that is ui a ui a ˜ξi a where ui a is 
+the observed payoff to i when a was played ui a is the actual 
+corresponding payoff and ˜ξi a is a mean-zero normal random 
+variable we designate the known variance of ˜ξi a by σ 
+i a thus 
+we assume that ˜ξi a is normal with distribution n σ 
+i a 
+we take ¯ui a to be the sample mean over all ui a in d and 
+follow chang and huang to assume that we have an improper 
+prior over the actual payoffs ui a and sampling was independent 
+for all i and a we also rely on their result that ui a ¯ui a 
+¯ui a −zi a σi a 
+p 
+ni a are independent with posterior 
+distributions n ¯ui a σ 
+i a ni a where ni a is the number of 
+samples taken of payoffs to i for pure profile a and zi a ∼ 
+n 
+we now derive a generic probabilistic bound that a profile a ∈ 
+a is an -nash equilibrium if ui · ¯ui · are independent for all 
+i ∈ i and a ∈ a we have the following result from this point on 
+we omit conditioning on ¯ui · for brevity 
+proposition 
+pr 
+„ 
+max 
+i∈i 
+max 
+b∈ai 
+ui b a−i − ui a ≤ 
+ 
+ 
+ 
+y 
+i∈i 
+z 
+r 
+y 
+b∈ai\ai 
+pr ui b a−i ≤ u fui a u du 
+ 
+where fui a u is the pdf of n ¯ui a σi a 
+the proofs of this and all subsequent results are in the appendix 
+the posterior distribution of the optimum mean of n samples 
+derived by chang and huang is 
+pr ui a ≤ c − φ 
+ p 
+ni a ¯ui a − c 
+σi a 
+ 
+ 
+where a ∈ a and φ · is the n distribution function 
+combining the results and we obtain a probabilistic 
+confidence bound that a ≤ γ for a given γ 
+now we consider cases of incomplete data and use the results 
+we have just obtained to construct an upper bound restricted to 
+profiles represented in data on the distribution of sup φ 
+ θ and 
+inf φ 
+ θ assuming that both are attainable 
+pr sup φ 
+ θ ≤ x ≤d 
+pr ∃a ∈ d φ a ≤ x ∧ a ∈ n θ ≤ 
+x 
+a∈d φ a ≤x 
+pr a ∈ n θ 
+x 
+a∈d φ a ≤x 
+pr a 
+where x is a real number and ≤d indicates that the upper bound 
+accounts only for strategies that appear in the data set d since the 
+events ∃a ∈ d φ a ≤ x ∧ a ∈ n θ and inf φ 
+ θ ≤ x 
+are equivalent this also defines an upper bound on the 
+probability of inf φ 
+ θ ≤ x the values thus derived comprise the 
+tables and 
+φ 
+ θ θ θ θ 
+ 
+ 
+ 
+ 
+table upper bounds on the distribution of inf φ 
+ θ 
+restricted to d for θ ∈ when n θ is a set of nash 
+equilibria 
+φ 
+ θ θ θ θ 
+ 
+ 
+ 
+ 
+table upper bounds on the distribution of inf φ 
+ θ 
+restricted to d for θ ∈ when n θ is a set of 
+nash equilibria 
+tables and suggest that the existence of any equilibrium with 
+φ a is unlikely for any θ that we have data for although 
+this judgment as we mentioned is only with respect to the profiles 
+we have actually sampled we can then accept this as another piece 
+of evidence that the designer could not find a suitable setting of θ 
+to achieve his objectives-indeed the designer seems unlikely to 
+achieve his objective even if he could persuade participants to play 
+a desirable equilibrium 
+table also provides additional evidence that the agents in the 
+ tac scm tournament were indeed rational in procuring large 
+numbers of components at the beginning fo the game if we look at 
+the third column of this table which corresponds to θ we 
+can gather that no profile a in our data with φ a is very likely 
+to be played in equilibrium 
+the bounds above provide some general evidence but ultimately 
+we are interested in a concrete probabilistic assessment of our 
+conclusion with respect to the data we have sampled particularly we 
+would like to say something about what happens for the settings of 
+θ for which we have no data to derive an approximate 
+probabilistic bound on the probability that no θ ∈ θ could have achieved the 
+designer s objective let ∪j 
+j θj be a partition of θ and assume 
+that the function sup φ 
+ θ satisfies the lipschitz condition with 
+lipschitz constant aj on each subset θj 
+since we have 
+determined that raising the storage cost above is undesirable due to 
+secondary considerations we restrict attention to θ we 
+now define each subset j to be the interval between two points for 
+which we have produced data thus 
+θ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+with j running between and corresponding to subintervals 
+above we will further denote each θj by aj bj 
+then the 
+following proposition gives us an approximate upper bound 
+on 
+the probability that sup φ 
+ θ ≤ α 
+proposition 
+pr 
+ 
+θ∈θ 
+sup φ θ ≤ α ≤d 
+ x 
+j 
+x 
+y z∈d y z≤cj 
+ 
+  
+x 
+a φ a z 
+pr a 
+ 
+a × 
+× 
+ 
+  
+x 
+a φ a y 
+pr a 
+ 
+a 
+where cj α aj bj − aj and ≤d indicates that the upper 
+bound only accounts for strategies that appear in the data set d 
+ 
+a function that satisfies the lipschitz condition is called lipschitz 
+continuous 
+ 
+the treatment for the interval is identical 
+ 
+it is approximate in a sense that we only take into account 
+strategies that are present in the data 
+ 
+due to the fact that our bounds are approximate we cannot use 
+them as a conclusive probabilistic assessment instead we take this 
+as another piece of evidence to complement our findings 
+even if we can assume that a function that we approximate from 
+data is lipschitz continuous we rarely actually know the lipschitz 
+constant for any subset of θ thus we are faced with a task of 
+estimating it from data here we tried three methods of doing 
+this the first one simply takes the highest slope that the function 
+attains within the available data and uses this constant value for 
+every subinterval this produces the most conservative bound and 
+in many situations it is unlikely to be informative 
+an alternative method is to take an upper bound on slope 
+obtained within each subinterval using the available data this 
+produces a much less conservative upper bound on probabilities 
+however since the actual upper bound is generally greater for each 
+subinterval the resulting probabilistic bound may be deceiving 
+a final method that we tried is a compromise between the two 
+above instead of taking the conservative upper bound based on 
+data over the entire function domain θ we take the average of 
+upper bounds obtained at each θj the bound at an interval is then 
+taken to be the maximum of the upper bound for this interval and 
+the average upper bound for all intervals 
+the results of evaluating the expression for 
+pr 
+ 
+θ∈θ 
+sup φ 
+ θ ≤ α 
+when α are presented in table in terms of our claims in 
+maxj aj aj max aj ave aj 
+ 
+table approximate upper bound on probability that some 
+setting of θ ∈ will satisfy the designer objective with 
+target α different methods of approximating the upper 
+bound on slope in each subinterval j are used 
+this work the expression gives an upper bound on the probability 
+that some setting of θ i e storage cost in the interval will 
+result in total day- procurement that is no greater in any 
+equilibrium than the target specified by α and taken here to be as we 
+had suspected the most conservative approach to estimating the 
+upper bound on slope presented in the first column of the table 
+provides us little information here however the other two 
+estimation approaches found in columns two and three of table 
+suggest that we are indeed quite confident that no reasonable setting of 
+θ ∈ would have done the job given the tremendous 
+difficulty of the problem this result is very strong 
+still we must be 
+very cautious in drawing too heroic a conclusion based on this 
+evidence certainly we have not checked all the profiles but only 
+a small proportion of them infinitesimal if we consider the 
+entire continuous domain of θ and strategy sets nor can we expect 
+ever to obtain enough evidence to make completely objective 
+conclusions instead the approach we advocate here is to collect as 
+much evidence as is feasible given resource constraints and make 
+the most compelling judgment based on this evidence if at all 
+possible 
+ convergence results 
+at this point we explore abstractly whether a design parameter 
+choice based on payoff data can be asymptotically reliable 
+ 
+since we did not have all the possible deviations for any profile 
+available in the data the true upper bounds may be even lower 
+as a matter of convenience we will use notation un i a to 
+refer to a payoff function of player i based on an average over n 
+i i d samples from the distribution of payoffs we also assume that 
+un i a are independent for all a ∈ a and i ∈ i we will use 
+the notation γn to refer to the game i r ui n · whereas γ 
+will denote the underlying game i r ui · similarly we 
+define n r to be r with respect to the game γn 
+in this section we show that n s → s a s uniformly on 
+the mixed strategy space for any finite game and furthermore that 
+all mixed strategy nash equilibria in empirical games eventually 
+become arbitrarily close to some nash equilibrium strategies in the 
+underlying game we use these results to show that under certain 
+conditions the optimal choice of the design parameter based on 
+empirical data converges almost surely to the actual optimum 
+theorem suppose that i ∞ a ∞ then n s → 
+ s a s uniformly on s 
+recall that n is a set of all nash equilibria of γ if we define 
+nn γ s ∈ s n s ≤ γ we have the following corollary to 
+theorem 
+corollary for every γ there is m such that ∀n ≥ 
+m n ⊂ nn γ a s 
+proof since s for every s ∈ n we can find m large 
+enough such that pr supn≥m sups∈n n s γ 
+by the corollary for any game with a finite set of pure strategies 
+and for any all nash equilibria lie in the set of empirical 
+-nash equilibria if enough samples have been taken as we now 
+show this provides some justification for our use of a set of profiles 
+with a non-zero -bound as an estimate of the set of nash equilibria 
+first suppose we conclude that for a particular setting of θ 
+sup ˆφ 
+ θ ≤ α then since for any fixed n θ ⊂ 
+nn θ when n is large enough 
+sup φ 
+ θ sup 
+s∈n θ 
+φ s ≤ 
+sup 
+s∈nn θ 
+φ s sup ˆφ 
+ θ ≤ α 
+for any such n thus since we defined the welfare function of 
+the designer to be i sup φ 
+ θ ≤ α in our domain of interest 
+the empirical choice of θ satisfies the designer s objective thereby 
+maximizing his welfare function 
+alternatively suppose we conclude that inf ˆφ 
+ θ α for 
+every θ in the domain then 
+α inf ˆφ 
+ θ inf 
+s∈nn θ 
+φ s ≤ inf 
+s∈n θ 
+φ s ≤ 
+≤ sup 
+s∈n θ 
+φ s sup φ 
+ θ 
+for every θ and we can conclude that no setting of θ will satisfy 
+the designer s objective 
+now we will show that when the number of samples is large 
+enough every nash equilibrium of γn is close to some nash 
+equilibrium of the underlying game this result will lead us to consider 
+convergence of optimizers based on empirical data to actual 
+optimal mechanism parameter settings 
+we first note that the function s is continuous in a finite game 
+lemma let s be a mixed strategy set defined on a finite 
+game then s → r is continuous 
+ 
+for the exposition that follows we need a bit of additional 
+notation first let z d be a metric space and x y ⊂ z and define 
+directed hausdorff distance from x to y to be 
+h x y sup 
+x∈x 
+inf 
+y∈y 
+d x y 
+observe that u ⊂ x ⇒ h u y ≤ h x y further define 
+bs x δ to be an open ball in s ⊂ z with center x ∈ s and 
+radius δ now let nn denote all nash equilibria of the game γn 
+and let 
+nδ 
+ 
+x∈n 
+bs x δ 
+that is the union of open balls of radius δ with centers at nash 
+equilibria of γ note that h nδ n δ 
+we can then prove the following general result 
+theorem suppose i ∞ and a ∞ then almost 
+surely h nn n converges to 
+we will now show that in the special case when θ and a are 
+finite and each γθ has a unique nash equilibrium the estimates 
+ˆθ of optimal designer parameter converge to an actual optimizer 
+almost surely 
+let ˆθ arg maxθ∈θ w nn θ θ where n is the number of 
+times each pure profile was sampled in γθ for every θ and let θ 
+ 
+arg maxθ∈θ w n θ θ 
+theorem suppose n θ for all θ ∈ θ and suppose 
+that θ and a are finite let w s θ be continuous at the unique 
+s 
+ θ ∈ n θ for each θ ∈ θ then ˆθ is a consistent estimator of 
+θ 
+if w n θ θ is defined as a supremum infimum or 
+expectation over the set of nash equilibria in fact ˆθ → θ 
+a s in each of 
+these cases 
+the shortcoming of the above result is that within our 
+framework the designer has no way of knowing or ensuring that γθ do 
+indeed have unique equilibria however it does lend some 
+theoretical justification for pursuing design in this manner and perhaps 
+will serve as a guide for more general results in the future 
+ related work 
+the mechanism design literature in economics has typically 
+explored existence of a mechanism that implements a social choice 
+function in equilibrium additionally there is an extensive 
+literature on optimal auction design of which the work by roger 
+myerson is perhaps the most relevant in much of this work 
+analytical results are presented with respect to specific utility 
+functions and accounting for constraints such as incentive compatibility 
+and individual rationality 
+several related approaches to search for the best mechanism 
+exist in the computer science literature conitzer and sandholm 
+developed a search algorithm when all the relevant game 
+parameters are common knowledge when payoff functions of players 
+are unknown a search using simulations has been explored as an 
+alternative one approach in that direction taken in and 
+is to co-evolve the mechanism parameter and agent strategies 
+using some notion of social utility and agent payoffs as fitness 
+criteria an alternative to co-evolution explored in was to 
+optimize a well-defined welfare function of the designer using genetic 
+programming in this work the authors used a common learning 
+strategy for all agents and defined an outcome of a game induced 
+by a mechanism parameter as the outcome of joint agent learning 
+most recently phelps et al compared two mechanisms based 
+on expected social utility with expectation taken over an empirical 
+distribution of equilibria in games defined by heuristic strategies 
+as in 
+ conclusion 
+in this work we spent considerable effort developing general 
+tactics for empirical mechanism design we defined a formal 
+gametheoretic model of interaction between the designer and the 
+participants of the mechanism as a two-stage game we also described in 
+some generality the methods for estimating a sample nash 
+equilibrium function when the data is extremely scarce or a nash 
+equilibrium correspondence when more data is available our techniques 
+are designed specifically to deal with problems in which both the 
+mechanism parameter space and the agent strategy sets are infinite 
+and only a relatively small data set can be acquired 
+a difficult design issue in the tac scm game which the tac 
+community has been eager to address provides us with a setting 
+to test our methods in applying empirical game analysis to the 
+problem at hand we are fully aware that our results are inherently 
+inexact thus we concentrate on collecting evidence about the 
+structure of the nash equilibrium correspondence in the end we 
+can try to provide enough evidence to either prescribe a parameter 
+setting or suggest that no setting is possible that will satisfy the 
+designer in the case of tac scm our evidence suggests quite 
+strongly that storage cost could not have been effectively adjusted 
+in the tournament to curb excessive day- procurement 
+without detrimental effects on overall profitability the success of our 
+analysis in this extremely complex environment with high 
+simulation costs makes us optimistic that our methods can provide 
+guidance in making mechanism design decisions in other challenging 
+domains the theoretical results confirm some intuitions behind 
+the empirical mechanism design methods we have introduced and 
+increases our confidence that our framework can be effective in 
+estimating the best mechanism parameter choice in relatively general 
+settings 
+acknowledgments 
+we thank terence kelly matthew rudary and satinder singh for 
+helpful comments on earlier drafts of this work this work was 
+supported in part by nsf grant iis- and the darpa real 
+strategic reasoning program 
+ references 
+ r arunachalam and n m sadeh the supply chain trading 
+agent competition electronic commerce research and 
+applications - 
+ m benisch a greenwald v naroditskiy and m tschantz 
+a stochastic programming approach to scheduling in tac 
+scm in fifth acm conference on electronic commerce 
+pages - new york 
+ y -p chang and w -t huang generalized confidence 
+intervals for the largest value of some functions of 
+parameters under normality statistica sinica - 
+ 
+ d cliff evolution of market mechanism through a 
+continuous space of auction-types in congress on 
+evolutionary computation 
+ d a cohn z ghahramani and m i jordan active 
+learning with statistical models journal of artificial 
+intelligence research - 
+ v conitzer and t sandholm an algorithm for automatically 
+designing deterministic mechanisms without payments in 
+ 
+third international joint conference on autonomous agents 
+and multi-agent systems pages - 
+ d friedman evolutionary games in economics 
+econometrica - may 
+ r keener statistical theory a medley of core topics 
+university of michigan department of statistics 
+ c kiekintveld y vorobeychik and m p wellman an 
+analysis of the supply chain management trading agent 
+competition in ijcai- workshop on trading agent 
+design and analysis edinburgh 
+ a mas-colell m whinston and j green microeconomic 
+theory oxford university press 
+ r b myerson optimal auction design mathematics of 
+operations research - february 
+ s olafsson and j kim simulation optimization in 
+e yucesan c -h chen j snowdon and j charnes editors 
+ winter simulation conference 
+ d pardoe and p stone tactex- a supply chain 
+management agent sigecom exchanges - 
+ s phelps s parsons and p mcburney automated agents 
+versus virtual humans an evolutionary game theoretic 
+comparison of two double-auction market designs in 
+workshop on agent mediated electronic commerce vi 
+ 
+ s phelps s parsons p mcburney and e sklar 
+co-evolution of auction mechanisms and trading strategies 
+towards a novel approach to microeconomic design in 
+ecomas workshop 
+ s phelps s parsons e sklar and p mcburney using 
+genetic programming to optimise pricing rules for a 
+double-auction market in workshop on agents for electronic 
+commerce 
+ y vorobeychik m p wellman and s singh learning 
+payoff functions in infinite games in nineteenth 
+international joint conference on artificial intelligence 
+pages - 
+ w e walsh r das g tesauro and j o kephart 
+analyzing complex strategic interactions in multi-agent 
+systems in aaai- workshop on game theoretic and 
+decision theoretic agents 
+ m p wellman j j estelle s singh y vorobeychik 
+c kiekintveld and v soni strategic interactions in a supply 
+chain game computational intelligence - 
+february 
+appendix 
+a proofs 
+a proof of proposition 
+pr 
+„ 
+max 
+i∈i 
+max 
+b∈ai\ai 
+ui b a−i − ui a ≤ 
+ 
+ 
+ 
+y 
+i∈i 
+eui a 
+ 
+pr max 
+b∈ai\ai 
+ui b a−i − ui a ≤ ui a 
+ 
+ 
+ 
+y 
+i∈i 
+z 
+r 
+y 
+b∈ai\ai 
+pr ui b a−i ≤ u fui a u du 
+a proof of proposition 
+first let us suppose that some function f x defined on ai bi 
+satisfy lipschitz condition on ai bi with lipschitz constant ai 
+then the following claim holds 
+claim infx∈ ai bi f x ≥ f ai f bi − ai bi − ai 
+to prove this claim note that the intersection of lines at f ai 
+and f bi with slopes −ai and ai respectively will determine the 
+lower bound on the minimum of f x on ai bi which is a lower 
+bound on infimum of f x on ai bj the line at f ai is 
+determined by f ai −aiai cl and the line at f bi is determined 
+by f bi aibi cr thus the intercepts are cl f ai aiai 
+and cr f bi aibi respectively let x 
+be the point at which 
+these lines intersect then 
+x 
+ − 
+f x 
+ − cr 
+a 
+ 
+f x 
+ − cl 
+a 
+ 
+by substituting the expressions for cr and cl we get the desired 
+result 
+now subadditivity gives us 
+pr 
+ 
+θ∈θ 
+sup φ 
+ θ ≤ α ≤ 
+ x 
+j 
+pr 
+ 
+θ∈θj 
+sup φ 
+ θ ≤ α 
+and by the claim 
+pr 
+ 
+θ∈θj 
+sup φ 
+ θ ≤ α 
+ − pr inf 
+θ∈θj 
+sup φ 
+ θ α ≤ 
+pr sup φ 
+ aj sup φ 
+ bj ≤ α aj bj − aj 
+since we have a finite number of points in the data set for each 
+θ we can obtain the following expression 
+pr sup φ 
+ aj sup φ 
+ bj ≤ cj d 
+x 
+y z∈d y z≤cj 
+pr sup φ 
+ bj y pr sup φ 
+ aj z 
+we can now restrict attention to deriving an upper bound on 
+pr sup φ 
+ θ y for a fixed θ to do this observe that 
+pr sup φ 
+ θ y ≤d pr 
+ 
+a∈d φ a y 
+ a ≤ 
+x 
+a∈d φ a y 
+pr a 
+by subadditivity and the fact that a profile a is a nash equilibrium 
+if and only if a 
+putting everything together yields the desired result 
+a proof of theorem 
+first we will need the following fact 
+claim given a function fi x and a set x maxx∈x f x − 
+maxx∈x f x ≤ maxx∈x f x − f x 
+to prove this claim observe that 
+ max 
+x∈x 
+f x − max 
+x∈x 
+f x 
+ 
+maxx f x − maxx f x if maxx f x ≥ maxx f x 
+maxx f x − maxx f x if maxx f x ≥ maxx f x 
+in the first case 
+max 
+x∈x 
+f x − max 
+x∈x 
+f x ≤ max 
+x∈x 
+ f x − f x ≤ 
+≤ max 
+x∈x 
+ f x − f x 
+ 
+similarly in the second case 
+max 
+x∈x 
+f x − max 
+x∈x 
+f x ≤ max 
+x∈x 
+ f x − f x ≤ 
+≤ max 
+x∈x 
+ f x − f x max 
+x∈x 
+ f x − f x 
+thus the claim holds 
+by the strong law of large numbers un i a → ui a a s for 
+all i ∈ i a ∈ a that is 
+pr lim 
+n→∞ 
+un i a ui a 
+or equivalently for any α and δ there is m i a 
+such that 
+pr sup 
+n≥m i a 
+ un i a − ui a 
+δ 
+ a 
+ ≥ − α 
+by taking m maxi∈i maxa∈a m i a we have 
+pr max 
+i∈i 
+max 
+a∈a 
+sup 
+n≥m 
+ un i a − ui a 
+δ 
+ a 
+ ≥ − α 
+thus by the claim for any n ≥ m 
+sup 
+n≥m 
+ n s − s ≤ 
+max 
+i∈i 
+max 
+ai∈ai 
+sup 
+n≥m 
+ un i ai s−i − ui ai s−i 
+ sup 
+n≥m 
+max 
+i∈i 
+ un i s − ui s ≤ 
+max 
+i∈i 
+max 
+ai∈ai 
+x 
+b∈a−i 
+sup 
+n≥m 
+ un i ai b − ui ai b s−i b 
+ max 
+i∈i 
+x 
+b∈a 
+sup 
+n≥m 
+ un i b − ui b s b ≤ 
+max 
+i∈i 
+max 
+ai∈ai 
+x 
+b∈a−i 
+sup 
+n≥m 
+ un i ai b − ui ai b 
+ max 
+i∈i 
+x 
+b∈a 
+sup 
+n≥m 
+ un i b − ui b 
+max 
+i∈i 
+max 
+ai∈ai 
+x 
+b∈a−i 
+ 
+δ 
+ a 
+ max 
+i∈i 
+x 
+b∈a 
+ 
+δ 
+ a 
+ ≤ δ 
+with probability at least − α note that since s−i a and s a 
+are bounded between and we were able to drop them from 
+the expressions above to obtain a bound that will be valid 
+independent of the particular choice of s furthermore since the above 
+result can be obtained for an arbitrary α and δ we have 
+pr limn→∞ n s s uniformly on s 
+a proof of lemma 
+we prove the result using uniform continuity of ui s and 
+preservation of continuity under maximum 
+claim a function f rk 
+→ r defined by f t 
+pk 
+i ziti 
+where zi are constants in r is uniformly continuous in t 
+the claim follows because f t −f t 
+pk 
+i zi ti−ti ≤ 
+pk 
+i zi ti − ti an immediate result of this for our purposes is 
+that ui s is uniformly continuous in s and ui ai s−i is uniformly 
+continuous in s−i 
+claim let f a b be uniformly continuous in b ∈ b for every 
+a ∈ a with a ∞ then v b maxa∈a f a b is uniformly 
+continuous in b 
+to show this take γ and let b b ∈ b such that b − b 
+δ a ⇒ f a b − f a b γ now take δ mina∈a δ a 
+then whenever b − b δ 
+ v b − v b max 
+a∈a 
+f a b − max 
+a∈a 
+f a b ≤ 
+max 
+a∈a 
+ f a b − f a b γ 
+now recall that s maxi maxai∈ai ui ai s−i − ui s by 
+the claims above maxai∈ai ui ai s−i is uniformly continuous in 
+s−i and ui s is uniformly continuous in s since the difference of 
+two uniformly continuous functions is uniformly continuous and 
+since this continuity is preserved under maximum by our second 
+claim we have the desired result 
+a proof of theorem 
+choose δ first we need to ascertain that the following 
+claim holds 
+claim ¯ mins∈s\nδ 
+ s exists and ¯ 
+since nδ is an open subset of compact s it follows that s \ 
+nδ is compact as we had also proved in lemma that s is 
+continuous existence follows from the weierstrass theorem that 
+¯ is clear since s if and only if s is a nash equilibrium 
+of γ 
+now by theorem for any α there is m such that 
+pr sup 
+n≥m 
+sup 
+s∈s 
+ n s − s ¯ ≥ − α 
+consequently for any δ 
+pr sup 
+n≥m 
+h nn nδ δ ≥ pr ∀n ≥ m nn ⊂ nδ ≥ 
+pr sup 
+n≥m 
+sup 
+s∈n 
+ s ¯ ≥ 
+pr sup 
+n≥m 
+sup 
+s∈s 
+ n s − s ¯ ≥ − α 
+since this holds for an arbitrary α and δ the desired result 
+follows 
+a proof of theorem 
+fix θ and choose δ since w s θ is continuous at s 
+ θ 
+given there is δ such that for every s that is within δ of 
+s 
+ θ w s θ − w s 
+ θ θ by theorem we can find 
+m θ large enough such that all s ∈ nn are within δ of s 
+ θ for 
+all n ≥ m θ with probability consequently for any we 
+can find m θ large enough such that with probability we have 
+supn≥m θ sups ∈nn 
+ w s θ − w s 
+ θ θ 
+let us assume without loss of generality that there is a unique 
+optimal choice of θ now since the set θ is finite there is also the 
+second-best choice of θ if there is only one θ ∈ θ this discussion 
+is moot anyway 
+θ 
+ arg max 
+θ\θ 
+w s 
+ θ θ 
+suppose w l o g that θ 
+is also unique and let 
+∆ w s 
+ θ 
+ θ 
+ − w s 
+ θ 
+ θ 
+ 
+then if we let ∆ and let m maxθ∈θ m θ where each 
+m θ is large enough such that supn≥m θ sups ∈nn 
+ w s θ − 
+w s 
+ θ θ a s the optimal choice of θ based on any 
+empirical equilibrium will be θ 
+with probability thus in 
+particular given any probability distribution over empirical equilibria the 
+best choice of θ will be θ 
+with probability similarly if we take 
+supremum or infimum of w nn θ θ over the set of empirical 
+equilibria in constructing the objective function 
+ 

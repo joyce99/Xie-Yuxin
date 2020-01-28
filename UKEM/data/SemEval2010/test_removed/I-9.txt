@@ -1,0 +1,978 @@
+temporal linear logic as a basis for flexible agent 
+interactions 
+duc q pham james harland 
+school of cs it 
+rmit university 
+gpo box v 
+melbourne australia 
+ qupham jah  cs rmit edu au 
+abstract 
+interactions between agents in an open system such as the 
+internet require a significant degree of flexibility a crucial 
+aspect of the development of such methods is the notion of 
+commitments which provides a mechanism for 
+coordinating interactive behaviors among agents in this paper we 
+investigate an approach to model commitments with tight 
+integration with protocol actions this means that there 
+is no need to have an explicit mapping from protocols 
+actions to operations on commitments and an external 
+mechanism to process and enforce commitments we show how 
+agents can reason about commitments and protocol actions 
+to achieve the end results of protocols using a reasoning 
+system based on temporal linear logic which incorporates both 
+temporal and resource-sensitive reasoning we also discuss 
+the application of this framework to scenarios such as online 
+commerce 
+categories and subject descriptors 
+i distributed artificial intelligence intelligent 
+agents d programming languages language 
+classifications 
+general terms 
+theory design 
+ introduction and motivation 
+recently software development has evolved toward the 
+development of intelligent interconnected systems working 
+in a distributed manner the agent paradigm has become 
+well suited as a design metaphor to deal with complex 
+systems comprising many components each having their own 
+thread of control and purposes and involved in dynamic and 
+complex interactions 
+in multi-agent environments agents often need to interact 
+with each other to fulfill their goals protocols are used to 
+regulate interactions in traditional approaches to protocol 
+specification like those using finite state machines or petri 
+nets protocols are often predetermined legal sequences of 
+interactive behaviors in frequently changing environments 
+such as the internet such fixed sequences can quickly 
+become outdated and are prone to failure therefore agents 
+are required to adapt their interactive behaviors to succeed 
+and interactions among agents should not be constructed 
+rigidly 
+to achieve flexibility as characterized by yolum and singh 
+in interaction protocols should ensure that agents have 
+autonomy over their interactive behaviors and be free from 
+any unnecessary constraints also agents should be allowed 
+to adjust their interactive actions to take advantages of 
+opportunities or handle exceptions that arise during 
+interaction 
+for example consider the scenario below for online sales 
+a merchant mer has cricket bats available for sale with 
+a unit price of dollars a customer cus has cus 
+has a goal of obtaining from mer a cricket bat at some time 
+there are two options for cus to pay if cus uses credit 
+payment mer needs a bank ebank to check cus s credit if 
+cus s credit is approved ebank will arrange the credit 
+payment otherwise cus may then take the option to pay via 
+paypal the interaction ends when goods are delivered and 
+payment is arranged 
+a flexible approach to this example should include several 
+features firstly the payment method used by cus should 
+be at cus s own choice and have the property that if cus s 
+credit check results in a disapproval this exception should 
+also be handled automatically by cus s switching to paypal 
+secondly there should be no unnecessary constraint on the 
+order in which actions are performed such as which of 
+making payments and sending the cricket bat should come first 
+thirdly choosing a sequence of interactive actions should be 
+based on reasoning about the intrinsic meanings of 
+protocol actions which are based on the notion of commitment 
+i e which refers to a strong promise to other agent s to 
+undertake some courses of action 
+current approaches to achieve flexibilities 
+using the notion of commitment make use of an abstract 
+layer of commitments however in these approaches a 
+mapping from protocol actions onto operations on commitments 
+ 
+ - - - - rps c ifaamas 
+as well as handling and enforcement mechanisms of 
+commitments must be externally provided execution of protocol 
+actions also requires concurrent execution of operations on 
+related commitments as a result the overhead of 
+processing the commitment layer makes specification and execution 
+of protocols more complicated and error prone there is also 
+a lack of a logic to naturally express aspects of resources 
+internal and external choices as well as time of protocols 
+rather than creating another layer of commitment outside 
+protocol actions we try to achieve a modeling of 
+commitments that is integrated with protocol actions both 
+commitments and protocol actions can then be reasoned about 
+in one consistent system in order to achieve that we specify 
+protocols in a declarative manner i e what is to be achieved 
+rather then how agents should interact a key to this is using 
+logic temporal logic in particular is suitable for 
+describing and reasoning about temporal constraints while linear 
+logic is quite suitable for modeling resources we suggest 
+using a combination of linear logic and temporal logic to 
+construct a commitment based interaction framework which 
+allows both temporal and resource-related reasoning for 
+interaction protocols this provides a natural manipulation 
+and reasoning mechanism as well as internal enforcement 
+mechanisms for commitments based on proof search 
+this paper is organized as follows section discusses the 
+background material of linear logic temporal linear logic 
+and commitments section introduces our modeling 
+framework and specification of protocols section discusses how 
+our framework can be used for an example of online sale 
+interactions between a merchant a bank and a customer 
+we then discuss the advantages and limitations of using our 
+framework to model interaction protocols and achieve 
+flexibility in section section presents our conclusions and 
+items of further work 
+ background 
+in order to increase the agents autonomy over their 
+interactive behaviors protocols should be specified in terms of 
+what is to be achieved rather than how the agents should act 
+in other words protocols should be specified in a declarative 
+manner using logic is central to this specification process 
+ linear logic 
+logic has been used as formalism to model and reason 
+about agent systems linear logic is well-known for 
+modeling resources as well as updating processes it has been 
+considered in agent systems to support agent negotiation 
+and planning by means of proof search 
+in real life resources are consumed and new resources are 
+created in such logic as classical or temporal logic however 
+a direct mapping of resources onto formulas is troublesome 
+if we model resources like a as one dollar and b as a 
+chocolate bar then a ⇒ b in classical logic is read as 
+from one dollar we can get a chocolate bar this causes 
+problems as the implication allows to get a chocolate bar b 
+is true while retaining one dollar a remains true 
+in order to resolve such resource - formula mapping issues 
+girard proposed the constraints on which formulas will be 
+used exactly once and can no longer be freely added or 
+removed in derivations and hence treating linear logic formulas 
+as resources in linear logic a linear implication a b 
+however allows a to be removed after deriving b which 
+means the dollar is gone after using one dollar to buy a 
+chocolate bar 
+classical conjunction and and disjunction or are recast 
+over different uses of contexts - multiplicative as combining 
+and additive as sharing to come up with four connectives 
+a ⊗ multiplicative conjunction a means that one has two 
+as at the same time which is different from a ∧ a a 
+hence ⊗ allows a natural expression of proportion a ℘ 
+ multiplicative disjunction b means that if not a then b 
+or vice versa but not both a and b 
+the ability to specify choices via the additive connectives 
+is a particularly useful feature of linear logic a additive 
+conjunction b stands for one own choice either of a or 
+b but not both a ⊕ additive disjunction b stands for 
+the possibility of either a or b but we don t know which 
+as remarked in and ⊕ allow choices to be made clear 
+between internal choices one s own and external choices 
+ others choice for instance to specify that the choice of 
+places a or b for goods delivery is ours as the supplier we 
+use a b or is the client s we use a ⊕ b 
+in agent systems this duality between inner and outer 
+choices is manifested by one agent having the power to 
+choose between alternatives and the other having to react 
+to whatever choice is made 
+moreover during interaction the ability to match 
+consumption and supply of resources among agents can 
+simplify the specification of resource allocations linear logic is 
+a natural mechanism to provide this ability in addition 
+it is emphasized in that linear logic is used to model agent 
+states as sets of consumable resources and particularly 
+linear implication is used to model transitions among states 
+and capabilities of agents 
+ temporal linear logic 
+while linear logic provides advantages to modeling and 
+reasoning about resources it does not deal naturally with 
+time constraints temporal logic on the other hand is a 
+formal system which addresses the description and reasoning 
+about the changes of truth values of logic expressions over 
+time temporal logic can be used for specification and 
+verification of concurrent and reactive programs 
+temporal linear logic tll is the result of 
+introducing temporal logic into linear logic and hence is 
+resourceconscious as well as deals with time the temporal 
+operators used are next anytime and sometime 
+formulas with no temporal operators can be considered as 
+being available only at present adding to a formula a 
+i e a means that a can be used only at the next time 
+and exactly once similarly a means that a can be used 
+at any time and exactly once a means that a can be used 
+once at some time 
+though both and refer to a point in time the choice 
+of which time is different regarding the choice is an 
+internal choice as appropriate to one s own capability with 
+ the choice is externally decided by others 
+ commitment 
+the concept of social commitment has been recognized 
+as fundamental to agent interaction indeed social 
+commitment provides intrinsic meanings of protocol actions and 
+states in particular persistence in commitments 
+introduces into agents consideration a certain level of 
+predictability of other agents actions which is important when agents 
+deal with issues of inter-dependencies global constraints or 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+resources sharing 
+commitment based approaches associate protocols actions 
+with operations on commitments and protocol states with 
+the set of effective commitments completing the 
+protocol is done via means-end reasoning on commitment 
+operations to bring the current state to final states where all 
+commitments are resolved from then the corresponding legal 
+sequences of interactive actions are determined hence the 
+approaches systematically enhance a variety of legal 
+computations 
+commitments can be reduced to a more fundamental form 
+known as pre-commitments a pre-commitment here refers 
+to a potential commitment that specifies what the owner 
+agent is willing to commit like performing some actions 
+or achieving a particular state agents can negotiate about 
+pre-commitments by sending proposals of them to others 
+the others can respond by agreeing or disagreeing with the 
+proposal or proposing another pre-commitment once a 
+precommitment is agreed it then becomes a commitment and 
+the process moves from negotiation phase to commitment 
+phase in which the agents act to fulfill their commitments 
+ modeling agent interactions 
+protocols are normally viewed external to agents and are 
+essentially a set of commitments externally imposed on 
+participating agents we take an internal view of protocols 
+i e from the view of participating agents by putting the 
+specification of commitments locally at the respective agents 
+according to their roles 
+such an approach enables agents to manage their own 
+protocol commitments indeed agents no longer accept and 
+follow a given set of commitments but can reason about 
+which commitments of theirs to offer and which 
+commitments of others to take while considering the current needs 
+and the environment protocols arise as commitments are 
+then linked together via agents reasoning based on proof 
+search during the interaction also ongoing changes in the 
+environment are taken as input into the generation of 
+protocols by agent reasoning this is the reverse of other 
+approaches which try to make the specification flexible to 
+accommodate changes in the environment hence it is a step 
+closer to enabling emergent protocols which makes 
+protocols more dynamic and flexible to the context 
+in a nutshell services are what agents are capable of 
+providing to other agents commitments can then be seen to 
+arise from combinations of services i e an agent s 
+capabilia unit of consumable resources is modeled as a 
+proposition in linear logic numeric figures can be used to 
+abbreviate a multiplicative conjunction of the same instances for 
+example dollar dollar ⊗ dollar moreover such 
+a 
+is a shorthand for a 
+in order to address the dynamic manipulation of resources 
+we also include information about the location and 
+ownership in the encoding of resources to address the relocation 
+and changes in possession of resources during agent 
+interaction that resource a is located at agent α and owned 
+by agent β is expressed via a shorthand notation as a αβ 
+which is treated as a logic proposition in our framework 
+this notation can be later extended to a more complex logic 
+construct to reason about changes in location and 
+ownership 
+in our running example a cricket bat cricket b being 
+located at and owned by agent mer is denoted as cricket b m m 
+after a successful sale to the agent customer cus the cricket 
+bat will be relocated to and owned by agent cus the 
+formula cricket b cc will replace the formula cricket b mm 
+to reflect the changes 
+our treatment of unlimited resources is to model it as a 
+number σ of copies of the resource s formula such that the 
+number σ is chosen to be extremely large relative to the 
+context for instance to indicate that the merchant mer 
+can issue an unlimited number of sale quotes at any time 
+we use σ sale quote m m 
+declaration of actions is also modeled in a similar manner 
+as of resources 
+the capabilities of agents refer to producing consuming 
+relocating and changing ownership of resources capabilities 
+are represented by describing the state before and after 
+performing them the general representation form is γ δ in 
+which γ describes the conditions before and δ describes the 
+conditions after the linear implication in linear logic 
+indeed ensures that the conditions before will be transformed 
+into the conditions after moreover some capabilities can 
+be applied at any number of times in the interaction context 
+and their formulas are also preceded by the number σ 
+to take an example we consider the capability of agent 
+mer of selling a cricket bat for dollars the conditions 
+before are dollars and a payment method from agent 
+cus  cc ⊗ pay m c given these by applying thec 
+capability mer will gain dollars  mm and 
+com⊥ 
+ so that cusm 
+mit to providing a cricket bat cricket b m 
+will get a cricket bat cricket b cc together the 
+capability is encoded as  c ⊗ pay m c  mc c 
+⊗ cricket b c 
+m ⊗ 
+ties hence our approach shifts specifying a set of protocol 
+commitments to specifying sets of pre-commitments as 
+capabilities for each agent commitments are then can be 
+⊥ 
+m 
+cricket b m c 
+ modeling commitmentsreasoned about and manipulated by the same logic 
+mechanism as is used for the agents actions resources and goals 
+which greatly simplifies the system 
+our framework uses tll as a means of specifying 
+interaction protocols we encode various concepts such as resource 
+capability and commitment in tll the symmetry between 
+a formula and its negation in tll is explored as a way to 
+model resources and commitments we then discuss the 
+central role of pre-commitments and how they are specified at 
+each participating agent it then remains for agents to 
+reason about pre-commitments to form protocol commitments 
+we discuss the modeling of various types of commitments 
+their fulfillments and enforcement mechanisms 
+due to duality in linear logic positive formulas can be 
+regarded as formulas in supply and negative formulas can 
+be regarded as formulas in demand hence we take an 
+approach of modeling non-conditional or base commitments as 
+negative formulas in particular by turning a formula into 
+its negative form a base commitment to derive the resources 
+or carry out the actions associated with the formula is 
+created in the above example a commitment of agent mer to 
+⊥ 
+m 
+ which are subsequently discharged provide a cricket bat cricket b mm is cricket b m 
+a base commitment is fulfilled discharged whenever the 
+ modeling resources and capabilities committing agent successfully brings about the respective 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+resources or carries out the actions as required by the 
+commitment in tll modeling this means that the 
+corresponding positive formula is derived resolution of 
+commitments can then be naturally carried out by inference in 
+tll for example cricket b m will fulfil the commit-m 
+ment cricket b m⊥ 
+and both formulas are automaticallym 
+removed as cricket b mm ⊗ cricket b m⊥ 
+ m 
+⊥ 
+under a further assumption that agents are expected to 
+resolve all formulas in demand removing negative 
+formulas this creates a driving pressure on agents to resolve base 
+commitments this pressure then becomes a natural and 
+internal enforcement mechanism for base commitments 
+a commitment with conditions or conditional 
+commitment can be modeled by connecting the conditions to base 
+commitments via a linear implication a general form is 
+γ δ where γ is the condition part and δ includes base 
+commitments if the condition γ is derived by consuming 
+γ the linear implication will ensure that δ results which 
+means the base commitments in δ become effective if the 
+conditions can not be achieved the linear implication can 
+not be applied and hence commitment part in the 
+conditional commitment is still inactive 
+in our approach conditional commitments are specified 
+in their potential form as pre-commitments of participating 
+agents pre-commitments are negotiated among agents via 
+proposals and upon being accepted will form conditional 
+commitments among the engaged agents conditional 
+commitments are interpreted as that the condition γ is required 
+of the proposed agent and the commitment part δ is the 
+responsibility of the owner proposing agent indeed such 
+interpretation and the encoding of realize the notion of 
+a conditional commitment that owner agent is willing to 
+commit to deriving δ given the proposed agent satisfies the 
+conditions γ 
+conditional commitments pre-commitments and 
+capabilities all have similar encodings however their differences lie 
+in the phases of commitment that they are in capabilities 
+are used internally by the owner agent and do not involve 
+any commitment pre-commitments can be regarded as 
+capabilities intended for forming conditional commitments 
+upon being accepted pre-commitments will turn into 
+conditional commitments and bring the two engaged agents into a 
+commitment phase as an example consider that mer has a 
+capability of selling cricket bats  cc ⊗pay m cc 
+  m ⊗ cricket b m⊥ 
+⊗ cricket b cc when merm m 
+proposes its capability to cus the capability acts as a 
+precommitment when the proposal gets accepted that 
+precommitment will turn into a conditional commitment in 
+which mer commits to fulfilling the base commitment 
+cricket b m⊥ 
+ which leads to having cricket b cc uponm 
+the condition that cus derives  cc ⊗pay m c whichc 
+leads to having  mm 
+breakable commitments which are in place to provide agents 
+with the desired flexibility to remove itself from its 
+commitments cancel commitments are also modeled naturally in 
+our framework a base commitment com⊥ 
+is turned into 
+a breakable base commitment cond ⊕ com ⊥ 
+ the extra 
+token cond reflects the agent s internal deliberation about 
+when the commitment to derive com is broken once cond 
+is produced due to the logic deduction cond ⊗ cond ⊕ 
+com ⊥ 
+⊥ the commitment cond ⊕ com ⊥ 
+is removed 
+and hence breaking the commitment of deriving com 
+moreover a breakable conditional commitment is modeled as 
+a b instead of a b when the condition a 
+is provided the linear implication brings about b and 
+it is now up to the owner agent s internal choice whether 
+or b is resulted if the agent chooses which practically 
+means nothing is derived then the conditional commitment 
+is deliberately broken 
+ protocol construction 
+given the modeling of various interaction concepts like 
+resource action capability and commitment we will discuss 
+how protocols can be specified 
+in our framework each agent is encoded with the 
+resources actions capabilities pre-commitments any 
+pending commitments that it has pre-commitments which stem 
+from services the agents are capable of providing are 
+designated to be fair exchanges in a pre-commitment all the 
+requirements of the other party are put in the condition part 
+and all the effects to be provided by the owner agent are put 
+on the commitment part to make up a trade-off such a 
+design allows agents to freely propose pre-commitments to any 
+interested parties 
+an example of pre-commitments is that of an agent 
+merchant regarding a sale of a cricket bat  cc ⊗pay m c 
+  mm ⊗ cricket b cc ⊗cricket b m⊥ 
+m 
+ the 
+condition is the requirement that the customer agent provides 
+ dollars which is assumed to be the price of a cricket 
+bat via a payment method the exchange is the cricket bat 
+for the customer cricket b cc and hence is fair to the 
+merchant 
+protocols are specified in terms of sets of pre-commitments 
+at participating agents given some initial interaction 
+commitments a protocol emerges as agents are reasoning about 
+which pre-commitments to offer and accept in order to fulfill 
+these commitments 
+given a such a protocol specification we then discuss how 
+interaction might take place an interaction can start with a 
+request or a proposal when an agent can not achieve some 
+commitments by itself it can make a request of them or 
+propose a relevant pre-commitment to an appropriate agent to 
+fulfill them the choice of which pre-commitments depends 
+on if such pre-commitments can produce the formulas to 
+fulfill the agent s pending commitments 
+when an agent receives a request it searches for 
+precommitments that can together produce the required 
+formulas of the requests those pre-commitments found will 
+be used as proposals to the requesting agents otherwise a 
+failure notice will be returned 
+when a proposal is received the recipient agent also 
+performs a search with the inclusion of the proposal for a proof 
+of those formulas that can resolve its commitments if the 
+search result is positive the proposal is accepted and 
+becomes a commitment the recipient then attempts to fulfill 
+conditions of the commitments otherwise the proposal is 
+refused and no commitment is formed 
+throughout the interaction proof search has played a 
+vital role in protocol construction proof search reveals 
+that some commitments can not be resolved locally or some 
+pre-commitments can be used to resolve pending 
+commitments which prompts the agent to make a request or 
+proposal respectively proof search also determines which 
+precommitments are relevant to fulfillment of a request which 
+helps agents to decide which pre-commitments to propose to 
+answer the request moreover whether a received proposal 
+c 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+is relevant to any pending commitments or not is also 
+determined by a search for proof of these commitments with 
+an inclusion of the proposal conditions of proposals can 
+be resolved by proof search as it links them with the agents 
+current resources and capabilities as well as any relevant 
+precommitments therefore it can be seen that proof search 
+performed by participating agents can link up their 
+respective pre-commitments and turn them into commitments as 
+appropriate which give rise to protocol formation we will 
+demonstrate this via our running example in section 
+ interactive messages 
+agents interact by sending messages we address agent 
+interaction in a simple model which contains messages of 
+type requests proposals acceptance refusal and failure 
+notice 
+we denote source to destination prior to each message 
+to indicate the source and destination of the message for 
+example cust to mer denotes that the message is sent 
+from agent cust to agent mer 
+request messages start with the key word request 
+request formula formulas in request messages 
+are of commitments 
+proposal messages are preceded with propose 
+formulas are of capabilities for example α to β propose 
+γ δ is a proposal from agent α to agent β 
+there are messages that agents use to response to a 
+proposal agents can indicate an acceptance accept or 
+a refusal refuse to notice a failure in fulfilling a 
+request or proposal agents reply with that request or proposal 
+message appended with fail 
+ generating interactions 
+as we have seen temporal linear logic provides an elegant 
+means for encoding the various concepts of agent 
+interaction in a commitment based specification framework 
+appropriate interaction is generated as agents negotiate their 
+specified pre-commitments to fulfill their goals the 
+association among pre-commitments at participating agents and 
+the monitoring of commitments to ensure that all are 
+discharged are performed by proof search in the next section 
+we will demonstrate how specification and generation of 
+interactions in our framework might work 
+ example 
+we return to the online sales scenario introduced in 
+section 
+ specifying protocol 
+we design a set of pre-commitments and capabilities to 
+implement the above scenario for simplicity we refer to 
+them as rules 
+rules at agent mer 
+mer has available at any time cricket bats for sale and 
+can issue sale quotes at any time 
+ cricket b m ⊗ σ sale quote m m m 
+rule mer commits to offering a cricket bat 
+ cricket b m⊥ 
+m 
+ to cus cricket b cc if cus pays 
+dollars  cc either via paypal or credit card the choice 
+is at cus 
+σ  c ⊗ paypal paid m ⊕ credit paid mm c m 
+  m ⊗ cricket b c ⊗ cricket b m⊥ 
+m c m 
+ 
+rule if ebank carries out the credit payment to mer 
+then the requirement of credit payment at mer is fulfilled 
+σ credit paym m credit paid mm b 
+rule if ebank informs mer of its disapproval of cus s 
+credit then mer will also let cus know 
+σ credit not appr m credit not appr cb b 
+rules at agent ebank 
+rule upon receiving a sale quote from mer at the 
+next time point ebank commits to either informing mer 
+that cus s credit is not approved credit not appr mb or 
+arranging a credit payment to mer credit paym mb 
+the decision is dependent on the credibility of cus and hence 
+is external ⊕ to ebank and mer 
+σ sale quote m credit not appr mb ⊕m 
+credit paym mb 
+rules at agent cus 
+cus has an amount of dollars available at any time can 
+be used for credit payment or cash payment  c 
+cus has a commitment of obtaining a cricket bat at some 
+time cricket b cc ⊥ 
+ 
+rule cus will pay mer via paypal if there is an 
+indication from ebank that cus s credit is not approved 
+σ credit not appr c paypal paid mm b 
+ description of the interaction 
+cus requests from mer a cricket bat at some time mer 
+replies with a proposal in which each cricket bat costs 
+dollars cus needs to prepare dollars and payment can 
+be made by credit or via paypal 
+assuming that cus only pays via paypal if credit payment 
+fails cus will let mer charges by credit mer will then ask 
+ebank to arrange a credit payment ebank proposes that 
+mer gives a quote of sale and depending on cus s 
+credibility at the next time point either credit payment will be 
+arranged or a disapproval of cus s credit will be informed 
+mer accepts and fulfills the conditions if the first case 
+happens credit payment is done if the second case happens 
+credit payment is failed cus may back track to take the 
+option paying via paypal 
+once payment is arranged mer will apply its original 
+proposal to satisfy the cus s request of a cricket bat and hence 
+removing one cricket bat and adding dollars into its set 
+of resources 
+ interaction 
+ cus can not fulfill its commitment of cricket b cc ⊥ 
+and hence makes a request to merchant 
+c to m request cricket b cc ⊥ 
+ to meet the request mer searches for applicable rules 
+one applications of rule can derive cricket b c and 
+cricket b c cricket b c mer will propose rule c c 
+at a time instance n to cus as a pre-commitment 
+m to c propose 
+n 
+  c ⊗ paypal paid m ⊕ credit paid mm c m 
+  m ⊗ cricket b c ⊗ cricket b m⊥ 
+m 
+ m c 
+with similar analysis cus determines that given the 
+conc 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ditions can be satisfied the proposals can help to derive its 
+request hence 
+c to m accept 
+cus analyzes the conditions of the accepted proposal by 
+proof search 
+n  cc 
+n paypal paid m or n credit paid mm - -m 
+n  c ⊗ n paypal paid m ⊕ n credit paid mm c m 
+n  c ⊗ paypal paid m ⊕ credit paid mm c m 
+from one way to satisfy the conditions is for cus to 
+derive at the next n time points dollars n 
+  cc 
+and to choose paying via paypal n 
+paypal paid mm 
+or by credit payment n 
+credit paid mm 
+ deriving n 
+  c as cus has dollars it canc 
+make use of dollars  c  c n 
+  c c c c 
+there are two options for payment method the 
+choice is at agent cus we assume that cus prefers 
+credit payment 
+ deriving n 
+credit paid m cus can not derivem 
+this formula by itself hence it will make a request to mer 
+c to m request n 
+credit paid mm ⊥ 
+ 
+ rule at mer is applicable but mer can not derive its 
+condition n 
+credit paym mb hence mer will further 
+make a request to ebank 
+m to e request n 
+credit paym mb ⊥ 
+ebank searches and finds rule applicable because 
+credit paym m will be available one time point after theb 
+rule s application time ebank proposes to mer an instance 
+of rule at the next n - time points 
+ b to m propose n − 
+ quote mm 
+credit not appr m ⊕ credit paym mb b 
+with similar analysis mer accepts the proposal 
+m to b accept 
+the rule condition is fulfilled by mer as quote mm 
+n − 
+quote m hence ebank then applies the proposalm 
+to derive 
+n − 
+ credit not appr m ⊕ credit paym mb b 
+⊕ indicates the choice is external to both agents there are 
+two cases cus s credit is approved or disapproved 
+for simplicity we show only the case where cus s credit is 
+approved at the next n - time point 
+n − 
+ credit not appr mb ⊕ credit paym mb 
+becomes n − 
+credit paym m n 
+credit paym m b b 
+as a result at the next n time points ebank will arrange 
+the credit payment 
+ mer fulfills cus s initial request 
+when any of n 
+paypal paid m if cus pays via pay-m 
+pal or n 
+credit paid m if cus pays by credit card m 
+is derived n 
+ credit paym m ⊕ paypal paid mm ism 
+also derived hence the payment method is arranged 
+together with the other condition  c being satisfied c 
+this allows the initial proposal to be applied by mer to derive 
+n 
+cricket b cc and a commitment of n 
+cricket b m⊥ 
+m 
+for mer which is also resolved by the resource cricket b mm 
+available at mer 
+any values of n such that n − ≥ ⇔ n ≥ will allow 
+mer to fulfill cus s initial request of cricket b cc ⊥ 
+ 
+the interaction ends as all commitments are resolved 
+ flexibility 
+the desired flexibility has been achieved in the example 
+it is cus s own decision to proceed with the preferred 
+payment method also non-determinism that whether cus s 
+credit is disapproved or credit payment is made to mer is 
+faithfully represented if an exception happens that cus s 
+credit is not approved credit not appr c is produced andb 
+cus can backtrack to paying via paypal rule will then 
+be utilized to allow cus to handle the exception by paying 
+via paypal 
+moreover in order to specify that making payments and 
+sending cricket bats can be in any order we can add in 
+front of payment method in rule as follows 
+σ  c ⊗ paypal paid m ⊕ credit paid mm c m 
+  m ⊗ cricket b c ⊗ cricket b m⊥ 
+m 
+ m c 
+this addition in the condition of the rule means that the 
+time of payment can be any time up to cus s choice as 
+long as cus pays and hence the time order between making 
+payments and sending goods becomes flexible 
+ encoding issues 
+ advantages of tll framework 
+our tll framework has demonstrated natural and 
+expressive specification of agent interaction protocols linear 
+implication expresses causal relationship which makes 
+it natural to model a removal or a consumption especially 
+of resources together with its consequences hence in our 
+framework resource transformation is modeled as a linear 
+implication of the consumed resources to the produced 
+resources resource relocation is modeled as a linear 
+implication from a resource at one agent to that resource at the 
+other agent linear implication also ensures that fulfillment 
+of the conditions of a conditional commitment will cause the 
+commitments to happen moreover state updates of agents 
+are resulted from a linear implication from the old state to 
+the current state 
+temporal operators and and their combinations 
+help to specify the time of actions of resource availability 
+and express the time order of events particularly precise 
+time points are described by the use of operator or 
+multiple copies of it based on this ability to specify correct 
+time points for actions or events time order or sequencing 
+of them can also be captured also a sense of duration is 
+simulated by spreading copies of the resources or actions 
+formulas across multiple adjacent time points moreover 
+uncertainty in time can represented and reasoned about by 
+the use of and and their combinations with can 
+be used to express outer non-determinism while expresses 
+inner non-determinism these time properties of resources 
+actions and events are correctly respected through out the 
+agent reasoning process based on sequent calculus rules 
+furthermore the centrality of the notion of commitment 
+in agent interaction has been recognized in many frameworks 
+ however to the best of our knowledge 
+modeling commitments directly at the propositional level of 
+such a resource conscious and time aware logic as tll is 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+firstly investigated in our framework our framework 
+models base commitments as negative formulas and conditional 
+commitments via the use of linear implication and or 
+negative formulas the modeling of commitments has a number 
+of advantages 
+ commitments are represented directly at the 
+propositional logic level or via a logic connective rather than a 
+non-logical construct like which makes treatment 
+of commitments more natural and simple and allows to 
+make use of readily available proof search systems like 
+using sequent calculus for handling commitments 
+existing logic connectives like ⊗ ⊕ are also readily 
+available for describing the relationships among 
+commitments 
+ fulfillment of commitments then becomes deriving the 
+corresponding positive formulas or condition 
+formulas which then simply reduces to a proof search task 
+also given the required formulas fulfillment of 
+commitments can be implemented easily and 
+automatically as deduction com ⊗ com⊥ 
+⊥ 
+the enforcement of commitments is also internal and 
+simply implemented via the assumption that agents 
+are driven to remove all negative formulas for base 
+commitments and via the use of linear implication for 
+conditional commitments 
+regarding making protocol specification more flexible our 
+approach has marked a number of significant points 
+firstly flexibility of protocol specifications in our 
+framework comes from the expressive power of the connectives 
+of tll and ⊕ refer to internal and external choices of 
+agents on resources and actions while and refer to 
+internal choices and external choices in time domain given 
+that flexibility includes the ability to make a sensible choice 
+having the choices expressed explicitly in the specification of 
+interaction protocols provides agents with an opportunity to 
+reason about the right choices during interaction and hence 
+explore the flexibility in them 
+secondly instead of being sequences of interactive actions 
+protocols are structured on commitments which are more 
+abstract than protocol actions execution of protocols is 
+then based on fulfilling commitments hence unnecessary 
+constraints on which particular interactive actions to 
+execute by which agents and on the order among them are 
+now removed which is a step forward to flexibility as 
+compared to traditional approaches on the other hand in the 
+presence of changes introduced externally agents have the 
+freedom to explore new sets of interactive actions or skip 
+some interactive actions ahead as long as they still fulfill 
+the protocol s commitments this brings more flexibility to 
+the overall level of agents interactive behaviors and thus 
+the protocol 
+thirdly the protocol is specified in a declarative manner 
+essentially as sets of pre-commitments at each 
+participating agents to achieve goals agents use reasoning based 
+on tll sequent calculus to construct proofs of goals from 
+pre-commitments and state formulas this essentially gives 
+agents an autonomy in utilization of pre-commitments and 
+hence agents can adapt the ways they use these to flexibly 
+deal with changing environments 
+in particular as proof construction by agents selects a 
+sequence of pre-commitments for interaction being able to 
+select from all the possible combinations of pre-commitments 
+in proof search gives more chances and flexibility than 
+selecting from only a few fixed and predefined sequences it 
+is then also more likely to allow agents to handle exceptions 
+or explore opportunities that arise moreover as the actual 
+order of pre-commitments is determined by the proof 
+construction process rather than predefined agents can flexibly 
+change the order to suit new situations 
+fourthly changes in the environment can be regarded as 
+removing or adding formulas onto the state formulas 
+because the proof construction by agents takes into account the 
+current state formulas when it picks up pre-commitments 
+changes in the state formulas will be reflected in the choice 
+of which relevant pre-commitments to proceed hence the 
+agents have the flexibility in deciding what to do to deal 
+with changes 
+lastly specifying protocols in our framework has a 
+modular approach which adds ease and flexibility to the designing 
+process of protocols protocols are specified by placing a set 
+of pre-commitments at each participating agent according to 
+their roles each pre-commitment can indeed be specified as 
+a process in its own with condition formulas as its input 
+and commitment part s formulas as its output execution 
+of each conditional commitment is a relatively independent 
+thread and they are linked together by the proof search to 
+fulfill agents commitments as a results with such a design 
+of pre-commitments one pre-commitment can be added or 
+removed without interfering the others and hence achieving 
+a modular design of the protocols 
+ limitations of tll framework on 
+modeling 
+as all the temporal operators in tll refer to concrete 
+time points we can not express durations in time faithfully 
+one major disadvantage of simulating a duration of an event 
+by spreading copies of that event over adjacent time points 
+a⊗ 
+continuously like a⊗ 
+ a is that it requires 
+the time range to be provided explicitly hence such notion 
+like until can not be naturally expressed in tll 
+commitments of agents can be in conflict especially when 
+resolving all of them requires more resources or actions than 
+what agents have our work has not covered handling 
+commitments that are in conflict 
+another troublesome aspect of this approach is that the 
+rules for interaction require some detailed knowledge of the 
+formulas of temporal linear logic clearly it would be 
+beneficial to have a visually-based tool similar to uml diagrams 
+which would allow non-experts to specify the appropriate 
+rules without having to learn the details of the formulas 
+themselves 
+ conclusions and further work 
+this paper uses tll for specifying interaction protocols 
+in particular tll is used to model the concept of resource 
+capability pre-commitment and commitment with tight 
+integration as well as their manipulations with respect to time 
+agents then make use of proof search techniques to perform 
+the desired interactions 
+in particular the approach allows protocol specifications 
+to capture the meaning of interactive actions via 
+commitments to capture the internal choices and external choices of 
+agents about resources commitments and about time as well 
+as updating processes the proof construction mechanism 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+provides agents with the ability to dynamically select 
+appropriate pre-commitments and hence help agents to gain the 
+flexibility in choosing the interactive actions that are most 
+suitable and the flexibility in the order of them taking into 
+consideration on-going changes in the environment 
+many other approaches to modeling protocols also use the 
+commitment concept to bring more meaning into agents 
+interactive actions approaches based on commitment 
+machines endure a number of issues these 
+approaches use logic systems that are limited in their 
+expressiveness to model resources also as an extra abstract 
+layer of commitments is created more tasks are created 
+accordingly in particular there must be a human-designed 
+mapping between protocol actions and operations on 
+commitments as well as between control variables fluent and 
+phases of commitment achievement moreover external 
+mechanisms must be in place to comprehend and handle 
+operations and resolution of commitments as well as enforcement 
+of the notion of commitment on its abstract data type 
+representations this requires another execution in the 
+commitment layer in conjunction with the actual execution of 
+the protocol not only these extra tasks create an overhead 
+but also makes the specification and execution of protocols 
+more error prone 
+similar works in and explore the advantages of 
+linear logic and tll respectively by using partial deduction 
+techniques to help agents to figure out the missing 
+capabilities or resources and based on that to negotiate with other 
+agents about cooperation strategies our approach differs 
+in bringing the concept of commitment into the modeling of 
+interaction and providing a more natural and detailed map 
+for specifying interaction especially about choices time and 
+updating using the full propositional tll moreover we 
+emphasize on the use of pre-commitments as interaction rules 
+with a full set of tll inference rules to provide the 
+advantages of proof construction in achieving flexible interaction 
+our further work will include using tll to verify 
+various properties of interaction protocols such as liveness and 
+safety also we will investigate developing an execution 
+mechanism for such tll specifications in our framework 
+acknowledgments 
+we are very thankful to michael winikoff for many 
+stimulating and helpful discussions of this material we also would 
+like to acknowledge the support of the australian research 
+council under grant dp 
+ references 
+ a k chopra and m p singh contextualizing 
+commitment protocol in aamas proceedings of 
+the fifth international joint conference on autonomous 
+agents and multiagent systems pages - new 
+york ny usa acm press 
+ e a emerson temporal and modal logic handbook 
+of theoretical computer science b chapter 
+ - 
+ j -y girard linear logic theoretical computer 
+science - 
+ a haddadi communication and cooperation in 
+agent systems a pragmatic theory springer-verlag 
+berlin heidelberg 
+ j harland and m winikoff agent negotiation as 
+proof search in linear logic in aamas 
+proceedings of the first international joint conference 
+on autonomous agents and multiagent systems pages 
+ - new york ny usa acm press 
+ t hirai temporal linear logic and its applications 
+phd thesis graduate school of science and 
+technology kobe university 
+ n r jennings commitments and conventions the 
+foundation of coordination in multi-agent systems 
+the knowledge engineering review - 
+ 
+ p k¨ungas linear logic partial deduction and 
+cooperative problem solving in j a leite 
+a omicini l sterling and p torroni editors 
+declarative agent languages and technologies first 
+international workshop dalt melbourne 
+victoria july th workshop notes pages 
+ - 
+ p k¨ungas temporal linear logic for symbolic agent 
+negotiation lecture notes in artificial intelligence 
+ - 
+ m venkatraman and m p singh verifying 
+compliance with commitment protocols autonomous 
+agents and multi-agent systems - 
+ p yolum and m p singh commitment machines in 
+proceedings of the th international workshop on 
+agent theories architectures and languages 
+ atal- pages - springer-verlag 
+ p yolum and m p singh flexible protocol 
+specification and execution applying event calculus 
+planning using commitments in aamas 
+proceedings of the first international joint conference 
+on autonomous agents and multiagent systems pages 
+ - new york ny usa acm press 
+appendix 
+a temporal sequent rules for tll 
+a γ δ γ δ a λ σ 
+a γ δ 
+l 
+ γ δ a λ σ 
+r 
+ γ δ a λ σ γ a δ 
+ γ δ a λ σ 
+l 
+γ a δ 
+r 
+ γ δ ξ a φ λ π 
+ γ δ ξ a φ λ π 
+ γ δ ξ a φ λ π 
+ γ δ ξ a φ λ π 
+ γ δ ξ φ λ π 
+ γ δ ξ φ λ π 
+→ 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

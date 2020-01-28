@@ -1,0 +1,570 @@
+a holistic approach to high-performance computing 
+xgrid experience 
+david przybyla 
+ringling school of art and design 
+ north tamiami trail 
+sarasota florida 
+ - - 
+dprzybyl ringling edu 
+karissa miller 
+ringling school of art and design 
+ north tamiami trail 
+sarasota florida 
+ - - 
+kmiller ringling edu 
+mahmoud pegah 
+ringling school of art and design 
+ north tamiami trail 
+sarasota florida 
+ - - 
+mpegah ringling edu 
+abstract 
+the ringling school of art and design is a fully accredited 
+fouryear college of visual arts and design with a student to computer 
+ratio of better than -to- the ringling school has achieved 
+national recognition for its large-scale integration of technology 
+into collegiate visual art and design education we have found 
+that mac os x is the best operating system to train future artists 
+and designers moreover we can now buy macs to run high-end 
+graphics nonlinear video editing animation multimedia web 
+production and digital video applications rather than expensive 
+unix workstations as visual artists cross from paint on canvas 
+to creating in the digital realm the demand for a 
+highperformance computing environment grows in our public 
+computer laboratories students use the computers most often 
+during the workday at night and on weekends the computers see 
+only light use in order to harness the lost processing time for 
+tasks such as video rendering we are testing xgrid a suite of mac 
+os x applications recently developed by apple for parallel and 
+distributed high-performance computing 
+as with any new technology deployment it managers need to 
+consider a number of factors as they assess plan and implement 
+xgrid therefore we would like to share valuable information we 
+learned from our implementation of an xgrid environment with 
+our colleagues in our report we will address issues such as 
+assessing the needs for grid computing potential applications 
+management tools security authentication integration into 
+existing infrastructure application support user training and user 
+support furthermore we will discuss the issues that arose and the 
+lessons learned during and after the implementation process 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systemsdistributed applications 
+general terms 
+management documentation performance design economics 
+reliability experimentation 
+ introduction 
+grid computing does not have a single universally accepted 
+definition the technology behind grid computing model is not 
+new its roots lie in early distributed computing models that date 
+back to early s where scientists harnessed the computing 
+power of idle workstations to let compute intensive applications 
+to run on multiple workstations which dramatically shortening 
+processing times although numerous distributed computing 
+models were available for discipline-specific scientific 
+applications only recently have the tools became available to use 
+general-purpose applications on a grid consequently the grid 
+computing model is gaining popularity and has become a show 
+piece of utility computing since in the it industry various 
+computing models are used interchangeably with grid computing 
+we first sort out the similarities and difference between these 
+computing models so that grid computing can be placed in 
+perspective 
+ clustering 
+a cluster is a group of machines in a fixed configuration united to 
+operate and be managed as a single entity to increase robustness 
+and performance the cluster appears as a single high-speed 
+system or a single highly available system in this model 
+resources can not enter and leave the group as necessary there 
+are at least two types of clusters parallel clusters and 
+highavailability clusters clustered machines are generally in spatial 
+proximity such as in the same server room and dedicated solely 
+to their task 
+in a high-availability cluster each machine provides the same 
+service if one machine fails another seamlessly takes over its 
+workload for example each computer could be a web server for 
+a web site should one web server die another provides the 
+service so that the web site rarely if ever goes down 
+a parallel cluster is a type of supercomputer problems are split 
+into many parts and individual cluster members are given part of 
+the problem to solve an example of a parallel cluster is 
+composed of apple power mac g computers at virginia tech 
+university 
+ distributed computing 
+distributed computing spatially expands network services so that 
+the components providing the services are separated the major 
+objective of this computing model is to consolidate processing 
+power over a network a simple example is spreading services 
+such as file and print serving web serving and data storage across 
+multiple machines rather than a single machine handling all the 
+tasks distributed computing can also be more fine-grained where 
+even a single application is broken into parts and each part located 
+on different machines a word processor on one server a spell 
+checker on a second server etc 
+ utility computing 
+literally utility computing resembles common utilities such as 
+telephone or electric service a service provider makes computing 
+resources and infrastructure management available to a customer 
+as needed and charges for usage rather than a flat rate the 
+important thing to note is that resources are only used as needed 
+and not dedicated to a single customer 
+ grid computing 
+grid computing contains aspects of clusters distributed 
+computing and utility computing in the most basic sense grid 
+turns a group of heterogeneous systems into a centrally managed 
+but flexible computing environment that can work on tasks too 
+time intensive for the individual systems the grid members are 
+not necessarily in proximity but must merely be accessible over a 
+network the grid can access computers on a lan wan or 
+anywhere in the world via the internet in addition the computers 
+comprising the grid need not be dedicated to the grid rather they 
+can function as normal workstations and then advertise their 
+availability to the grid when not in use 
+the last characteristic is the most fundamental to the grid 
+described in this paper a well-known example of such an ad 
+hoc grid is the seti home project of the university of 
+california at berkeley which allows any person in the world with 
+a computer and an internet connection to donate unused processor 
+time for analyzing radio telescope data 
+ comparing the grid and cluster 
+a computer grid expands the capabilities of the cluster by loosing 
+its spatial bounds so that any computer accessible through the 
+network gains the potential to augment the grid a fundamental 
+grid feature is that it scales well the processing power of any 
+machine added to the grid is immediately availably for solving 
+problems in addition the machines on the grid can be 
+generalpurpose workstations which keep down the cost of expanding the 
+grid 
+ assessing the need for grid 
+computing 
+effective use of a grid requires a computation that can be divided 
+into independent i e parallel tasks the results of each task 
+cannot depend on the results of any other task and so the 
+members of the grid can solve the tasks in parallel once the tasks 
+have been completed the results can be assembled into the 
+solution examples of parallelizable computations are the 
+mandelbrot set of fractals the monte carlo calculations used in 
+disciplines such as solid state physics and the individual frames 
+of a rendered animation this paper is concerned with the last 
+example 
+ applications appropriate for grid 
+computing 
+the applications used in grid computing must either be 
+specifically designed for grid use or scriptable in such a way that 
+they can receive data from the grid process the data and then 
+return results in other words the best candidates for grid 
+computing are applications that run the same or very similar 
+computations on a large number of pieces of data without any 
+dependencies on the previous calculated results applications 
+heavily dependent on data handling rather than processing power 
+are generally more suitable to run on a traditional environment 
+than on a grid platform of course the applications must also run 
+on the computing platform that hosts the grid our interest is in 
+using the alias maya application with apple s xgrid on 
+mac os x 
+commercial applications usually have strict license requirements 
+this is an important concern if we install a commercial 
+application such as maya on all members of our grid by its 
+nature the size of the grid may change as the number of idle 
+computers changes how many licenses will be required our 
+resolution of this issue will be discussed in a later section 
+ integration into the existing 
+infrastructure 
+the grid requires a controller that recognizes when grid members 
+are available and parses out job to available members the 
+controller must be able to see members on the network this does 
+not require that members be on the same subnet as the controller 
+but if they are not any intervening firewalls and routers must be 
+configured to allow grid traffic 
+ xgrid 
+xgrid is apple s grid implementation it was inspired by zilla a 
+desktop clustering application developed by next and acquired 
+by apple in this report we describe the xgrid technology 
+preview a free download that requires mac os x or later 
+and a minimum mb ram 
+xgrid leverages apple s traditional ease of use and configuration 
+if the grid members are on the same subnet by default xgrid 
+automatically discovers available resources through rendezvous 
+ tasks are submitted to the grid through a gui interface or by 
+the command line a system preference pane controls when each 
+computer is available to the grid 
+it may be best to view xgrid as a facilitator the xgrid 
+architecture handles software and data distribution job execution 
+and result aggregation however xgrid does not perform the 
+actual calculations 
+ xgrid components 
+xgrid has three major components the client controller and the 
+agent each component is included in the default installation and 
+any computer can easily be configured to assume any role in 
+ 
+fact for testing purposes a computer can simultaneously assume 
+all roles in local mode the more typical production use is 
+called cluster mode 
+the client submits jobs to the controller through the xgrid gui or 
+command line the client defines how the job will be broken into 
+tasks for the grid if any files or executables must be sent as part 
+of a job they must reside on the client or at a location accessible 
+to the client when a job is complete the client can retrieve the 
+results from the controller a client can only connect to a single 
+controller at a time 
+the controller runs the gridserver process it queues tasks 
+received from clients distributes those tasks to the agents and 
+handles failover if an agent cannot complete a task in xgrid 
+technology preview a controller can handle a maximum of 
+ agent connections only one controller can exist per 
+logical grid 
+the agents run the gridagent process when the gridagent 
+process starts it registers with a controller an agent can only be 
+connected to one controller at a time agents receive tasks from 
+their controller perform the specified computations and then 
+send the results back to the controller an agent can be configured 
+to always accept tasks or to just accept them when the computer 
+is not otherwise busy 
+ security and authentication 
+by default xgrid requires two passwords first a client needs a 
+password to access a controller second the controller needs a 
+password to access an agent either password requirement can be 
+disabled xgrid uses two-way-random mutual authentication 
+protocol with md hashes at this time data encryption is only 
+used for passwords 
+as mentioned earlier an agent registers with a controller when the 
+gridagent process starts there is no native method for the 
+controller to reject agents and so it must accept any agent that 
+registers this means that any agent could submit a job that 
+consumes excessive processor and disk space on the agents of 
+course since mac os x is a bsd-based operating system the 
+controller could employ unix methods of restricting network 
+connections from agents 
+the xgrid daemons run as the user nobody which means the 
+daemons can read write or execute any file according to world 
+permissions thus xgrid jobs can execute many commands and 
+write to tmp and volumes in general this is not a major security 
+risk but is does require a level of trust between all members of the 
+grid 
+ using xgrid 
+ installation 
+basic xgrid installation and configuration is described both in 
+apple documentation and online at the university of utah web 
+site the installation is straightforward and offers no options 
+for customization this means that every computer on which 
+xgrid is installed has the potential to be a client controller or 
+agent 
+ agent and controller configuration 
+the agents and controllers can be configured through the xgrid 
+preference pane in the system preferences or xml files in 
+ library preferences here the gridserver and gridagent 
+processes are started passwords set and the controller discovery 
+method used by agents is selected by default agents use 
+rendezvous to find a controller although the agents can also be 
+configured to look for a specific host 
+the xgrid preference pane also sets whether the agents will 
+always accept jobs or only accept jobs when idle in xgrid terms 
+idle either means that the xgrid screen saver has activated or the 
+mouse and keyboard have not been used for more than 
+minutes even if the agent is configured to always accept tasks if 
+the computer is being used these tasks will run in the background 
+at a low priority 
+however if an agent only accepts jobs when idle any unfinished 
+task being performed when the computer ceases being idle are 
+immediately stopped and any intermediary results lost then the 
+controller assigns the task to another available member of the 
+grid 
+advertising the controller via rendezvous can be disabled by 
+editing library preferences com apple xgrid controller plist this 
+however will not prevent an agent from connecting to the 
+controller by hostname 
+ sending jobs from an xgrid client 
+the client sends jobs to the controller either through the xgrid 
+gui or the command line the xgrid gui submits jobs via small 
+applications called plug-ins sample plug-ins are provided by 
+apple but they are only useful as simple testing or as examples of 
+how to create a custom plug-in if we are to employ xgrid for 
+useful work we will require a custom plug-in 
+james reynolds details the creation of custom plug-ins on the 
+university of utah mac os web site xgrid stores plug-ins in 
+ library xgrid plug-ins or   library xgrid plug-ins depending 
+on whether the plug-in was installed with xgrid or created by a 
+user 
+the core plug-in parameter is the command which includes the 
+executable the agents will run another important parameter is the 
+working directory this directory contains necessary files that 
+are not installed on the agents or available to them over a network 
+the working directory will always be copied to each agent so it is 
+best to keep this directory small if the files are installed on the 
+agents or available over a network the working directory 
+parameter is not needed 
+the command line allows the options available with the gui 
+plug-in but it can be slightly more cumbersome however the 
+command line probably will be the method of choice for serious 
+work the command arguments must be included in a script 
+unless they are very basic this can be a shell perl or python 
+script as long as the agent can interpret it 
+ running the xgrid job 
+when the xgrid job is started the command tells the controller 
+how to break the job into tasks for the agents then the command 
+is tarred and gzipped and sent to each agent if there is a working 
+directory this is also tarred and gzipped and sent to the agents 
+ 
+the agents extract these files into tmp and run the task recall 
+that since the gridagent process runs as the user nobody 
+everything associated with the command must be available to 
+nobody 
+executables called by the command should be installed on the 
+agents unless they are very simple if the executable depends on 
+libraries or other files it may not function properly if transferred 
+even if the dependent files are referenced in the working directory 
+when the task is complete the results are available to the client 
+in principle the results are sent to the client but whether this 
+actually happens depends on the command if the results are not 
+sent to the client they will be in tmp on each agent when 
+available a better solution is to direct the results to a network 
+volume accessible to the client 
+ limitations and idiosyncrasies 
+since xgrid is only in its second preview release there are some 
+rough edges and limitations apple acknowledges some 
+limitations for example the controller cannot determine 
+whether an agent is trustworthy and the controller always copies 
+the command and working directory to the agent without checking 
+to see if these exist on the agent 
+other limitations are likely just a by-product of an unfinished 
+work neither the client nor controller can specify which agents 
+will receive the tasks which is particularly important if the agents 
+contain a variety of processor types and speeds and the user wants 
+to optimize the calculations at this time the best solution to this 
+problem may be to divide the computers into multiple logical 
+grids there is also no standard way to monitor the progress of a 
+running job on each agent the xgrid gui and command line 
+indicate which agents are working on tasks but gives no 
+indication of progress 
+finally at this time only mac os x clients can submit jobs to the 
+grid the framework exists to allow third parties to write plug-ins 
+for other unix flavors but apple has not created them 
+ xgrid implementation 
+our goal is an xgrid render farm for alias maya the ringling 
+school has about apple power mac g s and g s in 
+computer labs the computers range from mhz 
+singleprocessor g s and mhz and ghz dual-processor g s to 
+ ghz dual-processor g s all of these computers are lightly 
+used in the evening and on weekends and represent an enormous 
+processing resource for our student rendering projects 
+ software installation 
+during our xgrid testing we loaded software on each computer 
+multiple times including the operating systems we saved time by 
+facilitating our installations with the remote administration 
+daemon radmind software developed at the university of 
+michigan 
+everything we installed for testing was first created as a radmind 
+base load or overload thus mac os x mac os x developer 
+tools xgrid pov-ray and alias maya were stored on a 
+radmind server and then installed on our test computers when 
+needed 
+ initial testing 
+we used six ghz dual-processor apple power mac g s for 
+our xgrid tests each computer ran mac os x and 
+contained gb ram as shown in figure one computer 
+served as both client and controller while the other five acted as 
+agents 
+before attempting maya rendering with xgrid we performed 
+basic calculations to cement our understanding of xgrid apple s 
+xgrid documentation is sparse so finding helpful web sites 
+facilitated our learning 
+we first ran the mandelbrot set plug-in provided by apple which 
+allowed us to test the basic functionality of our grid then we 
+performed benchmark rendering with the open source 
+application pov-ray as described by daniel côté and 
+james reynolds our results showed that one dual-processor 
+g rendering the benchmark pov-ray image took minutes 
+breaking the image into three equal parts and using xgrid to send 
+the parts to three agents required minutes however two 
+agents finished their rendering in minutes while the third 
+agent used minutes the entire render was only as fast as the 
+slowest agent 
+these results gave us two important pieces of information first 
+the much longer rendering time for one of the tasks indicated that 
+we should be careful how we split jobs into tasks for the agents 
+all portions of the rendering will not take equal amounts of time 
+even if the pixel size is the same second since pov-ray cannot 
+take advantage of both processors in a g neither can an xgrid 
+task running pov-ray alias maya does not have this limitation 
+ rendering with alias maya 
+we first installed alias maya for mac os x on the 
+client controller and each agent maya requires licenses for use 
+as a workstation application however if it is just used for 
+rendering from the command line or a script no license is needed 
+we thus created a minimal installation of maya as a radmind 
+overload the application was installed in a hidden directory 
+inside applications this was done so that normal users of the 
+workstations would not find and attempt to run maya which 
+would fail because these installations are not licensed for such 
+use 
+in addition maya requires the existence of a directory ending in 
+the path maya the directory must be readable and writable by 
+the maya user for a user running maya on a mac os x 
+workstation the path would usually be   documents maya 
+unless otherwise specified this directory will be the default 
+location for maya data and output files if the directory does not 
+figure xgrid test grid 
+client 
+controller 
+agent 
+agent 
+agent 
+agent 
+agent 
+network 
+volume 
+jobs 
+data 
+data 
+ 
+exist maya will try to create it even if the user specifies that the 
+data and output files exist in other locations 
+however xgrid runs as the user nobody which does not have a 
+home directory maya is unable to create the needed directory 
+and looks instead for alias maya this directory also does not 
+exist and the user nobody has insufficient rights to create it our 
+solution was to manually create alias maya and give the user 
+nobody read and write permissions 
+we also created a network volume for storage of both the 
+rendering data and the resulting rendered frames this avoided 
+sending the maya files and associated textures to each agent as 
+part of a working directory such a solution worked well for us 
+because our computers are geographically close on a lan if 
+greater distance had separated the agents from the 
+client controller specifying a working directory may have been a 
+better solution 
+finally we created a custom gui plug-in for xgrid the plug-in 
+command calls a perl script with three arguments two arguments 
+specify the beginning and end frames of the render and the third 
+argument the number of frames in each job which we call the 
+cluster size the script then calculates the total number of jobs 
+and parses them out to the agents for example if we begin at 
+frame and end at frame with frames for each job the 
+plug-in will create jobs and send them out to the agents 
+once the jobs are sent to the agents the script executes the 
+ usr sbin render command on each agent with the parameters 
+appropriate for the particular job the results are sent to the 
+network volume 
+with the setup described we were able to render with alias maya 
+ on our test grid rendering speed was not important at this time 
+our first goal was to implement the grid and in that we succeeded 
+ pseudo code for perl script in custom xgrid 
+plug-in 
+in this section we summarize in simplified pseudo code format the 
+perl script used in our xgrig plug-in 
+agent jobs 
+ read beginning frame end frame and cluster size of 
+render 
+ check whether the render can be divided into an integer 
+number of jobs based on the cluster size 
+ if there are not an integer number of jobs reduce the cluster 
+size of the last job and set its last frame to the end frame of 
+the render 
+ determine the start frame and end frame for each job 
+ execute the render command 
+ 
+ lessons learned 
+rendering with maya from the xgrid gui was not trivial the 
+lack of xgrid documentation and the requirements of maya 
+combined into a confusing picture where it was difficult to decide 
+the true cause of the problems we encountered trial and error 
+was required to determine the best way to set up our grid 
+the first hurdle was creating the directory alias maya with read 
+and write permissions for the user nobody the second hurdle was 
+learning that we got the best performance by storing the rendering 
+data on a network volume 
+the last major hurdle was retrieving our results from the agents 
+unlike the pov-ray rendering tests our initial maya results were 
+never returned to the client instead maya stored the results in 
+ tmp on each agent specifying in the plug-in where to send the 
+results would not change this behavior we decided this was 
+likely a maya issue rather than an xgrid issue and the solution 
+was to send the results to the network volume via the perl script 
+ future plans 
+maya on xgrid is not yet ready to be used by the students of 
+ringling school in order to do this we must address at least the 
+following concerns 
+ continue our rendering tests through the command line 
+rather than the gui plug-in this will be essential for the 
+following step 
+ develop an appropriate interface for users to send jobs to the 
+xgrid controller this will probably be an extension to the 
+web interface of our existing render farm where the student 
+specifies parameters that are placed in a script that issues the 
+render command 
+ perform timed maya rendering tests with xgrid part of this 
+should compare the rendering times for power mac g s and 
+g s 
+ conclusion 
+grid computing continues to advance recently the it industry 
+has witnessed the emergence of numerous types of contemporary 
+grid applications in addition to the traditional grid framework for 
+compute intensive applications for instance peer-to-peer 
+applications such as kazaa are based on storage grids that do not 
+share processing power but instead an elegant protocol to swap 
+files between systems although in our campuses we discourage 
+students from utilizing peer-to-peer applications from music 
+sharing the same protocol can be utilized on applications such as 
+decision support and data mining the national virtual 
+collaboratory grid project will link earthquake researchers 
+across the u s with computing resources allowing them to share 
+extremely large data sets research equipment and work together 
+as virtual teams over the internet 
+there is an assortment of new grid players in the it world 
+expanding the grid computing model and advancing the grid 
+technology to the next level sap is piloting a project to 
+grid-enable sap erp applications dell has partnered with 
+platform computing to consolidate computing resources and 
+provide grid-enabled systems for compute intensive applications 
+oracle has integrated support for grid computing in their g 
+release united devices offers hosting service for 
+gridon-demand and sun microsystems continues their research and 
+development of sun s n grid engine which combines grid 
+and clustering platforms 
+simply the grid computing is up and coming the potential 
+benefits of grid computing are colossal in higher education 
+learning while the implementation costs are low today it would 
+be difficult to identify an application with as high a return on 
+investment as grid computing in information technology divisions 
+in higher education institutions it is a mistake to overlook this 
+technology with such a high payback 
+ 
+ acknowledgments 
+the authors would like to thank scott hanselman of the it team 
+at the ringling school of art and design for providing valuable 
+input in the planning of our xgrid testing we would also like to 
+thank the posters of the xgrid mailing list for providing 
+insight into many areas of xgrid 
+ references 
+ apple academic research 
+http www apple com education science profiles vatech 
+ seti home search for extraterrestrial intelligence at 
+home http setiathome ssl berkeley edu 
+ alias http www alias com 
+ apple computer xgrid http www apple com acg xgrid 
+ xgrid guide http www apple com acg xgrid 
+ apple mac os x features 
+http www apple com macosx features rendezvous 
+ xgrid manual page 
+ james reynolds xgrid presentation university of utah 
+http www macos utah edu xgrid 
+ research systems unix group radmind university of 
+michigan http rsug itd umich edu software radmind 
+ using the radmind command line tools to maintain 
+multiple mac os x machines 
+ 
+http rsug itd umich edu software radmind files radmindtutorial- pdf 
+ pov-ray http www povray org 
+ daniel côté xgrid example parallel graphics rendering in 
+povray http unu novajo ca simple 
+ neesgrid http www neesgrid org 
+ sap http www sap com 
+ platform computing http platform com 
+ grid http www oracle com technologies grid 
+ united devices inc http ud com 
+ n grid engine http www sun com 
+software gridware index html 
+ xgrig users mailing list 
+ 
+http www lists apple com mailman listinfo xgridusers 
+ 

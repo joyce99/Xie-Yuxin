@@ -1,0 +1,1999 @@
+msp multi-sequence positioning of wireless sensor nodes 
+ziguo zhong 
+computer science and engineering 
+university of minnesota 
+zhong cs umn edu 
+tian he 
+computer science and engineering 
+university of minnesota 
+tianhe cs umn edu 
+abstract 
+wireless sensor networks have been proposed for use in 
+many location-dependent applications most of these need to 
+identify the locations of wireless sensor nodes a challenging 
+task because of the severe constraints on cost energy and 
+effective range of sensor devices to overcome limitations in 
+existing solutions we present a multi-sequence positioning msp 
+method for large-scale stationary sensor node localization in 
+outdoor environments the novel idea behind msp is to 
+reconstruct and estimate two-dimensional location information for 
+each sensor node by processing multiple one-dimensional node 
+sequences easily obtained through loosely guided event 
+distribution starting from a basic msp design we propose four 
+optimizations which work together to increase the localization 
+accuracy we address several interesting issues such as 
+incomplete partial node sequences and sequence flip found in the 
+mirage test-bed we built we have evaluated the msp system 
+through theoretical analysis extensive simulation as well as 
+two physical systems an indoor version with micaz motes 
+and an outdoor version with micaz motes this 
+evaluation demonstrates that msp can achieve an accuracy within 
+one foot requiring neither additional costly hardware on 
+sensor nodes nor precise event distribution it also provides a nice 
+tradeoff between physical cost anchors and soft cost events 
+while maintaining localization accuracy 
+categories and subject descriptors 
+c computer communications networks 
+distributed systems 
+general terms 
+algorithms measurement design performance 
+experimentation 
+ introduction 
+although wireless sensor networks wsn have shown 
+promising prospects in various applications researchers 
+still face several challenges for massive deployment of such 
+networks one of these is to identify the location of 
+individual sensor nodes in outdoor environments because of 
+unpredictable flow dynamics in airborne scenarios it is not currently 
+feasible to localize sensor nodes during massive uva-based 
+deployment on the other hand geometric information is 
+indispensable in these networks since users need to know where 
+events of interest occur e g the location of intruders or of a 
+bomb explosion 
+previous research on node localization falls into two 
+categories range-based approaches and range-free approaches 
+range-based approaches compute per-node 
+location information iteratively or recursively based on 
+measured distances among target nodes and a few anchors which 
+precisely know their locations these approaches generally 
+require costly hardware e g gps and have limited 
+effective range due to energy constraints e g ultrasound-based 
+tdoa although range-based solutions can be 
+suitably used in small-scale indoor environments they are 
+considered less cost-effective for large-scale deployments on the 
+other hand range-free approaches do not 
+require accurate distance measurements but localize the node 
+based on network connectivity proximity information 
+unfortunately since wireless connectivity is highly influenced by the 
+environment and hardware calibration existing solutions fail 
+to deliver encouraging empirical results or require substantial 
+survey and calibration on a case-by-case basis 
+realizing the impracticality of existing solutions for the 
+large-scale outdoor environment researchers have recently 
+proposed solutions e g spotlight and lighthouse 
+for sensor node localization using the spatiotemporal 
+correlation of controlled events i e inferring nodes locations based 
+on the detection time of controlled events these solutions 
+demonstrate that long range and high accuracy localization can 
+be achieved simultaneously with little additional cost at 
+sensor nodes these benefits however come along with an 
+implicit assumption that the controlled events can be precisely 
+distributed to a specified location at a specified time we argue 
+that precise event distribution is difficult to achieve especially 
+at large scale when terrain is uneven the event distribution 
+device is not well calibrated and its position is difficult to 
+maintain e g the helicopter-mounted scenario in 
+to address these limitations in current approaches in this 
+paper we present a multi-sequence positioning msp method 
+ 
+for large-scale stationary sensor node localization in 
+deployments where an event source has line-of-sight to all sensors 
+the novel idea behind msp is to estimate each sensor node s 
+two-dimensional location by processing multiple easy-to-get 
+one-dimensional node sequences e g event detection order 
+obtained through loosely-guided event distribution 
+this design offers several benefits first compared to a 
+range-based approach msp does not require additional costly 
+hardware it works using sensors typically used by sensor 
+network applications such as light and acoustic sensors both of 
+which we specifically consider in this work second compared 
+to a range-free approach msp needs only a small number of 
+anchors theoretically as few as two so high accuracy can be 
+achieved economically by introducing more events instead of 
+more anchors and third compared to spotlight msp does not 
+require precise and sophisticated event distribution an 
+advantage that significantly simplifies the system design and reduces 
+calibration cost 
+this paper offers the following additional intellectual 
+contributions 
+ we are the first to localize sensor nodes using the concept 
+of node sequence an ordered list of sensor nodes sorted 
+by the detection time of a disseminated event we 
+demonstrate that making full use of the information embedded 
+in one-dimensional node sequences can significantly 
+improve localization accuracy interestingly we discover 
+that repeated reprocessing of one-dimensional node 
+sequences can further increase localization accuracy 
+ we propose a distribution-based location estimation 
+strategy that obtains the final location of sensor nodes using 
+the marginal probability of joint distribution among 
+adjacent nodes within the sequence this new algorithm 
+outperforms the widely adopted centroid estimation 
+ to the best of our knowledge this is the first work to 
+improve the localization accuracy of nodes by adaptive 
+events the generation of later events is guided by 
+localization results from previous events 
+ we evaluate line-based msp on our new mirage test-bed 
+and wave-based msp in outdoor environments through 
+system implementation we discover and address several 
+interesting issues such as partial sequence and sequence 
+flips to reveal msp performance at scale we provide 
+analytic results as well as a complete simulation study 
+all the simulation and implementation code is available 
+online at http www cs umn edu ∼zhong msp 
+the rest of the paper is organized as follows section 
+briefly surveys the related work section presents an 
+overview of the msp localization system in sections and 
+basic msp and four advanced processing methods are 
+introduced section describes how msp can be applied in a wave 
+propagation scenario section discusses several 
+implementation issues section presents simulation results and section 
+reports an evaluation of msp on the mirage test-bed and an 
+outdoor test-bed section concludes the paper 
+ related work 
+many methods have been proposed to localize wireless 
+sensor devices in the open air most of these can be 
+classified into two categories range-based and range-free 
+localization range-based localization systems such as gps 
+cricket ahlos aoa robust 
+quadrilaterals and sweeps are based on fine-grained 
+point-topoint distance estimation or angle estimation to identify 
+pernode location constraints on the cost energy and hardware 
+footprint of each sensor node make these range-based 
+methods undesirable for massive outdoor deployment in addition 
+ranging signals generated by sensor nodes have a very limited 
+effective range because of energy and form factor concerns 
+for example ultrasound signals usually effectively propagate 
+ - feet using an on-board transmitter consequently 
+these range-based solutions require an undesirably high 
+deployment density although the received signal strength 
+indicator rssi related methods were once considered 
+an ideal low-cost solution the irregularity of radio 
+propagation seriously limits the accuracy of such systems the 
+recently proposed rips localization system superimposes 
+two rf waves together creating a low-frequency envelope that 
+can be accurately measured this ranging technique performs 
+very well as long as antennas are well oriented and 
+environmental factors such as multi-path effects and background noise 
+are sufficiently addressed 
+range-free methods don t need to estimate or measure 
+accurate distances or angles instead anchors or controlled-event 
+distributions are used for node localization range-free 
+methods can be generally classified into two types anchor-based 
+and anchor-free solutions 
+ for anchor-based solutions such as centroid apit 
+ serloc gradient and aps the main 
+idea is that the location of each node is estimated based on 
+the known locations of the anchor nodes different anchor 
+combinations narrow the areas in which the target nodes 
+can possibly be located anchor-based solutions normally 
+require a high density of anchor nodes so as to achieve 
+good accuracy in practice it is desirable to have as few 
+anchor nodes as possible so as to lower the system cost 
+ anchor-free solutions require no anchor nodes instead 
+external event generators and data processing platforms 
+are used the main idea is to correlate the event detection 
+time at a sensor node with the known space-time 
+relationship of controlled events at the generator so that detection 
+time-stamps can be mapped into the locations of sensors 
+spotlight and lighthouse work in this fashion 
+in spotlight the event distribution needs to be 
+precise in both time and space precise event distribution 
+is difficult to achieve without careful calibration 
+especially when the event-generating devices require certain 
+mechanical maneuvers e g the telescope mount used in 
+spotlight all these increase system cost and reduce 
+localization speed stardust which works much faster 
+uses label relaxation algorithms to match light spots 
+reflected by corner-cube retro-reflectors ccr with sensor 
+nodes using various constraints label relaxation 
+algorithms converge only when a sufficient number of robust 
+constraints are obtained due to the environmental impact 
+on rf connectivity constraints however stardust is less 
+accurate than spotlight 
+in this paper we propose a balanced solution that avoids 
+the limitations of both anchor-based and anchor-free solutions 
+unlike anchor-based solutions msp allows a flexible 
+tradeoff between the physical cost anchor nodes with the soft 
+ 
+ 
+a 
+b 
+ 
+ 
+ 
+ 
+target nodeanchor node 
+ a b 
+ b a 
+ a b 
+ ab 
+ 
+ 
+ 
+ 
+ 
+ b 
+ c d 
+ a 
+event 
+node sequence generated by event 
+event 
+node sequence generated by event 
+node sequence generated by event 
+node sequence generated by event 
+event event 
+figure the msp system overview 
+cost localization events msp uses only a small number of 
+anchors theoretically as few as two unlike anchor-free 
+solutions msp doesn t need to maintain rigid time-space 
+relationships while distributing events which makes system design 
+simpler more flexible and more robust to calibration errors 
+ system overview 
+msp works by extracting relative location information from 
+multiple simple one-dimensional orderings of nodes 
+figure a shows a layout of a sensor network with anchor nodes 
+and target nodes target nodes are defined as the nodes to be 
+localized briefly the msp system works as follows first 
+events are generated one at a time in the network area e g 
+ultrasound propagations from different locations laser scans 
+with diverse angles as each event propagates as shown in 
+figure a each node detects it at some particular time 
+instance for a single event we call the ordering of nodes which 
+is based on the sequential detection of the event a node 
+sequence each node sequence includes both the targets and the 
+anchors as shown in figure b second a multi-sequence 
+processing algorithm helps to narrow the possible location of 
+each node to a small area figure c finally a 
+distributionbased estimation method estimates the exact location of each 
+sensor node as shown in figure d 
+figure shows that the node sequences can be obtained 
+much more economically than accurate pair-wise distance 
+measurements between target nodes and anchor nodes via 
+ranging methods in addition this system does not require a rigid 
+time-space relationship for the localization events which is 
+critical but hard to achieve in controlled event distribution 
+scenarios e g spotlight 
+for the sake of clarity in presentation we present our system 
+in two cases 
+ ideal case in which all the node sequences obtained 
+from the network are complete and correct and nodes are 
+time-synchronized 
+ realistic deployment in which i node sequences can 
+be partial incomplete ii elements in sequences could 
+flip i e the order obtained is reversed from reality and 
+ iii nodes are not time-synchronized 
+to introduce the msp algorithm we first consider a simple 
+straight-line scan scenario then we describe how to 
+implement straight-line scans as well as other event types such as 
+sound wave propagation 
+ 
+a 
+ 
+ 
+ 
+ 
+b 
+c 
+ 
+ 
+ 
+ 
+straight-line scan 
+straight-linescan 
+ 
+ 
+ a 
+ 
+c 
+ 
+ 
+ 
+ 
+b 
+ 
+ 
+ 
+c 
+ 
+ a 
+b 
+ 
+target node 
+anchor node 
+figure obtaining multiple node sequences 
+ basic msp 
+let us consider a sensor network with n target nodes and 
+m anchor nodes randomly deployed in an area of size s the 
+top-level idea for basic msp is to split the whole sensor 
+network area into small pieces by processing node sequences 
+because the exact locations of all the anchors in a node sequence 
+are known all the nodes in this sequence can be divided into 
+o m parts in the area 
+in figure we use numbered circles to denote target nodes 
+and numbered hexagons to denote anchor nodes basic msp 
+uses two straight lines to scan the area from different directions 
+treating each scan as an event all the nodes react to the event 
+sequentially generating two node sequences for vertical scan 
+ the node sequence is a c b as shown 
+outside the right boundary of the area in figure for 
+horizontal scan the node sequence is c a b 
+as shown under the bottom boundary of the area in figure 
+since the locations of the anchor nodes are available the 
+anchor nodes in the two node sequences actually split the area 
+vertically and horizontally into parts as shown in figure 
+to extend this process suppose we have m anchor nodes and 
+perform d scans from different angles obtaining d node 
+sequences and dividing the area into many small parts 
+obviously the number of parts is a function of the number of 
+anchors m the number of scans d the anchors location as well as 
+the slop k for each scan line according to the pie-cutting 
+theorem the area can be divided into o m d parts when 
+m and d are appropriately large the polygon for each target 
+node may become sufficiently small so that accurate 
+estimation can be achieved we emphasize that accuracy is affected 
+not only by the number of anchors m but also by the number 
+of events d in other words msp provides a tradeoff between 
+the physical cost of anchors and the soft cost of events 
+algorithm depicts the computing architecture of basic 
+msp each node sequence is processed within line to for 
+each node getboundaries in line searches for the 
+predecessor and successor anchors in the sequence so as to 
+determine the boundaries of this node then in line updatemap 
+shrinks the location area of this node according to the newly 
+obtained boundaries after processing all sequences centroid 
+estimation line set the center of gravity of the final 
+polygon as the estimated location of the target node 
+basic msp only makes use of the order information 
+between a target node and the anchor nodes in each sequence 
+actually we can extract much more location information from 
+ 
+algorithm basic msp process 
+output the estimated location of each node 
+ repeat 
+ getoneunprocessedseqence 
+ repeat 
+ getonenodefromsequenceinorder 
+ getboundaries 
+ updatemap 
+ until all the target nodes are updated 
+ until all the node sequences are processed 
+ repeat 
+ getoneunestimatednode 
+ centroidestimation 
+ until all the target nodes are estimated 
+each sequence section will introduce advanced msp in 
+which four novel optimizations are proposed to improve the 
+performance of msp significantly 
+ advanced msp 
+four improvements to basic msp are proposed in this 
+section the first three improvements do not need additional 
+sensing and communication in the networks but require only 
+slightly more off-line computation the objective of all these 
+improvements is to make full use of the information embedded 
+in the node sequences the results we have obtained 
+empirically indicate that the implementation of the first two methods 
+can dramatically reduce the localization error and that the third 
+and fourth methods are helpful for some system deployments 
+ sequence-based msp 
+as shown in figure each scan line and m anchors splits 
+the whole area into m parts each target node falls into 
+one polygon shaped by scan lines we noted that in basic msp 
+only the anchors are used to narrow down the polygon of each 
+target node but actually there is more information in the node 
+sequence that we can made use of 
+let s first look at a simple example shown in figure the 
+previous scans narrow the locations of target node and node 
+ into two dashed rectangles shown in the left part of figure 
+then a new scan generates a new sequence with 
+knowledge of the scan s direction it is easy to tell that node is 
+located to the left of node thus we can further narrow the 
+location area of node by eliminating the shaded part of node 
+ s rectangle this is because node is located on the right of 
+node while the shaded area is outside the lower boundary of 
+node similarly the location area of node can be narrowed 
+by eliminating the shaded part out of node s right boundary 
+we call this procedure sequence-based msp which means that 
+the whole node sequence needs to be processed node by node 
+in order specifically sequence-based msp follows this exact 
+processing rule 
+ 
+ 
+ 
+ 
+ 
+lower boundary of upper boundary of 
+lower boundary of upper boundary of 
+new sequence 
+new upper boundary of 
+new lower boundary of 
+eventpropagation 
+figure rule illustration in sequence based msp 
+algorithm sequence-based msp process 
+output the estimated location of each node 
+ repeat 
+ getoneunprocessedseqence 
+ repeat 
+ getonenodebyincreasingorder 
+ computelowbound 
+ updatemap 
+ until the last target node in the sequence 
+ repeat 
+ getonenodebydecreasingorder 
+ computeupbound 
+ updatemap 
+ until the last target node in the sequence 
+ until all the node sequences are processed 
+ repeat 
+ getoneunestimatednode 
+ centroidestimation 
+ until all the target nodes are estimated 
+elimination rule along a scanning direction the lower 
+boundary of the successor s area must be equal to or larger 
+than the lower boundary of the predecessor s area and the 
+upper boundary of the predecessor s area must be equal to or 
+smaller than the upper boundary of the successor s area 
+in the case of figure node is the successor of node 
+and node is the predecessor of node according to the 
+elimination rule node s lower boundary cannot be smaller 
+than that of node and node s upper boundary cannot exceed 
+node s upper boundary 
+algorithm illustrates the pseudo code of sequence-based 
+msp each node sequence is processed within line to the 
+sequence processing contains two steps 
+step line to compute and modify the lower 
+boundary for each target node by increasing order in the node 
+sequence each node s lower boundary is determined by the 
+lower boundary of its predecessor node in the sequence thus 
+the processing must start from the first node in the sequence 
+and by increasing order then update the map according to the 
+new lower boundary 
+step line to compute and modify the upper 
+boundary for each node by decreasing order in the node sequence 
+each node s upper boundary is determined by the upper 
+boundary of its successor node in the sequence thus the processing 
+must start from the last node in the sequence and by 
+decreasing order then update the map according to the new upper 
+boundary 
+after processing all the sequences for each node a polygon 
+bounding its possible location has been found then 
+center-ofgravity-based estimation is applied to compute the exact 
+location of each node line to 
+an example of this process is shown in figure the third 
+scan generates the node sequence b c a in 
+addition to the anchor split lines because nodes and come 
+after node in the sequence node and s polygons could 
+be narrowed according to node s lower boundary the lower 
+right-shaded area similarly the shaded area in node s 
+rectangle could be eliminated since this part is beyond node s 
+upper boundary indicated by the dotted line similar 
+eliminating can be performed for node as shown in the figure 
+ 
+ 
+a 
+ 
+ 
+ 
+ 
+b 
+c 
+ 
+ 
+ 
+ 
+straight-line scan 
+straight-linescan 
+straight-line scan 
+target node 
+anchor node 
+figure sequence-based msp example 
+ 
+a 
+ 
+ 
+ 
+ 
+b 
+c 
+ 
+ 
+ 
+ 
+straight-line scan 
+straight-linescan 
+straight-line scan 
+reprocessing scan 
+target node 
+anchor node 
+figure iterative msp reprocessing scan 
+from above we can see that the sequence-based msp 
+makes use of the information embedded in every sequential 
+node pair in the node sequence the polygon boundaries of 
+the target nodes obtained in prior could be used to further split 
+other target nodes areas our evaluation in sections and 
+shows that sequence-based msp considerably enhances system 
+accuracy 
+ iterative msp 
+sequence-based msp is preferable to basic msp because it 
+extracts more information from the node sequence in fact 
+further useful information still remains in sequence-based msp 
+a sequence processed later benefits from information produced 
+by previously processed sequences e g the third scan in 
+figure however the first several sequences can hardly benefit 
+from other scans in this way inspired by this phenomenon 
+we propose iterative msp the basic idea of iterative msp is 
+to process all the sequences iteratively several times so that the 
+processing of each single sequence can benefit from the results 
+of other sequences 
+to illustrate the idea more clearly figure shows the results 
+of three scans that have provided three sequences now if we 
+process the sequence a c b obtained from 
+scan again we can make progress as shown in figure 
+the reprocessing of the node sequence provides information 
+in the way an additional vertical scan would from 
+sequencebased msp we know that the upper boundaries of nodes and 
+ along the scan direction must not extend beyond the upper 
+boundary of node therefore the grid parts can be eliminated 
+ a central of gravity b joint distribution 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure example of joint distribution estimation 
+  
+vm 
+ap 
+vm 
+ap 
+vm 
+ap 
+vm 
+ap 
+combine 
+m 
+ap 
+figure idea of dbe msp for each node 
+for the nodes and node respectively as shown in figure 
+from this example we can see that iterative processing of the 
+sequence could help further shrink the polygon of each target 
+node and thus enhance the accuracy of the system 
+the implementation of iterative msp is straightforward 
+process all the sequences multiple times using sequence-based 
+msp like sequence-based msp iterative msp introduces no 
+additional event cost in other words reprocessing does not 
+actually repeat the scan physically evaluation results in 
+section will show that iterative msp contributes noticeably to 
+a lower localization error empirical results show that after 
+iterations improvements become less significant in summary 
+iterative processing can achieve better performance with only 
+a small computation overhead 
+ distribution-based estimation 
+after determining the location area polygon for each node 
+estimation is needed for a final decision previous research 
+mostly applied the center of gravity cog method 
+ which minimizes average error if every node is 
+independent of all others cog is the statistically best solution in 
+msp however each node may not be independent for 
+example two neighboring nodes in a certain sequence could have 
+overlapping polygon areas in this case if the marginal 
+probability of joint distribution is used for estimation better 
+statistical results are achieved 
+figure shows an example in which node and node are 
+located in the same polygon if cog is used both nodes are 
+localized at the same position figure a however the node 
+sequences obtained from two scans indicate that node should 
+be to the left of and above node as shown in figure b 
+the high-level idea of distribution-based estimation 
+proposed for msp which we call dbe msp is illustrated in 
+figure the distributions of each node under the ith scan for the 
+ith node sequence are estimated in node vmap i which is a 
+data structure for remembering the marginal distribution over 
+scan i then all the vmaps are combined to get a single map 
+and weighted estimation is used to obtain the final location 
+for each scan all the nodes are sorted according to the gap 
+which is the diameter of the polygon along the direction of the 
+scan to produce a second gap-based node sequence then 
+the estimation starts from the node with the smallest gap this 
+is because it is statistically more accurate to assume a uniform 
+distribution of the node with smaller gap for each node 
+processed in order from the gap-based node sequence either if 
+ 
+pred node s area 
+predecessor node exists 
+conditional distribution 
+based on pred node s area 
+alone uniformly distributed 
+succ node s area 
+successor node exists 
+conditional distribution 
+based on succ node s area 
+succ node s area 
+both predecessor and successor 
+nodes exist conditional distribution 
+based on both of them 
+pred node s area 
+figure four cases in dbe process 
+no neighbor node in the original event-based node sequence 
+shares an overlapping area or if the neighbors have not been 
+processed due to bigger gaps a uniform distribution uniform 
+is applied to this isolated node the alone case in figure 
+if the distribution of its neighbors sharing overlapped areas has 
+been processed we calculate the joint distribution for the node 
+as shown in figure there are three possible cases 
+depending on whether the distribution of the overlapping predecessor 
+and or successor nodes have has already been estimated 
+the estimation s strategy of starting from the most accurate 
+node smallest gap node reduces the problem of estimation 
+error propagation the results in the evaluation section indicate 
+that applying distribution-based estimation could give 
+statistically better results 
+ adaptive msp 
+so far all the enhancements to basic msp focus on 
+improving the multi-sequence processing algorithm given a fixed set 
+of scan directions all these enhancements require only more 
+computing time without any overhead to the sensor nodes 
+obviously it is possible to have some choice and optimization on 
+how events are generated for example in military situations 
+artillery or rocket-launched mini-ultrasound bombs can be used 
+for event generation at some selected locations in adaptive 
+msp we carefully generate each new localization event so as 
+to maximize the contribution of the new event to the refinement 
+of localization based on feedback from previous events 
+figure depicts the basic architecture of adaptive msp 
+through previous localization events the whole map has been 
+partitioned into many small location areas the idea of 
+adaptive msp is to generate the next localization event to achieve 
+best-effort elimination which ideally could shrink the location 
+area of individual node as much as possible 
+we use a weighted voting mechanism to evaluate candidate 
+localization events every node wants the next event to split its 
+area evenly which would shrink the area fast therefore every 
+node votes for the parameters of the next event e g the scan 
+angle k of the straight-line scan since the area map is 
+maintained centrally the vote is virtually done and there is no need 
+for the real sensor nodes to participate in it after gathering all 
+the voting results the event parameters with the most votes win 
+the election there are two factors that determine the weight of 
+each vote 
+ the vote for each candidate event is weighted according 
+to the diameter d of the node s location area nodes with 
+bigger location areas speak louder in the voting because 
+map partitioned by the localization events 
+diameter of each 
+area 
+candidate 
+localization events 
+evaluation 
+trigger next 
+localization evet 
+figure basic architecture of adaptive msp 
+ 
+ 
+diameter d 
+ 
+ 
+ k 
+ 
+ k 
+ 
+ k 
+ 
+ k 
+ 
+ k 
+ 
+ k 
+ 
+ k 
+ k 
+ k 
+ 
+ k 
+ k 
+ k 
+weight 
+el 
+small 
+i 
+opt 
+i 
+j 
+ii 
+j 
+i 
+s 
+s 
+dkkdfkweight 
+arg 
+ ⋅ ∆ 
+ 
+ 
+opt 
+k 
+target node 
+anchor node 
+center of gravity 
+node s area 
+figure candidate slops for node at anchor 
+overall system error is reduced mostly by splitting the 
+larger areas 
+ the vote for each candidate event is also weighted 
+according to its elimination efficiency for a location area which 
+is defined as how equally in size or in diameter an event 
+can cut an area in other words an optimal scan event 
+cuts an area in the middle since this cut shrinks the area 
+quickly and thus reduces localization uncertainty quickly 
+combining the above two aspects the weight for each vote 
+is computed according to the following equation 
+weight k 
+j 
+i f di △ k 
+j 
+i k 
+opt 
+i 
+k 
+j 
+i is node i s jth supporting parameter for next event 
+generation di is diameter of node i s location area △ k 
+j 
+i k 
+opt 
+i is the 
+distance between k 
+j 
+i and the optimal parameter k 
+opt 
+i for node i 
+which should be defined to fit the specific application 
+figure presents an example for node s voting for the 
+slopes of the next straight-line scan in the system there 
+are a fixed number of candidate slopes for each scan e g 
+k k k k the location area of target node is shown 
+in the figure the candidate events k 
+ k 
+ k 
+ k 
+ k 
+ k 
+ are 
+evaluated according to their effectiveness compared to the optimal 
+ideal event which is shown as a dotted line with appropriate 
+weights computed according to equation for this 
+specific example as is illustrated in the right part of figure 
+f di △ k 
+j 
+i kopt 
+i is defined as the following equation 
+weight kj 
+i f di △ kj 
+i kopt 
+i di · 
+ssmall 
+slarge 
+ 
+ssmall and slarge are the sizes of the smaller part and larger 
+part of the area cut by the candidate line respectively in this 
+case node votes for the candidate lines that do not cross its 
+area since ssmall 
+we show later that adaptive msp improves localization 
+accuracy in wsns with irregularly shaped deployment areas 
+ 
+ overhead and msp complexity analysis 
+this section provides a complexity analysis of the msp 
+design we emphasize that msp adopts an asymmetric design in 
+which sensor nodes need only to detect and report the events 
+they are blissfully oblivious to the processing methods 
+proposed in previous sections in this section we analyze the 
+computational cost on the node sequence processing side where 
+resources are plentiful 
+according to algorithm the computational complexity of 
+basic msp is o d · n · s and the storage space required is 
+o n · s where d is the number of events n is the number of 
+target nodes and s is the area size 
+according to algorithm the computational complexity of 
+both sequence-based msp and iterative msp is o c·d ·n ·s 
+where c is the number of iterations and c for 
+sequencebased msp and the storage space required is o n ·s both the 
+computational complexity and storage space are equal within a 
+constant factor to those of basic msp 
+the computational complexity of the distribution-based 
+estimation dbe msp is greater the major overhead comes 
+from the computation of joint distributions when both 
+predecessor and successor nodes exit in order to compute the 
+marginal probability msp needs to enumerate the locations of 
+the predecessor node and the successor node for example 
+if node a has predecessor node b and successor node c then 
+the marginal probability pa x y of node a s being at location 
+ x y is 
+pa x y ∑ 
+i 
+∑ 
+j 
+∑ 
+m 
+∑ 
+n 
+ 
+nb a c 
+·pb i j ·pc m n 
+nb a c is the number of valid locations for a satisfying the 
+sequence b a c when b is at i j and c is at m n 
+pb i j is the available probability of node b s being located 
+at i j pc m n is the available probability of node c s 
+being located at m n a naive algorithm to compute equation 
+ has complexity o d · n · s however since the marginal 
+probability indeed comes from only one dimension along the 
+scanning direction e g a line the complexity can be reduced 
+to o d · n · s after algorithm optimization in addition the 
+final location areas for every node are much smaller than the 
+original field s therefore in practice dbe msp can be 
+computed much faster than o d ·n ·s 
+ wave propagation example 
+so far the description of msp has been solely in the 
+context of straight-line scan however we note that msp is 
+conceptually independent of how the event is propagated as long 
+as node sequences can be obtained clearly we can also 
+support wave-propagation-based events e g ultrasound 
+propagation air blast propagation which are polar coordinate 
+equivalences of the line scans in the cartesian coordinate system 
+this section illustrates the effects of msp s implementation in 
+the wave propagation-based situation for easy modelling we 
+have made the following assumptions 
+ the wave propagates uniformly in all directions 
+therefore the propagation has a circle frontier surface since 
+msp does not rely on an accurate space-time relationship 
+a certain distortion in wave propagation is tolerable if any 
+directional wave is used the propagation frontier surface 
+can be modified accordingly 
+ 
+ 
+ 
+ 
+target node 
+anchor node 
+previous event location 
+a 
+ 
+center of gravity 
+ 
+ 
+ 
+b 
+ 
+c 
+a line of preferred locations for next event 
+figure example of wave propagation situation 
+ under the situation of line-of-sight we allow obstacles to 
+reflect or deflect the wave reflection and deflection are 
+not problems because each node reacts only to the first 
+detected event those reflected or deflected waves come 
+later than the line-of-sight waves the only thing the 
+system needs to maintain is an appropriate time interval 
+between two successive localization events 
+ we assume that background noise exists and therefore we 
+run a band-pass filter to listen to a particular wave 
+frequency this reduces the chances of false detection 
+the parameter that affects the localization event generation 
+here is the source location of the event the different 
+distances between each node and the event source determine the 
+rank of each node in the node sequence using the node 
+sequences the msp algorithm divides the whole area into many 
+non-rectangular areas as shown in figure in this figure 
+the stars represent two previous event sources the previous 
+two propagations split the whole map into many areas by those 
+dashed circles that pass one of the anchors each node is 
+located in one of the small areas since sequence-based msp 
+iterative msp and dbe msp make no assumptions about the 
+type of localization events and the shape of the area all three 
+optimization algorithms can be applied for the wave 
+propagation scenario 
+however adaptive msp needs more explanation figure 
+illustrates an example of nodes voting for next event source 
+locations unlike the straight-line scan the critical parameter 
+now is the location of the event source because the distance 
+between each node and the event source determines the rank of 
+the node in the sequence in figure if the next event breaks 
+out along near the solid thick gray line which perpendicularly 
+bisects the solid dark line between anchor c and the center of 
+gravity of node s area the gray area the wave would reach 
+anchor c and the center of gravity of node s area at roughly 
+the same time which would relatively equally divide node s 
+area therefore node prefers to vote for the positions around 
+the thick gray line 
+ practical deployment issues 
+for the sake of presentation until now we have described 
+msp in an ideal case where a complete node sequence can be 
+obtained with accurate time synchronization in this section 
+we describe how to make msp work well under more realistic 
+conditions 
+ 
+ incomplete node sequence 
+for diverse reasons such as sensor malfunction or natural 
+obstacles the nodes in the network could fail to detect 
+localization events in such cases the node sequence will not be 
+complete this problem has two versions 
+ anchor nodes are missing in the node sequence 
+if some anchor nodes fail to respond to the localization 
+events then the system has fewer anchors in this case 
+the solution is to generate more events to compensate for 
+the loss of anchors so as to achieve the desired accuracy 
+requirements 
+ target nodes are missing in the node sequence 
+there are two consequences when target nodes are 
+missing first if these nodes are still be useful to sensing 
+applications they need to use other backup localization 
+approaches e g centroid to localize themselves with help 
+from their neighbors who have already learned their own 
+locations from msp secondly since in advanced msp 
+each node in the sequence may contribute to the overall 
+system accuracy dropping of target nodes from sequences 
+could also reduce the accuracy of the localization thus 
+proper compensation procedures such as adding more 
+localization events need to be launched 
+ localization without time synchronization 
+in a sensor network without time synchronization support 
+nodes cannot be ordered into a sequence using timestamps for 
+such cases we propose a listen-detect-assemble-report 
+protocol which is able to function independently without time 
+synchronization 
+listen-detect-assemble-report requires that every node 
+listens to the channel for the node sequence transmitted from its 
+neighbors then when the node detects the localization event 
+it assembles itself into the newest node sequence it has heard 
+and reports the updated sequence to other nodes figure 
+ a illustrates an example for the listen-detect-assemble-report 
+protocol for simplicity in this figure we did not differentiate 
+the target nodes from anchor nodes a solid line between two 
+nodes stands for a communication link suppose a straight line 
+scans from left to right node detects the event and then it 
+broadcasts the sequence into the network node and node 
+ receive this sequence when node detects the event node 
+ adds itself into the sequence and broadcasts the 
+sequence propagates in the same direction with the scan as shown 
+in figure a finally node obtains a complete sequence 
+ 
+in the case of ultrasound propagation because the event 
+propagation speed is much slower than that of radio the 
+listendetect-assemble-report protocol can work well in a situation 
+where the node density is not very high for instance if the 
+distance between two nodes along one direction is meters 
+the m s sound needs ms to propagate from one node 
+to the other while normally the communication data rate is 
+ kbps in the wsn e g cc it takes only about 
+ ∼ ms to transmit an assembled packet for one hop 
+one problem that may occur using the 
+listen-detectassemble-report protocol is multiple partial sequences as 
+shown in figure b two separate paths in the network may 
+result in two sequences that could not be further combined in 
+this case since the two sequences can only be processed as 
+separate sequences some order information is lost therefore the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ a 
+ b 
+ c 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+event propagation 
+event propagation 
+event propagation 
+figure node sequence without time synchronization 
+accuracy of the system would decrease 
+the other problem is the sequence flip problem as shown 
+in figure c because node and node are too close to 
+each other along the scan direction they detect the scan 
+almost simultaneously due to the uncertainty such as media 
+access delay two messages could be transmitted out of order 
+for example if node sends out its report first then the order 
+of node and node gets flipped in the final node sequence 
+the sequence flip problem would appear even in an accurately 
+synchronized system due to random jitter in node detection if 
+an event arrives at multiple nodes almost simultaneously a 
+method addressing the sequence flip is presented in the next 
+section 
+ sequence flip and protection band 
+sequence flip problems can be solved with and without 
+time synchronization we firstly start with a scenario 
+applying time synchronization existing solutions for time 
+synchronization can easily achieve sub-millisecond-level 
+accuracy for example ftsp achieves µs microsecond 
+average error for a two-node single-hop case therefore we 
+can comfortably assume that the network is synchronized with 
+maximum error of µs however when multiple nodes are 
+located very near to each other along the event propagation 
+direction even when time synchronization with less than ms 
+error is achieved in the network sequence flip may still occur 
+for example in the sound wave propagation case if two nodes 
+are less than meters apart the difference between their 
+detection timestamp would be smaller than millisecond 
+we find that sequence flip could not only damage system 
+accuracy but also might cause a fatal error in the msp algorithm 
+figure illustrates both detrimental results in the left side of 
+figure a suppose node and node are so close to each 
+other that it takes less than ms for the localization event to 
+propagate from node to node now unfortunately the node 
+sequence is mistaken to be so node is expected to be 
+located to the right of node such as at the position of the 
+dashed node according to the elimination rule in 
+sequencebased msp the left part of node s area is cut off as shown in 
+the right part of figure a this is a potentially fatal error 
+because node is actually located in the dashed area which has 
+been eliminated by mistake during the subsequent 
+eliminations introduced by other events node s area might be cut off 
+completely thus node could consequently be erased from the 
+map even in cases where node still survives its area actually 
+does not cover its real location 
+ 
+ 
+ 
+ 
+ 
+lower boundary of upper boundary of 
+flipped sequence fatal elimination error 
+eventpropagation 
+ 
+fatal error 
+ 
+ 
+ 
+ 
+ 
+lower boundary of upper boundary of 
+flipped sequence safe elimination 
+eventpropagation 
+ 
+new lower boundary of 
+ 
+b 
+ a 
+ b 
+b protection band 
+figure sequence flip and protection band 
+another problem is not fatal but lowers the localization 
+accuracy if we get the right node sequence node has a 
+new upper boundary which can narrow the area of node as in 
+figure due to the sequence flip node loses this new upper 
+boundary 
+in order to address the sequence flip problem especially to 
+prevent nodes from being erased from the map we propose 
+a protection band compensation approach the basic idea of 
+protection band is to extend the boundary of the location area 
+a little bit so as to make sure that the node will never be erased 
+from the map this solution is based on the fact that nodes 
+have a high probability of flipping in the sequence if they are 
+near to each other along the event propagation direction if 
+two nodes are apart from each other more than some distance 
+say b they rarely flip unless the nodes are faulty the width 
+of a protection band b is largely determined by the maximum 
+error in system time synchronization and the localization event 
+propagation speed 
+figure b presents the application of the protection band 
+instead of eliminating the dashed part in figure a for node 
+ the new lower boundary of node is set by shifting the 
+original lower boundary of node to the left by distance b in this 
+case the location area still covers node and protects it from 
+being erased in a practical implementation supposing that the 
+ultrasound event is used if the maximum error of system time 
+synchronization is ms two nodes might flip with high 
+probability if the timestamp difference between the two nodes is 
+smaller than or equal to ms accordingly we set the 
+protection band b as m the distance sound can propagate within 
+ millisecond by adding the protection band we reduce the 
+chances of fatal errors although at the cost of localization 
+accuracy empirical results obtained from our physical test-bed 
+verified this conclusion 
+in the case of using the listen-detect-assemble-report 
+protocol the only change we need to make is to select the protection 
+band according to the maximum delay uncertainty introduced 
+by the mac operation and the event propagation speed to 
+bound mac delay at the node side a node can drop its report 
+message if it experiences excessive mac delay this converts 
+the sequence flip problem to the incomplete sequence problem 
+which can be more easily addressed by the method proposed in 
+section 
+ simulation evaluation 
+our evaluation of msp was conducted on three platforms 
+ i an indoor system with micaz motes using straight-line 
+scan ii an outdoor system with micaz motes using sound 
+wave propagation and iii an extensive simulation under 
+various kinds of physical settings 
+in order to understand the behavior of msp under 
+numerous settings we start our evaluation with simulations 
+then we implemented basic msp and all the advanced 
+msp methods for the case where time synchronization is 
+available in the network the simulation and 
+implementation details are omitted in this paper due to space 
+constraints but related documents are provided online at 
+http www cs umn edu ∼zhong msp full implementation and 
+evaluation of system without time synchronization are yet to be 
+completed in the near future 
+in simulation we assume all the node sequences are perfect 
+so as to reveal the performance of msp achievable in the 
+absence of incomplete node sequences or sequence flips in our 
+simulations all the anchor nodes and target nodes are assumed 
+to be deployed uniformly the mean and maximum errors are 
+averaged over runs to obtain high confidence for legibility 
+reasons we do not plot the confidence intervals in this paper 
+all the simulations are based on the straight-line scan example 
+we implement three scan strategies 
+ random scan the slope of the scan line is randomly 
+chosen at each time 
+ regular scan the slope is predetermined to rotate 
+uniformly from degree to degrees for example if the 
+system scans times then the scan angles would be 
+ and 
+ adaptive scan the slope of each scan is determined 
+based on the localization results from previous scans 
+we start with basic msp and then demonstrate the 
+performance improvements one step at a time by adding i 
+sequencebased msp ii iterative msp iii dbe msp and iv adaptive 
+msp 
+ performance of basic msp 
+the evaluation starts with basic msp where we compare the 
+performance of random scan and regular scan under different 
+configurations we intend to illustrate the impact of the number 
+of anchors m the number of scans d and target node density 
+ number of target nodes n in a fixed-size region on the 
+localization error table shows the default simulation parameters 
+the error of each node is defined as the distance between the 
+estimated location and the real position we note that by 
+default we only use three anchors which is considerably fewer 
+than existing range-free solutions 
+impact of the number of scans in this experiment we 
+compare regular scan with random scan under a different number 
+of scans from to in steps of the number of anchors 
+table default configuration parameters 
+parameter description 
+field area × grid unit 
+scan type regular default random scan 
+anchor number default 
+scan times default 
+target node number default 
+statistics error mean max 
+random seeds runs 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error and max error vs scan time 
+scan time 
+error max error of random scan 
+max error of regular scan 
+mean error of random scan 
+mean error of regular scan 
+ a error vs number of scans 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error and max error vs anchor number 
+anchor number 
+error 
+max error of random scan 
+max error of regular scan 
+mean error of random scan 
+mean error of regular scan 
+ b error vs anchor number 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error and max error vs target node number 
+target node number 
+error 
+max error of random scan 
+max error of regular scan 
+mean error of random scan 
+mean error of regular scan 
+ c error vs number of target nodes 
+figure evaluation of basic msp under random and regular scans 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+basic msp vs sequence based msp ii 
+scan time 
+error 
+max error of basic msp 
+max error of seq msp 
+mean error of basic msp 
+mean error of seq msp 
+ a error vs number of scans 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+basic msp vs sequence based msp i 
+anchor number 
+error 
+max error of basic msp 
+max error of seq msp 
+mean error of basic msp 
+mean error of seq msp 
+ b error vs anchor number 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+basic msp vs sequence based msp iii 
+target node number 
+error 
+max error of basic msp 
+max error of seq msp 
+mean error of basic msp 
+mean error of seq msp 
+ c error vs number of target nodes 
+figure improvements of sequence-based msp over basic msp 
+is by default figure a indicates the following i as 
+the number of scans increases the localization error decreases 
+significantly for example localization errors drop more than 
+ from scans to scans ii statistically regular scan 
+achieves better performance than random scan under identical 
+number of scans however the performance gap reduces as 
+the number of scans increases this is expected since a large 
+number of random numbers converges to a uniform 
+distribution figure a also demonstrates that msp requires only 
+a small number of anchors to perform very well compared to 
+existing range-free solutions 
+impact of the number of anchors in this experiment we 
+compare regular scan with random scan under different 
+number of anchors from to in steps of the results shown in 
+figure b indicate that i as the number of anchor nodes 
+increases the localization error decreases and ii 
+statistically regular scan obtains better results than random scan with 
+identical number of anchors by combining figures a 
+and b we can conclude that msp allows a flexible tradeoff 
+between physical cost anchor nodes and soft cost 
+ localization events 
+impact of the target node density in this experiment we 
+confirm that the density of target nodes has no impact on the 
+accuracy which motivated the design of sequence-based msp 
+in this experiment we compare regular scan with random scan 
+under different number of target nodes from to in steps 
+of results in figure c show that mean localization 
+errors remain constant across different node densities however 
+when the number of target nodes increases the average 
+maximum error increases 
+summary from the above experiments we can conclude that 
+in basic msp regular scan are better than random scan under 
+different numbers of anchors and scan events this is because 
+regular scans uniformly eliminate the map from different 
+directions while random scans would obtain sequences with 
+redundant overlapping information if two scans choose two similar 
+scanning slopes 
+ improvements of sequence-based msp 
+this section evaluates the benefits of exploiting the order 
+information among target nodes by comparing sequence-based 
+msp with basic msp in this and the following sections 
+regular scan is used for straight-line scan event generation the 
+purpose of using regular scan is to keep the scan events and 
+the node sequences identical for both sequence-based msp and 
+basic msp so that the only difference between them is the 
+sequence processing procedure 
+impact of the number of scans in this experiment we 
+compare sequence-based msp with basic msp under different 
+number of scans from to in steps of figure a 
+indicates significant performance improvement in sequence-based 
+msp over basic msp across all scan settings especially when 
+the number of scans is large for example when the number 
+of scans is errors in sequence-based msp are about 
+of that of basic msp we conclude that sequence-based msp 
+performs extremely well when there are many scan events 
+impact of the number of anchors in this experiment we 
+use different number of anchors from to in steps of as 
+seen in figure b the mean error and maximum error of 
+sequence-based msp is much smaller than that of basic msp 
+especially when there is limited number of anchors in the 
+system e g anchors the error rate was almost halved by 
+using sequence-based msp this phenomenon has an interesting 
+explanation the cutting lines created by anchor nodes are 
+exploited by both basic msp and sequence-based msp so as the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+basic msp vs iterative msp 
+iterative times 
+error 
+max error of iterative seq msp 
+mean error of iterative seq msp 
+max error of basic msp 
+mean error of basic msp 
+figure improvements of iterative msp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+dbe vs non−dbe 
+error 
+cumulativedistrubutioinfunctions cdf 
+mean error cdf of dbe msp 
+mean error cdf of non−dbe msp 
+max error cdf of dbe msp 
+max error cdf of non−dbe msp 
+figure improvements of dbe msp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+adaptive msp for by 
+target node number 
+error 
+max error of regualr scan 
+max error of adaptive scan 
+mean error of regualr scan 
+mean error of adaptive scan 
+ a adaptive msp for by field 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error cdf at different angle steps in adaptive scan 
+mean error 
+cumulativedistrubutioinfunctions cdf 
+ degree angle step adaptive 
+ degree angle step adaptive 
+ degree angle step adaptive 
+ degree step regular scan 
+ b impact of the number of candidate events 
+figure the improvements of adaptive msp 
+number of anchor nodes increases anchors tend to dominate 
+the contribution therefore the performance gaps lessens 
+impact of the target node density figure c 
+demonstrates the benefits of exploiting order information among 
+target nodes since sequence-based msp makes use of the 
+information among the target nodes having more target nodes 
+contributes to the overall system accuracy as the number of 
+target nodes increases the mean error and maximum error of 
+sequence-based msp decreases clearly the mean error in 
+basic msp is not affected by the number of target nodes as shown 
+in figure c 
+summary from the above experiments we can conclude that 
+exploiting order information among target nodes can improve 
+accuracy significantly especially when the number of events is 
+large but with few anchors 
+ iterative msp over sequence-based msp 
+in this experiment the same node sequences were processed 
+iteratively multiple times in figure the two single marks 
+are results from basic msp since basic msp doesn t perform 
+iterations the two curves present the performance of 
+iterative msp under different numbers of iterations c we note that 
+when only a single iteration is used this method degrades to 
+sequence-based msp therefore figure compares the three 
+methods to one another 
+figure shows that the second iteration can reduce the 
+mean error and maximum error dramatically after that the 
+performance gain gradually reduces especially when c 
+this is because the second iteration allows earlier scans to 
+exploit the new boundaries created by later scans in the first 
+iteration such exploitation decays quickly over iterations 
+ dbe msp over iterative msp 
+figure in which we augment iterative msp with 
+distribution-based estimation dbe msp shows that dbe 
+msp could bring about statistically better performance 
+figure presents cumulative distribution localization errors in 
+general the two curves of the dbe msp lay slightly to the left 
+of that of non-dbe msp which indicates that dbe msp has 
+a smaller statistical mean error and averaged maximum error 
+than non-dbe msp we note that because dbe is augmented 
+on top of the best solution so far the performance 
+improvement is not significant when we apply dbe on basic msp 
+methods the improvement is much more significant we omit 
+these results because of space constraints 
+ improvements of adaptive msp 
+this section illustrates the performance of adaptive msp 
+over non-adaptive msp we note that feedback-based 
+adaptation can be applied to all msp methods since it affects only 
+the scanning angles but not the sequence processing in this 
+experiment we evaluated how adaptive msp can improve the 
+best solution so far the default angle granularity step for 
+adaptive searching is degrees 
+impact of area shape first if system settings are regular 
+the adaptive method hardly contributes to the results for a 
+square area regular the performance of adaptive msp and 
+regular scans are very close however if the shape of the area 
+is not regular adaptive msp helps to choose the appropriate 
+localization events to compensate therefore adaptive msp 
+can achieve a better mean error and maximum error as shown 
+in figure a for example adaptive msp improves 
+localization accuracy by when the number of target nodes is 
+ 
+impact of the target node density figure a shows that 
+when the node density is low adaptive msp brings more 
+benefit than when node density is high this phenomenon makes 
+statistical sense because the law of large numbers tells us that 
+node placement approaches a truly uniform distribution when 
+the number of nodes is increased adaptive msp has an edge 
+ 
+figure the mirage test-bed line scan figure the -node outdoor experiments wave 
+when layout is not uniform 
+impact of candidate angle density figure b shows that 
+the smaller the candidate scan angle step the better the 
+statistical performance in terms of mean error the rationale is clear 
+as wider candidate scan angles provide adaptive msp more 
+opportunity to choose the one approaching the optimal angle 
+ simulation summary 
+starting from basic msp we have demonstrated 
+step-bystep how four optimizations can be applied on top of each other 
+to improve localization performance in other words these 
+optimizations are compatible with each other and can jointly 
+improve the overall performance we note that our simulations 
+were done under assumption that the complete node sequence 
+can be obtained without sequence flips in the next section we 
+present two real-system implementations that reveal and 
+address these practical issues 
+ system evaluation 
+in this section we present a system implementation of msp 
+on two physical test-beds the first one is called mirage a 
+large indoor test-bed composed of six -foot by -foot boards 
+illustrated in figure each board in the system can be used 
+as an individual sub-system which is powered controlled and 
+metered separately three hitachi cp-x projectors 
+connected through a matorx triplehead go graphics expansion 
+box are used to create an ultra-wide integrated display on six 
+boards figure shows that a long tilted line is generated by 
+the projectors we have implemented all five versions of msp 
+on the mirage test-bed running micaz motes unless 
+mentioned otherwise the default setting is anchors and scans at 
+the scanning line speed of feet s in all of our graphs each 
+data point represents the average value of trials in the 
+outdoor system a dell a speaker is used to generate khz 
+sound as shown in figure we place micaz motes in the 
+backyard of a house since the location is not completely open 
+sound waves are reflected scattered and absorbed by various 
+objects in the vicinity causing a multi-path effect in the 
+system evaluation simple time synchronization mechanisms are 
+applied on each node 
+ indoor system evaluation 
+during indoor experiments we encountered several 
+realworld problems that are not revealed in the simulation first 
+sequences obtained were partial due to misdetection and 
+message losses second elements in the sequences could flip due 
+to detection delay uncertainty in media access or error in time 
+synchronization we show that these issues can be addressed 
+by using the protection band method described in section 
+ on scanning speed and protection band 
+in this experiment we studied the impact of the scanning 
+speed and the length of protection band on the performance of 
+the system in general with increasing scanning speed nodes 
+have less time to respond to the event and the time gap between 
+two adjacent nodes shrinks leading to an increasing number of 
+partial sequences and sequence flips 
+figure shows the node flip situations for six scans with 
+distinct angles under different scan speeds the x-axis shows 
+the distance between the flipped nodes in the correct node 
+sequence y-axis shows the total number of flips in the six scans 
+this figure tells us that faster scan brings in not only 
+increasing number of flips but also longer-distance flips that require 
+wider protection band to prevent from fatal errors 
+figure a shows the effectiveness of the protection band 
+in terms of reducing the number of unlocalized nodes when 
+we use a moderate scan speed feet s the chance of flipping 
+is rare therefore we can achieve feet mean accuracy 
+ figure b with feet maximum error figure c with 
+increasing speeds the protection band needs to be set to a larger 
+value to deal with flipping interesting phenomena can be 
+observed in figures on one hand the protection band can 
+sharply reduce the number of unlocalized nodes on the other 
+hand protection bands enlarge the area in which a target would 
+potentially reside introducing more uncertainty thus there is 
+a concave curve for both mean and maximum error when the 
+scan speed is at feet s 
+ on msp methods and protection band 
+in this experiment we show the improvements resulting 
+from three different methods figure a shows that a 
+protection band of feet is sufficient for the scan speed of 
+ feet s figures b and c show clearly that iterative 
+msp with adaptation achieves best performance for 
+example figures b shows that when we set the protection band 
+at feet iterative msp achieves feet accuracy which 
+is more accurate than the basic design similarly 
+figures b and c show the double-edged effects of 
+protection band on the localization accuracy 
+ 
+ 
+ 
+ 
+ flip distribution for scans at line speed of feet s 
+flips 
+node distance in the ideal node sequence 
+ 
+ 
+ 
+ 
+ flip distribution for scans at line speed of feet s 
+flips 
+ 
+ 
+ 
+ 
+ flip distribution for scans at line speed of feet s 
+flips 
+figure number of flips for different scan speeds 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+unlocalized node number line scan at different speed 
+protection band in feet 
+unlocalizednodenumber 
+scan line speed feet s 
+scan line speed feet s 
+scan line speed feet s 
+ a number of unlocalized nodes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error line scan at different speed 
+protection band in feet 
+error infeet 
+scan line speed feet s 
+scan line speed feet s 
+scan line speed feet s 
+ b mean localization error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+max error line scan at different speed 
+protection band in feet 
+error infeet 
+scan line speed feet s 
+scan line speed feet s 
+scan line speed feet s 
+ c max localization error 
+figure impact of protection band and scanning speed 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+unlocalized node number scan line speed feet s 
+protection band in feet 
+numberofunlocalizednodeoutof 
+unlocalized node of basic msp 
+unlocalized node of sequence based msp 
+unlocalized node of iterative msp 
+ a number of unlocalized nodes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error scan line speed feet s 
+protection band in feet 
+error infeet 
+mean error of basic msp 
+mean error of sequence based msp 
+mean error of iterative msp 
+ b mean localization error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+max error scan line speed feet s 
+protection band in feet 
+error infeet 
+max error of basic msp 
+max error of sequence based msp 
+max error of iterative msp 
+ c max localization error 
+figure impact of protection band under different msp methods 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+unlocalized node number protection band feet 
+anchor number 
+unlocalizednodenumber 
+ scan events at speed feet s 
+ scan events at speed feet s 
+ scan events at speed feet s 
+ a number of unlocalized nodes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mean error protection band feet 
+anchor number 
+error infeet 
+mean error of scan events at speed feet s 
+mean error of scan events at speed feet s 
+mean error of scan events at speed feet s 
+ b mean localization error 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+max error protection band feet 
+anchor number 
+error infeet 
+max error of scan events at speed feet s 
+max error of scan events at speed feet s 
+max error of scan events at speed feet s 
+ c max localization error 
+figure impact of the number of anchors and scans 
+ on number of anchors and scans 
+in this experiment we show a tradeoff between hardware 
+cost anchors with soft cost events figure a shows that 
+with more cutting lines created by anchors the chance of 
+unlocalized nodes increases slightly we note that with a feet 
+protection band the percentage of unlocalized nodes is very 
+small e g in the worst-case with anchors only out of 
+nodes are not localized due to flipping figures b and c 
+show the tradeoff between number of anchors and the number 
+of scans obviously with the number of anchors increases the 
+error drops significantly with anchors we can achieve a 
+localization accuracy as low as ∼ feet which is nearly a 
+ improvement similarly with increasing number of scans 
+the accuracy drops significantly as well we can observe about 
+ across all anchor settings when we increase the number of 
+scans from to for example with only anchors we can 
+achieve -foot accuracy with scans 
+ outdoor system evaluation 
+the outdoor system evaluation contains two parts i 
+effective detection distance evaluation which shows that the 
+node sequence can be readily obtained and ii sound 
+propagation based localization which shows the results of 
+wavepropagation-based localization 
+ effective detection distance evaluation 
+we firstly evaluate the sequence flip phenomenon in wave 
+propagation as shown in figure motes were placed as 
+five groups in front of the speaker four nodes in each group 
+at roughly the same distances to the speaker the gap between 
+each group is set to be and feet respectively in four 
+experiments figure shows the results the x-axis in each 
+subgraph indicates the group index there are four nodes in each 
+group bars the y-axis shows the detection rank order 
+of each node in the node sequence as distance between each 
+group increases number of flips in the resulting node sequence 
+ 
+figure wave detection 
+ 
+ 
+ 
+ 
+ 
+ 
+ feet group distance 
+rank 
+group index 
+ 
+ 
+ 
+ 
+ 
+ 
+ feet group distance 
+rank 
+group index 
+ 
+ 
+ 
+ 
+ 
+ 
+ feet group distance 
+rank 
+group index 
+ 
+ 
+ 
+ 
+ 
+ 
+ feet group distance 
+rank 
+group index 
+figure ranks vs distances 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+y-dimension feet 
+x-dimension feet 
+node 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+y-dimension feet 
+x-dimension feet 
+anchor 
+figure localization error sound 
+decreases for example in the -foot distance subgraph there 
+are quite a few flips between nodes in adjacent and even 
+nonadjacent groups while in the -foot subgraph flips between 
+different groups disappeared in the test 
+ sound propagation based localization 
+as shown in figure motes are placed as a grid 
+including rows with feet between each row and columns with 
+ feet between each column six khz acoustic wave 
+propagation events are generated around the mote grid by a speaker 
+figure shows the localization results using iterative msp 
+ times iterative processing with a protection band of feet 
+the average error of the localization results is feet and the 
+maximum error is feet with one un-localized node 
+we found that sequence flip in wave propagation is more 
+severe than that in the indoor line-based test this is expected 
+due to the high propagation speed of sound currently we use 
+micaz mote which is equipped with a low quality 
+microphone we believe that using a better speaker and more events 
+the system can yield better accuracy despite the hardware 
+constrains the msp algorithm still successfully localized most of 
+the nodes with good accuracy 
+ conclusions 
+in this paper we present the first work that exploits the 
+concept of node sequence processing to localize sensor nodes we 
+demonstrated that we could significantly improve localization 
+accuracy by making full use of the information embedded in 
+multiple easy-to-get one-dimensional node sequences we 
+proposed four novel optimization methods exploiting order and 
+marginal distribution among non-anchor nodes as well as the 
+feedback information from early localization results 
+importantly these optimization methods can be used together and 
+improve accuracy additively the practical issues of partial 
+node sequence and sequence flip were identified and addressed 
+in two physical system test-beds we also evaluated 
+performance at scale through analysis as well as extensive 
+simulations results demonstrate that requiring neither costly 
+hardware on sensor nodes nor precise event distribution msp can 
+achieve a sub-foot accuracy with very few anchor nodes 
+provided sufficient events 
+ references 
+ cc data sheet avaiable at http www chipcon com 
+ p bahl and v n padmanabhan radar an in-building rf-based user 
+location and tracking system in ieee infocom 
+ m broxton j lifton and j paradiso localizing a sensor network via 
+collaborative processing of global stimuli in ewsn 
+ n bulusu j heidemann and d estrin gps-less low cost outdoor 
+localization for very small devices ieee personal communications 
+magazine 
+ d culler d estrin and m srivastava overview of sensor networks 
+ieee computer magazine 
+ j elson l girod and d estrin fine-grained network time 
+synchronization using reference broadcasts in osdi 
+ d k goldenberg p bihler m gao j fang b d anderson a morse 
+and y yang localization in sparse networks using sweeps in 
+mobicom 
+ t he c huang b m blum j a stankovic and t abdelzaher 
+rangefree localization schemes in large-scale sensor networks in 
+mobicom 
+ b kusy p dutta p levis m mar a ledeczi and d culler elapsed 
+time on arrival a simple and versatile primitive for canonical time 
+synchronization services international journal of ad-hoc and 
+ubiquitous computing 
+ l lazos and r poovendran serloc secure range-independent 
+localization for wireless sensor networks in wise 
+ m maroti b kusy g balogh p volgyesi a nadas k molnar 
+s dora and a ledeczi radio interferometric geolocation in 
+sensys 
+ m maroti b kusy g simon and a ledeczi the flooding time 
+synchronization protocol in sensys 
+ d moore j leonard d rus and s teller robust distributed network 
+localization with noise range measurements in sensys 
+ r nagpal and d coore an algorithm for group formation in an 
+amorphous computer in pdcs 
+ d niculescu and b nath ad-hoc positioning system in globecom 
+ 
+ d niculescu and b nath ad-hoc positioning system aps using 
+aoa in infocom 
+ n b priyantha a chakraborty and h balakrishnan the cricket 
+location-support system in mobicom 
+ k r¨omer the lighthouse location system for smart dust in mobisys 
+ 
+ a savvides c c han and m b srivastava dynamic fine-grained 
+localization in ad-hoc networks of sensors in mobicom 
+ r stoleru t he j a stankovic and d luebke a high-accuracy 
+low-cost localization system for wireless sensor networks in sensys 
+ 
+ r stoleru p vicaire t he and j a stankovic stardust a flexible 
+architecture for passive localization in wireless sensor networks in 
+sensys 
+ e w weisstein plane division by lines mathworld wolfram com 
+ b h wellenhoff h lichtenegger and j collins global positions 
+system theory and practice fourth edition springer verlag 
+ k whitehouse the design of calamari an ad-hoc localization system 
+for sensor networks in university of california at berkeley 
+ z zhong msp evaluation and implementation report avaiable at 
+http www cs umn edu ∼zhong msp 
+ g zhou t he and j a stankovic impact of radio irregularity on 
+wireless sensor networks in mobisys 
+ 

@@ -1,0 +1,1257 @@
+the dynamics of viral marketing 
+jure leskovec 
+† 
+carnegie mellon university 
+pittsburgh pa 
+jure cs cmu edu 
+lada a adamic 
+‡ 
+university of michigan 
+ann arbor mi 
+ladamic umich edu 
+bernardo a huberman 
+hp labs 
+palo alto ca 
+bernardo huberman hp com 
+abstract 
+we present an analysis of a person-to-person 
+recommendation network consisting of million people who made 
+million recommendations on half a million products we 
+observe the propagation of recommendations and the 
+cascade sizes which we explain by a simple stochastic model 
+we then establish how the recommendation network grows 
+over time and how effective it is from the viewpoint of the 
+sender and receiver of the recommendations while on 
+average recommendations are not very effective at inducing 
+purchases and do not spread very far we present a model 
+that successfully identifies product and pricing categories for 
+which viral marketing seems to be very effective 
+categories and subject descriptors 
+j social and behavioral sciences economics 
+general terms 
+economics 
+ introduction 
+with consumers showing increasing resistance to 
+traditional forms of advertising such as tv or newspaper ads 
+marketers have turned to alternate strategies including 
+viral marketing viral marketing exploits existing social 
+networks by encouraging customers to share product 
+information with their friends previously a few in depth 
+studies have shown that social networks affect the adoption of 
+individual innovations and products for a review see 
+or but until recently it has been difficult to measure 
+how influential person-to-person recommendations actually 
+are over a wide range of products we were able to directly 
+measure and model the effectiveness of recommendations by 
+studying one online retailer s incentivised viral marketing 
+program the website gave discounts to customers 
+recommending any of its products to others and then tracked the 
+resulting purchases and additional recommendations 
+although word of mouth can be a powerful factor 
+influencing purchasing decisions it can be tricky for advertisers 
+to tap into some services used by individuals to 
+communicate are natural candidates for viral marketing because the 
+product can be observed or advertised as part of the 
+communication email services such as hotmail and yahoo had 
+very fast adoption curves because every email sent through 
+them contained an advertisement for the service and because 
+they were free hotmail spent a mere on traditional 
+marketing and still grew from zero to million users in 
+months google s gmail captured a significant part of 
+market share in spite of the fact that the only way to sign 
+up for the service was through a referral 
+most products cannot be advertised in such a direct way 
+at the same time the choice of products available to 
+consumers has increased manyfold thanks to online retailers 
+who can supply a much wider variety of products than 
+traditional brick-and-mortar stores not only is the variety 
+of products larger but one observes a  fat tail 
+phenomenon where a large fraction of purchases are of relatively 
+obscure items on amazon com somewhere between to 
+ percent of unit sales fall outside of its top ranked 
+products rhapsody a streaming-music service streams 
+more tracks outside than inside its top tunes 
+effectively advertising these niche products using traditional 
+advertising approaches is impractical therefore using more 
+targeted marketing approaches is advantageous both to the 
+merchant and the consumer who would benefit from 
+learning about new products 
+the problem is partly addressed by the advent of 
+online product and merchant reviews both at retail sites such 
+as ebay and amazon and specialized product comparison 
+sites such as epinions and cnet quantitative marketing 
+techniques have been proposed and the rating of 
+products and merchants has been shown to effect the likelihood 
+of an item being bought of further help to the 
+consumer are collaborative filtering recommendations of the 
+form people who bought x also bought y feature 
+these refinements help consumers discover new products 
+ 
+and receive more accurate evaluations but they cannot 
+completely substitute personalized recommendations that one 
+receives from a friend or relative it is human nature to be 
+more interested in what a friend buys than what an 
+anonymous person buys to be more likely to trust their opinion 
+and to be more influenced by their actions our friends are 
+also acquainted with our needs and tastes and can make 
+appropriate recommendations a lucid marketing survey 
+found that of individuals consulted friends and relatives 
+before purchasing home electronics - more than the half who 
+used search engines to find product information 
+several studies have attempted to model just this kind 
+of network influence richardson and domingos used 
+epinions trusted reviewer network to construct an 
+algorithm to maximize viral marketing efficiency assuming that 
+individuals probability of purchasing a product depends on 
+the opinions on the trusted peers in their network kempe 
+kleinberg and tardos evaluate the efficiency of several 
+algorithms for maximizing the size of influence set given 
+various models of adoption while these models address the 
+question of maximizing the spread of influence in a network 
+they are based on assumed rather than measured influence 
+effects 
+in contrast in our study we are able to directly observe 
+the effectiveness of person to person word of mouth 
+advertising for hundreds of thousands of products for the first time 
+we find that most recommendation chains do not grow very 
+large often terminating with the initial purchase of a 
+product however occasionally a product will propagate through 
+a very active recommendation network we propose a simple 
+stochastic model that seems to explain the propagation of 
+recommendations moreover the characteristics of 
+recommendation networks influence the purchase patterns of their 
+members for example individuals likelihood of 
+purchasing a product initially increases as they receive additional 
+recommendations for it but a saturation point is quickly 
+reached interestingly as more recommendations are sent 
+between the same two individuals the likelihood that they 
+will be heeded decreases we also propose models to identify 
+products for which viral marketing is effective we find that 
+the category and price of product plays a role with 
+recommendations of expensive products of interest to small well 
+connected communities resulting in a purchase more often 
+we also observe patterns in the timing of recommendations 
+and purchases corresponding to times of day when people 
+are likely to be shopping online or reading email we report 
+on these and other findings in the following sections 
+ the recommendation network 
+ dataset description 
+our analysis focuses on the recommendation referral 
+program run by a large retailer the program rules were as 
+follows each time a person purchases a book music or a 
+movie he or she is given the option of sending emails 
+recommending the item to friends the first person to purchase 
+the same item through a referral link in the email gets a 
+discount when this happens the sender of the 
+recommendation receives a credit on their purchase 
+the recommendation dataset consists of 
+recommendations made among distinct users the 
+data was collected from june to may in 
+total products were recommended of them 
+belonging to main product groups books dvds music 
+and videos in addition to recommendation data we also 
+crawled the retailer s website to obtain product categories 
+reviews and ratings for all products of the products in our 
+data set were discontinued the retailer no longer 
+provided any information about them 
+although the data gives us a detailed and accurate view 
+of recommendation dynamics it does have its limitations 
+the only indication of the success of a recommendation 
+is the observation of the recipient purchasing the product 
+through the same vendor we have no way of knowing if 
+the person had decided instead to purchase elsewhere 
+borrow or otherwise obtain the product the delivery of the 
+recommendation is also somewhat different from one person 
+simply telling another about a product they enjoy possibly 
+in the context of a broader discussion of similar products 
+the recommendation is received as a form email including 
+information about the discount program someone reading 
+the email might consider it spam or at least deem it less 
+important than a recommendation given in the context of 
+a conversation the recipient may also doubt whether the 
+friend is recommending the product because they think the 
+recipient might enjoy it or are simply trying to get a 
+discount for themselves finally because the recommendation 
+takes place before the recommender receives the product 
+it might not be based on a direct observation of the 
+product nevertheless we believe that these recommendation 
+networks are reflective of the nature of word of mouth 
+advertising and give us key insights into the influence of social 
+networks on purchasing decisions 
+ recommendation network statistics 
+for each recommendation the dataset included the 
+product and product price sender id receiver id the sent date 
+and a buy-bit indicating whether the recommendation 
+resulted in a purchase and discount the sender and receiver 
+id s were shadowed we represent this data set as a 
+directed multi graph the nodes represent customers and 
+a directed edge contains all the information about the 
+recommendation the edge i j p t indicates that i 
+recommended product p to customer j at time t 
+the typical process generating edges in the 
+recommendation network is as follows a node i first buys a product p at 
+time t and then it recommends it to nodes j jn the 
+j nodes can they buy the product and further recommend 
+it the only way for a node to recommend a product is to 
+first buy it note that even if all nodes j buy a product 
+only the edge to the node jk that first made the purchase 
+ within a week after the recommendation will be marked 
+by a buy-bit because the buy-bit is set only for the first 
+person who acts on a recommendation we identify additional 
+purchases by the presence of outgoing recommendations for 
+a person since all recommendations must be preceded by a 
+purchase we call this type of evidence of purchase a 
+buyedge note that buy-edges provide only a lower bound on the 
+total number of purchases without discounts it is possible 
+for a customer to not be the first to act on a 
+recommendation and also to not recommend the product to others 
+unfortunately this was not recorded in the data set we 
+consider however the buy-bits and buy-edges as proxies for 
+the total number of purchases through recommendations 
+for each product group we took recommendations on all 
+products from the group and created a network table 
+ 
+ 
+x 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+number of nodes 
+sizeofgiantcomponent 
+by month 
+quadratic fit 
+ 
+ 
+ 
+ 
+x 
+ 
+m month 
+n 
+ nodes 
+ 
+ 
+m 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+kp 
+ recommendations by a person for a product 
+n x k 
+p 
+ 
+level 
+γ 
+level 
+γ 
+level 
+γ 
+level 
+γ 
+level 
+γ 
+ a network growth b recommending by level 
+figure a the size of the largest connected 
+component of customers over time the inset shows the 
+linear growth in the number of customers n over 
+time b the number of recommendations sent by 
+a user with each curve representing a different depth 
+of the user in the recommendation chain a power 
+law exponent γ is fitted to all but the tail 
+ first columns shows the sizes of various product group 
+recommendation networks with p being the total number 
+of products in the product group n the total number of 
+nodes spanned by the group recommendation network and 
+e the number of edges recommendations the column eu 
+shows the number of unique edges - disregarding multiple 
+recommendations between the same source and recipient 
+in terms of the number of different items there are by far 
+the most music cds followed by books and videos there 
+is a surprisingly small number of dvd titles on the other 
+hand dvds account for more half of all recommendations in 
+the dataset the dvd network is also the most dense 
+having about recommendations per node while books and 
+music have about recommendations per node and videos 
+have only a bit more than recommendation per node 
+music recommendations reached about the same number 
+of people as dvds but used more than times fewer 
+recommendations to achieve the same coverage of the nodes book 
+recommendations reached by far the most people - 
+million notice that all networks have a very small number 
+of unique edges for books videos and music the number 
+of unique edges is smaller than the number of nodes - this 
+suggests that the networks are highly disconnected 
+figure a shows the fraction of nodes in largest weakly 
+connected component over time notice the component is 
+very small even if we compose a network using all the 
+recommendations in the dataset the largest connected 
+component contains less than of the nodes and the 
+second largest component has only nodes still some 
+smaller communities numbering in the tens of thousands 
+of purchasers of dvds in categories such as westerns 
+classics and japanese animated films anime had connected 
+components spanning about of their members 
+the insert in figure a shows the growth of the 
+customer base over time surprisingly it was linear adding on 
+average new users each month which is an 
+indication that the service itself was not spreading epidemically 
+further evidence of non-viral spread is provided by the 
+relatively high percentage of users who made their first 
+recommendation without having previously received one 
+back to table given the total number of 
+recommendations e and purchases bb be influenced by 
+recommendations we can estimate how many recommendations need 
+to be independently sent over the network to induce a new 
+purchase using this metric books have the most influential 
+recommendations followed by dvds and music for books 
+one out of recommendations resulted in a purchase for 
+dvds it increases to recommendations per purchase and 
+further increases to for music and for video 
+even with these simple counts we can make the first few 
+observations it seems that some people got quite 
+heavily involved in the recommendation program and that they 
+tended to recommend a large number of products to the 
+same set of friends since the number of unique edges is so 
+small this shows that people tend to buy more dvds and 
+also like to recommend them to their friends while they 
+seem to be more conservative with books one possible 
+reason is that a book is bigger time investment than a dvd 
+one usually needs several days to read a book while a dvd 
+can be viewed in a single evening 
+one external factor which may be affecting the 
+recommendation patterns for dvds is the existence of referral websites 
+ www dvdtalk com on these websites people who want to 
+buy a dvd and get a discount would ask for 
+recommendations this way there would be recommendations made 
+between people who don t really know each other but rather 
+have an economic incentive to cooperate we were not able 
+to find similar referral sharing sites for books or cds 
+ forward recommendations 
+not all people who make a purchase also decide to give 
+recommendations so we estimate what fraction of people 
+that purchase also decide to recommend forward to obtain 
+this information we can only use the nodes with purchases 
+that resulted in a discount 
+the last columns of table show that only about a 
+third of the people that purchase also recommend the 
+product forward the ratio of forward recommendations is much 
+higher for dvds than for other kinds of products videos 
+also have a higher ratio of forward recommendations while 
+books have the lowest this shows that people are most keen 
+on recommending movies while more conservative when 
+recommending books and music 
+figure b shows the cumulative out-degree distribution 
+that is the number of people who sent out at least kp 
+recommendations for a product it shows that the deeper an 
+individual is in the cascade if they choose to make 
+recommendations they tend to recommend to a greater number 
+of people on average the distribution has a higher 
+variance this effect is probably due to only very heavily 
+recommended products producing large enough cascades to 
+reach a certain depth we also observe that the probability 
+of an individual making a recommendation at all which can 
+only occur if they make a purchase declines after an initial 
+increase as one gets deeper into the cascade 
+ identifying cascades 
+as customers continue forwarding recommendations they 
+contribute to the formation of cascades in order to 
+identify cascades i e the causal propagation of 
+recommendations we track successful recommendations as they influence 
+purchases and further recommendations we define a 
+recommendation to be successful if it reached a node before its first 
+purchase we consider only the first purchase of an item 
+because there are many cases when a person made multiple 
+ 
+group p n e eu bb be purchases forward percent 
+book 
+dvd 
+music 
+video 
+total 
+table product group recommendation statistics p number of products n number of nodes e number of 
+edges recommendations eu number of unique edges bb number of buy bits be number of buy edges last 
+ columns of the table fraction of people that purchase and also recommend forward purchases number 
+of nodes that purchased forward nodes that purchased and then also recommended the product 
+ 
+ 
+ a medical book b japanese graphic novel 
+figure examples of two product recommendation networks a first aid study guide first aid for the 
+usmle step b japanese graphic novel manga oh my goddess mara strikes back 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of recommendations 
+count 
+ e x− 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of purchases 
+count 
+ e x− 
+r 
+ 
+ a recommendations b purchases 
+figure distribution of the number of 
+recommendations and number of purchases made by a node 
+purchases of the same product and in between those 
+purchases she may have received new recommendations in this 
+case one cannot conclude that recommendations following 
+the first purchase influenced the later purchases 
+each cascade is a network consisting of customers nodes 
+who purchased the same product as a result of each other s 
+recommendations edges we delete late recommendations 
+- all incoming recommendations that happened after the 
+first purchase of the product this way we make the 
+network time increasing or causal - for each node all incoming 
+edges recommendations occurred before all outgoing edges 
+now each connected component represents a time obeying 
+propagation of recommendations 
+figure shows two typical product recommendation 
+networks a a medical study guide and b a japanese graphic 
+novel throughout the dataset we observe very similar 
+patters most product recommendation networks consist of a 
+large number of small disconnected components where we 
+do not observe cascades then there is usually a small 
+number of relatively small components with recommendations 
+successfully propagating 
+this observation is reflected in the heavy tailed 
+distribution of cascade sizes see figure having a power-law 
+exponent close to for dvds in particular 
+we also notice bursts of recommendations figure b 
+some nodes recommend to many friends forming a star like 
+pattern figure shows the distribution of the 
+recommendations and purchases made by a single node in the 
+recommendation network notice the power-law distributions and 
+long flat tails the most active person made 
+recommendations and purchased different items finally 
+we also sometimes observe  collisions where nodes receive 
+recommendations from two or more sources a detailed 
+enumeration and analysis of observed topological cascade 
+patterns for this dataset is made in 
+ the recommendation propagation model 
+a simple model can help explain how the wide variance we 
+observe in the number of recommendations made by 
+individuals can lead to power-laws in cascade sizes figure the 
+model assumes that each recipient of a recommendation will 
+forward it to others if its value exceeds an arbitrary 
+threshold that the individual sets for herself since exceeding this 
+value is a probabilistic event let s call pt the probability 
+that at time step t the recommendation exceeds the 
+thresh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e x− 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e x− 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e x− 
+r 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e x− 
+r 
+ 
+ a book b dvd c music d video 
+figure size distribution of cascades size of cascade vs count bold line presents a power-fit 
+old in that case the number of recommendations nt at 
+time t is given in terms of the number of 
+recommendations at an earlier time by 
+nt ptnt 
+where the probability pt is defined over the unit interval 
+notice that because of the probabilistic nature of the 
+threshold being exceeded one can only compute the final 
+distribution of recommendation chain lengths which we now 
+proceed to do 
+subtracting from both sides of this equation the term nt 
+and diving by it we obtain 
+n t − nt 
+nt 
+ pt − 
+summing both sides from the initial time to some very 
+large time t and assuming that for long times the numerator 
+is smaller than the denominator a reasonable assumption 
+we get 
+dn 
+n 
+ pt 
+the left hand integral is just ln n and the right hand 
+side is a sum of random variables which in the limit of a very 
+large uncorrelated number of recommendations is normally 
+distributed central limit theorem 
+this means that the logarithm of the number of messages 
+is normally distributed or equivalently that the number of 
+messages passed is log-normally distributed in other words 
+the probability density for n is given by 
+p n 
+ 
+n 
+√ 
+ πσ 
+exp 
+− ln n − μ 
+ σ 
+ 
+which for large variances describes a behavior whereby 
+the typical number of recommendations is small the mode 
+of the distribution but there are unlikely events of large 
+chains of recommendations which are also observable 
+furthermore for large variances the lognormal 
+distribution can behave like a power law for a range of values in 
+order to see this take the logarithms on both sides of the 
+equation equivalent to a log-log plot and one obtains 
+ln p n − ln n − ln 
+√ 
+ πσ − 
+ ln n − μ 
+ σ 
+ 
+so for large σ the last term of the right hand side goes 
+to zero and since the the second term is a constant one 
+obtains a power law behavior with exponent value of 
+minus one there are other models which produce power-law 
+distributions of cascade sizes but we present ours for its 
+simplicity since it does not depend on network topology 
+or critical thresholds in the probability of a recommendation 
+being accepted 
+ success of recommendations 
+so far we only looked into the aggregate statistics of the 
+recommendation network next we ask questions about 
+the effectiveness of recommendations in the 
+recommendation network itself first we analyze the probability of 
+purchasing as one gets more and more recommendations next 
+we measure recommendation effectiveness as two people 
+exchange more and more recommendations lastly we 
+observe the recommendation network from the perspective of 
+the sender of the recommendation does a node that makes 
+more recommendations also influence more purchases 
+ probability of buying versus number of 
+incoming recommendations 
+first we examine how the probability of purchasing changes 
+as one gets more and more recommendations one would 
+expect that a person is more likely to buy a product if she gets 
+more recommendations on the other had one would also 
+think that there is a saturation point - if a person hasn t 
+bought a product after a number of recommendations they 
+are not likely to change their minds after receiving even more 
+of them so how many recommendations are too many 
+figure shows the probability of purchasing a product 
+as a function of the number of incoming recommendations 
+on the product as we move to higher numbers of incoming 
+recommendations the number of observations drops rapidly 
+for example there were million cases with incoming 
+recommendation on a book and only cases where a 
+person got incoming recommendations on a particular book 
+the maximum was incoming recommendations for these 
+reasons we cut-off the plot when the number of observations 
+becomes too small and the error bars too large 
+figure a shows that overall book recommendations 
+are rarely followed even more surprisingly as more and 
+more recommendations are received their success decreases 
+we observe a peak in probability of buying at incoming 
+recommendations and then a slow drop 
+for dvds figure b we observe a saturation around 
+incoming recommendations this means that after a person 
+gets recommendations on a particular dvd they 
+become immune to them - their probability of buying does 
+not increase anymore the number of observations is 
+million at incoming recommendation and at 
+incoming recommendations the maximal number of received 
+recommendations is and that person did not buy 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+incoming recommendations 
+probabilityofbuying 
+ 
+ 
+ 
+ 
+ 
+ 
+incoming recommendations 
+probabilityofbuying 
+ a books b dvd 
+figure probability of buying a book dvd given a number of incoming recommendations 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+− 
+exchanged recommendations 
+probabilityofbuying 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+exchanged recommendations 
+probabilityofbuying 
+ a books b dvd 
+figure the effectiveness of recommendations 
+with the total number of exchanged 
+recommendations 
+ success of subsequent recommendations 
+next we analyze how the effectiveness of 
+recommendations changes as two persons exchange more and more 
+recommendations a large number of exchanged 
+recommendations can be a sign of trust and influence but a sender of too 
+many recommendations can be perceived as a spammer a 
+person who recommends only a few products will have her 
+friends attention but one who floods her friends with all 
+sorts of recommendations will start to loose her influence 
+we measure the effectiveness of recommendations as a 
+function of the total number of previously exchanged 
+recommendations between the two nodes we construct the 
+experiment in the following way for every recommendation 
+r on some product p between nodes u and v we first 
+determine how many recommendations were exchanged between 
+u and v before recommendation r then we check whether v 
+the recipient of recommendation purchased p after 
+recommendation r arrived for the experiment we consider only 
+node pairs u v where there were at least a total of 
+recommendations sent from u to v we perform the experiment 
+using only recommendations from the same product group 
+figure shows the probability of buying as a function of 
+the total number of exchanged recommendations between 
+two persons up to that point for books we observe that 
+the effectiveness of recommendation remains about constant 
+up to exchanged recommendations as the number of 
+exchanged recommendations increases the probability of 
+buying starts to decrease to about half of the original value and 
+then levels off for dvds we observe an immediate and 
+consistent drop this experiment shows that recommendations 
+start to lose effect after more than two or three are passed 
+between two people we performed the experiment also for 
+video and music but the number of observations was too 
+low and the measurements were noisy 
+ success of outgoing recommendations 
+in previous sections we examined the data from the 
+viewpoint of the receiver of the recommendation now we look 
+from the viewpoint of the sender the two interesting 
+questions are how does the probability of getting a credit 
+change with the number of outgoing recommendations and 
+given a number of outgoing recommendations how many 
+purchases will they influence 
+one would expect that recommendations would be the 
+most effective when recommended to the right subset of 
+friends if one is very selective and recommends to too few 
+friends then the chances of success are slim one the other 
+hand recommending to everyone and spamming them with 
+recommendations may have limited returns as well 
+the top row of figure shows how the average number 
+of purchases changes with the number of outgoing 
+recommendations for books music and videos the number of 
+purchases soon saturates it grows fast up to around 
+outgoing recommendations and then the trend either slows or 
+starts to drop dvds exhibit different behavior with the 
+expected number of purchases increasing throughout but 
+if we plot the probability of getting a credit as a 
+function of the number of outgoing recommendations as in the 
+bottom row of figure we see that the success of dvd 
+recommendations saturates as well while books videos and 
+music have qualitatively similar trends the difference in 
+the curves for dvd recommendations points to the presence 
+of collisions in the dense dvd network which has 
+recommendations per node and around per product - an 
+order of magnitude more than other product groups this 
+means that many different individuals are recommending to 
+the same person and after that person makes a purchase 
+even though all of them made a  successful recommendation 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+numberofpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+numberofpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+numberofpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+numberofpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+probabilityofcredit 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+probabilityofcredit 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+probabilityofcredit 
+ 
+ 
+ 
+ 
+ 
+ 
+outgoing recommendations 
+probabilityofcredit 
+ a books b dvd c music d video 
+figure top row number of resulting purchases given a number of outgoing recommendations bottom 
+row probability of getting a credit given a number of outgoing recommendations 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+lag day 
+proportionofpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+lag day 
+proportionofpurchases 
+ a books b dvd 
+figure the time between the recommendation 
+and the actual purchase we use all purchases 
+by our definition only one of them receives a credit 
+ timing of recommendations and 
+purchases 
+the recommendation referral program encourages people 
+to purchase as soon as possible after they get a 
+recommendation since this maximizes the probability of getting a 
+discount we study the time lag between the recommendation 
+and the purchase of different product groups effectively how 
+long it takes a person to both receive a recommendation 
+consider it and act on it 
+we present the histograms of the thinking time i e the 
+difference between the time of purchase and the time the last 
+recommendation was received for the product prior to the 
+purchase figure we use a bin size of day around 
+ of book and dvd purchases occurred within a day after 
+the last recommendation was received for dvds 
+purchases occur more than a week after last recommendation 
+while this drops to for books in contrast if we consider 
+the lag between the purchase and the first recommendation 
+only of dvd purchases are made within a day while the 
+proportion stays the same for books this reflects a greater 
+likelihood for a person to receive multiple recommendations 
+for a dvd than for a book at the same time dvd 
+recommenders tend to send out many more recommendations 
+only one of which can result in a discount individuals then 
+often miss their chance of a discount which is reflected in 
+the high ratio of recommended dvd purchases that 
+did not a get discount see table columns bb and be in 
+contrast for books only of purchases through 
+recommendations did not receive a discount 
+we also measure the variation in intensity by time of day 
+for three different activities in the recommendation system 
+recommendations figure a all purchases figure b 
+and finally just the purchases which resulted in a discount 
+ figure c each is given as a total count by hour of day 
+the recommendations and purchases follow the same 
+pattern the only small difference is that purchases reach a 
+sharper peak in the afternoon after pm pacific time pm 
+eastern time the purchases that resulted in a discount 
+look like a negative image of the first two figures this means 
+that most of discounted purchases happened in the morning 
+when the traffic number of purchases recommendations on 
+the retailer s website was low this makes a lot of sense since 
+most of the recommendations happened during the day and 
+if the person wanted to get the discount by being the first 
+one to purchase she had the highest chances when the traffic 
+on the website was the lowest 
+ recommendation effectiveness 
+by book category 
+social networks are a product of the contexts that bring 
+people together some contexts result in social ties that 
+are more effective at conducting an action for example 
+in small world experiments where participants attempt to 
+reach a target individual through their chain of 
+acquaintances profession trumped geography which in turn was 
+more useful in locating a target than attributes such as 
+religion or hobbies in the context of product 
+recommendations we can ask whether a recommendation for a work 
+of fiction which may be made by any friend or neighbor is 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+hour of the day 
+recommendtions 
+ 
+ 
+ 
+ 
+ 
+ 
+x 
+ 
+hour of the day 
+allpurchases 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+hour of the day 
+discountedpurchases 
+ a recommendations b purchases c purchases with discount 
+figure time of day for purchases and recommendations a shows the distribution of recommendations 
+over the day b shows all purchases and c shows only purchases that resulted in getting discount 
+more or less influential than a recommendation for a 
+technical book which may be made by a colleague at work or 
+school 
+table shows recommendation trends for all top level 
+book categories by subject an analysis of other product 
+types can be found in the extended version of the paper for 
+clarity we group the results by different category types 
+fiction personal leisure professional technical and 
+nonfiction other fiction encompasses categories such as sci-fi 
+and romance as well as children s and young adult books 
+personal leisure encompasses everything from gardening 
+photography and cooking to health and religion 
+first we compare the relative number of 
+recommendations to reviews posted on the site column cav rp of 
+table surprisingly we find that the number of people 
+making personal recommendations was only a few times greater 
+than the number of people posting a public review on the 
+website we observe that fiction books have relatively few 
+recommendations compared to the number of reviews while 
+professional and technical books have more 
+recommendations than reviews this could reflect several factors one is 
+that people feel more confident reviewing fiction than 
+technical books another is that they hesitate to recommend a 
+work of fiction before reading it themselves since the 
+recommendation must be made at the point of purchase yet 
+another explanation is that the median price of a work of 
+fiction is lower than that of a technical book this means 
+that the discount received for successfully recommending a 
+mystery novel or thriller is lower and hence people have less 
+incentive to send recommendations 
+next we measure the per category efficacy of 
+recommendations by observing the ratio of the number of purchases 
+occurring within a week following a recommendation to the 
+number of recommenders for each book subject category 
+ column b of table on average only of the 
+recommenders of a book received a discount because their 
+recommendation was accepted and another made a 
+recommendation that resulted in a purchase but not a discount 
+we observe marked differences in the response to 
+recommendation for different categories of books fiction in general 
+is not very effectively recommended with only around 
+of recommenders succeeding the efficacy was a bit higher 
+ around for non-fiction books dealing with personal and 
+leisure pursuits but is significantly higher in the professional 
+and technical category medical books have nearly double 
+the average rate of recommendation acceptance this could 
+be in part attributed to the higher median price of medical 
+books and technical books in general as we will see in 
+section a higher product price increases the chance that a 
+recommendation will be accepted 
+recommendations are also more likely to be accepted for 
+certain religious categories for christian living and 
+theology and for bibles in contrast books not tied 
+to organized religions such as ones on the subject of new 
+age and occult spirituality have lower 
+recommendation effectiveness these results raise the interesting 
+possibility that individuals have greater influence over one 
+another in an organized context for example through a 
+professional contact or a religious one there are exceptions of 
+course for example japanese anime dvds have a strong 
+following in the us and this is reflected in their frequency 
+and success in recommendations another example is that of 
+gardening in general recommendations for books relating 
+to gardening have only a modest chance of being accepted 
+which agrees with the individual prerogative that 
+accompanies this hobby at the same time orchid cultivation can be 
+a highly organized and social activity with frequent  shows 
+and online communities devoted entirely to orchids perhaps 
+because of this the rate of acceptance of orchid book 
+recommendations is twice as high as those for books on vegetable 
+or tomato growing 
+ modeling the recommendation 
+success 
+we have examined the properties of recommendation 
+network in relation to viral marketing but one question still 
+remains what determines the product s viral marketing 
+success we present a model which characterizes product 
+categories for which recommendations are more likely to be 
+accepted we use a regression of the following product 
+attributes to correlate them with recommendation success 
+ r number of recommendations 
+ ns number of senders of recommendations 
+ nr number of recipients of recommendations 
+ p price of the product 
+ v number of reviews of the product 
+ t average product rating 
+ 
+category np n cc rp vav cav pm b 
+rp 
+books general 
+fiction 
+children s books 
+literature fiction 
+mystery and thrillers 
+science fiction fantasy 
+romance 
+teens 
+comics graphic novels 
+horror 
+personal leisure 
+religion and spirituality 
+health mind and body 
+history 
+home and garden 
+entertainment 
+arts and photography 
+travel 
+sports 
+parenting and families 
+cooking food and wine 
+outdoors nature 
+professional technical 
+professional technical 
+business and investing 
+science 
+computers and internet 
+medicine 
+engineering 
+law 
+nonfiction-other 
+nonfiction 
+reference 
+biographies and memoirs 
+table statistics by book category np number of products in category n number of customers cc percentage 
+of customers in the largest connected component rp av reviews in - rp av reviews 
+ st months vav average star rating cav average number of people recommending product cav rp 
+ratio of recommenders to reviewers pm median price b ratio of the number of purchases resulting from a 
+recommendation to the number of recommenders the symbol denotes statistical significance at the 
+level at the level 
+from the original set of half a million products we 
+compute a success rate s for the products that had at 
+least one purchase made through a recommendation and for 
+which a price was given in section we defined 
+recommendation success rate s as the ratio of the total number 
+purchases made through recommendations and the number 
+of senders of the recommendations we decided to use this 
+kind of normalization rather than normalizing by the total 
+number of recommendations sent in order not to penalize 
+communities where a few individuals send out many 
+recommendations figure b since the variables follow a heavy 
+tailed distribution we use the following model 
+s exp 
+i 
+βi log xi i 
+where xi are the product attributes as described on 
+previous page and i is random error 
+we fit the model using least squares and obtain the 
+coefficients βi shown on table with the exception of the 
+average rating they are all significant the only two 
+attributes with a positive coefficient are the number of 
+recommendations and price this shows that more expensive 
+and more recommended products have a higher success rate 
+the number of senders and receivers have large negative 
+coefficients showing that successfully recommended products 
+are more likely to be not so widely popular they have 
+relatively many recommendations with a small number of 
+senders and receivers which suggests a very dense 
+recommendation network where lots of recommendations were 
+exchanged between a small community of people 
+these insights could be to marketers - personal 
+recommendations are most effective in small densely connected 
+communities enjoying expensive products 
+ 
+variable coefficient βi 
+const - 
+r 
+ns - 
+nr - 
+p 
+v - 
+t - 
+r 
+ 
+table regression using the log of the 
+recommendation success rate ln s as the dependent variable 
+for each coefficient we provide the standard error 
+and the statistical significance level 
+ discussion and conclusion 
+although the retailer may have hoped to boost its 
+revenues through viral marketing the additional purchases that 
+resulted from recommendations are just a drop in the bucket 
+of sales that occur through the website nevertheless we 
+were able to obtain a number of interesting insights into how 
+viral marketing works that challenge common assumptions 
+made in epidemic and rumor propagation modeling 
+firstly it is frequently assumed in epidemic models that 
+individuals have equal probability of being infected every 
+time they interact contrary to this we observe that the 
+probability of infection decreases with repeated interaction 
+marketers should take heed that providing excessive 
+incentives for customers to recommend products could backfire 
+by weakening the credibility of the very same links they are 
+trying to take advantage of 
+traditional epidemic and innovation diffusion models also 
+often assume that individuals either have a constant 
+probability of  converting every time they interact with an 
+infected individual or that they convert once the fraction of 
+their contacts who are infected exceeds a threshold in both 
+cases an increasing number of infected contacts results in 
+an increased likelihood of infection instead we find that 
+the probability of purchasing a product increases with the 
+number of recommendations received but quickly saturates 
+to a constant and relatively low probability this means 
+individuals are often impervious to the recommendations of 
+their friends and resist buying items that they do not want 
+in network-based epidemic models extremely highly 
+connected individuals play a very important role for example 
+in needle sharing and sexual contact networks these nodes 
+become the super-spreaders by infecting a large number 
+of people but these models assume that a high degree node 
+has as much of a probability of infecting each of its neighbors 
+as a low degree node does in contrast we find that there 
+are limits to how influential high degree nodes are in the 
+recommendation network as a person sends out more and 
+more recommendations past a certain number for a product 
+the success per recommendation declines this would seem 
+to indicate that individuals have influence over a few of their 
+friends but not everybody they know 
+we also presented a simple stochastic model that allows 
+for the presence of relatively large cascades for a few 
+products but reflects well the general tendency of 
+recommendation chains to terminate after just a short number of steps 
+we saw that the characteristics of product reviews and 
+effectiveness of recommendations vary by category and price 
+with more successful recommendations being made on 
+technical or religious books which presumably are placed in the 
+social context of a school workplace or place of worship 
+finally we presented a model which shows that smaller 
+and more tightly knit groups tend to be more conducive to 
+viral marketing so despite the relative ineffectiveness of the 
+viral marketing program in general we found a number of 
+new insights which we hope will have general applicability 
+to marketing strategies and to future models of viral 
+information spread 
+ references 
+ anonymous profiting from obscurity what the long 
+tail means for the economics of e-commerce 
+economist 
+ e brynjolfsson y hu and m d smith consumer 
+surplus in the digital economy estimating the value 
+of increased product variety at online booksellers 
+management science 
+ k burke as consumer attitudes shift so must 
+marketing strategies 
+ j chevalier and d mayzlin the effect of word of 
+mouth on sales online book reviews 
+ p erd¨os and a r´enyi on the evolution of random 
+graphs publ math inst hung acad sci 
+ d gruhl r guha d liben-nowell and a tomkins 
+information diffusion through blogspace in www 
+ 
+ s jurvetson what exactly is viral marketing red 
+herring - 
+ d kempe j kleinberg and e tardos maximizing 
+the spread of infuence in a social network in acm 
+sigkdd international conference on knowledge 
+discovery and data mining kdd 
+ p killworth and h bernard reverse small world 
+experiment social networks - 
+ j leskovec a singh and j kleinberg patterns of 
+influence in a recommendation network in 
+pacific-asia conference on knowledge discovery and 
+data mining pakdd 
+ g linden b smith and j york amazon com 
+recommendations item-to-item collaborative filtering 
+ieee internet computing - 
+ a l montgomery applying quantitative marketing 
+techniques to the internet interfaces - 
+ p resnick and r zeckhauser trust among strangers 
+in internet transactions empirical analysis of ebays 
+reputation system in the economics of the internet 
+and e-commerce elsevier science 
+ m richardson and p domingos mining 
+knowledge-sharing sites for viral marketing in acm 
+sigkdd international conference on knowledge 
+discovery and data mining kdd 
+ e m rogers diffusion of innovations free press 
+new york fourth edition 
+ d strang and s a soule diffusion in organizations 
+and social movements from hybrid corn to poison 
+pills annual review of sociology - 
+ j travers and s milgram an experimental study of 
+the small world problem sociometry 
+ d watts a simple model of global cascades on 
+random networks pnas - apr 
+ 

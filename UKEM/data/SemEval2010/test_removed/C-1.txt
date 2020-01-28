@@ -1,0 +1,593 @@
+scalable grid service discovery based on uddi 
+ 
+authors are listed in alphabetical order 
+sujata banerjee 
+ sujoy basu 
+ shishir garg sukesh garg sung-ju lee 
+ pramila mullan puneet sharma 
+ 
+hp labs 
+ page mill road 
+palo alto ca usa 
+ - - - 
+ sujata banerjee sujoy basu sungju lee puneet sharma  hp com 
+france telecom r d division 
+ gateway blvd 
+south san francisco ca usa 
+ - - 
+ shishir garg sukesh garg pramila mullan  francetelecom com 
+abstract 
+efficient discovery of grid services is essential for the success of 
+grid computing the standardization of grids based on web 
+services has resulted in the need for scalable web service 
+discovery mechanisms to be deployed in grids even though uddi 
+has been the de facto industry standard for web-services 
+discovery imposed requirements of tight-replication among 
+registries and lack of autonomous control has severely hindered 
+its widespread deployment and usage with the advent of grid 
+computing the scalability issue of uddi will become a roadblock 
+that will prevent its deployment in grids in this paper we present 
+our distributed web-service discovery architecture called dude 
+ distributed uddi deployment engine dude leverages dht 
+ distributed hash tables as a rendezvous mechanism between 
+multiple uddi registries dude enables consumers to query 
+multiple registries still at the same time allowing organizations to 
+have autonomous control over their registries based on 
+preliminary prototype on planetlab we believe that dude 
+architecture can support effective distribution of uddi registries 
+thereby making uddi more robust and also addressing its scaling 
+issues furthermore the dude architecture for scalable 
+distribution can be applied beyond uddi to any grid service 
+discovery mechanism 
+categories and subject descriptors 
+c distributed systems 
+general terms 
+design experimentation standardization 
+ introduction 
+efficient discovery of grid services is essential for the success of 
+grid computing the standardization of grids based on web 
+services has resulted in the need for scalable web service 
+permission to make digital or hard copies of all or part of this 
+work for personal or classroom use is granted without fee 
+provided that copies are not made or distributed for profit or 
+commercial advantage and that copies bear this notice and the 
+full citation on the first page to copy otherwise to republish 
+to post on servers or to redistribute to lists requires prior 
+specific permission and or a fee 
+mgc november - december grenoble france 
+discovery mechanisms to be deployed in grids grid discovery 
+services provide the ability to monitor and discover resources and 
+services on grids they provide the ability to query and subscribe 
+to resource service information in addition threshold traps might 
+be required to indicate specific change in existing conditions the 
+state of the data needs to be maintained in a soft state so that the 
+most recent information is always available the information 
+gathered needs to be provided to variety of systems for the 
+purpose of either utilizing the grid or proving summary 
+information however the fundamental problem is the need to be 
+scalable to handle huge amounts of data from multiple sources 
+the web services community has addressed the need for service 
+discovery before grids were anticipated via an industry standard 
+called uddi however even though uddi has been the de facto 
+industry standard for web-services discovery imposed 
+requirements of tight-replication among registries and lack of 
+autonomous control among other things has severely hindered its 
+widespread deployment and usage with the advent of grid 
+computing the scalability issue with uddi will become a 
+roadblock that will prevent its deployment in grids 
+this paper tackles the scalability issue and a way to find services 
+across multiple registries in uddi by developing a distributed 
+web services discovery architecture distributing uddi 
+functionality can be achieved in multiple ways and perhaps using 
+different distributed computing infrastructure platforms e g 
+corba dce etc in this paper we explore how distributed 
+hash table dht technology can be leveraged to develop a 
+scalable distributed web services discovery architecture a dht is 
+a peer-to-peer p p distributed system that forms a structured 
+overlay allowing more efficient routing than the underlying 
+network this crucial design choice is motivated by two factors 
+the first motivating factor is the inherent simplicity of the put get 
+abstraction that dhts provide which makes it easy to rapidly 
+build applications on top of dhts we recognize that having just 
+this abstraction may not suffice for all distributed applications but 
+for the objective at hand works very well as will become clear 
+later other distributed computing platforms middleware while 
+providing more functionality have much higher overhead and 
+complexity the second motivating factor stems from the fact that 
+dhts are relatively new tool for building distributed applications 
+and we would like to test its potential by applying it to the 
+problem of distributing uddi 
+in the next section we provide a brief overview of grid 
+information services uddi and its limitations which is followed 
+by an overview of dhts in section section describes our 
+proposed architecture with details on use cases in section we 
+article 
+describe our current implementation followed by our findings in 
+section section discusses the related work in this area and 
+section contains our concluding remarks 
+ background 
+ grid service discovery 
+grid computing is based on standards which use web services 
+technology in the architecture presented in the service 
+discovery function is assigned to a specialized grid service called 
+registry the implementation of the web service version of the 
+monitoring and discovery service ws mds also known as the 
+mds component of the globus toolkit version gt 
+includes such a registry in the form of the index service resource 
+and service properties are collected and indexed by this service 
+its basic function makes it similar to uddi registry to attain 
+scalability index services from different globus containers can 
+register with each other in a hierarchical fashion to aggregate data 
+this approach for attaining scalability works best in hierarchical 
+virtual organizations vo and expanding a search to find 
+sufficient number of matches involves traversing the hierarchy 
+specifically this approach is not a good match for systems that try 
+to exploit the convergence of grid and peer-to-peer computing 
+ uddi 
+beyond grid computing the problem of service discovery needs to 
+be addressed more generally in the web services community 
+again scalability is a major concern since millions of buyers 
+looking for specific services need to find all the potential sellers 
+of the service who can meet their needs although there are 
+different ways of doing this the web services standards 
+committees address this requirement through a specification 
+called uddi universal description discovery and integration 
+a uddi registry enables a business to enter three types of 
+information in a uddi registry - white pages yellow pages and 
+green pages uddi s intent is to function as a registry for services 
+just as the yellow pages is a registry for businesses just like in 
+yellow pages companies register themselves and their services 
+under different categories in uddi white pages are a listing of 
+the business entities green pages represent the technical 
+information that is necessary to invoke a given service thus by 
+browsing a uddi registry a developer should be able to locate a 
+service and a company and find out how to invoke the service 
+when uddi was initially offered it provided a lot of potential 
+however today we find that uddi has not been widely deployed 
+in the internet in fact the only known uses of uddi are what are 
+known as private uddi registries within an enterprise s 
+boundaries the readers can refer to for a recent article that 
+discusses the shortcomings of uddi and the properties of an ideal 
+service registry improvement of the uddi standard is continuing 
+in full force and uddi version v was recently approved as 
+an oasis standard however uddi today has issues that have 
+not been addressed such as scalability and autonomy of 
+individual registries 
+uddi v provides larger support for multi-registry environments 
+based on portability of keys by allowing keys to be re-registered 
+in multiple registries the ability to link registries in various 
+topologies is effectively enabled however no normative 
+description of these topologies is provided in the uddi 
+specification at this point the improvements within uddi v 
+that allow support for multi-registry environments are significant 
+and open the possibility for additional research around how 
+multiregistry environments may be deployed a recommended 
+deployment scenario proposed by the uddi v specification 
+is to use the uddi business registries as root registries and it is 
+possible to enable this using our solution 
+ distributed hash tables 
+a distributed hash table dht is a peer-to-peer p p 
+distributed system that forms a structured overlay allowing more 
+efficient routing than the underlying network it maintains a 
+collection of key-value pairs on the nodes participating in this 
+graph structure for our deployment a key is the hash of a 
+keyword from a service name or description there will be 
+multiple values for this key one for each service containing the 
+keyword just like any other hash table data structure it provides 
+a simple interface consisting of put and get operations this 
+has to be done with robustness because of the transient nature of 
+nodes in p p systems the value stored in the dht can be any 
+object or a copy or reference to it the dht keys are obtained 
+from a large identifier space a hash function such as md or 
+sha- is applied to an object name to obtain its dht key nodes 
+in a dht are also mapped into the same identifier space by 
+applying the hash function to their identifier such as ip address 
+and port number or public key the identifier space is assigned 
+to the nodes in a distributed and deterministic fashion so that 
+routing and lookup can be performed efficiently the nodes of a 
+dht maintain links to some of the other nodes in the dht the 
+pattern of these links is known as the dht s geometry for 
+example in the bamboo dht and in the pastry dht on 
+which bamboo is based nodes maintain links to neighboring 
+nodes and to other distant nodes found in a routing table the 
+routing table entry at row i and column j denoted ri j is another 
+node whose identifier matches its own in first i digits and whose 
+ i st digit is j the routing table allows efficient overlay 
+routing bamboo like all dhts specifies algorithms to be 
+followed when a node joins the overlay network or when a node 
+fails or leaves the network the geometry must be maintained even 
+when this rate is high to attain consistent routing or lookup a 
+dht key must be routed to the node with the numerically closest 
+identifier for details of how the routing tables are constructed 
+and maintained the reader is referred to 
+ proposed architecture of dht 
+based uddi registry hierarchies 
+as mentioned earlier we propose to build a distributed uddi 
+system on top of a dht infrastructure this choice is primarily 
+motivated by the simplicity of the put get abstraction that dhts 
+provide which is powerful enough for the task at hand especially 
+since we plan to validate our approach with an implementation 
+running on planetlab a secondary motivation is to 
+understand deployment issues with dht based systems several 
+applications have been built as overlays using dhts such as 
+distributed file storage databases publish-subscribe systems and 
+content distribution networks in our case we are building a dht 
+based overlay network of uddi registries where the dht acts as 
+a rendezvous network that connects multiple registries in the 
+grid computing scenario an overlay network of multiple uddi 
+registries seems to an interesting alternative to the uddi public 
+article 
+registries currently maintained by microsoft ibm sap and ntt 
+in addition our aim is to not change any of the uddi interfaces 
+for clients as well as publishers 
+figure highlights the proposed architecture for the dht based 
+uddi registry framework uddi nodes are replicated in a uddi 
+registry as per the current uddi standard however each local 
+registry has a local proxy registry that mediates between the local 
+uddi registry and the dht service the dht service is the glue 
+that connects the proxy registries together and facilitates 
+searching across registries 
+figure dude architecture 
+service information can be dispersed to several uddi registries to 
+promote scalability the proxy registry publishes performs 
+queries and deletes information from the dispersed uddi 
+registries however the scope of the queries is limited to relevant 
+registries the dht provides information about the relevant 
+registries the core idea in the architecture is to populate dht 
+nodes with the necessary information from the proxies which 
+enables easy and ubiquitous searching when queries are made 
+when a new service is added to a registry all potential search 
+terms are hashed by the proxy and used as dht keys to publish 
+the service in the dht the value stored for this service uniquely 
+identifies the service and includes the url of a registry and the 
+unique uddi key of the service in that registry similarly when 
+queries arrive they are parsed and a set of search terms are 
+identified these search terms are hashed and the values stored 
+with those hash values are retrieved from the dht note that a 
+proxy does not need to know all dht nodes it needs to know just 
+one dht node this is done as part of the bootstrapping process 
+and as described in section this dht node can route the 
+query as necessary to the other nodes on the dht overlay we 
+describe three usage scenarios later that deal with adding a new 
+local registry inserting a new service and querying for a service 
+furthermore the dht optimizes the uddi query mechanism 
+this process becomes a lookup using a uddi unique key rather 
+than a query using a set of search parameters this key and the 
+url of the registry are obtained by searching initially in the 
+dht the dht query can return multiple values for matching 
+services and in each of the matching registries the proxy 
+performs lookup operations 
+the service name is used as a hash for inserting the service 
+information the service information contains the query url and 
+unique uddi key for the registry containing the service there 
+could be multiple registries associated with a given service the 
+service information conforms to the following schema 
+ xs schema xmlns xs http www w org xmlschema 
+elementformdefault qualified 
+attributeformdefault unqualified 
+ xs element name registries 
+ xs annotation 
+ xs documentation service information xs documentation 
+ xs annotation 
+ xs complextype 
+ xs sequence 
+ xs element name registry maxoccurs unbounded 
+ xs complextype 
+ xs sequence 
+ xs element name name 
+ xs element name key maxoccurs unbounded 
+ xs sequence 
+  
+ xs schema 
+there can be multiple proxy uddi registries in this architecture 
+the advantage of this is to introduce distributed interactions 
+between the uddi clients and registries organization can also 
+decide what information is available from the local registries by 
+implementing policies at the proxy registry 
+ sequence of operations 
+in this section we demonstrate what the sequence of operations 
+should be for three crucial scenarios - adding a new local registry 
+inserting a new service and querying a service other operations 
+like deleting a registry deleting a service etc are similar and for 
+the sake of brevity are omitted here 
+figure sequence diagram- add new local registry 
+add a new local uddi registry 
+figure contains a sequence diagram illustrating how a new 
+uddi registry is added to the network of uddi registries the 
+new registry registers itself with its proxy registry the proxy 
+registry in turn queries the new registry for all services that it has 
+uddi local registry uddi local registry 
+uddi local registry 
+proxy registry 
+dht based distribution 
+proxy registry 
+proxy registry 
+article 
+stored in its databases and in turn registers each of those entries 
+with the dht 
+figure sequence diagram - add new service 
+add a new service 
+the use case diagram depicted in error reference source not 
+found highlights how a client publishes a new service to the 
+uddi registry in order to interact with the registry a client has to 
+know how to contact its local proxy registry it then publishes a 
+service with the proxy registry which in turn publishes the service 
+with the local uddi registry and receives the uddi key of the 
+registry entry then new key-value pairs are published in the 
+dht where each key is obtained by hashing a searchable 
+keyword of the service and the value consists of the query url of 
+the registry and the uddi key 
+figure sequence diagram - query for a service 
+query a service 
+figure shows how a client queries the uddi registry for a 
+service once again the client needs to know how to contact its 
+local proxy registry and invokes the query service request the 
+proxy registry in turn contacts one of the dht nodes to determine 
+dht queries using the search terms 
+as explained earlier in the context of figure multiple values 
+might be retrieved from the dht each value includes the query 
+url of a registry and the unique uddi key of a matching 
+service in that registry the proxy then contacts the matching 
+registries and waits for the response of lookup operations using 
+the corresponding uddi keys upon receiving the responses the 
+proxy registry collates all responses and returns the aggregated set 
+of services to the client 
+we will now illustrate these operations using an example 
+consider a client contacting its local proxy to publish a service 
+called computer accessories the proxy follows the steps in 
+figure to add the service to uddi registry and also publishes 
+two entries in the dht the keys of these entries are obtained by 
+hashing the words computer and accessories respectively 
+both entries have the same value consisting of the query url of 
+this registry and the unique uddi key returned by the registry for 
+this service next we consider another client publishing a service 
+called computer repair through its proxy to uddi registry a 
+similar process results in more entries being added to the dht 
+recall that our dht deployment can have multiple entries with 
+the same key if we follow the steps in figure for a client 
+sending a query to its proxy using the word computer we see 
+that the dht is queried with the hash of the word computer as 
+key this retrieves the query url and respective uddi keys of 
+both services mentioned before in this example the proxy can 
+then do a simple lookup operation at both uddi and 
+registries it is clear that as the number of uddi registries and 
+clients increases this process of lookup at only relevant uddi 
+registries is more scalable that doing a full search using the word 
+computer at all uddi registries 
+ implementation 
+in this section we describe our implementation which is currently 
+deployed on planetlab planetlab is an open globally 
+distributed platform for developing deploying and accessing 
+network services it currently has machines hosted by 
+sites spanning over countries planetlab machines are hosted 
+by research academic institutions as well as industrial companies 
+france telecom and hp are two of the major industry supporters 
+for planetlab every planetlab host machine is connected to the 
+internet and runs a common software package including a linux 
+based operating system that supports server virtualization thus 
+the users can develop and experiment with new services under 
+real-world conditions the advantage of using planetlab is that 
+we can test the dude architecture under real-world conditions 
+with a large scale geographically dispersed node base 
+due to the availability of juddi an open source uddi v 
+registry http www juddi org and a lack of existing readily 
+available uddi v registry a decision to use uddi v was 
+made the standardization of uddi v is recent and we intend to 
+extend this work to support uddi v and subsequent versions in 
+the future the proxy registry is implemented by modifying the 
+juddi source to enable publishing querying and deleting service 
+information from a dht furthermore it also allows querying 
+multiple registries and collating the response using uddi j 
+for the dht implementation we use the bamboo dht code 
+ the bamboo dht allows multiple proxy registries to 
+publish and delete service information from their respective uddi 
+registries as well as to query for services from all the registries 
+the proxy uses the service name as input to the dht s hash 
+article 
+function to get the dht key the value that is stored in the dht 
+using this key is the uri of the registry along with the uddi key 
+of the service this ensures that when the proxy registry queries 
+for services with a certain name it gets back the uri and uddi 
+keys for matching entries using these returned results the proxy 
+can do fast lookup operations at the respective uddi registries 
+the uddi keys make it unnecessary to repeat the search at the 
+uddi registries with the service name 
+we have so far described the process of exact match on service 
+name however there are additional types of search that must be 
+supported firstly the search requested could be case-insensitive 
+to support that the proxy registry has to publish the same service 
+once using the name exactly as entered in the uddi registry and 
+once with the name converted to all lower-case letters to do a 
+case-insensitive search the proxy registry simply has to convert 
+the query string into lower-case letters secondly the user could 
+query based on the prefix of a service name indeed this is the 
+default behavior of search in uddi in other words a wildcard is 
+implicit at the end of the service name being searched to support 
+this efficiently in the dht our proxy registries have to take 
+prefixes of the service name of varying length and publish the 
+uri and uddi key multiple times once using each prefix for 
+example the prefix sizes chosen in one deployment might be 
+ and characters if a search for the first characters of a 
+service name is submitted the proxy registry will query the dht 
+with the first characters of the search string and then refine the 
+search result to ensure that the match extends to the th 
+character 
+if the search string has less than characters and the search is for 
+a prefix rather than an exact match the dht cannot be of any 
+help unless every service is published in the dht with prefix of 
+length using this null prefix will send a copy of every 
+advertised service to the dht node to which the hash of the null 
+prefix maps since this can lead to load-imbalance a better 
+solution might be to use the dht only to get a list of all uddi 
+registries and send the search to all of them in the locations to be 
+searched thirdly the service name being searched can be a 
+regular expression such as one with embedded wildcard 
+characters for example a search for garden s should match 
+both garden supplies and gardening tools this will be 
+treated similarly to the previous case as the dht has to be queried 
+with the longest available prefix the results returned have to be 
+refined to ensure that the regular expression matches 
+figure shows the network diagram for our implementation 
+there are two proxy uddi and juddi registry pairs consider a 
+client which contacts the uddi proxy on grouse hpl hp com the 
+proxy does a lookup of the dht using the query string or a prefix 
+this involves contacting one of the dht nodes such as 
+pli -br hpl hp com which serves as the gateway to the dht for 
+grouse hpl hp com based on the latter s configuration file the 
+dht node may then route the query to one of the other dht 
+nodes which is responsible for the dht key that the query string 
+maps to the results of the dht lookup return to 
+pli -br hpl hp com which forwards them to grouse hpl hp com the 
+results may include a few services from each of the juddi 
+registries so the proxy registry performs the lookup operations at 
+both planetlab and planetlab rdfrancetelecom com for their 
+respective entries listed in the search results the responses to 
+these lookups are collated by the proxy registry and returned to 
+the client 
+figure network diagram 
+ related work 
+a framework for qos-based service discovery in grids has been 
+proposed in uddie an extended uddi registry for 
+publishing and discovering services based on qos parameters is 
+proposed in our work is complementary since we focus on 
+how to federate the uddi registries and address the scalability 
+issue with uddi the dude proxy can publish the service 
+properties supported by uddie in the dht and support range 
+queries using techniques proposed for such queries on dhts 
+then we can deliver the scalability benefits of our current solution 
+to both uddi and uddie registries discovering services meeting 
+qos and price requirements has been studied in the context of a 
+grid economy so that grid schedulers can use various market 
+models such as commodity markets and auctions the grid 
+market directory was proposed for this purpose 
+in the authors present an ontology-based matchmaker 
+resource and request descriptions are expressed in rdf schema 
+a semantic markup language matchmaking rules are expressed in 
+triple a language based on horn logic although our current 
+implementation focuses on uddi version in future we will 
+consider semantic extensions to uddi ws-discovery and 
+other grid computing standards such as monitoring and 
+discovery service mds so the simplest extension of our 
+work could involve using the dht to do an initial syntax-based 
+search to identify the local registries that need to be contacted 
+then the proxy registry can contact these registries which do 
+semantic matchmaking to identify their matches which are then 
+merged at the proxy registry and returned to the client 
+the convergence of grid and p p computing has been explored in 
+ gridvine builds a logical semantic overlay on top of a 
+physical layer consisting of p-grid a structured overlay based 
+on distributed search tree that uses prefix-based routing and 
+changes the overlay paths as part of the network maintenance 
+protocol to adapt to load in different parts of the keyspace a 
+federated uddi service has been built on top of the planetp 
+ publish-subscribe system for unstructured p p communities 
+the focus of this work has been on the manageability of the 
+federated service the uddi service is treated as an application 
+article 
+service to be managed in their framework so they do not address 
+the issue of scalability in uddi and instead use simple 
+replication in the authors describe a uddi extension ux 
+system that launches a federated query only if locally found 
+results are not adequate while the ux server is positioned as an 
+intermediary similarly to the uddi proxy described in our dude 
+framework it focuses more on the qos framework and does not 
+attempt to implement a seamless federation mechanism such as 
+our dht based approach in d ht describes a discovery 
+framework built on top of dht however we have chosen to use 
+uddi on top of dht d ht have used agent management 
+system ams directory facilitator df on top of dht 
+ conclusions and future work 
+in this paper we have described a distributed architecture to 
+support large scale discovery of web-services our architecture 
+will enable organizations to maintain autonomous control over 
+their uddi registries and at the same time allowing clients to 
+query multiple registries simultaneously the clients are oblivious 
+to the transparent proxy approach we have adopted and get richer 
+and more complete response to their queries based on initial 
+prototype testing we believe that dude architecture can support 
+effective distribution of uddi registries thereby making uddi 
+more robust and also addressing its scaling issues the paper has 
+solved the scalability issues with uddi but does not preclude the 
+application of this approach to other service discovery 
+mechanisms an example of another service discovery mechanism 
+that could benefit from such an approach is globus toolkit s 
+mds furthermore we plan to investigate other aspects of grid 
+service discovery that extend this work some of these aspects 
+include the ability to subscribe to resource service information 
+the ability to maintain soft states and the ability to provide a 
+variety of views for various different purposes in addition we 
+plan to revisit the service apis for a grid service discovery 
+solution leveraging the available solutions and specifications as 
+well as the work presented in this paper 
+ references 
+ p-grid a self-organizing structured p p system k 
+aberer p cudr e-mauroux a datta z despotovic m 
+hauswirth m punceva and r schmidt acm sigmod 
+record 
+ gridvine building internet-scale semantic overlay 
+networks karl aberer philippe cudre-mauroux manfred 
+hauswirth and tim van pelt proceedings rd iswc 
+hiroshima japan 
+ planetp using gossiping to build content addressable 
+peer-to-peer information sharing communities f m 
+cuenca-acuna c peery r p martin and t d nguyen in 
+proceedings of th intl symposium on hpdc june 
+ self-managing federated services francisco matias 
+cuenca-acuna and thu d nguyen in proceedings of rd 
+ieee international srds florianpolis brazil 
+ on death taxes and the convergence of p p and grid 
+computing ian foster and adriana iamnitchi in 
+proceedings of the nd iptps 
+ the physiology of the grid an open grid services 
+architecture for distributed systems integration i foster 
+c kesselman j m nick and s tuecke presented to ogsi 
+wg global grid forum june available at 
+http www globus org alliance publications papers php 
+ was the universal service registry a dream fred 
+hartman and harris reynolds in the web services journal 
+dec 
+ pastry scalable distributed object location and routing for 
+large scale peer-to-peer systems a rowstron and p 
+druschel in proc of ifip acm middleware nov 
+ http www planet-lab org 
+ grid information services for distributed resource sharing 
+k czajkowski s fitzgerald i foster and c kesselman 
+proceedings of the ieee hpdc- 
+ handling churn in a dht s rhea d geels t roscoe 
+and j kubiatowicz proceedings of the usenix annual 
+technical conference june 
+ ontology-based resource matching in the grid - the grid 
+meets the semantic web hongsuda tangmunarunkit 
+stefan decker carl kesselman in proceedings of the 
+second iswc miami florida 
+ uddi j java class library 
+http www ibm com developerworks oss uddi j 
+ uddi v specification available at http uddi org 
+ uddi v specification http uddi org 
+ web services dynamic discovery ws-discovery 
+specification february 
+http msdn microsoft com ws discovery 
+ information services mds key concepts 
+http www globus org toolkit docs info key 
+ g- qosm grid service discovery using qos properties 
+r j al-ali o f rana d w walker s jha and s sohail 
+journal of computing and informatics special issue on grid 
+computing ed domenico laforenza vol no pp 
+ - 
+ uddie an extended registry for web services a 
+shaikhali o f rana r al-ali and d w walker 
+workshop on service oriented computing models 
+architectures and applications at saint conference 
+florida us january ieee computer society press 
+ a market-oriented grid directory service for publication 
+and discovery of grid service providers and their services 
+j yu s venugopal and r buyya journal of 
+supercomputing kluwer academic publishers usa 
+ chen zhou liang-tien chia bilhanan silverajan bu-sung 
+lee ux - an architecture providing qos-aware and 
+federated support for uddi icws - 
+ kee-hyun choi ho-jin shin dong-ryeol shin service 
+discovery supporting open scalability using 
+fipacompliant agent platform for ubiquitous networks lecture 
+notes in computer science volume jan 
+article 

@@ -1,0 +1,810 @@
+smile sound multi-agent incremental learning - 
+gauvain bourgne 
+lamsade umr cnrs 
+university paris-dauphine 
+ paris cedex 
+amal el fallah 
+segrouchni 
+lip umr cnrs 
+university paris av du 
+pr´esident kennedy 
+paris 
+henry soldano 
+lipn umr cnrs 
+university paris-nord av 
+j-b clement 
+villetaneuse 
+abstract 
+this article deals with the problem of collaborative 
+learning in a multi-agent system here each agent can update 
+incrementally its beliefs b the concept representation so 
+that it is in a way kept consistent with the whole set of 
+information k the examples that he has received from 
+the environment or other agents we extend this notion 
+of consistency or soundness to the whole mas and 
+discuss how to obtain that at any moment a same consistent 
+concept representation is present in each agent the 
+corresponding protocol is applied to supervised concept learning 
+the resulting method smile standing for sound 
+multiagent incremental learning is described and experimented 
+here surprisingly some difficult boolean formulas are 
+better learned given the same learning set by a multi agent 
+system than by a single agent 
+categories and subject descriptors 
+i artificial intelligence learning-concept 
+learning i artificial intelligence distributed artificial 
+intelligence-multiagent system 
+general terms 
+experimentation algorithms measurement performance 
+ introduction 
+this article deals with the problem of collaborative 
+concept learning in a multi-agent system introduces a 
+characterisation of learning in multi-agent system according to 
+the level of awareness of the agents at level agents learn 
+ the primary author of this paper is a student 
+in the system without taking into account the presence of 
+other agents except through the modification brought upon 
+the environment by their action level implies direct 
+interaction between the agents as they can exchange messages 
+to improve their learning level would require agents to 
+take into account the competencies of other agents and be 
+able to learn from observation of the other agents behaviour 
+ while considering them as independant entities and not 
+indetermined part of the environment as in level we focus 
+in this paper on level studying direct interaction between 
+agents involved in a learning process 
+each agent is assumed to be able to learn incrementally from 
+the data he receives meaning that each agent can update 
+his belief set b to keep it consistent with the whole set of 
+information k that he has received from the environment 
+or from other agents in such a case we will say that he is 
+a-consistent here the belief set b represents hypothetical 
+knowledge that can therefore be revised whereas the set of 
+information k represents certain knowledge consisting of 
+non revisable observations and facts moreover we suppose 
+that at least a part bc of the beliefs of each agent is 
+common to all agents and must stay that way therefore an 
+update of this common set bc by agent r must provoke an 
+update of bc for the whole community of agents it leads 
+us to define what is the mas-consistency of an agent with 
+respect to the community the update process of the 
+community beliefs when one of its members gets new information 
+can then be defined as the consistency maintenance process 
+ensuring that every agent in the community will stay 
+masconsistent this mas-consistency maintenance process of an 
+agent getting new information gives him the role of a learner 
+and implies communication with other agents acting as 
+critics however agents are not specialised and can in turn be 
+learners or critics none of them being kept to a specific role 
+pieces of information are distributed among the agents but 
+can be redundant there is no central memory 
+the work described here has its origin in a former work 
+concerning learning in an intentional multi-agent system using 
+a bdi formalism in that work agents had plans each 
+of them being associated with a context defining in which 
+conditions it can be triggered plans each of them having 
+its own context were common to the whole set of agents 
+in the community agents had to adapt their plan contexts 
+depending on the failure or success of executed plans using 
+a learning mechanism and asking other agents for examples 
+ plans successes or failures however this work lacked a 
+collective learning protocol enabling a real autonomy of the 
+multi-agent system the study of such a protocol is the 
+object of the present paper 
+in section we formally define the mas-consistency of an 
+update mechanism for the whole mas and we propose a 
+generic update mechanism proved to be mas consistent in 
+section we describe smile an incremental multi agent 
+concept learner applying our mas consistent update 
+mechanism to collaborative concept learning section describes 
+various experiments on smile and discusses various issues 
+including how the accuracy and the simplicity of the current 
+hypothesis vary when comparing single agent learning and 
+mas learning in section we briefly present some related 
+works and then conclude in section by discussing further 
+investigations on mas consistent learning 
+ formal model 
+ definitions and framework 
+in this section we present a general formulation of 
+collective incremental learning in a cognitive multi agent system 
+we represent a mas as a set of agents r rn each 
+agent ri has a belief set bi consisting of all the revisable 
+knowledge he has part of these knowledges must be shared 
+with other agents the part of bi that is common to all 
+agents is denoted as bc this common part provokes a 
+dependency between the agents if an agent ri updates his 
+belief set bi to bi changing in the process bc into bc all 
+other agents rk must then update their belief set bk to bk 
+so that bc ⊆ bk 
+moreover each agent ri has stored some certain information 
+ki we suppose that some consistency property cons bi ki 
+can be verified by the agent itself between its beliefs bi and 
+its information ki as said before bi represents knowledge 
+that might be revised whereas ki represents observed facts 
+taken as being true and which can possibly contradict bi 
+definition a-consistency of an agent 
+an agent ri is a-consistent iff cons bi ki is true 
+example agent r has a set of plans which are in the 
+common part bc of b each plan p has a triggering 
+context d p which acts as a pre-condition and a body some 
+piece of information k could be plan p triggered in 
+situation s has failed in spite of s being an instance of d p 
+if this piece of information is added to k then agent r is 
+not a-consistent anymore cons b k ∪ k is false 
+we also want to define some notion of consistency for the 
+whole mas depending on the belief and information sets 
+of its constituting elements we will first define the 
+consistency of an agent ri with respect to its belief set bi and its 
+own information set ki together with all information sets 
+k kn from the other agents of the mas we will simply 
+do that by considering what would be the a-consistency of 
+the agent if he has the information of all the other agents 
+we call this notion the mas-consistency 
+definition mas-consistency of an agent 
+an agent ri is mas-consistent iff cons bi ki ∪ k is true 
+where k ∪j∈ n − i kj 
+ 
+is the set of all information 
+from other agents of the mas 
+ 
+we will note this ∪ kj when the context is similar 
+example using the previous example suppose that the 
+piece of information k is included in the information k of 
+agent r as long as the piece of information is not 
+transmitted to r and so added to k r remains a-consistent 
+however r is not mas-consistent as k is in the set k of all 
+information of the mas 
+the global consistency of the mas is then simply the 
+mas-consistency of all its agents 
+definition consistency of a mas 
+a mas r rn is consistent iff all its agents ri are 
+masconsistent 
+we now define the required properties for a revision 
+mechanism m updating an agent ri when it gets a piece of 
+information k in the following we will suppose that 
+ update is always possible that is an agent can 
+always modify its belief set bi in order to regain its 
+a-consistency we will say that each agent is locally 
+efficient 
+ considering two sets of information cons bi k and 
+cons bi k we also have cons bi k ∪ k that 
+is a-consistency of the agents is additive 
+ if a piece of information k concerning the common 
+set bc is consistent with an agent it is consistent 
+with all agents for all pair of agents ri rj such that 
+cons bi ki and cons bj kj are true we have 
+for all piece of information k cons bi ki ∪ k iff 
+cons bj kj ∪ k in such a case we will say that 
+the mas is coherent 
+this last condition simply means that the common belief 
+set bc is independent of the possible differences between 
+the belief sets bi of each agent ri in the simplest case 
+b bn bc 
+m will also be viewed as an incremental learning 
+mechanism and represented as an application changing bi in bi 
+in the following we shall note ri bi ki for ri when it is 
+useful 
+definition a-consistency of a revision 
+an update mechanism m is a-consistent iff for any agent ri 
+and any piece of information k reaching ri the a-consistency 
+of this agent is preserved in other words iff 
+ri bi ki a-consistent ⇒ ri bi ki a-consistent 
+where bi m bi and ki ki ∪ k is the set of all 
+information from other agents of the mas 
+in the same way we define the mas-consistency of a 
+revision mechanism as the a-consistency of this mechanism 
+should the agents dispose of all information in the mas in 
+the following we shall note if needed ri bi ki k for the 
+agent ri in mas r rn 
+definition mas-consistency of a revision 
+an update mechanism ms is mas-consistent iff for all agent 
+ri and all pieces of information k reaching ri the 
+masconsistency of this agent is preserved in other words if 
+ri bi ki k mas-consistent ⇒ ri bi ki k mas-consistent 
+where bi ms bi ki ki ∪ k and k ∪kj is the set 
+of all information from the mas 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+at last when a mas-consistent mechanism is applied by 
+an agent getting a new piece of information a desirable 
+sideeffect of the mechanism should be that all others agents 
+remains mas-consistent after any modification of the common 
+part bc that is the mas itself should become consistent 
+again this property is defined as follows 
+definition strong mas-consistency of a revision 
+an update mechanism ms is strongly mas-consistent iff 
+- ms is mas-consistent and 
+- the application of ms by an agent preserves the consistency 
+of the mas 
+ a strongly mas-consistent update 
+mechanism 
+the general idea is that since information is distributed 
+among all the agents of the mas there must be some 
+interaction between the learner agent and the other agents in 
+a strongly mas-consistent update mechanism ms in order 
+to ensure its mas-consistency ms will be constituted of 
+reiterated applications by the learner agent ri of an internal 
+a-consistent mechanism m followed by some interactions 
+between ri and the other agents until ri regain its 
+masconsistency we describe below such a mechanism first with 
+a description of an interaction then an iteration and finally 
+a statement of the termination condition of the mechanism 
+the mechanism is triggered by an agent ri upon receipt 
+of a piece of information k disrupting the mas-consistency 
+we shall note m bi the belief set of the learner agent 
+ri after an update bc the common part modified by ri 
+and bj the belief set of another agent rj induced by the 
+modification of its common part bc in bc 
+an interaction i ri rj between the learner agent ri and 
+another agent rj acting as critic is constituted of the 
+following steps 
+ agent ri sends the update bc of the common part of 
+its beliefs having applied its update mechanism ri is 
+a-consistent 
+ agent rj checks the modification bj of its beliefs 
+induced by the update bc if this modification preserve 
+its a-consistency rj adopts this modification 
+ agent rj sends either an acceptation of bc or a denial 
+along with one or more piece s of information k 
+such that cons bj k is false 
+an iteration of ms will then be composed of 
+ the reception by the learner agent ri of a piece of 
+information and the update m bi restoring its 
+aconsistency 
+ a set of interactions i ri rj in which several critic 
+agents can possibly participate if at least one piece 
+of information k is transmitted to ri the addition of 
+k will necessarily make ri a-inconsistent and a new 
+iteration will then occur 
+this mechanism ms ends when no agent can provide such 
+a piece of information k when it is the case the 
+masconsistency of the learner agent ri is restored 
+proposition let r rn be a consistent mas in which 
+agent ri receives a piece of information k breaking its 
+aconsistency and m an a-consistent internal update 
+mechanism the update mechanism ms described above is strongly 
+mas-consistent 
+proof the proof directly derives from the mechanism 
+description this mechanism ensures that each time an 
+agent receives an event its mas-consistency will be restored 
+as the other agents all adopt the final update bc they are 
+all mas-consistent and the mas is consistent therefore 
+ms is a strongly consistent update mechanism 
+in the mechanism ms described above the learner agent 
+is the only one that receives and memorizes information 
+during the mechanism execution it ensures that ms 
+terminates the pieces of information transmitted by other 
+agents and memorized by the learner agent are redundant 
+as they are already present in the mas more precisely in 
+the memory of the critic agents that transmitted them 
+note that the mechanism ms proposed here does not 
+explicitly indicate the order nor the scope of the interactions 
+we will consider in the following that the modification 
+proposal bc is sent sequentially to the different agents 
+ synchronous mechanism moreover the response of a critic 
+agent will only contain one piece of information inconsistent 
+with the proposed modification we will say that the 
+response of the agent is minimal this mechanism ms being 
+synchronous with minimal response minimizes the amount 
+of information transmitted by the agents we will now 
+illustrate it in the case of multi-agent concept learning 
+ soundmulti-agentincremental 
+learning 
+ the learning task 
+we experiment the mechanism proposed above in the case 
+of incremental mas concept learning we consider here 
+a hypothesis language in which a hypothesis is a 
+disjunction of terms each term is a conjunction of atoms from a 
+set a an example is represented by a tag or − and a 
+description 
+composed of a subset of atoms e ⊆ a a term 
+covers an example if its constituting atoms are included in 
+the example a hypothesis covers an example if one of its 
+term covers it 
+this representation will be used below for learning boolean 
+formulae negative literals are here represented by 
+additional atoms like not − a the boolean formulae f a ∧ 
+b ∨ b ∧ ¬c will then be written a ∧ b ∨ b ∧ not − c a 
+positive example of f like not − a b not − c represents 
+a model for f 
+ incremental learning process 
+the learning process is an update mechanism that given 
+a current hypothesis h a memory e e 
+∪ e− 
+filled 
+with the previously received examples and a new positive 
+or negative example e produces a new updated 
+hypothesis before this update the given hypothesis is complete 
+meaning that it covers all positive examples of e 
+ and 
+ 
+when no confusion is possible the word example will be 
+used to refer to the pair tag description as well as the 
+description alone 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+coherent meaning that it does not cover any negative 
+example of e− 
+ after the update the new hypothesis must be 
+complete and coherent with the new memory state e ∪ e 
+we describe below our single agent update mechanism 
+inspired from a previous work on incremental learning 
+in the following a hypothesis h for the target formula f is 
+a list of terms h each of them being a conjunction of atoms 
+h is coherent if all terms h are coherent and h is complete 
+if each element of e 
+is covered by at least one term h of 
+h each term is by construction the lgg least general 
+generalization of a subset of positives instances e en 
+that is the most specific term covering e en the 
+lgg operator is defined by considering examples as terms 
+so we denote as lgg e the most specific term that covers 
+e and as lgg h e the most specific term which is more 
+general than h and that covers e restricting the term to 
+lgg is the basis of a lot of bottom-up learning algorithms 
+ for instance in the typology proposed by our 
+update mechanism is an incremental learner with full instance 
+memory learning is made by successive updates and all 
+examples are stored 
+the update mechanism depends of the ongoing hypothesis 
+h the ongoing examples e 
+and e− 
+ and the new example 
+e there are three possible cases 
+ e is positive and h covers e or e is negative and h 
+does not cover e no update is needed h is already 
+complete and coherent with e ∪ e 
+ e is positive and h does not cover e e is denoted 
+as a positive counterexample of h then we seek 
+to generalize in turn the terms h of h as soon 
+as a correct generalization h lgg h e is found h 
+replaces h in h if there is a term that is less general 
+that h it is discarded if no generalization is correct 
+ meaning here coherent h ∪ lgg e replaces h 
+ e is negative and h covers e e is denoted as a 
+negative counterexample of h each term h covering e 
+is then discarded from h and replaced by a set of 
+terms h hn that is as a whole coherent with 
+e− 
+∪ e and that covers the examples of e 
+ 
+uncovered by h − h terms of the final hypothesis h 
+that are less general than others are discarded from 
+h 
+we will now describe the case where e e− 
+is a covered 
+negative example the following functions are used here 
+ coveredonlyby h e gives the subset of e 
+covered 
+by h and no other term of h 
+ bestcover h h gives h if h covers more examples 
+from uncoveredpos than h otherwise it gives h 
+ covered h gives the elements of uncoveredpos covered 
+by h 
+ specialization of each h covering e− 
+for each h of h covering e− 
+do 
+h h − h 
+uncoveredpos coveredonlyby h e 
+ 
+ar atoms that are neither in e− 
+nor in h 
+while uncoveredpos ∅ do 
+ seeking the best specialization of h 
+hc h 
+best ⊥ ⊥ covers no example 
+for each a of ar do 
+hc h ∧ a 
+best bestcover hc best 
+endfor 
+ar ar− best 
+hi lgg covered best 
+h h ∪ hi 
+uncoveredpos uncoveredpos - covered best 
+endwhile 
+endfor 
+terms of h that are less general than others are discarded 
+note that this mechanism tends to both make a minimal 
+update of the current hypothesis and minimize the number 
+of terms in the hypothesis in particular by discarding terms 
+less general than other ones after updating a hypothesis 
+ collective learning 
+if h is the current hypothesis ei the current example 
+memory of agent ri and e the set of all the examples 
+received by the system the notation of section becomes 
+bi bc h ki ei and k e cons h ei states 
+that h is complete and coherent with ei in such a case 
+ri is a-consistent the piece of information k received by 
+agent ri is here simply an example e along with its tag 
+if e is such that the current hypothesis h is not complete 
+or coherent with ei ∪ e e contradicts h ri becomes 
+a-inconsistent and therefore the mas is not consistent 
+anymore 
+the update of a hypothesis when a new example arrives 
+is an a- consistent mechanism following proposition this 
+mechanism can be used to produce a strong mas-consistent 
+mechanism upon reception of a new example in the mas 
+by an agent r an update is possibly needed and after a set 
+of interactions between r and the other agents results in a 
+new hypothesis shared by all the agents and that restores 
+the consistency of the mas that is which is complete and 
+coherent with the set es of all the examples present in the 
+mas 
+it is clear that by minimizing the number of 
+hypothesis modifications this synchronous and minimal 
+mechanism minimize the number of examples received by the 
+learner from other agents and therefore the total number 
+of examples stored in the system 
+ experiments 
+in the following we will learn a boolean formula that is 
+a difficult test for the learning method the -multiplexer 
+ see it concerns address boolean attributes a a a 
+and data boolean attributes d d formulae f is 
+satisfied if the number coded by the address attributes is 
+the number of a data attribute whose value is its formula 
+is the following 
+f a ∧a ∧a ∧d ∨ a ∧a ∧¬a ∧d ∨ a ∧¬a ∧ 
+a ∧d ∨ a ∧¬a ∧¬a ∧d ∨ ¬a ∧a ∧a ∧d ∨ ¬a ∧ 
+a ∧¬a ∧d ∨ ¬a ∧¬a ∧a ∧d ∨ ¬a ∧¬a ∧¬a ∧d 
+there are 
+possible examples half of whom are 
+positive meaning they satisfy f while the other half is 
+negative 
+an experiment is typically composed of trials each 
+run corresponds to a sequence of examples that are 
+incrementally learned by a multi agent system with n agents 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ n-mas a number of variables such as accuracy i e the 
+frequency of correct classification of a set of unseen 
+examples hypothesis size i e the number of terms in the 
+current formula or number of stored examples is recorded each 
+time examples are received by the system during those 
+runs 
+in the protocol that is used here a new example is sent 
+to a random agent when the mas is consistent the next 
+example will be sent in turn to an other agent when the 
+mas consistency will have been restored in such a way we 
+simulate a kind of slow learning the frequency of example 
+arrivals is slow compared to the time taken by an update 
+ efficiency of mas concept learning 
+ execution time 
+we briefly discuss here execution time of learning in the 
+mas note that the whole set of action and interaction in 
+the mas is simulated on a single processor figure shows 
+that time linearly depends on the number of agents at the 
+end of the most active part of learning examples a 
+ mas has taken times more learning time than a -mas 
+this execution time represents the whole set of learning and 
+figure execution time of a n-mas from n at 
+the bottom to n on the top 
+communication activity and hints at the cost of 
+maintaining a consistent learning hypothesis in a mas composed of 
+autonomous agents 
+ redundancy in the mas memory 
+we study now the distribution of the examples in the mas 
+memory redundancy is written rs ns ne where ns is 
+the total number of examples stored in the mas that is the 
+sum of the sizes of agents examples memories ei and ne is 
+the total number of examples received from the environment 
+in the mas in figure we compare redundancies in to 
+ agents mas there is a peak slowly moving from to 
+ examples that represents the number of examples for 
+which the learning is most active for agents maximal 
+redundancy is no more than which is far less than the 
+maximal theoretical value of note that when learning 
+becomes less active redundancy tends towards its minimal 
+value when there is no more updates examples are only 
+figure redundancy of examples stored in a 
+nmas from n at the bottom to n on the 
+top 
+stored by the agent that receives them 
+ a n-mas selects a simpler solution than a 
+single agent 
+the proposed mechanism tends to minimize the number of 
+terms in the selected hypothesis during learning the size of 
+the current hypothesis grows up beyond the optimum and 
+then decreases when the mas converges in the multiplexer 
+ testbed the optimal number of terms is but there also 
+exist equivalent formulas with more terms it is interesting 
+to note that in this case the -mas converges towards an 
+exact solution closer to the optimal number of terms here 
+ see figure after examples have been presented 
+both -mas and -mas have exactly learned the concept 
+ the respective accuracies are and but the single 
+agent expresses in average the result as a terms dnf 
+whereas the -mas expresses it as a terms dnf 
+however for some other boolean functions we found that 
+during learning -mas always produces larger hypotheses than 
+ -mas but that both mas converge to hypotheses with 
+similar size results 
+ a n-mas is more accurate than a single agent 
+figure shows the improvement brought by a mas with 
+n agents compared to a single agent this improvement was 
+not especially expected because whether we have one or n 
+agents when n examples are given to the mas it has access 
+to the same amount of information maintains only on 
+ongoing hypothesis and uses the same basic revision algorithm 
+whenever an agent has to modify the current hypothesis 
+note that if the accuracy of and -mas are 
+significantly different getting better as the number of agents 
+increases there is no clear difference beyond this point the 
+accuracy curve of the agents mas is very close to the 
+one of the agents mas 
+ boolean formulas 
+to evaluate this accuracy improvement we have 
+experimented our protocol on other problems of boolean 
+function learning as in the multiplexer- case these functions 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure size of the hypothesis built by and 
+ mas the m case 
+figure accuracy of a n-mas the m case from 
+bottom to top n 
+are learnt in the form of more or less syntactically complex 
+dnf 
+ that is with more or less conjunctive terms in the 
+dnf but are also more or less difficult to learn as it can 
+be difficult to get its way in the hypothesis space to reach 
+them furthermore the presence in the description of 
+irrelevant attributes that is attributes that does not belong to 
+the target dnf makes the problem more difficult the 
+following problems have been selected to experiment our 
+protocol i the multiplexer- with irrelevant attributes 
+m ii the -multiplexer m with address bits and 
+ data bits iii a difficult parity problem see the 
+xorp m there must be an odd number of bits with value 
+in the p first attributes for the instance to be positive the 
+p others bits being irrelevant and iv a simple dnf 
+formula a ∧ b ∧ c ∨ c ∧ d ∧ e e ∧ f ∧ g ∧ g ∧ h ∧ i with 
+irrelevant attributes the following table sums up some 
+information about these problems giving the total number of 
+attributes including irrelevant ones the number of irrelevant 
+ 
+disjunctive normal forms 
+attributes the minimal number of terms of the 
+corresponding dnf and the number of learning examples used 
+pb att irre att terms ex 
+m 
+m 
+m 
+xor 
+xor 
+xor 
+simple - 
+below are given the accuracy results of our learning 
+mechanism with a single agent and a agents mas along with 
+the results of two standard algorithms implemented with the 
+learning environment weka jrip an implementation 
+of ripper and id for the experiments with jrip 
+and id we measured the mean accuracy on trials each 
+time randomly separating examples in a learning set and a 
+test set jrip and id parameters are default parameters 
+except that jrip is used without pruning the following 
+table shows the results 
+pb jrip id sm sm 
+m 
+m 
+m 
+xor 
+xor 
+xor 
+simple - 
+it is clear that difficult problems are better solved with 
+more agents see for instance xor we think that these 
+benefits which can be important with an increasing number 
+of agents are due to the fact that each agent really 
+memorizes only part of the total number of examples and this 
+part is partly selected by other agents as counter examples 
+which cause a greater number of current hypothesis updates 
+and therefore a better exploration of the hypotheses space 
+ ml database problems 
+we did also experiments with some non boolean problems 
+we considered only two classes positive negative 
+problems taken from the uci s learning problems database 
+in all these problems examples are described as a 
+vector of couples attribute value the value domains can 
+be either boolean numeric wholly ordered set or 
+nominal non-ordered set an adequate set of atoms a must be 
+constituted for each problem for instance if a is a numeric 
+attribute we define at most k threshold si giving k 
+intervals of uniform density 
+ therefore each distinct threshold 
+si gives two atoms a ≤ si and a si in our experiments 
+we took a maximal number of threshold k for instance 
+in the iono problem case there were numeric attributes 
+and an instance is described with atoms 
+below are given the accuracy results of our system along 
+with previous results the column nb ex refer to the 
+ 
+the probability for the value of a to be in any interval is 
+constant 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+number of examples used for learning 
+ column 
+represents minimal and maximal accuracy values for the thirty 
+three classifiers tested in column represents the 
+results of where various learning methods are compared 
+to ensemble learning methods using weighted classifiers sets 
+column s- and s- gives the accuracy of smile with 
+respectively and agents 
+pb nb ex s- s- 
+ttt - 
+kr-vs-kp - 
+iono - 
+bupa - - 
+breastw - - 
+vote - - 
+pima - 
+heart - - 
+this table shows that the incremental algorithm 
+corresponding to the single agent case gives honorable results 
+relatively to non-incremental classical methods using larger 
+and more complex hypotheses in some cases there is an 
+accuracy improvement with a agents mas however with 
+such benchmarks data which are often noisy the difficulty 
+does not really come from the way in which the search space 
+is explored and therefore the improvement observed is not 
+always significant the same kind of phenomenon have been 
+observed with methods dedicated to hard boolean problems 
+ 
+ mas synchronization 
+here we consider that n single agents learn without 
+interactions and at a given time start interacting thus forming a 
+mas the purpose is to observe how the agents take 
+advantage of collaboration when they start from different states of 
+beliefs and memories we compare in this section a -mas 
+a -mas ref and a -mas sync whose agents did 
+not communicate during the arrival of the first 
+examples by agents the three accuracy curves are shown in 
+figure by comparing the single agent curve and the 
+synchronized -mas we can observe that after the beginning 
+of the synchronization that is at examples accuracies 
+are identical this was expected since as soon as an example 
+e received by the mas contradicts the current hypothesis of 
+the agent ra receiving it this agent makes an update and its 
+new hypothesis is proposed to the others agents for criticism 
+therefore this first contradictory example brings the mas 
+to reach consistency relatively to the whole set of examples 
+present in agents memories a higher accuracy 
+corresponding to a -mas is obtained later from the th example 
+in other words the benefit of a better exploration of the 
+research space is obtained slightly later in the learning 
+process note that this synchronization happens naturally in all 
+situations where agents have for some reason a divergence 
+between their hypothesis and the system memory this 
+includes the fusion of two mas into a single one or the arrival 
+of new agents in an existing mas 
+ experiments on asynchronous learning 
+the effect of a large data stream 
+ 
+for ttt and kr-vs-kp our protocol did not use more than 
+respectively and learning examples so we put another 
+number in the column 
+figure accuracies of a -mas a -mas and a 
+ -mas synchronized after examples 
+in this experiment we relax our slow learning mode the 
+examples are sent at a given rate to the mas the 
+resulting example stream is measured in ms− 
+ and represents 
+the number of examples sent to the mas each ms 
+whenever the stream is too large the mas cannot reach mas 
+consistency on reception of an example from the 
+environment before a new example arrives this means that the 
+update process started by agent r as he received an 
+example may be unfinished when a new example is received by 
+r or another agent r as a result a critic agent may have 
+at instant t to send counterexamples of hypotheses sent by 
+various agents however as far as the agents in our 
+setting memorizes all the examples they receive whenever the 
+stream ends the mas necessarily reaches mas consistency 
+with respect to all the examples received so far in our 
+experiments though its learning curve is slowed down during 
+the intense learning phase corresponding to low accuracy of 
+the current hypotheses the mas still reaches a satisfying 
+hypothesis later on as there are less and less 
+counterexamples in the example stream in figure we compare the 
+accuracies of two -mas respectively submitted to 
+example streams of different rates when learning the m formula 
+the learning curve of the mas receiving an example at a 
+ ms− 
+rate is almost not altered see figure whereas 
+the ms− 
+mas is first severely slowed down before 
+catching up with the first one 
+ related works 
+since various work have been performed on 
+learning in mas but rather few on concept learning in 
+the mas performs a form of ensemble learning in which the 
+agents are lazy learners no explicit representation is 
+maintained and sell useless examples to other agents in 
+each agent observes all the examples but only perceive a 
+part of their representation in mutual online concept 
+learning the agents converge to a unique hypothesis but each 
+agent produces examples from its own concept 
+representation thus resulting in a kind of synchronization rather than 
+in pure concept learning 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure accuracies of two asynchronous -mas 
+ ms− 
+and ms− 
+example rates 
+ conclusion 
+we have presented here and experimented a protocol for 
+mas online concept learning the main feature of this 
+collaborative learning mechanism is that it maintains a 
+consistency property though during the learning process each 
+agent only receives and stores with some limited 
+redundancy part of the examples received by the mas at any 
+moment the current hypothesis is consistent with the whole 
+set of examples the hypotheses of our experiments do not 
+address the issues of distributed mas such as faults for 
+instance messages could be lost or corrupted or other failures 
+in general crash byzantine faults etc nevertheless our 
+framework is open i e the agents can leave the system or 
+enter it while the consistency mechanism is preserved for 
+instance if we introduce a timeout mechanism even when 
+a critic agent crashes or omits to answer the consistency 
+with the other critics within the remaining agents is 
+entailed in a similar approach has been applied to mas 
+abduction problems the hypotheses to maintain given an 
+incomplete information are then facts or statements 
+further work concerns first coupling induction and abduction in 
+order to perform collaborative concept learning when 
+examples are only partially observed by each agent and second 
+investigating partial memory learning how learning is 
+preserved whenever one agent or the whole mas forgets some 
+selected examples 
+aknowledgments 
+we are very grateful to dominique bouthinon for 
+implementing late modifications in smile so much easing our 
+experiments part of this work has been performed during 
+the first author s visit to the atelier de bioinformatique 
+of paris vi university france 
+ references 
+ g bourgne n maudet and s pinson when agents 
+communicate hypotheses in critical situations in 
+dalt- may 
+ w w cohen fast effective rule induction in icml 
+pages - 
+ c b d j newman s hettich and c merz uci 
+repository of machine learning databases 
+ s esmeir and s markovitch lookahead-based 
+algorithms for anytime induction of decision trees in 
+icml o pages - morgan kaufmann 
+ j f¨urnkranz a pathology of bottom-up hill-climbing 
+in inductive rule learning in alt volume of 
+lncs pages - springer 
+ a guerra-hern´andez a elfallah-seghrouchni and 
+h soldano learning in bdi multi-agent systems in 
+clima iv volume pages - springer 
+verlag 
+ m henniche mgi an incremental bottom-up 
+algorithm in ieee aust and new zealand 
+conference on intelligent information systems pages 
+ - 
+ t -s lim w -y loh and y -s shih a comparison 
+of prediction accuracy complexity and training time 
+of thirty-three old and new classification algorithms 
+machine learning - 
+ m a maloof and r s michalski incremental 
+learning with partial instance memory artif intell 
+ - - 
+ p j modi and w -m shen collaborative multiagent 
+learning for classification tasks in agents 
+pages - acm press 
+ s onta˜non and e plaza recycling data for 
+multi-agent learning in icml pages - 
+acm press 
+ j r quinlan induction of decision trees machine 
+learning - 
+ u r¨uckert and s kramer towards tight bounds for 
+rule learning in icml international conference 
+on machine learning page new york ny usa 
+ acm press 
+ j wang and l gasser mutual online concept 
+learning for multiple agents in aamas pages 
+ - acm press 
+ g weiß and s sen editors adaption and learning in 
+multi-agent systems volume of lecture notes in 
+computer science springer 
+ i h witten and e frank data mining practical 
+machine learning tools and techniques with java 
+implementations morgan kaufmann october 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

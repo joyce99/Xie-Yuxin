@@ -1,0 +1,1264 @@
+cenwits a sensor-based loosely coupled search and 
+rescue system using witnesses 
+jyh-how huang 
+department of computer 
+science 
+university of colorado 
+campus box 
+boulder co - 
+huangjh cs colorado edu 
+saqib amjad 
+department of computer 
+science 
+university of colorado 
+campus box 
+boulder co - 
+saqib amjad colorado edu 
+shivakant mishra 
+department of computer 
+science 
+university of colorado 
+campus box 
+boulder co - 
+mishras cs colorado edu 
+abstract 
+this paper describes the design implementation and 
+evaluation of a search and rescue system called cenwits cenwits 
+uses several small commonly-available rf-based sensors 
+and a small number of storage and processing devices it is 
+designed for search and rescue of people in emergency 
+situations in wilderness areas a key feature of cenwits is that 
+it does not require a continuously connected sensor network 
+for its operation it is designed for an intermittently 
+connected network that provides only occasional connectivity 
+it makes a judicious use of the combined storage capability 
+of sensors to filter organize and store important 
+information combined battery power of sensors to ensure that the 
+system remains operational for longer time periods and 
+intermittent network connectivity to propagate information 
+to a processing center a prototype of cenwits has been 
+implemented using berkeley mica motes the paper 
+describes this implementation and reports on the performance 
+measured from it 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems 
+general terms 
+algorithms design experimentation 
+ introduction 
+search and rescue of people in emergency situation in a 
+timely manner is an extremely important service it has 
+been difficult to provide such a service due to lack of timely 
+information needed to determine the current location of a 
+person who may be in an emergency situation with the 
+emergence of pervasive computing several systems 
+ have been developed over the last few years 
+that make use of small devices such as cell phones 
+sensors etc all these systems require a connected network 
+via satellites gsm base stations or mobile devices this 
+requirement severely limits their applicability particularly 
+in remote wilderness areas where maintaining a connected 
+network is very difficult 
+for example a gsm transmitter has to be in the range 
+of a base station to transmit as a result it cannot operate 
+in most wilderness areas while a satellite transmitter is 
+the only viable solution in wilderness areas it is typically 
+expensive and cumbersome furthermore a line of sight is 
+required to transmit to satellite and that makes it 
+infeasible to stay connected in narrow canyons large cities with 
+skyscrapers rain forests or even when there is a roof or some 
+other obstruction above the transmitter e g in a car an 
+rf transmitter has a relatively smaller range of 
+transmission so while an in-situ sensor is cheap as a single unit it is 
+expensive to build a large network that can provide 
+connectivity over a large wilderness area in a mobile environment 
+where sensors are carried by moving people power-efficient 
+routing is difficult to implement and maintain over a large 
+wilderness area in fact building an adhoc sensor network 
+using only the sensors worn by hikers is nearly impossible 
+due to a relatively small number of sensors spread over a 
+large wilderness area 
+in this paper we describe the design implementation 
+and evaluation of a search and rescue system called 
+cenwits connection-less sensor-based tracking system 
+using witnesses cenwits is comprised of mobile in-situ 
+sensors that are worn by subjects people wild animals or 
+in-animate objects access points ap that collect 
+information from these sensors and gps receivers and location 
+points lp that provide location information to the 
+sensors a subject uses gps receivers when it can connect to 
+a satellite and lps to determine its current location the 
+key idea of cenwits is that it uses a concept of witnesses 
+to convey a subject s movement and location information 
+to the outside world this averts a need for maintaining a 
+connected network to transmit location information to the 
+outside world in particular there is no need for 
+expensive gsm or satellite transmitters or maintaining an adhoc 
+network of in-situ sensors in cenwits 
+ 
+cenwits employs several important mechanisms to 
+address the key problem of resource constraints low signal 
+strength low power and limited memory in sensors in 
+particular it makes a judicious use of the combined 
+storage capability of sensors to filter organize and store 
+important information combined battery power of sensors to 
+ensure that the system remains operational for longer time 
+periods and intermittent network connectivity to propagate 
+information to a processing center 
+the problem of low signal strengths short range rf 
+communication is addressed by avoiding a need for maintaining 
+a connected network instead cenwits propagates the 
+location information of sensors using the concept of witnesses 
+through an intermittently connected network as a result 
+this system can be deployed in remote wilderness areas as 
+well as in large urban areas with skyscrapers and other tall 
+structures also this makes cenwits cost-effective a 
+subject only needs to wear light-weight and low-cost sensors 
+that have gps receivers but no expensive gsm or satellite 
+transmitters furthermore since there is no need for a 
+connected sensor network there is no need to deploy sensors in 
+very large numbers 
+the problem of limited battery life and limited memory of 
+a sensor is addressed by incorporating the concepts of groups 
+and partitions groups and partitions allow sensors to stay 
+in sleep or receive modes most of the time using groups and 
+partitions the location information collected by a sensor can 
+be distributed among several sensors thereby reducing the 
+amount of memory needed in one sensor to store that 
+information in fact cenwits provides an adaptive tradeoff 
+between memory and power consumption of sensors each 
+sensor can dynamically adjust its power and memory 
+consumption based on its remaining power or available memory 
+it has amply been noted that the strength of sensor 
+networks comes from the fact that several sensor nodes can 
+be distributed over a relatively large area to construct a 
+multihop network this paper demonstrates that important 
+large-scale applications can be built using sensors by 
+judiciously integrating the storage communication and 
+computation capabilities of sensors the paper describes 
+important techniques to combine memory transmission and 
+battery power of many sensors to address resource constraints 
+in the context of a search and rescue application however 
+these techniques are quite general we discuss several other 
+sensor-based applications that can employ these techniques 
+while cenwits addresses the general location tracking 
+and reporting problem in a wide-area network there are 
+two important differences from the earlier work done in this 
+area first unlike earlier location tracking solutions 
+cenwits does not require a connected network second unlike 
+earlier location tracking solutions cenwits does not aim for 
+a very high accuracy of localization instead the main goal 
+is to provide an approximate small area where search and 
+rescue efforts can be concentrated 
+the rest of this paper is organized as follows in section 
+ we overview some of the recent projects and technologies 
+related to movement and location tracking and search and 
+rescue systems in section we describe the overall 
+architecture of cenwits and provide a high-level description of 
+its functionality in the next section section we discuss 
+power and memory management in cenwits to simplify 
+our presentation we will focus on a specific application of 
+tracking lost injured hikers in all these sections in 
+section we describe a prototype implementation of cenwits 
+and present performance measured from this 
+implementation we discuss how the ideas of cenwits can be used 
+to build several other applications in section finally in 
+section we discuss some related issues and conclude the 
+paper 
+ related work 
+a survey of location systems for ubiquitous computing 
+is provided in a location tracking system for adhoc 
+sensor networks using anchor sensors as reference to gain 
+location information and spread it out to outer node is 
+proposed in most location tracking systems in adhoc 
+sensor networks are for benefiting geographic-aware routing 
+they don t fit well for our purposes the well-known 
+active badge system lets a user carry a badge around 
+an infrared sensor in the room can detect the presence of 
+a badge and determine the location and identification of 
+the person this is a useful system for indoor environment 
+where gps doesn t work locationing using devices 
+is probably the cheapest solution for indoor position 
+tracking because of the popularity and low cost of 
+devices several business solutions based on this technology 
+have been developed 
+a system that combines two mature technologies and is 
+viable in suburban area where a user can see clear sky and 
+has gsm cellular reception at the same time is currently 
+available this system receives gps signal from a 
+satellite and locates itself draws location on a map and sends 
+location information through gsm network to the others 
+who are interested in the user s location 
+a very simple system to monitor children consists an rf 
+transmitter and a receiver the system alarms the holder 
+of the receiver when the transmitter is about to run out of 
+range 
+personal locater beacons plb has been used for avalanche 
+rescuing for years a skier carries an rf transmitter that 
+emits beacons periodically so that a rescue team can find 
+his her location based on the strength of the rf signal 
+luxury version of plb combines a gps receiver and a 
+cospassarsat satellite transmitter that can transmit user s 
+location in latitude and longitude to the rescue team whenever 
+an accident happens however the device either is turned 
+on all the time resulting in fast battery drain or must be 
+turned on after the accident to function 
+another related technology in widespread use today is the 
+onstar system typically used in several luxury cars 
+in this system a gps unit provides position information 
+and a powerful transmitter relays that information via 
+satellite to a customer service center designed for emergencies 
+the system can be triggered either by the user with the push 
+of a button or by a catastrophic accident once the system 
+has been triggered a human representative attempts to gain 
+communication with the user via a cell phone built as an 
+incar device if contact cannot be made emergency services 
+are dispatched to the location provided by gps like plbs 
+this system has several limitations first it is heavy and 
+expensive it requires a satellite transmitter and a connected 
+network if connectivity with either the gps network or a 
+communication satellite cannot be maintained the system 
+fails unfortunately these are common obstacles 
+encountered in deep canyons narrow streets in large cities parking 
+garages and a number of other places 
+ 
+the lifetch system uses gps receiver board combined 
+with a gsm gprs transmitter and an rf transmitter in 
+one wireless sensor node called intelligent communication 
+unit icu an icu first attempts to transmit its location 
+to a control center through gsm gprs network if that 
+fails it connects with other icus adhoc network to 
+forward its location information until the information reaches 
+an icu that has gsm gprs reception this icu then 
+transmits the location information of the original icu via 
+the gsm gprs network 
+zebranet is a system designed to study the moving 
+patterns of zebras it utilizes two protocols history-based 
+protocol and flooding protocol history-based protocol is 
+used when the zebras are grazing and not moving around 
+too much while this might be useful for tracking zebras 
+it s not suitable for tracking hikers because two hikers are 
+most likely to meet each other only once on a trail in 
+the flooding protocol a node dumps its data to a neighbor 
+whenever it finds one and doesn t delete its own copy until 
+it finds a base station without considering routing loops 
+packet filtering and grouping the size of data on a node will 
+grow exponentially and drain the power and memory of a 
+sensor node with in a short time instead cenwits uses a 
+four-phase hand-shake protocol to ensure that a node 
+transmits only as much information as the other node is willing 
+to receive while zebranet is designed for a big group of 
+sensors moving together in the same direction with same 
+speed cenwits is designed to be used in the scenario where 
+sensors move in different directions at different speeds 
+delay tolerant network architecture addresses some 
+important problems in challenged resource-constrained 
+networks while this work is mainly concerned with 
+interoperability of challenged networks some problems related 
+to occasionally-connected networks are similar to the ones 
+we have addressed in cenwits 
+among all these systems luxury plb and lifetch are 
+designed for location tracking in wilderness areas however 
+both of these systems require a connected network luxury 
+plb requires the user to transmit a signal to a satellite 
+while lifetch requires connection to gsm gprs network 
+luxury plb transmits location information only when an 
+accident happens however if the user is buried in the snow 
+or falls into a deep canyon there is almost no chance for the 
+signal to go through and be relayed to the rescue team this 
+is because satellite transmission needs line of sight 
+furthermore since there is no known history of user s location it is 
+not possible for the rescue team to infer the current location 
+of the user another disadvantage of luxury plb is that a 
+satellite transmitter is very expensive costing in the range 
+of lifetch attempts to transmit the location 
+information by gsm gprs and adhoc sensor network that uses 
+aodv as the routing protocol however having a cellular 
+reception in remote areas in wilderness areas e g 
+american national parks is unlikely furthermore it is extremely 
+unlikely that icus worn by hikers will be able to form an 
+adhoc network in a large wilderness area this is because 
+the hikers are mobile and it is very unlikely to have several 
+icus placed dense enough to forward packets even on a very 
+popular hike route 
+cenwits is designed to address the limitations of systems 
+such as luxury plb and lifetch it is designed to 
+provide hikers skiers and climbers who have their activities 
+mainly in wilderness areas a much higher chance to convey 
+their location information to a control center it is not 
+reliant upon constant connectivity with any communication 
+medium rather it communicates information along from 
+user to user finally arriving at a control center unlike 
+several of the systems discussed so far it does not require that 
+a user s unit is constantly turned on in fact it can discover 
+a victim s location even if the victim s sensor was off at the 
+time of accident and has remained off since then cenwits 
+solves one of the greatest problems plaguing modern search 
+and rescue systems it has an inherent on-site storage 
+capability this means someone within the network will have 
+access to the last-known-location information of a victim 
+and perhaps his bearing and speed information as well 
+figure hiker a and hiker b are are not in the 
+range of each other 
+ cenwits 
+we describe cenwits in the context of locating lost injured 
+hikers in wilderness areas each hiker wears a sensor mica 
+motes in our prototype equipped with a gps receiver and 
+an rf transmitter each sensor is assigned a unique id and 
+maintains its current location based on the signal received by 
+its gps receiver it also emits beacons periodically when 
+any two sensors are in the range of one another they record 
+the presence of each other witness information and also 
+exchange the witness information they recorded earlier the 
+key idea here is that if two sensors come with in range of 
+each other at any time they become each other s witnesses 
+later on if the hiker wearing one of these sensors is lost the 
+other sensor can convey the last known witnessed location 
+of the lost hiker furthermore by exchanging the witness 
+information that each sensor recorded earlier the witness 
+information is propagated beyond a direct contact between 
+two sensors 
+to convey witness information to a processing center or to 
+a rescue team access points are established at well-known 
+locations that the hikers are expected to pass through e g 
+at the trail heads trail ends intersection of different trails 
+scenic view points resting areas and so on whenever a 
+sensor node is in the vicinity of an access point all witness 
+information stored in that sensor is automatically dumped 
+to the access point access points are connected to a 
+processing center via satellite or some other network 
+ the 
+witness information is downloaded to the processing center 
+from various access points at regular intervals in case 
+connection to an access point is lost the information from that 
+ 
+a connection is needed only between access points and a 
+processing center there is no need for any connection 
+between different access points 
+ 
+access point can be downloaded manually e g by uavs 
+to estimate the speed location and direction of a hiker at 
+any point in time all witness information of that hiker that 
+has been collected from various access points is processed 
+figure hiker a and hiker b are in the range 
+of each other a records the presence of b and b 
+records the presence of a a and b become each 
+other s witnesses 
+figure hiker a is in the range of an access 
+point it uploads its recorded witness information 
+and clears its memory 
+an example of how cenwits operates is illustrated in 
+figures and first hikers a and b are on two close 
+trails but out of range of each other figure this is 
+a very common scenario during a hike for example on a 
+popular four-hour hike a hiker might run into as many as 
+ other hikers this accounts for one encounter every 
+minutes on average a slow hiker can go mile feet 
+per hour thus in minutes a slow hiker can go as far as 
+ feet this implies that if we were to put hikers on a 
+ -hour one-way hike evenly the range of each sensor node 
+should be at least feet for them to communicate with 
+one another continuously the signal strength starts 
+dropping rapidly for two mica nodes to communicate with each 
+other when they are feet away and is completely lost 
+when they are feet away from each other so for the 
+sensors to form a sensor network on a -hour hiking trail 
+there should be at least hikers scattered evenly clearly 
+this is extremely unlikely in fact in a -hour less-popular 
+hiking trail one might only run into say five other hikers 
+cenwits takes advantage of the fact that sensors can 
+communicate with one another and record their presence given 
+a walking speed of one mile per hour feet per minute 
+and mica range of about feet for non-line-of-sight radio 
+transmission two hikers have about minutes to 
+discover the presence of each other and exchange their 
+witness information we therefore design our system to have 
+each sensor emit a beacon every one-and-a-half minute in 
+figure hiker b s sensor emits a beacon when a is in range 
+this triggers a to exchange data with b a communicates 
+the following information to b my id is a i saw c at 
+pm at ◦ 
+ ◦ 
+ i saw e at 
+pm at ◦ 
+ ◦ 
+ b then replies 
+with my id is b i saw k at am at ◦ 
+ 
+ ◦ 
+ in addition a records i saw b at 
+pm at ◦ 
+ ◦ 
+ and b records i 
+saw a at pm at ◦ 
+ ◦ 
+ 
+b goes on his way to overnight camping while a heads 
+back to trail head where there is an ap which emits beacon 
+every seconds to avoid missing any hiker a dumps all 
+witness information it has collected to the access point this 
+is shown in figure 
+ witness information storage 
+a critical concern is that there is limited amount of 
+memory available on motes kb sdram memory kb 
+flash memory and - kb eeprom so it is important 
+to organize witness information efficiently cenwits stores 
+witness information at each node as a set of witness records 
+ format is shown in figure 
+ b 
+node id record time x y location time hop count 
+ b b b b 
+figure format of a witness record 
+when two nodes i and j encounter each other each node 
+generates a new witness record in the witness record 
+generated by i node id is j record time is the current time 
+in i s clock x y are the coordinates of the location of i 
+that i recorded most recently either from satellite or an 
+lp location time is the time when the this location was 
+recorded and hop count is 
+each node is assigned a unique node id when it enters a 
+trail in our current prototype we have allocated one byte 
+for node id although this can be increased to two or more 
+bytes if a large number of hikers are expected to be present 
+at the same time we can represent time in bits to a 
+second precision so we have allocated bytes each for record 
+time and location time the circumference of the earth 
+is approximately km if we use a -bit number to 
+represent both longitude and latitude the precision we get 
+is 
+ meter inches which is 
+quite precise for our needs so we have allocated bytes 
+each for x and y coordinates of the location of a node in 
+fact a foot precision can be achieved by using only bits 
+ location point and location inference 
+although a gps receiver provides an accurate location 
+information it has it s limitation in canyons and rainy 
+forests a gps receiver does not work when there is a 
+heavy cloud cover gps users have experienced inaccuracy 
+in the reported location as well unfortunately a lot of 
+hiking trails are in dense forests and canyons and it s not that 
+uncommon to rain after hikers start hiking to address this 
+cenwits incorporates the idea of location points lp a 
+location point can update a sensor node with its current 
+location whenever the node is near that lp lps are placed at 
+different locations in a wilderness area where gps receivers 
+don t work an lp is a very simple device that emits 
+prerecorded location information at some regular time interval 
+it can be placed in difficult-to-reach places such as deep 
+canyons and dense rain forests by simply dropping them 
+from an airplane lps allow a sensor node to determine 
+its current location more accurately however they are not 
+ 
+an essential requirement of cenwits if an lp runs out of 
+power the cenwits will continue to work correctly 
+figure gps receiver not working correctly 
+sensors then have to rely on lp to provide coordination 
+in figure b cannot get gps reception due to bad 
+weather it then runs into a on the trail who doesn t have 
+gps reception either their sensors record the presence of 
+each other after minutes a is in range of an lp that 
+provides an accurate location information to a when a 
+returns to trail head and uploads its data figure the 
+system can draw a circle centered at the lp from which a 
+fetched location information for the range of encounter 
+location of a and b by overlapping this circle with the trail 
+map two or three possible location of encounter can be 
+inferred thus when a rescue is required the possible location 
+of b can be better inferred see figures and 
+figure a is back to trail head it reports the 
+time of encounter with b to ap but no location 
+information to ap 
+figure b is still missing after sunset cenwits 
+infers the last contact point and draws the circle of 
+possible current locations based on average hiking 
+speed 
+cenwits requires that the clocks of different sensor nodes 
+be loosely synchronized with one another such a 
+synchronization is trivial when gps coverage is available in 
+addition sensor nodes in cenwits synchronize their clocks 
+whenever they are in the range of an ap or an lp the 
+figure based on overlapping landscape b might 
+have hiked to wrong branch and fallen off a cliff hot 
+rescue areas can thus be determined 
+synchronization accuracy cenwits needs is of the order of a 
+second or so as long as the clocks are synchronized with in 
+one second range whether a met b at or 
+doesn t matter in the ordering of witness events and 
+inferring the path 
+ memory and power management 
+cenwits employs several important mechanisms to 
+conserve power and memory it is important to note while 
+current sensor nodes have limited amount of memory 
+future sensor nodes are expected to have much more memory 
+with this in mind the main focus in our design is to 
+provide a tradeoff between the amount of memory available and 
+amount of power consumption 
+ memory management 
+the size of witness information stored at a node can get 
+very large this is because the node may come across several 
+other nodes during a hike and may end up accumulating a 
+large amount of witness information over time to address 
+this problem cenwits allows a node to pro-actively free up 
+some parts of its memory periodically this raises an 
+interesting question of when and which witness record should be 
+deleted from the memory of a node cenwits uses three 
+criteria to determine this record count hop count and record 
+gap 
+record count refers to the number of witness records with 
+same node id that a node has stored in its memory a node 
+maintains an integer parameter max record count 
+it stores at most max record count witness records 
+of any node 
+every witness record has a hop count field that stores the 
+number times hops this record has been transferred since 
+being created initially this field is set to whenever a 
+node receives a witness record from another node it 
+increments the hop count of that record by a node maintains 
+an integer parameter called max hop count it keeps 
+only those witness records in its memory whose hop count 
+is less than max hop count the max hop count 
+parameter provides a balance between two conflicting goals 
+ to ensure that a witness record has been propagated to 
+and thus stored at as many nodes as possible so that it has 
+a high probability of being dumped at some ap as quickly 
+as possible and to ensure that a witness record is stored 
+only at a few nodes so that it does not clog up too much of 
+the combined memory of all sensor nodes we chose to use 
+hop count instead of time-to-live to decide when to drop a 
+packet the main reason for this is that the probability of 
+a packet reaching an ap goes up as the hop count adds up 
+for example when the hop count if for a specific record 
+ 
+the record is in at least sensor nodes on the other hand 
+if we discard old records without considering hop count 
+there is no guarantee that the record is present in any other 
+sensor node 
+record gap refers to the time difference between the record 
+times of two witness records with the same node id to 
+save memory a node n ensures the the record gap between 
+any two witness records with the same node id is at least 
+min record gap for each node id i n stores the 
+witness record with the most recent record time rti the witness 
+with most recent record time that is at least min record gap 
+time units before rti and so on until the record count limit 
+ max record count is reached 
+when a node is tight in memory it adjusts the three 
+parameters max record count max hop count and 
+min record gap to free up some memory it 
+decrements max record count and max hop count 
+and increments min record gap it then first erases 
+all witness records whose hop count exceeds the reduced 
+max hop count value and then erases witness records 
+to satisfy the record gap criteria also when a node has 
+extra memory space available e g after dumping its witness 
+information at an access point it resets max record count 
+max hop count and min record gap to some 
+predefined values 
+ power management 
+an important advantage of using sensors for tracking 
+purposes is that we can regulate the behavior of a sensor node 
+based on current conditions for example we mentioned 
+earlier that a sensor should emit a beacon every minute 
+given a hiking speed of mile hour however if a user is 
+moving feet sec a beacon should be emitted every 
+seconds if a user is not moving at all a beacon can be 
+emitted every minutes in the night a sensor can be put 
+into sleep mode to save energy when a user is not likely to 
+move at all for a relatively longer period of time if a user 
+is active for only eight hours in a day we can put the sensor 
+into sleep mode for the other hours and thus save rd 
+of the energy 
+in addition a sensor node can choose to not send any 
+beacons during some time intervals for example suppose 
+hiker a has communicated its witness information to three 
+other hikers in the last five minutes if it is running low 
+on power it can go to receive mode or sleep mode for the 
+next ten minutes it goes to receive mode if it is still willing 
+to receive additional witness information from hikers that it 
+encounters in the next ten minutes it goes to sleep mode if 
+it is extremely low on power 
+the bandwidth and energy limitations of sensor nodes 
+require that the amount of data transferred among the nodes 
+be reduced to minimum it has been observed that in some 
+scenarios instructions could be executed for the same 
+energy cost of sending a bit m by radio to reduce 
+the amount of data transfer cenwits employs a handshake 
+protocol that two nodes execute when they encounter one 
+another the goal of this protocol is to ensure that a node 
+transmits only as much witness information as the other 
+node is willing to receive this protocol is initiated when 
+a node i receives a beacon containing the node id of the 
+sender node j and i has not exchanged witness information 
+with j in the last δ time units assume that i j the 
+protocol consists of four phases see figure 
+ phase i node i sends its receive constraints and the 
+number of witness records it has in its memory 
+ phase ii on receiving this message from i j sends its 
+receive constraints and the number of witness records 
+it has in its memory 
+ phase iii on receiving the above message from j i 
+sends its witness information filtered based on receive 
+constraints received in phase ii 
+ phase iv after receiving the witness records from 
+i j sends its witness information filtered based on 
+receive constraints received in phase i 
+j 
+ constaints witness info size 
+ constaints witness info size 
+ filtered witness info 
+ filtered witness info 
+i j 
+j 
+j 
+i 
+i 
+i 
+figure four-phase hand shake protocol i j 
+receive constraints are a function of memory and power 
+in the most general case they are comprised of the three 
+parameters record count hop count and record gap used 
+for memory management if i is low on memory it specifies 
+the maximum number of records it is willing to accept from 
+j similarly i can ask j to send only those records that 
+have hop count value less than max hop count − 
+finally i can include its min record gap value in its 
+receive constraints note that the handshake protocol is 
+beneficial to both i and j they save memory by receiving 
+only as much information as they are willing to accept and 
+conserve energy by sending only as many witness records as 
+needed 
+it turns out that filtering witness records based on 
+min record gap is complex it requires that the 
+witness records of any given node be arranged in an order sorted 
+by their record time values maintaining this sorted order is 
+complex in memory because new witness records with the 
+same node id can arrive later that may have to be inserted 
+in between to preserve the sorted order for this reason the 
+receive constraints in the current cenwits prototype do not 
+include record gap 
+suppose i specifies a hop count value of in this case 
+j checks the hop count field of every witness record before 
+sending them if the hop count value is greater than the 
+record is not transmitted 
+ groups and partitions 
+to further reduce communication and increase the 
+lifetime of our system we introduce the notion of groups the 
+idea is based on the concept of abstract regions presented 
+in a group is a set of n nodes that can be defined 
+in terms of radio connectivity geographic location or other 
+properties of nodes all nodes within a group can 
+communicate directly with one another and they share information 
+to maintain their view of the external world at any point 
+in time a group has exactly one leader that communicates 
+ 
+with external nodes on behalf of the entire group a group 
+can be static meaning that the group membership does not 
+change over the period of time or it could be dynamic in 
+which case nodes can leave or join the group to make our 
+analysis simple and to explain the advantages of group we 
+first discuss static groups 
+a static group is formed at the start of a hiking trail or ski 
+slope suppose there are five family members who want to 
+go for a hike in the rocky mountain national park before 
+these members start their hike each one of them is given 
+a sensor node and the information is entered in the system 
+that the five nodes form a group each group member is 
+given a unique id and every group member knows about 
+other members of the group the group as a whole is also 
+assigned an id to distinguish it from other groups in the 
+system 
+figure a group of five people node is the 
+group leader and it is communicating on behalf of 
+the group with an external node all other 
+ shown in a lighter shade are in sleep mode 
+as the group moves through the trail it exchanges 
+information with other nodes or groups that it comes across at 
+any point in time only one group member called the leader 
+sends and receives information on behalf of the group and 
+all other n − group members are put in the sleep mode 
+ see figure it is this property of groups that saves 
+us energy the group leadership is time-multiplexed among 
+the group members this is done to make sure that a single 
+node does not run out of battery due to continuous exchange 
+of information thus after every t seconds the leadership 
+is passed on to another node called the successor and the 
+leader now an ordinary member is put to sleep since 
+energy is dear we do not implement an extensive election 
+algorithm for choosing the successor instead we choose the 
+successor on the basis of node id the node with the next 
+highest id in the group is chosen as the successor the last 
+node of course chooses the node with the lowest id as its 
+successor 
+we now discuss the data storage schemes for groups 
+memory is a scarce resource in sensor nodes and it is therefore 
+important that witness information be stored efficiently among 
+group members efficient data storage is not a trivial task 
+when it comes to groups the tradeoff is between simplicity 
+of the scheme and memory savings a simpler scheme 
+incurs lesser energy cost as compared to a more sophisticated 
+scheme but offers lesser memory savings as well this is 
+because in a more complicated scheme the group members 
+have to coordinate to update and store information after 
+considering a number of different schemes we have come 
+to a conclusion that there is no optimal storage scheme for 
+groups the system should be able to adapt according to 
+its requirements if group members are low on battery then 
+the group can adapt a scheme that is more energy efficient 
+similarly if the group members are running out of memory 
+they can adapt a scheme that is more memory efficient we 
+first present a simple scheme that is very energy efficient but 
+does not offer significant memory savings we then present 
+an alternate scheme that is much more memory efficient 
+as already mentioned a group can receive information 
+only through the group leader whenever the leader comes 
+across an external node e it receives information from that 
+node and saves it in our first scheme when the timeslot for 
+the leader expires the leader passes this new information it 
+received from e to its successor this is important because 
+during the next time slot if the new leader comes across 
+another external node it should be able to pass 
+information about all the external nodes this group has witnessed 
+so far thus the information is fully replicated on all nodes 
+to maintain the correct view of the world 
+our first scheme does not offer any memory savings but is 
+highly energy efficient and may be a good choice when the 
+group members are running low on battery except for the 
+time when the leadership is switched all n − members are 
+asleep at any given time this means that a single member 
+is up for t seconds once every n t seconds and therefore has 
+to spend approximately only nth 
+of its energy thus if 
+there are members in a group we save energy which 
+is huge more energy can be saved by increasing the group 
+size 
+we now present an alternate data storage scheme that 
+aims at saving memory at the cost of energy in this scheme 
+we divide the group into what we call partitions partitions 
+can be thought of as subgroups within a group each 
+partition must have at least two nodes in it the nodes within a 
+partition are called peers each partition has one peer 
+designated as partition leader the partition leader stays in 
+receive mode at all times while all others peers a partition stay 
+in the sleep mode partition leadership is time-multiplexed 
+among the peers to make sure that a single node does not 
+run out of battery like before a group has exactly one 
+leader and the leadership is time-multiplexed among 
+partitions the group leader also serves as the partition leader 
+for the partition it belongs to see figure 
+in this scheme all partition leaders participate in 
+information exchange whenever a group comes across an external 
+node e every partition leader receives all witness 
+information but it only stores a subset of that information after 
+filtering information is filtered in such a way that each 
+partition leader has to store only b k bytes of data where 
+k is the number of partitions and b is the total number 
+of bytes received from e similarly when a group wants to 
+send witness information to e each partition leader sends 
+only b k bytes that are stored in the partition it belongs 
+to however before a partition leader can send information 
+it must switch from receive mode to send mode also 
+partition leaders must coordinate with one another to ensure 
+that they do not send their witness information at the same 
+time i e their message do not collide all this is achieved 
+by having the group leader send a signal to every partition 
+leader in turn 
+ 
+figure the figure shows a group of eight nodes 
+divided into four partitions of nodes each node 
+ is the group leader whereas nodes and are 
+partition leaders all other nodes are in the sleep 
+mode 
+since the partition leadership is time-multiplexed it is 
+important that any information received by the partition 
+leader p be passed on to the next leader p this has 
+to be done to make sure that p has all the information 
+that it might need to send when it comes across another 
+external node during its timeslot one way of achieving this 
+is to wake p up just before p s timeslot expires and then 
+have p transfer information only to p an alternate is to 
+wake all the peers up at the time of leadership change and 
+then have p broadcast the information to all peers each 
+peer saves the information sent by p and then goes back 
+to sleep in both cases the peers send acknowledgement to 
+the partition leader after receiving the information in the 
+former method only one node needs to wake up at the time 
+of leadership change but the amount of information that 
+has to be transmitted between the nodes increases as time 
+passes in the latter case all nodes have to be woken up at 
+the time of leadership change but small piece of information 
+has to be transmitted each time among the peers since 
+communication is much more expensive than bringing the 
+nodes up we prefer the second method over the first one 
+a group can be divided into partitions in more than one 
+way for example suppose we have a group of six members 
+we can divide this group into three partitions of two peers 
+each or two partitions with three peers each the choice 
+once again depends on the requirements of the system a 
+few big partitions will make the system more energy efficient 
+this is because in this configuration a greater number of 
+nodes will stay in sleep mode at any given point in time 
+on the other hand several small partitions will make the 
+system memory efficient since each node will have to store 
+lesser information see figure 
+a group that is divided into partitions must be able to 
+readjust itself when a node leaves or runs out of battery 
+this is crucial because a partition must have at least two 
+nodes at any point in time to tolerate failure of one node 
+for example in figure a if node or node dies the 
+partition is left with only one node later on if that single 
+node in the partition dies all witness information stored in 
+that partition will be lost we have devised a very simple 
+protocol to solve this problem we first explain how 
+partifigure the figure shows two different ways of 
+partitioning a group of six nodes in a a group 
+is divided into three partitions of two nodes node 
+ is the group leader nodes and are partition 
+leaders and nodes and are in sleep mode in 
+ b the group is divided into two partitions of three 
+nodes node is the group leader node is the 
+partition leader and nodes and are in sleep 
+mode 
+tions are adjusted when a peer dies and then explain what 
+happens if a partition leader dies 
+suppose node in figure a dies when node the 
+partition leader sends information to node it does not 
+receive an acknowledgement from it and concludes that node 
+ has died 
+ at this point node contacts other partition 
+leaders nodes using a broadcast message and 
+informs them that one of its peers has died upon hearing 
+this each partition leader informs node i the number of 
+nodes in its partition ii a candidate node that node can 
+take if the number of nodes in its partition is greater than 
+ and iii the amount of witness information stored in its 
+partition upon hearing from every leader node chooses 
+the candidate node from the partition with maximum 
+number must be greater than of peers and sends a message 
+back to all leaders node then sends data to its new peer 
+to make sure that the information is replicated within the 
+partition 
+however if all partitions have exactly two nodes then 
+node must join another partition it chooses the partition 
+that has the least amount of witness information to join it 
+sends its witness information to the new partition leader 
+witness information and membership update is propagated 
+to all peers during the next partition leadership change 
+we now consider the case where the partition leader dies 
+if this happens then we wait for the partition leadership to 
+change and for the new partition leader to eventually find 
+out that a peer has died once the new partition leader finds 
+out that it needs more peers it proceeds with the protocol 
+explained above however in this case we do lose 
+information that the previous partition leader might have received 
+just before it died this problem can be solved by 
+implementing a more rigorous protocol but we have decided to 
+give up on accuracy to save energy 
+our current design uses time-division multiplexing to 
+schedule wakeup and sleep modes in the sensor nodes however 
+recent work on radio wakeup sensors can be used to do 
+this scheduling more efficiently we plan to incorporate radio 
+wakeup sensors in cenwits when the hardware is mature 
+ 
+the algorithm to conclude that a node has died can be 
+made more rigorous by having the partition leader query 
+the suspected node a few times 
+ 
+ system evaluation 
+a sensor is constrained in the amount of memory and 
+power in general the amount of memory needed and power 
+consumption depends on a variety of factors such as node 
+density number of hiker encounters and the number of 
+access points in this section we provide an estimate of how 
+long the power of a mica mote will last under certain 
+assumtions 
+first we assume that each sensor node carries about 
+witness records on encountering another hiker a sensor 
+node transmits witness records and receives new 
+witness records since each record is bytes long it will take 
+ seconds to transmit records and another 
+seconds to receive records over a bps link the power 
+consumption of mica due to cpu processing 
+transmission and reception are approximately ma ma and 
+ ma per hour respectively and the capacity of an 
+alkaline battery is mah 
+since the radio module of mica is half-duplex and 
+assuming that the cpu is always active when a node is awake 
+power consumption due to transmission is 
+ma per hour and due to reception is ma per 
+hour so average power consumtion due to transmission 
+and reception is ma per hour 
+given that the capacity of an alkaline battery is 
+mah a battery should last for hours of 
+transmission and reception an encounter between two 
+hikers results in exchange of about witness records that takes 
+about seconds as calculated above thus a single 
+alkaline battery can last for hiker 
+encounters 
+assuming that a node emits a beacon every seconds 
+and a hiker encounter occurs everytime a beacon is emitted 
+ worst-case scenario a single alkaline battery will last for 
+ days since a mica 
+is equipped with two batteries a mica sensor can remain 
+operation for about two months notice that this 
+calculation is preliminary because it assumes that hikers are active 
+ hours of the day and a hiker encounter occurs every 
+seconds in a more realistic scenario power is expected to 
+last for a much longer time period also this time period 
+will significantly increase when groups of hikers are moving 
+together 
+finally the lifetime of a sensor running on two 
+batteries can definitely be increased significantly by using energy 
+scavenging techniques and energy harvesting techniques 
+ 
+ prototype implementation 
+we have implemented a prototype of cenwits on mica 
+sensor mhz running mantis os b one of the sensor 
+is equipped with mts ca gps module which is capable 
+of barometric pressure and two-axis acceleration sensing in 
+addition to gps location tracking we use sirf the serial 
+communication protocol to control gps module sirf has 
+a rich command set but we record only x and y coordinates 
+a witness record is bytes long when a node starts up it 
+stores its current location and emits a beacon 
+periodicallyin the prototype a node emits a beacon every minute 
+we have conducted a number of experiments with this 
+prototype a detailed report on these experiments with the 
+raw data collected and photographs of hikers access points 
+etc is available at http csel cs colorado edu ∼huangjh 
+cenwits index htm here we report results from three of 
+them in all these experiments there are three access points 
+ a b and c where nodes dump their witness information 
+these access points also provide location information to the 
+nodes that come with in their range we first show how 
+cenwits can be used to determine the hiking trail a hiker is most 
+likely on and the speed at which he is hiking and identify 
+hot search areas in case he is reported missing next we 
+show the results of power and memory management 
+techniques of cenwits in conserving power and memory of a 
+sensor node in one of our experiments 
+ locating lost hikers 
+the first experiment is called direct contact it is a very 
+simple experiment in which a single hiker starts from a 
+goes to b and then c and finally returns to a see figure 
+ the goal of this experiment is to illustrate that 
+cenwits can deduce the trail a hiker takes by processing witness 
+information 
+figure direct contact experiment 
+node id record x y location hop 
+time time count 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table witness information collected in the direct 
+contact experiment 
+the witness information dumped at the three access points 
+was then collected and processed at a control center part 
+of the witness information collected at the control center is 
+shown in table the x y locations in this table 
+correspond to the location information provided by access points 
+a b and c a is located at b is located at 
+and c is located at three encounter points 
+ between hiker and the three access points extracted from 
+ 
+this witness information are shown in figure shown in 
+rectangular boxes for example a at means came in 
+contact with a at time using this information we can 
+infer the direction in which hiker was moving and speed at 
+which he was moving furthermore given a map of hiking 
+trails in this area it is clearly possible to identify the hiking 
+trail that hiker took 
+the second experiment is called indirect inference this 
+experiment is designed to illustrate that the location 
+direction and speed of a hiker can be inferred by cenwits even 
+if the hiker never comes in the range of any access point it 
+illustrates the importance of witness information in search 
+and rescue applications in this experiment there are three 
+hikers and hiker takes a trail that goes along 
+access points a and b while hiker takes trail that goes along 
+access points c and b hiker takes a trail that does not 
+come in the range of any access points however this hiker 
+meets hiker and during his hike this is illustrated in 
+figure 
+figure indirect inference experiment 
+node id record x y location hop 
+time time count 
+ 
+ 
+ 
+ 
+ 
+ 
+table witness information collected from hiker 
+in indirect inference experiment 
+part of the witness information collected at the control 
+center from access points a b and c is shown in tables 
+ and there are some interesting data in these tables 
+for example the location time in some witness records is 
+not the same as the record time this means that the node 
+that generated that record did not have its most up-to-date 
+location at the encounter time for example when hikers 
+ and meet at time the last recorded location time of 
+node id record x y location hop 
+time time count 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table witness information collected from hiker 
+in indirect inference experiment 
+hiker is recorded at time so node generates 
+a witness record with record time location and 
+location time in fact the last two records in table 
+have as their location this has happened because 
+these witness records were generate by hiker during his 
+encounter with at time and until this time hiker 
+ hadn t come in contact with any location points 
+interestingly a more accurate location information of 
+and encounter or and encounter can be computed by 
+process the witness information at the control center it 
+took units of time for hiker to go from a to b 
+ assuming a constant hiking speed and a relatively 
+straight-line hike it can be computed that at time hiker 
+ must have been at location thus is a more 
+accurate location of encounter between and 
+finally our third experiment called identifying hot search 
+areas is designed to determine the trail a hiker has taken 
+and identify hot search areas for rescue after he is reported 
+missing there are six hikers and in this 
+experiment figure shows the trails that hikers 
+ and took along with the encounter points obtained 
+from witness records collected at the control center for 
+brevity we have not shown the entire witness information 
+collected at the control center this information is available 
+at http csel cs colorado edu ∼huangjh cenwits index htm 
+figure identifying hot search area experiment 
+ without hiker 
+ 
+now suppose hiker is reported missing at time to 
+determine the hot search areas the witness records of hiker 
+ are processed to determine the trail he is most likely on 
+the speed at which he had been moving direction in which 
+he had been moving and his last known location based on 
+this information and the hiking trail map hot search areas 
+are identified the hiking trail taken by hiker as inferred 
+by cenwits is shown by a dotted line and the hot search 
+areas identified by cenwits are shown by dark lines inside 
+the dotted circle in figure 
+figure identifying hot search area experiment 
+ with hiker 
+ results of power and memory 
+management 
+the witness information shown in tables and has 
+not been filtered using the three criteria described in 
+section for example the witness records generated by at 
+record times and see table have all been 
+generated due a single contact between access point c and node 
+ by applying the record gap criteria two of these three 
+records will be erased similarly the witness records 
+generated by at record times and see table have 
+all been generated due a single contact between access point 
+a and node again by applying the record gap criteria 
+two of these three records will be erased our experiments 
+did not generate enough data to test the impact of record 
+count or hop count criteria 
+to evaluate the impact of these criteria we simulated 
+cenwits to generate a significantly large number of records for a 
+given number of hikers and access points we generated 
+witness records by having the hikers walk randomly we applied 
+the three criteria to measure the amount of memory savings 
+in a sensor node the results are shown in table the 
+number of hikers in this simulation was and the number 
+of access points was the number of witness records 
+reported in this table is an average number of witness records 
+a sensor node stored at the time of dump to an access point 
+these results show that the three memory management 
+criteria significantly reduces the memory consumption of 
+sensor nodes in cenwits for example they can reduce 
+max min max of 
+record record hop witness 
+count gap count records 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table impact of memory management techniques 
+the memory consumption by up to however these 
+results are premature at present for two reasons they 
+are generated via simulation of hikers walking at random 
+and it is not clear what impact the erasing of witness 
+records has on the accuracy of inferred location hot search 
+areas of lost hikers in our future work we plan to undertake 
+a major study to address these two concerns 
+ other applications 
+in addition to the hiking in wilderness areas cenwits can 
+be used in several other applications e g skiing climbing 
+wild life monitoring and person tracking since cenwits 
+relies only on intermittent connectivity it can take advantage 
+of the existing cheap and mature technologies and thereby 
+make tracking cheaper and fairly accurate since cenwits 
+doesn t rely on keeping track of a sensor holder all time 
+but relies on maintaining witnesses the system is relatively 
+cheaper and widely applicable for example there are some 
+dangerous cliffs in most ski resorts but it is too expensive 
+for a ski resort to deploy a connected wireless sensor network 
+through out the mountain using cenwits we can deploy 
+some sensors at the cliff boundaries these boundary 
+sensors emit beacons quite frequently e g every second and 
+so can record presence of skiers who cross the boundary and 
+fall off the cliff ski patrols can cruise the mountains every 
+hour and automatically query the boundary sensor when in 
+range using pdas if a pda shows that a skier has been 
+close to the boundary sensor the ski patrol can use a long 
+range walkie-talkie to query control center at the resort base 
+to check the witness record of the skier if there is no 
+witness record after the recorded time in the boundary sensor 
+there is a high chance that a rescue is needed 
+in wildlife monitoring a very popular method is to attach 
+a gps receiver on the animals to collect data either a 
+satellite transmitter is used or the data collector has to 
+wait until the gps receiver brace falls off after a year or so 
+and then search for the gps receiver gps transmitters are 
+very expensive e g the one used in geese tracking is 
+each also it is not yet known if continuous radio signal 
+is harmful to the birds furthermore a gps transmitter is 
+quite bulky and uncomfortable and as a result birds always 
+try to get rid of it using cenwits not only can we record 
+the presence of wildlife we can also record the behavior 
+of wild animals e g lions might follow the migration of 
+deers cenwits does nor require any bulky and expensive 
+satellite transmitters nor is there a need to wait for a year 
+and search for the braces cenwits provides a very simple 
+and cost-effective solution in this case also access points 
+ 
+can be strategically located e g near a water source to 
+increase chances of collecting up-to-date data in fact the 
+access points need not be statically located they can be 
+placed in a low-altitude plane e g a uav and be flown over 
+a wilderness area to collect data from wildlife 
+in large cities cenwits can be used to complement gps 
+since gps doesn t work indoor and near skyscrapers if a 
+person a is reported missing and from the witness records 
+we find that his last contacts were c and d we can trace 
+an approximate location quickly and quite efficiently 
+ discussion and future work 
+this paper presents a new search and rescue system called 
+cenwits that has several advantages over the current search 
+and rescue systems these advantages include a 
+looselycoupled system that relies only on intermittent network 
+connectivity power and storage efficiency and low cost it 
+solves one of the greatest problems plaguing modern search 
+and rescue systems it has an inherent on-site storage 
+capability this means someone within the network will have 
+access to the last-known-location information of a victim 
+and perhaps his bearing and speed information as well it 
+utilizes the concept of witnesses to propagate information 
+infer current possible location and speed of a subject and 
+identify hot search and rescue areas in case of emergencies 
+a large part of cenwits design focuses on addressing the 
+power and memory limitations of current sensor nodes in 
+fact power and memory constraints depend on how much 
+weight of sensor node a hiker is willing to carry and the 
+cost of these sensors an important goal of cenwits is build 
+small chips that can be implanted in hiking boots or ski 
+jackets this goal is similar to the avalanche beacons that 
+are currently implanted in ski jackets we anticipate that 
+power and memory will continue to be constrained in such 
+an environment 
+while the paper focuses on the development of a search 
+and rescue system it also provides some innovative 
+systemlevel ideas for information processing in a sensor network 
+system 
+we have developed and experimented with a basic 
+prototype of cenwits at present future work includes 
+developing a more mature prototype addressing important issues 
+such as security privacy and high availability there are 
+several pressing concerns regarding security privacy and 
+high availability in cenwits for example an adversary 
+can sniff the witness information to locate endangered 
+animals females children etc he may inject false information 
+in the system an individual may not be comfortable with 
+providing his her location and movement information even 
+though he she is definitely interested in being located in a 
+timely manner at the time of emergency in general people 
+in hiking community are friendly and usually trustworthy 
+so a bullet-proof security is not really required however 
+when cenwits is used in the context of other applications 
+security requirements may change since the sensor nodes 
+used in cenwits are fragile they can fail in fact the nature 
+and level of security privacy and high availability support 
+needed in cenwits strongly depends on the application for 
+which it is being used and the individual subjects involved 
+accordingly we plan to design a multi-level support for 
+security privacy and high availability in cenwits 
+so far we have experimented with cenwits in a very 
+restricted environment with a small number of sensors our 
+next goal is to deploy this system in a much larger and more 
+realistic environment in particular discussions are currenly 
+underway to deploy cenwits in the rocky mountain and 
+yosemite national parks 
+ references 
+ -based tracking system 
+http www pangonetworks com locator htm 
+ brent geese http www wwt org uk brent 
+ the onstar system http www onstar com 
+ personal locator beacons with gps receiver and 
+satellite transmitter http www aeromedix com 
+ personal tracking using gps and gsm system 
+http www ulocate com trimtrac html 
+ rf based kid tracking system 
+http www ion-kids com 
+ f alessio performance measurements with motes 
+technology mswim 
+ p bahl and v n padmanabhan radar an 
+in-building rf-based user location and tracking 
+system ieee infocom 
+ k fall a delay-tolerant network architecture for 
+challenged internets in sigcomm 
+ l gu and j stankovic radio triggered wake-up 
+capability for sensor networks in real-time 
+applications symposium 
+ j hightower and g borriello location systems for 
+ubiquitous computing ieee computer 
+ w jaskowski k jedrzejek b nyczkowski and 
+s skowronek lifetch life saving system csidc 
+ p juang h oki y wang m martonosi l peh 
+and d rubenstein energy-efficient computing for 
+wildlife tracking design tradeoffs and early 
+experiences with zebranet in asplos 
+ k kansal and m srivastava energy harvesting aware 
+power management in wireless sensor networks a 
+systems perspective 
+ g j pottie and w j kaiser embedding the 
+internet wireless integrated network sensors 
+communications of the acm may 
+ s roundy p k wright and j rabaey a study of 
+low-level vibrations as a power source for wireless 
+sensor networks computer communications 
+ 
+ c savarese j m rabaey and j beutel locationing 
+in distributed ad-hoc wireless sensor networks 
+icassp 
+ v shnayder m hempstead b chen g allen and 
+m welsh simulating the power consumption of 
+large-scale sensor network applications in sensys 
+ 
+ r want and a hopper active badges and personal 
+interactive computing objects ieee transactions of 
+consumer electronics 
+ m welsh and g mainland programming sensor 
+networks using abstract regions first usenix acm 
+symposium on networked systems design and 
+implementation nsdi 
+ 

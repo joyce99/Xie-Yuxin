@@ -1,0 +1,1218 @@
+scouts promoters and connectors the roles of ratings 
+in nearest neighbor collaborative filtering 
+bharath kumar mohan 
+dept of csa 
+indian institute of science 
+bangalore india 
+mbk csa iisc ernet in 
+benjamin j keller 
+dept of computer science 
+eastern michigan university 
+ypsilanti mi usa 
+bkeller emich edu 
+naren ramakrishnan 
+dept of computer science 
+virginia tech blacksburg 
+va usa 
+naren cs vt edu 
+abstract 
+recommender systems aggregate individual user ratings into 
+predictions of products or services that might interest 
+visitors the quality of this aggregation process crucially 
+affects the user experience and hence the effectiveness of 
+recommenders in e-commerce we present a novel study that 
+disaggregates global recommender performance metrics into 
+contributions made by each individual rating allowing us 
+to characterize the many roles played by ratings in 
+nearestneighbor collaborative filtering in particular we formulate 
+three roles-scouts promoters and connectors-that 
+capture how users receive recommendations how items get 
+recommended and how ratings of these two types are 
+themselves connected resp these roles find direct uses in 
+improving recommendations for users in better targeting of 
+items and most importantly in helping monitor the health 
+of the system as a whole for instance they can be used 
+to track the evolution of neighborhoods to identify rating 
+subspaces that do not contribute or contribute negatively 
+to system performance to enumerate users who are in 
+danger of leaving and to assess the susceptibility of the system 
+to attacks such as shilling we argue that the three rating 
+roles presented here provide broad primitives to manage a 
+recommender system and its community 
+categories and subject descriptors 
+h information systems applications types of 
+systems-decision support j computer applications 
+social and behavioral sciences 
+general terms 
+algorithms human factors 
+ introduction 
+recommender systems have become integral to e-commerce 
+providing technology that suggests products to a visitor 
+based on previous purchases or rating history 
+collaborative filtering a common form of recommendation predicts 
+a user s rating for an item by combining other ratings of 
+that user with other users ratings significant research has 
+been conducted in implementing fast and accurate 
+collaborative filtering algorithms designing interfaces for 
+presenting recommendations to users and studying the 
+robustness of these algorithms however with the 
+exception of a few studies on the influence of users little 
+attention has been paid to unraveling the inner workings 
+of a recommender in terms of the individual ratings and the 
+roles they play in making good recommendations such an 
+understanding will give an important handle to monitoring 
+and managing a recommender system to engineer 
+mechanisms to sustain the recommender and thereby ensure its 
+continued success 
+our motivation here is to disaggregate global recommender 
+performance metrics into contributions made by each 
+individual rating allowing us to characterize the many roles 
+played by ratings in nearest-neighbor collaborative filtering 
+we identify three possible roles scouts to connect the user 
+into the system to receive recommendations promoters to 
+connect an item into the system to be recommended and 
+ connectors to connect ratings of these two kinds viewing 
+ratings in this way we can define the contribution of a 
+rating in each role both in terms of allowing recommendations 
+to occur and in terms of influence on the quality of 
+recommendations in turn this capability helps support scenarios 
+such as 
+ situating users in better neighborhoods a user s 
+ratings may inadvertently connect the user to a 
+neighborhood for which the user s tastes may not be a perfect 
+match identifying ratings responsible for such bad 
+recommendations and suggesting new items to rate can 
+help situate the user in a better neighborhood 
+ targeting items recommender systems suffer from 
+lack of user participation especially in cold-start 
+scenarios involving newly arrived items identifying 
+users who can be encouraged to rate specific items 
+helps ensure coverage of the recommender system 
+ monitoring the evolution of the recommender system 
+and its stakeholders a recommender system is 
+constantly under change growing with new users and 
+ 
+items shrinking with users leaving the system items 
+becoming irrelevant and parts of the system under 
+attack tracking the roles of a rating and its evolution 
+over time provides many insights into the health of the 
+system and how it could be managed and improved 
+these include being able to identify rating subspaces 
+that do not contribute or contribute negatively to 
+system performance and could be removed to 
+enumerate users who are in danger of leaving or have left 
+the system and to assess the susceptibility of the 
+system to attacks such as shilling 
+as we show the characterization of rating roles presented 
+here provides broad primitives to manage a recommender 
+system and its community the rest of the paper is 
+organized as follows background on nearest-neighbor 
+collaborative filtering and algorithm evaluation is discussed in 
+section section defines and discusses the roles of a rating 
+and section defines measures of the contribution of a 
+rating in each of these roles in section we illustrate the use 
+of these roles to address the goals outlined above 
+ background 
+ algorithms 
+nearest-neighbor collaborative filtering algorithms either 
+use neighborhoods of users or neighborhoods of items to 
+compute a prediction an algorithm of the first kind is 
+called user-based and one of the second kind is called 
+itembased in both families of algorithms neighborhoods are 
+formed by first computing the similarity between all pairs 
+of users for user-based or items for item-based 
+predictions are then computed by aggregating ratings which in a 
+user-based algorithm involves aggregating the ratings of the 
+target item by the user s neighbors and in an item-based 
+algorithm involves aggregating the user s ratings of items 
+that are neighbors of the target item algorithms within 
+these families differ in the definition of similarity 
+formation of neighborhoods and the computation of predictions 
+we consider a user-based algorithm based on that defined 
+for grouplens with variations from herlocker et al 
+and an item-based algorithm similar to that of sarwar et 
+al 
+the algorithm used by resnick et al defines the 
+similarity of two users u and v as the pearson correlation of 
+their common ratings 
+sim u v 
+p 
+i∈iu∩iv 
+ ru i − ¯ru rv i − ¯rv 
+qp 
+i∈iu 
+ ru i − ¯ru 
+qp 
+i∈iv 
+ rv i − ¯rv 
+ 
+where iu is the set of items rated by user u ru i is user u s 
+rating for item i and ¯ru is the average rating of user u 
+ similarly for v similarity computed in this manner is typically 
+scaled by a factor proportional to the number of common 
+ratings to reduce the chance of making a recommendation 
+made on weak connections 
+sim u v 
+max iu ∩ iv γ 
+γ 
+· sim u v 
+where γ ≈ is a constant used as a lower limit in scaling 
+these new similarities are then used to define a static 
+neighborhood nu for each user u consisting of the top k users 
+most similar to user u a prediction for user u and item 
+i is computed by a weighted average of the ratings by the 
+neighbors 
+pu i ¯ru 
+p 
+v∈v sim u v rv i − ¯rv 
+p 
+v∈v sim u v 
+ 
+where v nu ∩ ui is the set of users most similar to u who 
+have rated i 
+the item-based algorithm we use is the one defined by 
+sarwar et al in this algorithm similarity is defined as 
+the adjusted cosine measure 
+sim i j 
+p 
+u∈ui∩uj 
+ ru i − ¯ru ru j − ¯ru 
+qp 
+u∈ui 
+ ru i − ¯ru 
+qp 
+u∈uj 
+ ru j − ¯ru 
+ 
+where ui is the set of users who have rated item i as for 
+the user-based algorithm the similarity weights are adjusted 
+proportionally to the number of users that have rated the 
+items in common 
+sim i j 
+max ui ∩ uj γ 
+γ 
+· sim i j 
+given the similarities the neighborhood ni of an item i is 
+defined as the top k most similar items for that item a 
+prediction for user u and item i is computed as the weighted 
+average 
+pu i ¯ri 
+p 
+j∈j sim i j ru j − ¯rj 
+p 
+j∈j sim i j 
+ 
+where j ni ∩ iu is the set of items rated by u that are 
+most similar to i 
+ evaluation 
+recommender algorithms have typically been evaluated 
+using measures of predictive accuracy and coverage 
+studies on recommender algorithms notably herlocker et al 
+and sarwar et al typically compute predictive accuracy 
+by dividing a set of ratings into training and test sets and 
+compute the prediction for an item in the test set using the 
+ratings in the training set a standard measure of predictive 
+accuracy is mean absolute error mae which for a test set 
+t u i is defined as 
+mae 
+p 
+ u i ∈t pu i − ru i 
+ t 
+ 
+coverage has a number of definitions but generally refers 
+to the proportion of items that can be predicted by the 
+algorithm 
+a practical issue with predictive accuracy is that users 
+typically are presented with recommendation lists and not 
+individual numeric predictions recommendation lists are 
+lists of items in decreasing order of prediction sometimes 
+stated in terms of star-ratings and so predictive accuracy 
+may not be reflective of the accuracy of the list so instead 
+we can measure recommendation or rank accuracy which 
+indicates the extent to which the list is in the correct 
+order herlocker et al discuss a number of rank accuracy 
+measures which range from kendall s tau to measures that 
+consider the fact that users tend to only look at a prefix of 
+the list kendall s tau measures the number of inversions 
+when comparing ordered pairs in the true user ordering of 
+ 
+jim 
+tom 
+jeff 
+my cousin vinny 
+the matrix 
+star wars 
+the mask 
+figure ratings in simple movie recommender 
+items and the recommended order and is defined as 
+τ 
+c − d 
+p 
+ c d tr c d tp 
+ 
+where c is the number of pairs that the system predicts in 
+the correct order d the number of pairs the system 
+predicts in the wrong order tr the number of pairs in the true 
+ordering that have the same ratings and tp is the 
+number of pairs in the predicted ordering that have the same 
+ratings a shortcoming of the tau metric is that it is 
+oblivious to the position in the ordered list where the 
+inversion occurs for instance an inversion toward the end 
+of the list is given the same weight as one in the beginning 
+one solution is to consider inversions only in the top few 
+items in the recommended list or to weight inversions based 
+on their position in the list 
+ roles of a rating 
+our basic observation is that each rating plays a 
+different role in each prediction in which it is used consider a 
+simplified movie recommender system with three users jim 
+jeff and tom and their ratings for a few movies as shown 
+in fig for this initial discussion we will not consider the 
+rating values involved the recommender predicts whether 
+tom will like the mask using the other already available 
+ratings how this is done depends on the algorithm 
+ an item-based collaborative filtering algorithm 
+constructs a neighborhood of movies around the mask by 
+using the ratings of users who rated the mask and 
+other movies similarly e g jim s ratings of the matrix 
+and the mask and jeff s ratings of star wars and the 
+mask tom s ratings of those movies are then used to 
+make a prediction for the mask 
+ a user-based collaborative filtering algorithm would 
+construct a neighborhood around tom by tracking other 
+users whose rating behaviors are similar to tom s e g 
+tom and jeff have rated star wars tom and jim have 
+rated the matrix the prediction of tom s rating for 
+the mask is then based on the ratings of jeff and tim 
+although the nearest-neighbor algorithms aggregate the 
+ratings to form neighborhoods used to compute predictions we 
+can disaggregate the similarities to view the computation of 
+a prediction as simultaneously following parallel paths of 
+ratings so irrespective of the collaborative filtering 
+algorithm used we can visualize the prediction of tom s rating 
+of the mask as walking through a sequence of ratings in 
+jim 
+tom 
+jeff 
+the matrix 
+star wars 
+the mask 
+q 
+q q 
+p 
+p 
+p 
+figure ratings used to predict the mask for tom 
+jim 
+tom 
+jeff 
+the matrix 
+star wars 
+the mask 
+q 
+q 
+q 
+p p 
+p 
+jerry 
+r 
+r 
+figure prediction of the mask for tom in which a 
+rating is used more than once 
+this example two paths were used for this prediction as 
+depicted in fig p p p and q q q note that these 
+paths are undirected and are all of length only the order 
+in which the ratings are traversed is different between the 
+item-based algorithm e g p p p q q q and the 
+user-based algorithm e g p p p q q q a rating 
+can be part of many paths for a single prediction as shown 
+in fig where three paths are used for a prediction two 
+of which follow p p p p and p r r 
+predictions in a collaborative filtering algorithms may 
+involve thousands of such walks in parallel each playing a part 
+in influencing the predicted value each prediction path 
+consists of three ratings playing roles that we call scouts 
+promoters and connectors to illustrate these roles consider 
+the path p p p in fig used to make a prediction of 
+the mask for tom 
+ the rating p tom → star wars makes a connection 
+from tom to other ratings that can be used to predict 
+tom s rating for the mask this rating serves as a 
+scout in the bipartite graph of ratings to find a path 
+that leads to the mask 
+ the rating p jeff → star wars helps the system 
+recommend the mask to tom by connecting the scout to 
+the promoter 
+ the rating p jeff → the mask allows connections to 
+the mask and therefore promotes this movie to tom 
+formally given a prediction pu a of a target item a for user 
+u a scout for pu a is a rating ru i such that there exists a 
+user v with ratings rv a and rv i for some item i a promoter 
+for pu a is a rating rv a for some user v such that there exist 
+ratings rv i and ru i for an item i and a connector for pu a 
+ 
+jim 
+tom 
+jeff 
+jerry 
+my cousin vinny 
+the matrix 
+star wars 
+the mask 
+jurasic park 
+figure scouts promoters and connectors 
+is a rating rv i by some user v and rating i such that there 
+exists ratings ru i and rv a the scouts connectors and 
+promoters for the prediction of tom s rating of the mask 
+are p and q p and q and p and q respectively each 
+of these roles has a value in the recommender to the user 
+the user s neighborhood and the system in terms of allowing 
+recommendations to be made 
+ roles in detail 
+ratings that act as scouts tend to help the recommender 
+system suggest more movies to the user though the extent 
+to which this is true depends on the rating behavior of other 
+users for example in fig the rating tom → star wars 
+helps the system recommend only the mask to him while 
+tom → the matrix helps recommend the mask jurassic 
+park and my cousin vinny tom makes a connection to 
+jim who is a prolific user of the system by rating the 
+matrix however this does not make the matrix the best 
+movie to rate for everyone for example jim is benefited 
+equally by both the mask and the matrix which allow the 
+system to recommend star wars to him his rating of the 
+mask is the best scout for jeff and jerry s only scout is his 
+rating of star wars this suggests that good scouts allow 
+a user to build similarity with prolific users and thereby 
+ensure they get more from the system 
+while scouts represent beneficial ratings from the 
+perspective of a user promoters are their duals and are of benefit 
+to items in fig my cousin vinny benefits from jim s 
+rating since it allows recommendations to jeff and tom 
+the mask is not so dependent on just one rating since the 
+ratings by jim and jeff help it on the other hand jerry s 
+rating of star wars does not help promote it to any other 
+user we conclude that a good promoter connects an item to 
+a broader neighborhood of other items and thereby ensures 
+that it is recommended to more users 
+connectors serve a crucial role in a recommender system 
+that is not as obvious the movies my cousin vinny and 
+jurassic park have the highest recommendation potential 
+since they can be recommended to jeff jerry and tom based 
+on the linkage structure illustrated in fig beside the 
+fact that jim rated these movies these recommendations are 
+possible only because of the ratings jim → the matrix and 
+jim → the mask which are the best connectors a 
+connector improves the system s ability to make recommendations 
+with no explicit gain for the user 
+note that every rating can be of varied benefit in each of 
+these roles the rating jim → my cousin vinny is a poor 
+scout and connector but is a very good promoter the 
+rating jim → the mask is a reasonably good scout a very 
+good connector and a good promoter finally the rating 
+jerry → star wars is a very good scout but is of no value 
+as a connector or promoter as illustrated here a rating 
+can have different value in each of the three roles in terms of 
+whether a recommendation can be made or not we could 
+measure this value by simply counting the number of times 
+a rating is used in each role which alone would be 
+helpful in characterizing the behavior of a system but we can 
+also measure the contribution of each rating to the quality 
+of recommendations or health of the system since every 
+prediction is a combined effort of several recommendation 
+paths we are interested in discerning the influence of each 
+rating and hence each path in the system towards the 
+system s overall error we can understand the dynamics of 
+the system at a finer granularity by tracking the influence 
+of a rating according to the role played the next section 
+describes the approach to measuring the values of a rating 
+in each role 
+ contributions of ratings 
+as we ve seen a rating may play different roles in different 
+predictions and in each prediction contribute to the quality 
+of a prediction in different ways our approach can use any 
+numeric measure of a property of system health and assigns 
+credit or blame to each rating proportional to its influence 
+in the prediction by tracking the role of each rating in a 
+prediction we can accumulate the credit for a rating in each 
+of the three roles and also track the evolution of the roles 
+of rating over time in the system 
+this section defines the methodology for computing the 
+contribution of ratings by first defining the influence of a 
+rating and then instantiating the approach for predictive 
+accuracy and then rank accuracy we also demonstrate how 
+these contributions can be aggregated to study the 
+neighborhood of ratings involved in computing a user s 
+recommendations note that although our general formulation for rating 
+influence is algorithm independent due to space 
+considerations we present the approach for only item-based 
+collaborative filtering the definition for user-based algorithms is 
+similar and will be presented in an expanded version of this 
+paper 
+ influence of ratings 
+recall that an item-based approach to collaborative 
+filtering relies on building item neighborhoods using the 
+similarity of ratings by the same user as described earlier 
+similarity is defined by the adjusted cosine measure equations 
+and a set of the top k neighbors is maintained for all 
+items for space and computational efficiency a prediction 
+of item i for a user u is computed as the weighted deviation 
+from the item s mean rating as shown in equation the 
+list of recommendations for a user is then the list of items 
+sorted in descending order of their predicted values 
+we first define impact a i j the impact a user a has in 
+determining the similarity between two items i and j this 
+is the change in the similarity between i and j when a s 
+rating is removed and is defined as 
+impact a i j 
+ sim i j − sim¯a i j 
+p 
+w∈cij 
+ sim i j − sim ¯w i j 
+where cij u ∈ u ∃ ru i ru j ∈ r u is the set of coraters 
+ 
+of items i and j users who rate both i and j r u is the set 
+of ratings provided by user u and sim¯a i j is the similarity 
+of i and j when the ratings of user a are removed 
+sim¯a i j 
+p 
+v∈u\ a ru i − ¯ru ru j − ¯ru 
+qp 
+u∈u\ a ru i − ¯ru 
+qp 
+u∈u\ a ru j − ¯ru 
+ 
+and adjusted for the number of raters 
+sim¯a i j 
+max ui ∩ uj − γ 
+γ 
+· sim i j 
+if all coraters of i and j rate them identically we define the 
+impact as 
+impact a i j 
+ 
+ cij 
+since 
+p 
+w∈cij 
+ sim i j − sim ¯w i j 
+the influence of each path u j v i ru j rv j rv i in 
+the prediction of pu i is given by 
+influence u j v i 
+sim i j 
+p 
+l∈ni∩iu 
+sim i l 
+· impact v i j 
+it follows that the sum of influences over all such paths for 
+a given set of endpoints is 
+ role values for predictive accuracy 
+the value of a rating in each role is computed from the 
+influence depending on the evaluation measure employed 
+here we illustrate the approach using predictive accuracy as 
+the evaluation metric 
+in general the goodness of a prediction decides whether 
+the ratings involved must be credited or discredited for their 
+role for predictive accuracy the error in prediction e 
+ pu i − ru i is mapped to a comfort level using a mapping 
+function m e anecdotal evidence suggests that users are 
+unable to discern errors less than for a rating scale of 
+to and so an error less than is considered 
+acceptable but anything larger is not we hence define m e as 
+ − e binned to an appropriate value in − − 
+for each prediction pu i m e is attributed to all the paths 
+that assisted the computation of pu i proportional to their 
+influences this tribute m e influence u j v i is in turn 
+inherited by each of the ratings in the path ru j rv j rv i 
+with the credit blame accumulating to the respective roles 
+of ru j as a scout rv j as a connector and rv i as a 
+promoter in other words the scout value sf ru j the 
+connector value cf rv j and the promoter value pf rv i are 
+all incremented by the tribute amount over a large 
+number of predictions scouts that have repeatedly resulted in 
+big error rates have a big negative scout value and vice 
+versa similarly with the other roles every rating is thus 
+summarized by its triple sf cf pf 
+ role values for rank accuracy 
+we now define the computation of the contribution of 
+ratings to observed rank accuracy for this computation we 
+must know the user s preference order for a set of items for 
+which predictions can be computed we assume that we 
+have a test set of the users ratings of the items presented 
+in the recommendation list for every pair of items rated 
+by a user in the test data we check whether the predicted 
+order is concordant with his preference we say a pair i j 
+is concordant with error whenever one of the following 
+holds 
+ if ru i ru j then pu i − pu j 
+ if ru i ru j then pu i − pu j or 
+ if ru i ru j then pu i − pu j ≤ 
+similarly a pair i j is discordant with error if it is not 
+concordant our experiments described below use an error 
+tolerance of 
+all paths involved in the prediction of the two items in 
+a concordant pair are credited and the paths involved in 
+a discordant pair are discredited the credit assigned to a 
+pair of items i j in the recommendation list for user u is 
+computed as 
+c i j 
+ 
+t 
+t 
+· 
+c d 
+if i j are concordant 
+− t 
+t 
+· 
+c d 
+if i j are discordant 
+ 
+where t is the number of items in the user s test set whose 
+ratings could be predicted t is the number of items rated 
+by user u in the test set c is the number of concordances 
+and d is the number of discordances the credit c is then 
+divided among all paths responsible for predicting pu i and 
+pu j proportional to their influences we again add the role 
+values obtained from all the experiments to form a triple 
+ sf cf pf for each rating 
+ aggregating rating roles 
+after calculating the role values for individual ratings we 
+can also use these values to study neighborhoods and the 
+system here we consider how we can use the role values 
+to characterize the health of a neighborhood consider the 
+list of top recommendations presented to a user at a 
+specific point in time the collaborative filtering algorithm 
+traversed many paths in his neighborhood through his scouts 
+and other connectors and promoters to make these 
+recommendations we call these ratings the recommender 
+neighborhood of the user the user implicitly chooses this 
+neighborhood of ratings through the items he rates apart from 
+the collaborative filtering algorithm the health of this 
+neighborhood completely influences a user s satisfaction with the 
+system we can characterize a user s recommender 
+neighborhood by aggregating the individual role values of the 
+ratings involved weighted by the influence of individual ratings 
+in determining his recommended list different sections of 
+the user s neighborhood wield varied influence on his 
+recommendation list for instance ratings reachable through 
+highly rated items have a bigger say in the recommended 
+items 
+our aim is to study the system and classify users with 
+respect to their positioning in a healthy or unhealthy 
+neighborhood a user can have a good set of scouts but may 
+be exposed to a neighborhood with bad connectors and 
+promoters he can have a good neighborhood but his bad 
+scouts may ensure the neighborhood s potential is rendered 
+useless we expect that users with good scouts and good 
+neighborhoods will be most satisfied with the system in the 
+future 
+a user s neighborhood is characterized by a triple that 
+represents the weighted sum of the role values of individual 
+ratings involved in making recommendations consider a 
+user u and his ordered list of recommendations l an item i 
+ 
+in the list is weighted inversely as k i depending on its 
+position in the list in our studies we use k i 
+p 
+position i 
+several paths of ratings ru j rv j rv i are involved in 
+predicting pu i which ultimately decides its position in l each 
+with influence u j v i 
+the recommender neighborhood of a user u is 
+characterized by the triple sfn u cfn u pfn u where 
+sfn u 
+x 
+i∈l 
+p 
+ ru j rv j rv i sf ru j influence u j v i 
+k i 
+ 
+cfn u and pfn u are defined similarly this triple 
+estimates the quality of u s recommendations based on the past 
+track record of the ratings involved in their respective roles 
+ experimentation 
+as we have seen we can assign role values to each rating 
+when evaluating a collaborative filtering system in this 
+section we demonstrate the use of this approach to our overall 
+goal of defining an approach to monitor and manage the 
+health of a recommender system through experiments done 
+on the movielens million rating dataset in particular we 
+discuss results relating to identifying good scouts 
+promoters and connectors the evolution of rating roles and the 
+characterization of user neighborhoods 
+ methodology 
+our experiments use the movielens million rating dataset 
+which consists of ratings by users of movies the 
+ratings are in the range to and are labeled with the time 
+the rating was given as discussed before we consider only 
+the item-based algorithm here with item neighborhoods of 
+size and due to space considerations only present role 
+value results for rank accuracy 
+since we are interested in the evolution of the rating role 
+values over time the model of the recommender system is 
+built by processing ratings in their arrival order the 
+timestamping provided by movielens is hence crucial for the 
+analyses presented here we make assessments of rating roles at 
+intervals of ratings and processed the first 
+ratings in the dataset giving rise to snapshots we 
+incrementally update the role values as the time ordered 
+ratings are merged into the model to keep the experiment 
+computationally manageable we define a test dataset for 
+each user as the time ordered ratings are merged into the 
+model we label a small randomly selected percentage 
+as test data at discrete epochs i e after processing every 
+ ratings we compute the predictions for the ratings 
+in the test data and then compute the role values for the 
+ratings used in the predictions one potential criticism of 
+this methodology is that the ratings in the test set are never 
+evaluated for their roles we overcome this concern by 
+repeating the experiment using different random seeds the 
+probability that every rating is considered for evaluation is 
+then considerably high − n 
+ where n is the number 
+of times the experiment is repeated with different random 
+seeds the results here are based on n repetitions 
+the item-based collaborative filtering algorithm s 
+performance was ordinary with respect to rank accuracy fig 
+shows a plot of the precision and recall as ratings were 
+merged in time order into the model the recall was always 
+high but the average precision was just about 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ratings merged into model 
+value 
+precision 
+recall 
+figure precision and recall for the item-based 
+collaborative filtering algorithm 
+ inducing good scouts 
+the ratings of a user that serve as scouts are those that 
+allow the user to receive recommendations we claim that 
+users with ratings that have respectable scout values will 
+be happier with the system than those with ratings with 
+low scout values note that the item-based algorithm 
+discussed here produces recommendation lists with nearly half 
+of the pairs in the list discordant from the user s preference 
+whether all of these discordant pairs are observable by the 
+user is unclear however certainly this suggests that there 
+is a need to be able to direct users to items whose ratings 
+would improve the lists 
+the distribution of the scout values for most users 
+ratings are gaussian with mean zero fig shows the 
+frequency distribution of scout values for a sample user at a 
+given snapshot we observe that a large number of ratings 
+never serve as scouts for their users a relatable scenario 
+is when amazon s recommender makes suggestions of books 
+or items based on other items that were purchased as gifts 
+with simple relevance feedback from the user such ratings 
+can be isolated as bad scouts and discounted from future 
+predictions removing bad scouts was found to be 
+worthwhile for individual users but the overall performance 
+improvement was only marginal 
+an obvious question is whether good scouts can be formed 
+by merely rating popular movies as suggested by rashid et 
+al they show that a mix of popularity and rating 
+entropy identifies the best items to suggest to new users 
+when evaluated using mae following their intuition we 
+would expect to see a higher correlation between 
+popularityentropy and good scouts we measured the pearson 
+correlation coefficient between aggregated scout values for a movie 
+with the popularity of a movie number of times it is rated 
+and with its popularity variance measure at different 
+snapshots of the system note that the scout values were initially 
+anti-correlated with popularity fig but became 
+moderately correlated as the system evolved both popularity and 
+popularity variance performed similarly a possible 
+explanation is that there has been insufficient time for the popular 
+movies to accumulate ratings 
+ 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+- - - - 
+scout value 
+frequency 
+figure distribution of scout values for a sample 
+user 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+popularity 
+pop var 
+figure correlation between aggregated scout 
+value and item popularity computed at different 
+intervals 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure correlation between aggregated promoter 
+value and user prolificity computed at different 
+intervals 
+table movies forming the best scouts 
+best scouts conf pop 
+being john malkovich 
+star wars episode iv - a new hope 
+princess bride the 
+sixth sense the 
+matrix the 
+ghostbusters 
+casablanca 
+insider the 
+american beauty 
+terminator judgment day 
+fight club 
+shawshank redemption the 
+run lola run lola rennt 
+terminator the 
+usual suspects the 
+aliens 
+north by northwest 
+fugitive the 
+end of days 
+raiders of the lost ark 
+schindler s list 
+back to the future 
+toy story 
+alien 
+abyss the 
+ a space odyssey 
+dogma 
+little mermaid the 
+table movies forming the worst scouts 
+worst scouts conf pop 
+harold and maude 
+grifters the 
+sting the 
+godfather part iii the 
+lawrence of arabia 
+high noon 
+women on the verge of a 
+grapes of wrath the 
+duck soup 
+arsenic and old lace 
+midnight cowboy 
+to kill a mockingbird 
+four weddings and a funeral 
+good the bad and the ugly the 
+it s a wonderful life 
+player the 
+jackie brown 
+boat the das boot 
+manhattan 
+truth about cats dogs the 
+ghost 
+lone star 
+big chill the 
+ 
+by studying the evolution of scout values we can identify 
+movies that consistently feature in good scouts over time 
+we claim these movies will make viable scouts for other 
+users we found the aggregated scout values for all movies 
+in intervals of ratings each a movie is said to induce 
+a good scout if the movie was in the top of the sorted 
+list and to induce a bad scout if it was in bottom of 
+the same list movies appearing consistently high over time 
+are expected to remain up there in the future the effective 
+confidence in a movie m is 
+cm 
+tm − bm 
+n 
+ 
+where tm is the number of times it appeared in the top 
+ bm the number of times it appeared in the bottom 
+ and n is the number of intervals considered using 
+this measure the top few movies expected to induce the 
+best scouts are shown in table movies that would be bad 
+scout choices are shown in table with their associated 
+confidences the popularities of the movies are also displayed 
+although more popular movies appear in the list of good 
+scouts these tables show that a blind choice of scout based 
+on popularity alone can be potentially dangerous 
+interestingly the best scout- being john malkovich -is about a 
+puppeteer who discovers a portal into a movie star a movie 
+that has been described variously on amazon com as  makes 
+you feel giddy  seriously weird  comedy with depth  silly 
+ strange and  inventive indicating whether someone likes 
+this movie or not goes a long way toward situating the user 
+in a suitable neighborhood with similar preferences 
+on the other hand several factors may have made a movie 
+a bad scout like the sharp variance in user preferences in 
+the neighborhood of a movie two users may have the 
+same opinion about lawrence of arabia but they may 
+differ sharply about how they felt about the other movies they 
+saw bad scouts ensue when there is deviation in behavior 
+around a common synchronization point 
+ inducing good promoters 
+ratings that serve to promote items in a collaborative 
+filtering system are critical to allowing a new item be 
+recommended to users so inducing good promoters is important 
+for cold-start recommendation we note that the frequency 
+distribution of promoter values for a sample movie s ratings 
+is also gaussian similar to fig this indicates that the 
+promotion of a movie is benefited most by the ratings of a 
+few users and are unaffected by the ratings of most users 
+we find a strong correlation between a user s number of 
+ratings and his aggregated promoter value fig depicts the 
+evolution of the pearson correlation co-efficient between the 
+prolificity of a user number of ratings versus his 
+aggregated promoter value we expect that conspicuous shills 
+by recommending wrong movies to users will be 
+discredited with negative aggregate promoter values and should be 
+identifiable easily 
+given this observation the obvious rule to follow when 
+introducing a new movie is to have it rated directly by 
+prolific users who posses high aggregated promoter values a 
+new movie is thus cast into the neighborhood of many other 
+movies improving its visibility note though that a user 
+may have long stopped using the system tracking 
+promoter values consistently allows only the most active recent 
+users to be considered 
+ inducing good connectors 
+given the way scouts connectors and promoters are 
+characterized it follows that the movies that are part of the best 
+scouts are also part of the best connectors similarly the 
+users that constitute the best promoters are also part of the 
+best connectors good connectors are induced by 
+ensuring a user with a high promoter value rates a movie with a 
+high scout value in our experiments we find that a rating s 
+longest standing role is often as a connector a rating with a 
+poor connector value is often seen due to its user being a bad 
+promoter or its movie being a bad scout such ratings can 
+be removed from the prediction process to bring marginal 
+improvements to recommendations in some selected 
+experiments we observed that removing a set of badly behaving 
+connectors helped improve the system s overall performance 
+by the effect was even higher on a few select users 
+who observed an improvement of above in precision 
+without much loss in recall 
+ monitoring the evolution of rating roles 
+one of the more significant contributions of our work is 
+the ability to model the evolution of recommender systems 
+by studying the changing roles of ratings over time the role 
+and value of a rating can change depending on many factors 
+like user behavior redundancy shilling effects or 
+properties of the collaborative filtering algorithm used studying 
+the dynamics of rating roles in terms of transitions between 
+good bad and negligible values can provide insights into the 
+functioning of the recommender system we believe that a 
+continuous visualization of these transitions will improve the 
+ability to manage a recommender system 
+we classify different rating states as good bad or 
+negligible consider a user who has rated movies in a 
+particular interval of which are part of the test set if a 
+scout has a value greater than it indicates that it is 
+uniquely involved in at least concordant predictions which 
+we will say is good thus a threshold of is chosen to 
+bin a rating as good bad or negligible in terms of its scout 
+connector and promoter value for instance a rating r at 
+time t with role value triple − is classified as 
+ scout connector promoter − where indicates good 
+ indicates negligible and − indicates bad 
+the positive credit held by a rating is a measure of its 
+contribution to the betterment of the system and the discredit 
+is a measure of its contribution to the detriment of the 
+system even though the positive roles and the negative roles 
+make up a very small percentage of all ratings their 
+contribution supersedes their size for example even though only 
+ of all ratings were classified as good scouts they hold 
+ of all positive credit in the system similarly the bad 
+scouts were just of all ratings but hold of all 
+discredit note that good and bad scouts together comprise 
+only of the ratings implying that the 
+majority of the ratings are negligible role players as scouts 
+ more on this later likewise good connectors were 
+of the system and hold of all positive credit the bad 
+connectors of the system hold of all discredit 
+good promoters of the system hold of all credit 
+while bad promoters hold of all discredit this 
+reiterates that a few ratings influence most of the system s 
+performance hence it is important to track transitions 
+between them regardless of their small numbers 
+ 
+across different snapshots a rating can remain in the 
+same state or change a good scout can become a bad scout 
+a good promoter can become a good connector good and 
+bad scouts can become vestigial and so on it is not 
+practical to expect a recommender system to have no ratings in 
+bad roles however it suffices to see ratings in bad roles 
+either convert to good or vestigial roles similarly observing 
+a large number of good roles become bad ones is a sign of 
+imminent failure of the system 
+we employ the principle of non-overlapping episodes 
+to count such transitions a sequence such as 
+ → → → 
+is interpreted as the transitions 
+ 
+ 
+ 
+instead of 
+ 
+ 
+ 
+see for further details about this counting procedure 
+thus a rating can be in one of possible states and there 
+are about 
+possible transitions we make a further 
+simplification and utilize only states indicating whether the 
+rating is a scout promoter or connector and whether it 
+has a positive negative or negligible role ratings that 
+serve multiple purposes are counted using multiple episode 
+instantiations but the states themselves are not duplicated 
+beyond the restricted states in this model a transition 
+such as is counted as 
+ scout scout 
+ scout connector 
+ scout promoter 
+ connector scout 
+ connector scout 
+ connector promoter 
+ promoter scout 
+ promoter connector 
+ promoter promoter 
+of these transitions like px q where p q x ∈ 
+ − are considered uninteresting and only the rest are 
+counted 
+fig depicts the major transitions counted while 
+processing the first ratings from the movielens dataset 
+only transitions with frequency greater than or equal to 
+are shown the percentages for each state indicates the 
+number of ratings that were found to be in those states 
+we consider transitions from any state to a good state as 
+healthy from any state to a bad state as unhealthy and 
+from any state to a vestigial state as decaying 
+from fig we can observe 
+ the bulk of the ratings have negligible values 
+irrespective of their role the majority of the transitions 
+involve both good and bad ratings becoming 
+negligible 
+scout 
+ 
+ 
+scout 
+scout 
+ 
+connector 
+ 
+ 
+connector 
+connector 
+ 
+promoter 
+ 
+ 
+promoter 
+promoter 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+healthy 
+unhealthy 
+decaying 
+figure transitions among rating roles 
+ the number of good ratings is comparable to the bad 
+ratings and ratings are seen to switch states often 
+except in the case of scouts see below 
+ the negative and positive scout states are not 
+reachable through any transition indicating that these 
+ratings must begin as such and cannot be coerced into 
+these roles 
+ good promoters and good connectors have a much 
+longer survival period than scouts transitions that 
+recur to these states have frequencies of and 
+when compared to just for scouts good 
+connectors are the slowest to decay whereas good scouts 
+decay the fastest 
+ healthy percentages are seen on transitions between 
+promoters and connectors as indicated earlier there 
+are hardly any transitions from promoters connectors 
+to scouts this indicates that over the long run a 
+user s rating is more useful to others movies or other 
+users than to the user himself 
+ the percentages of healthy transitions outweigh the 
+unhealthy ones - this hints that the system is healthy 
+albeit only marginally 
+note that these results are conditioned by the static nature 
+of the dataset which is a set of ratings over a fixed window 
+of time however a diagram such as fig is clearly useful 
+for monitoring the health of a recommender system for 
+instance acceptable limits can be imposed on different types 
+of transitions and if a transition fails to meet the 
+threshold the recommender system or a part of it can be brought 
+under closer scrutiny furthermore the role state transition 
+diagram would also be the ideal place to study the effects of 
+shilling a topic we will consider in future research 
+ characterizing neighborhoods 
+earlier we saw that we can characterize the neighborhood 
+of ratings involved in creating a recommendation list l for 
+ 
+a user in our experiment we consider lists of length 
+and sample the lists of about of users through the 
+evolution of the model at intervals of ratings each and 
+compute their neighborhood characteristics to simplify our 
+presentation we consider the percentage of the sample that 
+fall into one of the following categories 
+ inactive user sfn u 
+ good scouts good neighborhood 
+ sfn u ∧ cfn u ∧ pfn u 
+ good scouts bad neighborhood 
+ sfn u ∧ cfn u ∨ pfn u 
+ bad scouts good neighborhood 
+ sfn u ∧ cfn u ∧ pfn u 
+ bad scouts bad neighborhood 
+ sfn u ∧ cfn u ∨ pfn u 
+from our sample set of users we found that users 
+were inactive of the remaining users we found users 
+had good scouts and a good neighborhood had bad scouts 
+and a good neighborhood had good scouts and a bad 
+neighborhood and had bad scouts and a bad 
+neighborhood thus we conjecture that users are in 
+danger of leaving the system 
+as a remedy users with bad scouts and a good 
+neighborhood can be asked to reconsider rating of some movies 
+hoping to improve the system s recommendations the 
+system can be expected to deliver more if they engineer some 
+good scouts users with good scouts and a bad 
+neighborhood are harder to address this situation might entail 
+selectively removing some connector-promoter pairs that are 
+causing the damage handling users with bad scouts and 
+bad neighborhoods is a more difficult challenge 
+such a classification allows the use of different strategies 
+to better a user s experience with the system depending on 
+his context in future work we intend to conduct field 
+studies and study the improvement in performance of different 
+strategies for different contexts 
+ conclusions 
+to further recommender system acceptance and 
+deployment we require new tools and methodologies to manage 
+an installed recommender and develop insights into the roles 
+played by ratings a fine-grained characterization in terms 
+of rating roles such as scouts promoters and connectors 
+as done here helps such an endeavor although we have 
+presented results on only the item-based algorithm with list 
+rank accuracy as the metric the same approach outlined 
+here applies to user-based algorithms and other metrics 
+in future research we plan to systematically study the 
+many algorithmic parameters tolerances and cutoff 
+thresholds employed here and reason about their effects on the 
+downstream conclusions we also aim to extend our 
+formulation to other collaborative filtering algorithms study 
+the effect of shilling in altering rating roles conduct field 
+studies and evaluate improvements in user experience by 
+tweaking ratings based on their role values finally we plan 
+to develop the idea of mining the evolution of rating role 
+patterns into a reporting and tracking system for all aspects 
+of recommender system health 
+ references 
+ cosley d lam s albert i konstan j and 
+riedl j is seeing believing how recommender 
+system interfaces affect user s opinions in proc 
+chi pp - 
+ herlocker j l konstan j a borchers a 
+and riedl j an algorithmic framework for 
+performing collaborative filtering in proc sigir 
+ pp - 
+ herlocker j l konstan j a terveen 
+l g and riedl j t evaluating collaborative 
+filtering recommender systems acm transactions 
+on information systems vol pp - 
+ konstan j a personal communication 
+ lam s k and riedl j shilling recommender 
+systems for fun and profit in proceedings of the th 
+international world wide web conference 
+acm press pp - 
+ laxman s sastry p s and unnikrishnan 
+k p discovering frequent episodes and learning 
+hidden markov models a formal connection ieee 
+transactions on knowledge and data engineering 
+vol - 
+ mclaughlin m r and herlocker j l a 
+collaborative filtering algorithm and evaluation 
+metric that accurately model the user experience in 
+proceedings of the th annual international acm 
+sigir conference on research and development in 
+information retrieval pp - 
+ o mahony m hurley n j kushmerick n 
+and silvestre g collaborative recommendation 
+a robustness analysis acm transactions on 
+internet technology vol nov pp - 
+ rashid a m albert i cosley d lam s 
+mcnee s konstan j a and riedl j getting 
+to know you learning new user preferences in 
+recommender systems in proceedings of the 
+conference on intelligent user interfaces iui 
+ pp - 
+ rashid a m karypis g and riedl j 
+influence in ratings-based recommender systems 
+an algorithm-independent approach in proc of the 
+siam international conference on data mining 
+ 
+ resnick p iacovou n sushak m 
+bergstrom p and riedl j grouplens an 
+open architecture for collaborative filtering of 
+netnews in proceedings of the conference on 
+computer supported collaborative work cscw 
+ acm press pp - 
+ sarwar b karypis g konstan j and reidl 
+j item-based collaborative filtering 
+recommendation algorithms in proceedings of the 
+tenth international world wide web conference 
+ www pp - 
+ schein a popescu a ungar l and 
+pennock d methods and metrics for cold-start 
+recommendation in proc sigir 
+pp - 
+ 

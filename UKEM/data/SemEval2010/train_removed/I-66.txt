@@ -1,0 +1,1201 @@
+letting loose a spider on a network of pomdps 
+generating quality guaranteed policies 
+pradeep varakantham janusz marecki yuichi yabu 
+ milind tambe makoto yokoo 
+university of southern california los angeles ca varakant marecki tambe  usc edu 
+ dept of intelligent systems kyushu university fukuoka - japan yokoo is kyushu-u ac jp 
+abstract 
+distributed partially observable markov decision problems 
+ distributed pomdps are a popular approach for modeling multi-agent 
+systems acting in uncertain domains given the significant 
+complexity of solving distributed pomdps particularly as we scale 
+up the numbers of agents one popular approach has focused on 
+approximate solutions though this approach is efficient the 
+algorithms within this approach do not provide any guarantees on 
+solution quality a second less popular approach focuses on global 
+optimality but typical results are available only for two agents 
+and also at considerable computational cost this paper overcomes 
+the limitations of both these approaches by providing spider a 
+novel combination of three key features for policy generation in 
+distributed pomdps i it exploits agent interaction structure given 
+a network of agents i e allowing easier scale-up to larger number 
+of agents ii it uses a combination of heuristics to speedup policy 
+search and iii it allows quality guaranteed approximations 
+allowing a systematic tradeoff of solution quality for time 
+experimental results show orders of magnitude improvement in performance 
+when compared with previous global optimal algorithms 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligencemulti-agent systems 
+general terms 
+algorithms theory 
+ introduction 
+distributed partially observable markov decision problems 
+ distributed pomdps are emerging as a popular approach for 
+modeling sequential decision making in teams operating under 
+uncertainty the uncertainty arises on account of 
+nondeterminism in the outcomes of actions and because the world state 
+may only be partially or incorrectly observable unfortunately as 
+shown by bernstein et al the problem of finding the optimal 
+joint policy for general distributed pomdps is nexp-complete 
+researchers have attempted two different types of approaches 
+towards solving these models the first category consists of highly 
+efficient approximate techniques that may not reach globally 
+optimal solutions the key problem with these techniques 
+has been their inability to provide any guarantees on the quality 
+of the solution in contrast the second less popular category of 
+approaches has focused on a global optimal result though 
+these approaches obtain optimal solutions they typically consider 
+only two agents furthermore they fail to exploit structure in the 
+interactions of the agents and hence are severely hampered with 
+respect to scalability when considering more than two agents 
+to address these problems with the existing approaches we 
+propose approximate techniques that provide guarantees on the 
+quality of the solution while focussing on a network of more than two 
+agents we first propose the basic spider search for policies 
+in distributed environments algorithm there are two key novel 
+features in spider i it is a branch and bound heuristic search 
+technique that uses a mdp-based heuristic function to search for an 
+optimal joint policy ii it exploits network structure of agents by 
+organizing agents into a depth first search dfs pseudo tree and 
+takes advantage of the independence in the different branches of the 
+dfs tree we then provide three enhancements to improve the 
+efficiency of the basic spider algorithm while providing guarantees 
+on the quality of the solution the first enhancement uses 
+abstractions for speedup but does not sacrifice solution quality in 
+particular it initially performs branch and bound search on abstract 
+policies and then extends to complete policies the second 
+enhancement obtains speedups by sacrificing solution quality but within 
+an input parameter that provides the tolerable expected value 
+difference from the optimal solution the third enhancement is again 
+based on bounding the search for efficiency however with a 
+tolerance parameter that is provided as a percentage of optimal 
+we experimented with the sensor network domain presented in 
+nair et al a domain representative of an important class of 
+problems with networks of agents working in uncertain 
+environments in our experiments we illustrate that spider dominates 
+an existing global optimal approach called goa the only 
+known global optimal algorithm with demonstrated experimental 
+results for more than two agents furthermore we demonstrate 
+that abstraction improves the performance of spider significantly 
+ while providing optimal solutions we finally demonstrate a key 
+feature of spider by utilizing the approximation enhancements 
+it enables principled tradeoffs in run-time versus solution quality 
+ 
+ - - - - rps c ifaamas 
+ domain distributed sensor nets 
+distributed sensor networks are a large important class of 
+domains that motivate our work this paper focuses on a set of target 
+tracking problems that arise in certain types of sensor networks 
+first introduced in figure shows a specific problem instance 
+within this type consisting of three sensors here each sensor node 
+can scan in one of four directions north south east or west see 
+figure to track a target and obtain associated reward two 
+sensors with overlapping scanning areas must coordinate by scanning 
+the same area simultaneously in figure to track a target in 
+loc sensor needs to scan  east and sensor needs to scan  west 
+simultaneously thus sensors have to act in a coordinated fashion 
+we assume that there are two independent targets and that each 
+target s movement is uncertain and unaffected by the sensor agents 
+based on the area it is scanning each sensor receives observations 
+that can have false positives and false negatives the sensors 
+observations and transitions are independent of each other s actions 
+e g the observations that sensor receives are independent of 
+sensor s actions each agent incurs a cost for scanning whether the 
+target is present or not but no cost if it turns off given the sensors 
+observational uncertainty the targets uncertain transitions and the 
+distributed nature of the sensor nodes these sensor nets provide a 
+useful domains for applying distributed pomdp models 
+figure a -chain sensor configuration 
+ background 
+ model network distributed pomdp 
+the nd-pomdp model was introduced in motivated by 
+domains such as the sensor networks introduced in section it is 
+defined as the tuple s a p ω o r b where s × ≤i≤nsi × 
+su is the set of world states si refers to the set of local states of 
+agent i and su is the set of unaffectable states unaffectable state 
+refers to that part of the world state that cannot be affected by the 
+agents actions e g environmental factors like target locations that 
+no agent can control a × ≤i≤nai is the set of joint actions 
+where ai is the set of action for agent i 
+nd-pomdp assumes transition independence where the 
+transition function is defined as p s a s pu su su · ≤i≤n 
+pi si su ai si where a a an is the joint action 
+performed in state s s sn su and s s sn su is 
+the resulting state 
+ω × ≤i≤nωi is the set of joint observations where ωi is 
+the set of observations for agents i observational independence 
+is assumed in nd-pomdps i e the joint observation function is 
+defined as o s a ω ≤i≤n oi si su ai ωi where s 
+s sn su is the world state that results from the agents 
+performing a a an in the previous state and 
+ω ω ωn ∈ ω is the observation received in state s this 
+implies that each agent s observation depends only on the 
+unaffectable state its local action and on its resulting local state 
+the reward function r is defined as 
+r s a l rl sl slr su al alr where each l 
+could refer to any sub-group of agents and r l based on 
+the reward function an interaction hypergraph is constructed a 
+hyper-link l exists between a subset of agents for all rl that 
+comprise r the interaction hypergraph is defined as g ag e 
+where the agents ag are the vertices and e l l ⊆ ag ∧ 
+rl is a component of r are the edges 
+the initial belief state distribution over the initial state b is 
+defined as b s bu su · ≤i≤n bi si where bu and bi refer 
+to the distribution over initial unaffectable state and agent i s initial 
+belief state respectively the goal in nd-pomdp is to compute 
+the joint policy π π πn that maximizes team s expected 
+reward over a finite horizon t starting from the belief state b 
+an nd-pomdp is similar to an n-ary distributed constraint 
+optimization problem dcop where the variable at each 
+node represents the policy selected by an individual agent πi with 
+the domain of the variable being the set of all local policies πi 
+the reward component rl where l can be thought of as a 
+local constraint while the reward component rl where l 
+corresponds to a non-local constraint in the constraint graph 
+ algorithm global optimal algorithm goa 
+in previous work goa has been defined as a global optimal 
+algorithm for nd-pomdps we will use goa in our 
+experimental comparisons since goa is a state-of-the-art global optimal 
+algorithm and in fact the only one with experimental results 
+available for networks of more than two agents goa borrows from a 
+global optimal dcop algorithm called dpop goa s message 
+passing follows that of dpop the first phase is the util 
+propagation where the utility messages in this case values of policies 
+are passed up from the leaves to the root value for a policy at an 
+agent is defined as the sum of best response values from its 
+children and the joint policy reward associated with the parent policy 
+thus given a policy for a parent node goa requires an agent to 
+iterate through all its policies finding the best response policy and 
+returning the value to the parent - while at the parent node to find 
+the best policy an agent requires its children to return their best 
+responses to each of its policies this util propagation process 
+is repeated at each level in the tree until the root exhausts all its 
+policies in the second phase of value propagation where the 
+optimal policies are passed down from the root till the leaves 
+goa takes advantage of the local interactions in the interaction 
+graph by pruning out unnecessary joint policy evaluations 
+ associated with nodes not connected directly in the tree since the 
+interaction graph captures all the reward interactions among agents 
+and as this algorithm iterates through all the relevant joint policy 
+evaluations this algorithm yields a globally optimal solution 
+ spider 
+as mentioned in section an nd-pomdp can be treated as a 
+dcop where the goal is to compute a joint policy that maximizes 
+the overall joint reward the brute-force technique for computing 
+an optimal policy would be to examine the expected values for all 
+possible joint policies the key idea in spider is to avoid 
+computation of expected values for the entire space of joint policies by 
+utilizing upper bounds on the expected values of policies and the 
+interaction structure of the agents 
+akin to some of the algorithms for dcop spider has a 
+pre-processing step that constructs a dfs tree corresponding to the 
+given interaction structure note that these dfs trees are pseudo 
+trees that allow links between ancestors and children we 
+employ the maximum constrained node mcn heuristic used in the 
+dcop algorithm adopt however other heuristics such as 
+mlsp heuristic from can also be employed mcn heuristic 
+tries to place agents with more number of constraints at the top of 
+the tree this tree governs how the search for the optimal joint 
+polthe sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+icy proceeds in spider the algorithms presented in this paper are 
+easily extendable to hyper-trees however for expository purposes 
+we assume binary trees 
+spider is an algorithm for centralized planning and distributed 
+execution in distributed pomdps in this paper we employ the 
+following notation to denote policies and expected values 
+ancestors i ⇒ agents from i to the root not including i 
+tree i ⇒ agents in the sub-tree not including i for which i is 
+the root 
+πroot 
+⇒ joint policy of all agents 
+πi 
+⇒ joint policy of all agents in tree i ∪ i 
+πi− 
+⇒ joint policy of agents that are in ancestors i 
+πi ⇒ policy of the ith agent 
+ˆv πi πi− 
+ ⇒ upper bound on the expected value for πi 
+given πi 
+and policies of ancestor agents i e πi− 
+ 
+ˆvj πi πi− 
+ ⇒ upper bound on the expected value for πi 
+from the 
+jth child 
+v πi πi− 
+ ⇒ expected value for πi given policies of ancestor agents 
+πi− 
+ 
+v πi 
+ πi− 
+ ⇒ expected value for πi 
+given policies of ancestor 
+agents πi− 
+ 
+vj πi 
+ πi− 
+ ⇒ expected value for πi 
+from the jth child 
+figure execution of spider an example 
+ outline of spider 
+spider is based on the idea of branch and bound search where 
+the nodes in the search tree represent partial complete joint 
+policies figure shows an example search tree for the spider 
+algorithm using an example of the three agent chain before spider 
+begins its search we create a dfs tree i e pseudo tree from the 
+three agent chain with the middle agent as the root of this tree 
+spider exploits the structure of this dfs tree while engaging in 
+its search note that in our example figure each agent is assigned 
+a policy with t thus each rounded rectange search tree node 
+indicates a partial complete joint policy a rectangle indicates an 
+agent and the ovals internal to an agent show its policy heuristic 
+or actual expected value for a joint policy is indicated in the top 
+right corner of the rounded rectangle if the number is italicized 
+and underlined it implies that the actual expected value of the joint 
+policy is provided 
+spider begins with no policy assigned to any of the agents 
+ shown in the level of the search tree level of the search tree 
+indicates that the joint policies are sorted based on upper bounds 
+computed for root agent s policies level shows one spider 
+search node with a complete joint policy a policy assigned to each 
+of the agents the expected value for this joint policy is used to 
+prune out the nodes in level the ones with upper bounds 
+when creating policies for each non-leaf agent i spider 
+potentially performs two steps 
+ obtaining upper bounds and sorting in this step agent i 
+computes upper bounds on the expected values ˆv πi πi− 
+ of the 
+joint policies πi 
+corresponding to each of its policy πi and fixed 
+ancestor policies an mdp based heuristic is used to compute these 
+upper bounds on the expected values detailed description about 
+this mdp heuristic is provided in section all policies of agent 
+i πi are then sorted based on these upper bounds also referred to 
+as heuristic values henceforth in descending order exploration of 
+these policies in step below are performed in this descending 
+order as indicated in the level of the search tree of figure all 
+the joint policies are sorted based on the heuristic values indicated 
+in the top right corner of each joint policy the intuition behind 
+sorting and then exploring policies in descending order of upper 
+bounds is that the policies with higher upper bounds could yield 
+joint policies with higher expected values 
+ exploration and pruning exploration implies computing 
+the best response joint policy πi 
+corresponding to fixed 
+ancestor policies of agent i πi− 
+ this is performed by iterating through 
+all policies of agent i i e πi and summing two quantities for each 
+policy i the best response for all of i s children obtained by 
+performing steps and at each of the child nodes ii the expected 
+value obtained by i for fixed policies of ancestors thus 
+exploration of a policy πi yields actual expected value of a joint policy 
+πi 
+represented as v πi 
+ πi− 
+ the policy with the highest 
+expected value is the best response policy 
+pruning refers to avoiding exploring all policies or computing 
+expected values at agent i by using the current best expected value 
+vmax 
+ πi 
+ πi− 
+ henceforth this vmax 
+ πi 
+ πi− 
+ will be referred 
+to as threshold a policy πi need not be explored if the upper 
+bound for that policy ˆv πi πi− 
+ is less than the threshold this is 
+because the expected value for the best joint policy attainable for 
+that policy will be less than the threshold 
+on the other hand when considering a leaf agent spider 
+computes the best response policy and consequently its expected value 
+corresponding to fixed policies of its ancestors πi− 
+ this is 
+accomplished by computing expected values for each of the policies 
+ corresponding to fixed policies of ancestors and selecting the highest 
+expected value policy in figure spider assigns best response 
+policies to leaf agents at level the policy for the left leaf agent is 
+to perform action east at each time step in the policy while the 
+policy for the right leaf agent is to perform off at each time step 
+these best response policies from the leaf agents yield an actual 
+expected value of for the complete joint policy 
+algorithm provides the pseudo code for spider this 
+algorithm outputs the best joint policy πi 
+ with an expected value 
+greater than threshold for the agents in tree i lines - 
+compute the best response policy of a leaf agent i while lines - 
+computes the best response joint policy for agents in tree i this 
+best response computation for a non-leaf agent i includes a 
+sorting of policies in descending order based on heuristic values on 
+line b computing best response policies at each of the 
+children for fixed policies of agent i in lines - and c maintaining 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+algorithm spider i πi− 
+ threshold 
+ πi ← null 
+ πi ← get-all-policies horizon ai ωi 
+ if is-leaf i then 
+ for all πi ∈ πi do 
+ v πi πi− ← joint-reward πi πi− 
+ if v πi πi− threshold then 
+ πi ← πi 
+ threshold ← v πi πi− 
+ else 
+ children ← children i 
+ ˆπi ← upper-bound-sort i πi πi− 
+ for all πi ∈ ˆπi do 
+ ˜πi ← πi 
+ if ˆv πi πi− threshold then 
+ go to line 
+ for all j ∈ children do 
+ jthres ← threshold − v πi πi− − 
+σk∈children k j ˆvk πi πi− 
+ πj ← spider j πi πi− jthres 
+ ˜πi ← ˜πi πj 
+ ˆvj πi πi− ← v πj πi πi− 
+ if v ˜πi πi− threshold then 
+ threshold ← v ˜πi πi− 
+ πi ← ˜πi 
+ return πi 
+algorithm upper-bound-sort i πi πi− 
+ 
+ children ← children i 
+ ˆπi ← null stores the sorted list 
+ for all πi ∈ πi do 
+ ˆv πi πi− ← joint-reward πi πi− 
+ for all j ∈ children do 
+ ˆvj πi πi− ← upper-bound i j πi πi− 
+ ˆv πi πi− 
+ 
+← ˆvj πi πi− 
+ ˆπi ← insert-into-sorted πi ˆπi 
+ return ˆπi 
+best expected value joint policy in lines - 
+algorithm provides the pseudo code for sorting policies based 
+on the upper bounds on the expected values of joint policies 
+expected value for an agent i consists of two parts value obtained 
+from ancestors and value obtained from its children line 
+computes the expected value obtained from ancestors of the agent 
+ using joint-reward function while lines - compute the 
+heuristic value from the children the sum of these two parts yields an 
+upper bound on the expected value for agent i and line of the 
+algorithm sorts the policies based on these upper bounds 
+ mdp based heuristic function 
+the heuristic function quickly provides an upper bound on the 
+expected value obtainable from the agents in tree i the 
+subtree of agents is a distributed pomdp in itself and the idea here 
+is to construct a centralized mdp corresponding to the sub-tree 
+distributed pomdp and obtain the expected value of the optimal 
+policy for this centralized mdp to reiterate this in terms of the 
+agents in dfs tree interaction structure we assume full 
+observability for the agents in tree i and for fixed policies of the agents in 
+ ancestors i ∪ i we compute the joint value ˆv πi 
+ πi− 
+ 
+we use the following notation for presenting the equations for 
+computing upper bounds heuristic values for agents i and k 
+let ei− 
+denote the set of links between agents in ancestors i ∪ 
+i and tree i ei 
+denote the set of links between agents in 
+tree i also if l ∈ ei− 
+ then l is the agent in ancestors i ∪ 
+i and l is the agent in tree i that l connects together we first 
+compact the standard notation 
+ot 
+k ok st 
+k st 
+u πk ωt 
+k ωt 
+k 
+pt 
+k pk st 
+k st 
+u πk ωt 
+k st 
+k · ot 
+k 
+pt 
+u p st 
+u st 
+u 
+st 
+l st 
+l 
+ st 
+l 
+ st 
+u ωt 
+l ωt 
+l 
+ ωt 
+l 
+rt 
+l rl st 
+l πl 
+ ωt 
+l 
+ πl 
+ ωt 
+l 
+ 
+vt 
+l v t 
+πl 
+ st 
+l st 
+u ωt 
+l 
+ ωt 
+l 
+ 
+depending on the location of agent k in the agent tree we have the following 
+cases 
+if k ∈ ancestors i ∪ i ˆpt 
+k pt 
+k 
+if k ∈ tree i ˆpt 
+k pk st 
+k st 
+u πk ωt 
+k st 
+k 
+if l ∈ ei− 
+ ˆrt 
+l max 
+ al 
+ 
+rl st 
+l πl 
+ ωt 
+l 
+ al 
+ 
+if l ∈ ei 
+ ˆrt 
+l max 
+ al 
+ al 
+ 
+rl st 
+l al 
+ al 
+ 
+the value function for an agent i executing the joint policy πi 
+at 
+time η − is provided by the equation 
+v η− 
+πi sη− 
+ ωη− 
+ l∈ei− vη− 
+l l∈ei vη− 
+l 
+where vη− 
+l rη− 
+l ω 
+η 
+l 
+ sη pη− 
+l 
+pη− 
+l 
+pη− 
+u vη 
+l 
+algorithm upper-bound i j πj− 
+ 
+ val ← 
+ for all l ∈ ej− ∪ ej do 
+ if l ∈ ej− then πl 
+← φ 
+ for all s 
+l do 
+ val 
+ 
+← startbel s 
+l · upper-bound-time 
+ i s 
+l j πl 
+ 
+ return val 
+algorithm upper-bound-time i st 
+l j πl ωt 
+l 
+ 
+ maxv al ← −∞ 
+ for all al 
+ al 
+do 
+ if l ∈ ei− and l ∈ ej− then al 
+← πl 
+ ωt 
+l 
+ 
+ val ← get-reward st 
+l al 
+ al 
+ 
+ if t πi horizon − then 
+ for all st 
+l ωt 
+l 
+do 
+ futv al←pt 
+u ˆpt 
+l 
+ˆpt 
+l 
+ futv al 
+ 
+← upper-bound-time st 
+l j πl 
+ ωt 
+l 
+ωt 
+l 
+ 
+ val 
+ 
+← futv al 
+ if val maxv al then maxv al ← val 
+ return maxv al 
+upper bound on the expected value for a link is computed by 
+modifying the equation to reflect the full observability 
+assumption this involves removing the observational probability term 
+for agents in tree i and maximizing the future value ˆvη 
+l over the 
+actions of those agents in tree i thus the equation for the 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+computation of the upper bound on a link l is as follows 
+if l ∈ ei− 
+ ˆvη− 
+l ˆrη− 
+l max 
+al 
+ω 
+η 
+l 
+ s 
+η 
+l 
+ˆpη− 
+l 
+ˆpη− 
+l 
+pη− 
+u ˆvη 
+l 
+if l ∈ ei 
+ ˆvη− 
+l ˆrη− 
+l max 
+al 
+ al 
+s 
+η 
+l 
+ˆpη− 
+l 
+ˆpη− 
+l 
+pη− 
+u ˆvη 
+l 
+algorithm and algorithm provide the algorithm for computing 
+upper bound for child j of agent i using the equations descirbed 
+above while algorithm computes the upper bound on a link 
+given the starting state algorithm sums the upper bound values 
+computed over each of the links in ei− 
+∪ ei 
+ 
+ abstraction 
+algorithm spider-abs i πi− 
+ threshold 
+ πi ← null 
+ πi ← get-policies 
+ if is-leaf i then 
+ for all πi ∈ πi do 
+ absheuristic ← get-abs-heuristic πi πi− 
+ absheuristic 
+ 
+← timehorizon − πi horizon 
+ if πi horizon timehorizon and πi absnodes then 
+ v πi πi− ← joint-reward πi πi− 
+ if v πi πi− threshold then 
+ πi ← πi threshold ← v πi πi− 
+ else if v πi πi− absheuristic threshold then 
+ ˆπi ← extend-policy πi πi absnodes 
+ πi 
+ 
+← insert-sorted-policies ˆπi 
+ remove πi 
+ else 
+ children ← children i 
+ πi ← upper-bound-sort i πi πi− 
+ for all πi ∈ πi do 
+ ˜πi ← πi 
+ absheuristic ← get-abs-heuristic πi πi− 
+ absheuristic 
+ 
+← timehorizon − πi horizon 
+ if πi horizon timehorizon and πi absnodes then 
+ if ˆv πi πi− threshold and πi absnodes then 
+ go to line 
+ for all j ∈ children do 
+ jthres ← threshold − v πi πi− − 
+σk∈children k j ˆvk πi πi− 
+ πj ← spider j πi πi− jthres 
+ ˜πi ← ˜πi πj ˆvj πi πi− ← v πj πi πi− 
+ if v ˜πi πi− threshold then 
+ threshold ← v ˜πi πi− πi ← ˜πi 
+ else if ˆv πi πi− absheuristic threshold then 
+ ˆπi ← extend-policy πi πi absnodes 
+ πi 
+ 
+← insert-sorted-policies ˆπi 
+ remove πi 
+ return πi 
+in spider the exploration pruning phase can only begin after 
+the heuristic or upper bound computation and sorting for the 
+policies has ended we provide an approach to possibly circumvent the 
+exploration of a group of policies based on heuristic computation 
+for one abstract policy thus leading to an improvement in runtime 
+performance without loss in solution quality the important steps 
+in this technique are defining the abstract policy and how heuristic 
+values are computated for the abstract policies in this paper we 
+propose two types of abstraction 
+ horizon based abstraction hba here the abstract policy is 
+defined as a shorter horizon policy it represents a group of longer 
+horizon policies that have the same actions as the abstract policy 
+for times less than or equal to the horizon of the abstract policy 
+in figure a a t abstract policy that performs east action 
+represents a group of t policies that perform east in the first 
+time step 
+for hba there are two parts to heuristic computation 
+ a computing the upper bound for the horizon of the abstract 
+policy this is same as the heuristic computation defined by the 
+getheuristic algorithm for spider however with a shorter time 
+horizon horizon of the abstract policy 
+ b computing the maximum possible reward that can be 
+accumulated in one time step using get-abs-heuristic and 
+multiplying it by the number of time steps to time horizon this 
+maximum possible reward for one time step is obtained by iterating 
+through all the actions of all the agents in tree i and computing 
+the maximum joint reward for any joint action 
+sum of a and b is the heuristic value for a hba abstract policy 
+ node based abstraction nba here an abstract policy is 
+obtained by not associating actions to certain nodes of the policy tree 
+unlike in hba this implies multiple levels of abstraction this is 
+illustrated in figure b where there are t policies that do not 
+have an action for observation  tp these incomplete t 
+policies are abstractions for t complete policies increased levels of 
+abstraction leads to faster computation of a complete joint policy 
+πroot 
+and also to shorter heuristic computation and exploration 
+pruning phases for nba the heuristic computation is similar to 
+that of a normal policy except in cases where there is no action 
+associated with policy nodes in such cases the immediate reward 
+is taken as rmax maximum reward for any action 
+we combine both the abstraction techniques mentioned above 
+into one technique spider-abs algorithm provides the 
+algorithm for this abstraction technique for computing optimal joint 
+policy with spider-abs a non-leaf agent i initially examines all 
+abstract t policies line and sorts them based on abstract 
+policy heuristic computations line the abstraction horizon is 
+gradually increased and these abstract policies are then explored 
+in descending order of heuristic values and ones that have heuristic 
+values less than the threshold are pruned lines - exploration 
+in spider-abs has the same definition as in spider if the policy 
+being explored has a horizon of policy computation which is equal 
+to the actual time horizon and if all the nodes of the policy have an 
+action associated with them lines - however if those 
+conditions are not met then it is substituted by a group of policies that it 
+represents using extend-policy function lines - 
+extend-policy function is also responsible for 
+initializing the horizon and absnodes of a policy absnodes 
+represents the number of nodes at the last level in the policy tree 
+that do not have an action assigned to them if πi absnodes 
+ ωi πi horizon− 
+ i e total number of policy nodes possible at 
+πi horizon then πi absnodes is set to zero and πi horizon is 
+increased by otherwise πi absnodes is increased by thus 
+this function combines both hba and nba by using the policy 
+variables horizon and absnodes before substituting the abstract 
+policy with a group of policies those policies are sorted based on 
+heuristic values line similar type of abstraction based best 
+response computation is adopted at leaf agents lines - 
+ value approximation vax 
+in this section we present an approximate enhancement to 
+spider called vax the input to this technique is an approximation 
+parameter which determines the difference from the optimal 
+solution quality this approximation parameter is used at each agent 
+for pruning out joint policies the pruning mechanism in spider 
+and spider-abs dictates that a joint policy be pruned only if the 
+threshold is exactly greater than the heuristic value however the 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure example of abstraction for a hba horizon based abstraction and b nba node based abstraction 
+idea in this technique is to prune out joint a policy if the following 
+condition is satisfied threshold ˆv πi 
+ πi− 
+ apart from the 
+pruning condition vax is the same as spider spider-abs 
+in the example of figure if the heuristic value for the second 
+joint policy or second search tree node in level were instead 
+of then that policy could not be be pruned using spider or 
+spider-abs however in vax with an approximation parameter 
+of the joint policy in consideration would also be pruned this is 
+because the threshold at that juncture plus the approximation 
+parameter i e would have been greater than the heuristic 
+value for that joint policy it can be noted from the example 
+ just discussed that this kind of pruning can lead to fewer 
+explorations and hence lead to an improvement in the overall run-time 
+performance however this can entail a sacrifice in the quality of 
+the solution because this technique can prune out a candidate 
+optimal solution a bound on the error introduced by this approximate 
+algorithm as a function of is provided by proposition 
+ percentage approximation pax 
+in this section we present the second approximation 
+enhancement over spider called pax input to this technique is a 
+parameter δ that represents the minimum percentage of the optimal 
+solution quality that is desired output of this technique is a policy 
+with an expected value that is at least δ of the optimal solution 
+quality a policy is pruned if the following condition is satisfied 
+threshold δ 
+ 
+ˆv πi 
+ πi− 
+ like in vax the only difference 
+between pax and spider spider-abs is this pruning condition 
+again in figure if the heuristic value for the second search 
+tree node in level were instead of then pax with an 
+input parameter of would be able to prune that search tree node 
+ since 
+ 
+ this type of pruning leads to fewer 
+explorations and hence an improvement in run-time performance while 
+potentially leading to a loss in quality of the solution proposition 
+provides the bound on quality loss 
+ theoretical results 
+proposition heuristic provided using the centralized mdp 
+heuristic is admissible 
+proof for the value provided by the heuristic to be admissible 
+it should be an over estimate of the expected value for a joint policy 
+thus we need to show that for l ∈ ei 
+∪ ei− 
+ ˆvt 
+l ≥ vt 
+l refer to 
+notation in section 
+we use mathematical induction on t to prove this 
+base case t t − irrespective of whether l ∈ ei− 
+or l ∈ 
+ei 
+ ˆrt 
+l is computed by maximizing over all actions of the agents 
+in tree i while rt 
+l is computed for fixed policies of the same 
+agents hence ˆrt 
+l ≥ rt 
+l and also ˆvt 
+l ≥ vt 
+l 
+assumption proposition holds for t η where ≤ η t − 
+we now have to prove that the proposition holds for t η − 
+we show the proof for l ∈ ei− 
+and similar reasoning can be 
+adopted to prove for l ∈ ei 
+ the heuristic value function for 
+l ∈ ei− 
+is provided by the following equation 
+ˆvη− 
+l ˆrη− 
+l max 
+al 
+ω 
+η 
+l 
+ s 
+η 
+l 
+ˆpη− 
+l 
+ˆpη− 
+l 
+pη− 
+u ˆvη 
+l 
+rewriting the rhs and using eqn in section 
+ ˆrη− 
+l max 
+al 
+ω 
+η 
+l 
+ s 
+η 
+l 
+pη− 
+u pη− 
+l 
+ˆpη− 
+l 
+ˆvη 
+l 
+ ˆrη− 
+l 
+ω 
+η 
+l 
+ s 
+η 
+l 
+pη− 
+u pη− 
+l 
+max 
+al 
+ˆpη− 
+l 
+ˆvη 
+l 
+since maxal 
+ˆpη− 
+l 
+ˆvη 
+l ≥ ωl 
+oη− 
+l 
+ˆpη− 
+l 
+ˆvη 
+l and pη− 
+l 
+ oη− 
+l 
+ˆpη− 
+l 
+≥ˆrη− 
+l 
+ω 
+η 
+l 
+ s 
+η 
+l 
+pη− 
+u pη− 
+l 
+ωl 
+pη− 
+l 
+ˆvη 
+l 
+since ˆvη 
+l ≥ vη 
+l from the assumption 
+≥ˆrη− 
+l 
+ω 
+η 
+l 
+ s 
+η 
+l 
+pη− 
+u pη− 
+l 
+ωl 
+pη− 
+l 
+vη 
+l 
+since ˆrη− 
+l ≥ rη− 
+l by definition 
+≥rη− 
+l 
+ω 
+η 
+l 
+ s 
+η 
+l 
+pη− 
+u pη− 
+l 
+ωl 
+pη− 
+l 
+vη 
+l 
+ rη− 
+l 
+ ω 
+η 
+l 
+ s 
+η 
+l 
+ 
+pη− 
+u pη− 
+l 
+pη− 
+l 
+vη 
+l vη− 
+l 
+thus proved 
+proposition spider provides an optimal solution 
+proof spider examines all possible joint policies given the 
+interaction structure of the agents the only exception being when 
+a joint policy is pruned based on the heuristic value thus as long 
+as a candidate optimal policy is not pruned spider will return an 
+optimal policy as proved in proposition the expected value for 
+a joint policy is always an upper bound hence when a joint policy 
+is pruned it cannot be an optimal solution 
+proposition error bound on the solution quality for vax 
+ implemented over spider-abs with an approximation 
+parameter of is ρ where ρ is the number of leaf nodes in the dfs tree 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+proof we prove this proposition using mathematical induction 
+on the depth of the dfs tree 
+base case depth i e one node best response is 
+computed by iterating through all policies πk a policy πk is pruned 
+if ˆv πk πk− 
+ threshold thus the best response policy 
+computed by vax would be at most away from the optimal best 
+response hence the proposition holds for the base case 
+assumption proposition holds for d where ≤ depth ≤ d 
+we now have to prove that the proposition holds for d 
+without loss of generality lets assume that the root node of this 
+tree has k children each of this children is of depth ≤ d and hence 
+from the assumption the error introduced in kth child is ρk where 
+ρk is the number of leaf nodes in kth child of the root therefore 
+ρ k ρk where ρ is the number of leaf nodes in the tree 
+in spider-abs threshold at the root agent thresspider 
+k v πk 
+ πk− 
+ however with vax the threshold at the root 
+agent will be in the worst case threshvax k v πk 
+ πk− 
+ − 
+k ρk hence with vax a joint policy is pruned at the root 
+agent if ˆv πroot πroot− 
+ threshvax ⇒ ˆv πroot πroot− 
+ 
+threshspider − k ρk − ≤ threshspider − k ρk ≤ 
+threshspider − ρ hence proved 
+proposition for pax implemented over spider-abs with 
+an input parameter of δ the solution quality is at least δ 
+ 
+v πroot 
+ 
+where v πroot 
+ denotes the optimal solution quality 
+proof we prove this proposition using mathematical induction 
+on the depth of the dfs tree 
+base case depth i e one node best response is 
+computed by iterating through all policies πk a policy πk is pruned 
+if δ 
+ 
+ˆv πk πk− 
+ threshold thus the best response policy 
+computed by pax would be at least δ 
+ 
+times the optimal best 
+response hence the proposition holds for the base case 
+assumption proposition holds for d where ≤ depth ≤ d 
+we now have to prove that the proposition holds for d 
+without loss of generality lets assume that the root node of 
+this tree has k children each of this children is of depth ≤ d 
+and hence from the assumption the solution quality in the kth 
+child is at least δ 
+ 
+v πk 
+ πk− 
+ for pax with spider-abs 
+a joint policy is pruned at the root agent if ˆv πroot πroot− 
+ 
+k v πk 
+ πk− 
+ however with pax a joint policy is pruned if 
+δ 
+ 
+ˆv πroot πroot− 
+ k 
+δ 
+ 
+v πk 
+ πk− 
+ ⇒ ˆv πroot πroot− 
+ 
+k v πk 
+ πk− 
+ since the pruning condition at the root agent in 
+pax is the same as the one in spider-abs there is no error 
+introduced at the root agent and all the error is introduced in the 
+children thus overall solution quality is at least δ 
+ 
+of the optimal 
+solution hence proved 
+ experimental results 
+all our experiments were conducted on the sensor network 
+domain from section the five network configurations employed 
+are shown in figure algorithms that we experimented with 
+are goa spider spider-abs pax and vax we compare 
+against goa because it is the only global optimal algorithm that 
+considers more than two agents we performed two sets of 
+experiments i firstly we compared the run-time performance of the 
+above algorithms and ii secondly we experimented with pax and 
+vax to study the tradeoff between run-time and solution quality 
+experiments were terminated after seconds 
+ 
+figure a provides run-time comparisons between the optimal 
+algorithms goa spider spider-abs and the approximate 
+algorithms pax of and vax δ of x-axis denotes the 
+ 
+machine specs for all experiments intel xeon ghz processor 
+ gb ram 
+sensor network configuration used while y-axis indicates the 
+runtime on a log-scale the time horizon of policy computation was 
+ for each configuration -chain -chain -star and -star there 
+are five bars indicating the time taken by goa spider 
+spiderabs pax and vax goa did not terminate within the time limit 
+for -star and -star configurations spider-abs dominated the 
+spider and goa for all the configurations for instance in the 
+ chain configuration spider-abs provides -fold speedup over 
+goa and -fold speedup over spider and for the -chain 
+configuration it provides -fold speedup over goa and -fold speedup 
+over spider the two approximation approaches vax and pax 
+provided further improvement in performance over spider-abs 
+for instance in the -star configuration vax provides a -fold 
+speedup and pax provides a -fold speedup over spider-abs 
+figures b provides a comparison of the solution quality 
+obtained using the different algorithms for the problems tested in 
+figure a x-axis denotes the sensor network configuration while 
+y-axis indicates the solution quality since goa spider and 
+spider-abs are all global optimal algorithms the solution 
+quality is the same for all those algorithms for -p configuration 
+the global optimal algorithms did not terminate within the limit of 
+ seconds so the bar for optimal quality indicates an upper 
+bound on the optimal solution quality with both the 
+approximations we obtained a solution quality that was close to the optimal 
+solution quality in -chain and -star configurations it is 
+remarkable that both pax and vax obtained almost the same actual 
+quality as the global optimal algorithms despite the approximation 
+parameter and δ for other configurations as well the loss in quality 
+was less than of the optimal solution quality 
+figure c provides the time to solution with pax for 
+varying epsilons x-axis denotes the approximation parameter δ 
+ percentage to optimal used while y-axis denotes the time taken to 
+compute the solution on a log-scale the time horizon for all 
+the configurations was as δ was decreased from to the 
+time to solution decreased drastically for instance in the -chain 
+case there was a total speedup of -fold when the δ was changed 
+from to interestingly even with a low δ of the actual 
+solution quality remained equal to the one obtained at 
+figure d provides the time to solution for all the 
+configurations with vax for varying epsilons x-axis denotes the 
+approximation parameter used while y-axis denotes the time taken to 
+compute the solution on a log-scale the time horizon for all the 
+configurations was as was increased the time to solution 
+decreased drastically for instance in the -star case there was a total 
+speedup of -fold when the was changed from to again 
+the actual solution quality did not change with varying epsilon 
+figure sensor network configurations 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure comparison of goa spider spider-abs and vax for t on a runtime and b solution quality c time to solution for pax 
+with varying percentage to optimal for t d time to solution for vax with varying epsilon for t 
+ summary and related work 
+this paper presents four algorithms spider spider-abs pax 
+and vax that provide a novel combination of features for 
+policy search in distributed pomdps i exploiting agent interaction 
+structure given a network of agents i e easier scale-up to larger 
+number of agents ii using branch and bound search with an mdp 
+based heuristic function iii utilizing abstraction to improve 
+runtime performance without sacrificing solution quality iv 
+providing a priori percentage bounds on quality of solutions using pax 
+and v providing expected value bounds on the quality of solutions 
+using vax these features allow for systematic tradeoff of solution 
+quality for run-time in networks of agents operating under 
+uncertainty experimental results show orders of magnitude 
+improvement in performance over previous global optimal algorithms 
+researchers have typically employed two types of techniques 
+for solving distributed pomdps the first set of techniques 
+compute global optimal solutions hansen et al present an 
+algorithm based on dynamic programming and iterated elimination of 
+dominant policies that provides optimal solutions for distributed 
+pomdps szer et al provide an optimal heuristic search 
+method for solving decentralized pomdps this algorithm is based 
+on the combination of a classical heuristic search algorithm a 
+and 
+decentralized control theory the key differences between spider 
+and maa are a enhancements to spider vax and pax 
+provide for quality guaranteed approximations while maa is a 
+global optimal algorithm and hence involves significant 
+computational complexity b due to maa s inability to exploit 
+interaction structure it was illustrated only with two agents however 
+spider has been illustrated for networks of agents and c 
+spider explores the joint policy one agent at a time while maa 
+expands it one time step at a time simultaneously for all the agents 
+the second set of techniques seek approximate policies 
+emerymontemerlo et al approximate posgs as a series of one-step 
+bayesian games using heuristics to approximate future value 
+trading off limited lookahead for computational efficiency resulting in 
+locally optimal policies with respect to the selected heuristic nair 
+et al s jesp algorithm uses dynamic programming to reach a 
+local optimum solution for finite horizon decentralized pomdps 
+peshkin et al and bernstein et al are examples of policy 
+search techniques that search for locally optimal policies though 
+all the above techniques improve the efficiency of policy 
+computation considerably they are unable to provide error bounds on the 
+quality of the solution this aspect of quality bounds differentiates 
+spider from all the above techniques 
+acknowledgements this material is based upon work 
+supported by the defense advanced research projects agency darpa 
+through the department of the interior nbc acquisition services 
+division under contract no nbchd the views and 
+conclusions contained in this document are those of the authors and 
+should not be interpreted as representing the official policies either 
+expressed or implied of the defense advanced research projects 
+agency or the u s government 
+ references 
+ r becker s zilberstein v lesser and c v goldman 
+solving transition independent decentralized markov 
+decision processes jair - 
+ d s bernstein e a hansen and s zilberstein bounded 
+policy iteration for decentralized pomdps in ijcai 
+ d s bernstein s zilberstein and n immerman the 
+complexity of decentralized control of mdps in uai 
+ r emery-montemerlo g gordon j schneider and 
+s thrun approximate solutions for partially observable 
+stochastic games with common payoffs in aamas 
+ e hansen d bernstein and s zilberstein dynamic 
+programming for partially observable stochastic games in 
+aaai 
+ v lesser c ortiz and m tambe distributed sensor nets 
+a multiagent perspective kluwer 
+ r maheswaran m tambe e bowring j pearce and 
+p varakantham taking dcop to the real world efficient 
+complete solutions for distributed event scheduling in 
+aamas 
+ p j modi w shen m tambe and m yokoo an 
+asynchronous complete method for distributed constraint 
+optimization in aamas 
+ r nair d pynadath m yokoo m tambe and s marsella 
+taming decentralized pomdps towards efficient policy 
+computation for multiagent settings in ijcai 
+ r nair p varakantham m tambe and m yokoo 
+networked distributed pomdps a synthesis of distributed 
+constraint optimization and pomdps in aaai 
+ l peshkin n meuleau k -e kim and l kaelbling 
+learning to cooperate via policy search in uai 
+ a petcu and b faltings a scalable method for multiagent 
+constraint optimization in ijcai 
+ d szer f charpillet and s zilberstein maa a heuristic 
+search algorithm for solving decentralized pomdps in 
+ijcai 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

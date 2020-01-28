@@ -1,0 +1,976 @@
+operational semantics of multiagent interactions 
+juan m serrano 
+university rey juan carlos 
+c tulipan s n 
+madrid spain 
+juanmanuel serrano urjc es 
+sergio saugar 
+university rey juan carlos 
+c tulipan s n 
+madrid spain 
+sergio saugar urjc es 
+abstract 
+the social stance advocated by institutional frameworks and 
+most multi-agent system methodologies has resulted in a 
+wide spectrum of organizational and communicative 
+abstractions which have found currency in several programming 
+frameworks and software platforms still these tools and 
+frameworks are designed to support a limited range of 
+interaction capabilities that constrain developers to a fixed set 
+of particular pre-defined abstractions the main hypothesis 
+motivating this paper is that the variety of multi-agent 
+interaction mechanisms - both organizational and 
+communicative share a common semantic core in the realm of software 
+architectures the paper proposes a connector-based model 
+of multi-agent interactions which attempts to identify the 
+essential structure underlying multi-agent interactions 
+furthermore the paper also provides this model with a formal 
+execution semantics which describes the dynamics of social 
+interactions the proposed model is intended as the 
+abstract machine of an organizational programming language 
+which allows programmers to accommodate an open set of 
+interaction mechanisms 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-multi-agent systems 
+general terms 
+languages theory design 
+ introduction 
+the suitability of agent-based computing to manage the 
+complex patterns of interactions naturally occurring in the 
+development of large scale open systems has become one 
+of its major assets over the last few years 
+particularly the organizational or social stance advocated by 
+institutional frameworks and most multi-agent system 
+ mas methodologies provides an excellent basis to 
+deal with the complexity and dynamism of the interactions 
+among system components this approach has resulted in 
+a wide spectrum of organizational and communicative 
+abstractions such as institutions normative positions power 
+relationships organizations groups scenes dialogue games 
+communicative actions cas etc to effectively model the 
+interaction space of mas this wealth of computational 
+abstractions has found currency in several programming 
+frameworks and software platforms ameli madkit 
+ingenias toolkit etc which leverage multi-agent 
+middlewares built upon raw acl-based interaction mechanism 
+ and minimize the gap between organizational 
+metamodels and target implementation languages 
+still these tools and frameworks are designed to support 
+a limited range of interaction capabilities that constrain 
+developers to a fixed set of particular pre-defined abstractions 
+the main hypothesis motivating this paper is that the 
+variety of multi-agent interaction mechanisms - both 
+organizational and communicative share a common semantic core 
+this paper thus focuses on the fundamental building blocks 
+of multi-agent interactions those which may be composed 
+extended or refined in order to define more complex 
+organizational or communicative types of interactions 
+its first goal is to carry out a principled analysis of 
+multiagent interactions departing from general features commonly 
+ascribed to agent-based computing autonomy situatedness 
+and sociality to approach this issue we draw on the 
+notion of connector put forward within the field of software 
+architectures the outcome of this analysis will be a 
+connector-based model of multi-agent interactions between 
+autonomous social and situated components i e agents 
+attempting to identify their essential structure furthermore 
+the paper also provides this model with a formal 
+execution semantics which describes the dynamics of multi-agent 
+ or social interactions structural operational semantics 
+ sos a common technique to specify the operational 
+semantics of programming languages is used for this 
+purpose 
+the paper is structured as follows first the major entities 
+and relationships which constitute the structure of social 
+interactions are introduced next the dynamics of social 
+interactions will show how these entities and relationships 
+evolve last relevant work in the literature is discussed 
+ 
+ - - - - rps c ifaamas 
+with respect to the proposal limitations are addressed and 
+current and future work is described 
+ social interaction structure 
+from an architectural point of view interactions between 
+software components are embodied in software connectors 
+first-class entities defined on the basis of the different roles 
+played by software components and the protocols that 
+regulate their behaviour the roles of a connector represent 
+its participants such as the caller and callee roles of an 
+rpc connector or the sender and receiver roles in a 
+message passing connector the attachment operation binds a 
+component to the role of a given connector 
+the analysis of social interactions introduced in this 
+section gives rise to a new kind of social connector it refines the 
+generic model in several respects attending to the features 
+commonly ascribed to agent-based computing 
+ according to the autonomy feature we may 
+distinguish a first kind of participant i e role in a 
+social interaction so-called agents basically agents are 
+those software components which will be regarded as 
+autonomous within the scope of the interaction 
+ 
+ a second group of participants so-called 
+environmental resources may be identified from the situatedness 
+feature unlike agents resources represent those 
+nonautonomous components whose state may be 
+externally controlled by other components agents or 
+resources within the interaction moreover the 
+participation of resources in an interaction is not 
+mandatory 
+ last according to the sociality of agents the 
+specification of social connector protocols - the glue linking 
+agents among themselves and with resources will rely 
+on normative concepts such as permissions obligations 
+and empowerments 
+besides agents resources and social protocols two other 
+kinds of entities are of major relevance in our analysis of 
+social interactions actions which represent the way in which 
+agents alter the environmental and social state of the 
+interaction and events which represent the changes in the 
+interaction resulting from the performance of actions or the 
+activity of environmental resources 
+in the following we describe the basic entities involved in 
+social interactions each kind of entity t will be specified as 
+a record type t l t ln tn possibly followed by 
+a number of invariants definitions and the actions affecting 
+their state instances or values v of a record type t will be 
+represented as v v vn t the type sett 
+represents a collection of values drawn from type t the type 
+queuet represents a queue of values v t waiting to be 
+processed the value v in the expression v queue t 
+represents the head of the queue the type enum v vn 
+ 
+note that we think of the autonomy feature in a relative 
+rather than absolute perspective basically this means that 
+software components counting as agents in a social 
+interaction may behave non-autonomously in other contexts e g 
+in their interactions through human-user interfaces this 
+conceptualization of agenthood resembles the way in which 
+objects are understood in corba as any kind of software 
+component c prolog cobol etc attached to an orb 
+represents an enumeration type whose values are v 
+vn given some value v t the term vl 
+refers to the value 
+of the field l of a record type t given some labels l l 
+ the expression vl l 
+is syntactic sugar for vl 
+ l 
+ 
+the special term nil will be used to represent the absence 
+of proper value for an optional field so that vl 
+ nil will be 
+true in those cases and false otherwise the formal model 
+will be illustrated with several examples drawn from the 
+design of a virtual organization to aid in the management of 
+university courses 
+ social interactions 
+social interactions shall be considered as composite 
+connectors structured in terms of a tree of nested 
+subinteractions let s consider an interaction representing a 
+university course e g on data structures on the one 
+hand this interaction is actually a complex one made up 
+of lower-level interactions for instance within the scope 
+of the course agents will participate in programming 
+assignment groups lectures tutoring meetings examinations and 
+so on assignment groups in turn may hold a number of 
+assignment submissions and test requests interactions a 
+test request may also be regarded as a complex interaction 
+ultimately decomposed in the atomic or bottom-level 
+interactions represented by communicative actions e g 
+request agree refuse on the other hand courses are 
+run within the scope of a particular degree e g computer 
+science a higher-level interaction traversing upwards from 
+a degree to its ancestors we find its faculty the university 
+and finally the multi-agent community or agent society 
+the community is thus the top-level interaction which 
+subsumes any other kind of multi-agent interaction 
+ 
+the organizational and communicative interaction types 
+identified above clearly differ in many ways however we 
+may identify four major components in all of them the 
+participating agents the resources that agents manipulate 
+the protocol regulating the agent activities and the 
+subinteraction space accordingly we may specify the type i 
+of social interactions ranged over by the meta-variable i as 
+follows 
+i state si ini a mem set a env set r 
+sub set i prot p ch ch 
+def icontext i ⇔ i ∈ isub 
+ 
+inv iini nil ⇔ icontext nil 
+act setup join create destroy 
+where the member and environment fields represent the 
+agents a and local resources r participating in the 
+interaction the sub-interaction field its set of inner interactions 
+and the protocol field the rules that govern the interaction 
+ p the event channel to be described in the next 
+section allows the dispatching of local events to external 
+interactions the context of some interaction is defined as its 
+super-interaction def so that the context of the 
+toplevel interaction is nil 
+the type si enum open closing closed represents 
+the possible execution states of the interaction any 
+interaction but the top-level one is set up within the context of 
+another interaction by an initiator agent the initiator is 
+ 
+in the context of this application a one-to-one mapping 
+between human users and software components attached to 
+the community as agents would be a right choice 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+thus a mandatory feature for any interaction different to the 
+community inv the life-cycle of the interaction begins 
+in the open state its sets of agent and resource participants 
+initially empty vary as agents join and leave the interaction 
+and as they create and destroy resources from its local 
+environment eventually the interaction may come to an end 
+ according to the protocol s rules or be explicitly closed by 
+some agent thus prematurely disabling the activity of its 
+participants the transient closing state will be described 
+in the next section 
+ agents 
+components attach themselves as agents in social 
+interactions with the purpose of achieving something the purpose 
+declared by some agent when it joins an interaction shall be 
+regarded as the institutional goal that it purports to satisfy 
+within that context 
+ the types of agents participating in 
+a given interaction are primarily identified from their 
+purposes for instance students are those agents participating 
+in a course who purport to obtain a certificate in the course s 
+subject other members of the course include lecturers and 
+teaching assistants 
+the type a of agents ranged over by meta-variable a is 
+defined as follows 
+a state sa player a purp f att queue act 
+ev queue e obl set o 
+def acontext i ⇔ a ∈ imem 
+ a ∈ aroles ⇔ aplayer 
+ a 
+ i ∈ apartin ⇔ a ∈ imem ∧ a ∈ aroles 
+act see 
+where the purpose is represented as a well-formed boolean 
+formula of a generic type f which evaluates to true if the 
+purpose is satisfied and false otherwise the context of some 
+agent is defined as the interaction in which it participates 
+ def 
+the type sa enum playing leaving succ unsuc 
+represents the execution state of the agent its life-cycle 
+begins in the playing state when its player agent joins the 
+interaction or some software component is attached as an agent 
+to the multi-agent system in this latter case the player 
+value is nil the derived roles and partin features 
+represent the roles played by the agent and the contexts in which 
+these roles are played def 
+ an agent may play roles 
+at interactions within or outside the scope of its context for 
+instance students of a course are played by student agents 
+belonging to the undergraduate degree whereas lecturers 
+may be played by teachers of a given department and the 
+assistant role may be played by students of a ph d degree 
+ both the department and the ph d degrees are modelled 
+as sub-interactions of the faculty 
+components will normally attempt to perform different 
+actions e g to set up sub-interactions in order to satisfy 
+their purposes within some interaction moreover 
+components need to be aware of the current state of the interaction 
+so that they will also be capable of observing certain events 
+from the interaction both the visibility of the interaction 
+ 
+thus it may or may not correspond to actual internal 
+goals or intentions of the component 
+ 
+free variables in the antecedents consequents of 
+implications shall be understood as universally existentially 
+quantified 
+and the attempts of members are subject to the rules 
+governing the interaction the attempts and events fields of 
+the agent structure represent the queues of attempts to 
+execute some actions act and the events e received by 
+the agent which have not been observed yet an agent may 
+update its event queue by seeing the state of some entity 
+of the community the last field of the structure represents 
+the obligations o of agents to be described later 
+eventually the participation of some agent in the 
+interaction will be over this may either happen when certain 
+conditions are met specified by the protocol rules or when 
+the agent takes the explicit decision of leaving the 
+interaction in either case the final state of the agent will be 
+successful if its purpose was satisfied unsuccessful 
+otherwise the transient leaving state will be described in the 
+next section 
+ resources 
+resources are software components which may represent 
+different types of non-autonomous informational or 
+computational entities for instance objectives topics 
+assignments grades and exams are different kinds of informational 
+resources created by lecturers and assistants in the context 
+of the course interaction students may also create programs 
+to satisfy the requirements of some assignment other types 
+of computational resources put at the disposal of students 
+by teachers include compilers and interpreters 
+the type r of resources ranged over by meta-variable r 
+can be specified by the following record type 
+r cr a owners set a op set op 
+def rcontext i ⇔ r ∈ ienv 
+act take share give invoke 
+essentially resources can be regarded as objects deployed 
+in a social setting this means that resources are created 
+accessed and manipulated by agents in a social interaction 
+context def according to the rules specified by its 
+protocol the mandatory feature creator represents the agent 
+who created this resource moreover resources may have 
+owners the ownership relationship between members and 
+resources is considered as a normative device aimed at the 
+simplification of the protocol s rules that govern the 
+interaction of agents and the environment members may gain 
+ownership of some resource by taking it and grant 
+ownership to other agents by giving or sharing their own 
+properties for instance the ownership of programs may be shared 
+by several students if the assignment can be performed by 
+groups of two or more students 
+the last operations feature represents the interface of the 
+resource consisting of a set of operations a resource is 
+structured around several public operations that 
+participants may invoke in accordance to the rules specified by the 
+interaction s protocol the set of operations of a resource 
+makes up its interface 
+ protocols 
+the protocol of any interaction is made up of the rules 
+which govern its overall state and dynamics the present 
+specification abstracts away the particular formalism used to 
+specify these rules and focuses instead on several 
+requirements concerning the structure and interface of protocols 
+accordingly the type p of protocols ranged over by 
+metathe sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+variable p is defined as follows 
+ 
+p emp a × act → boolean 
+perm a × act → boolean 
+obl → set a × set o × set e 
+monitor e → set a 
+finish → boolean 
+over a → boolean 
+def pcontext i ⇔ p iprot 
+inv pfinish ∧ s ∈ pcontext sub ⇒ sprot finish 
+ pfinish ∧ a ∈ pcontext mem ⇒ pover a 
+ pover a ∧ ai ∈ aroles ⇒ acontext prot over 
+i ai 
+ αadd ∪ a ⊆ pmonitor a α 
+act close leave 
+we demand from protocols four major kinds of functions 
+firstly protocols shall include rules to identify the 
+empowerments and permissions of any agent attempting to alter 
+the state of the interaction e g its members the 
+environment etc through the execution of some action e g join 
+create etc empowerments shall be regarded as the 
+institutional capabilities which some agent possesses in order 
+to satisfy its purpose corresponding rules encapsulated 
+by the empowered function field shall allow to determine 
+whether some agent is capable to perform a given action 
+over the interaction empowerments may only be exercised 
+under certain circumstances - that permissions specify 
+permission rules shall allow to determine whether the attempt 
+of an empowered agent to perform some particular action 
+is satisfied or not cf permitted field for instance the 
+course s protocol specifies that the agents empowered to 
+join the interaction as students are those students of the 
+degree who have payed the fee established for the course s 
+subject and own the certificates corresponding to its 
+prerequisite subjects permission rules in turn specify that those 
+students may only join the course in the admission stage 
+hence even if some student has paid the fee the attempt 
+to join the course will fail if the course has not entered the 
+corresponding stage 
+ 
+secondly protocols shall allow to determine the 
+obligations of agents towards the interaction obligations 
+represent a normative device of social enforcement fully 
+compatible with the autonomy of agents used to bias their 
+behaviour in a certain direction these kinds of rules shall 
+allow to determine whether some agent must perform an 
+action of a given type as well as if some obligation was fulfilled 
+violated or needs to be revoked the function obligations of 
+the protocol structure thus identifies the agents whose 
+obligation set must be updated moreover it returns for each 
+agent a collection of events representing the changes in the 
+obligation set for instance the course s protocol 
+establishes that members of departments must join the course as 
+teachers whenever they are assigned to the course s subject 
+thirdly the protocol shall allow to specify monitoring 
+rules for the different events originating within the 
+interaction corresponding rules shall establish the set of agents 
+that must be awared of some event for instance this 
+func 
+the formalization assumes that protocol s functions 
+implicitly recieve as input the interaction being regulated 
+ 
+the haspaidfee relationship between degree students 
+and subject resources is represented by an additional 
+application-dependent field of the agent structure for this 
+kind of roles similarly the admission stage is an additional 
+boolean field of the structure for school interactions the 
+generic types i a r and p are thus extendable 
+tionality is exploited by teachers in order to monitor the 
+enrollment of students to the course 
+last the protocol shall allow to control the state of the 
+interaction as well as the states of its members corresponding 
+rules identify the conditions under which some interaction 
+will be automatically finished and whether the participation 
+of some member agent will be automatically over thus the 
+function field finish returns true if the regulated interaction 
+must finish its execution if so happens a well-defined set of 
+protocols must ensure that its sub-interactions and members 
+are finished as well inv similarly the function over 
+returns true if the participation of the specified member must 
+be over well-formed protocols must ensure the consistency 
+between these functions across playing roles inv 
+ for 
+instance the course s protocol establishes that the 
+participation of students is over when they gain ownership of the 
+course s certificate or the chances to get it are exhausted 
+it also establishes that the course must be finished when 
+the admission stage has passed and all the students finished 
+their participation 
+ social interaction dynamics 
+the dynamics of the multi-agent community is influenced 
+by the external actions executed by software components 
+and the protocols governing their interactions this section 
+focuses on the dynamics resulting from a particular kind of 
+external action the attempt of some component attached 
+to the community as an agent to execute a given internal 
+action the description of other external actions concerning 
+agents e g observe the events from its event queue enter 
+or exit from the community and resources e g a timer 
+resource may signal the pass of time will be skipped 
+the processing of some attempt may give rise to changes 
+in the scope of the target interaction such as the 
+instantiation of new participants agents or resources or the 
+setting up of new sub-interactions these resulting events 
+may cause further changes in the state of other interactions 
+ the target one included namely in its execution state as 
+well as in the execution state obligations and visibility of 
+their members this section will also describe the way in 
+which these events are processed the resulting dynamics 
+described bellow allows for actions and events corresponding 
+to different agents and interactions to be processed 
+simultaneously due to lack of space we only include some of the 
+operational rules that formalise the execution semantics 
+ attempt processing 
+an attempt is defined by the structure at t perf 
+a act act where the performer represents the agent 
+in charge of executing the specified action this action is 
+intended to alter the state of some target interaction 
+ possibly the performer s context itself and notify a collection 
+of addressees of the changes resulting from a successful 
+execution accordingly the type act of actions ranged over 
+by meta-variable α is specified as follows 
+act state sact target i add set a 
+def αperf a ⇔ α ∈ aatt 
+ 
+the close and leave actions update the finish and over 
+function fields as explained in the next section additional 
+actions such as permit forbid empower etc to update other 
+protocol s fields are yet to be identified in future work 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+where the performer is formally defined as the agent who 
+stores the action in its queue of attempts and the state field 
+represents the current phase of processing this process 
+goes through four major phases as specified by the 
+enumeration type sact enum emp perm exec 
+empowerment checking permission checking and action execution 
+described in the sequel 
+ empowerment checking 
+the post-condition of an attempt consists of inserting the 
+action in the queue of attempts of the specified performer 
+as rule specifies 
+ this will only be possible if the 
+performer is empowered to execute that action according to the 
+rules that govern the state of the target interaction if this 
+condition is not met the attempt will simply be ignored 
+moreover the performer agent must be in the playing state 
+ this pre-condition is also required for any rule concerning 
+the processing of attempts if these pre-conditions are 
+satisfied the rule is fired and the processing of the action 
+continues in the permission checking stage for instance when 
+the software component attached as a student in a degree 
+attempts to join as a student the course in which some subject 
+is teached the empowerment rules of the course interaction 
+are checked if the degree student has passed the course s 
+prerequisite subjects the join action will be inserted in its 
+queue of attempts and considered for execution 
+αtarget prot emp a α 
+a playing qact 
+a α at t 
+−→ playing qact 
+ 
+w here α state 
+ perm 
+ qact insert α qact 
+ permissions checking 
+the processing of the action resumes when the possible 
+preceding actions in the performer s queue of attempts are 
+fully processed and removed from the queue moreover 
+there should be no pending events to be processed in the 
+interaction for these events may cause the member or the 
+interaction to be finished as will be shortly explained in the 
+next sub-section if these conditions are met the 
+permissions to execute the given action and notify the specified 
+addressees are checked e g it will be checked whether the 
+student paid the fee for the course s subject if the protocol 
+of the target interaction grants permission the processing 
+of the attempt moves to the action execution stage rule 
+otherwise the action is discharged and removed from the 
+queue unlike unempowered attempts a forbidden one will 
+cause an event to be generated and transfered to the event 
+channel for further processing 
+αstate perm ∧ acontext ch in ev ∅ ∧ αtarget prot perm a α 
+a playing α −→ playing α 
+ 
+w here α state 
+ exec 
+ 
+labels of record instances are omitted to allow for more 
+compact specifications moreover note that record updates 
+in where clauses only affect the specified fields 
+ action execution 
+the transitions fired in this stage are classified 
+according to the different types of actions to be executed the 
+intended effects of some actions may directly be achieved 
+in a single step while others will required an indirect 
+approach and possibly several execution steps actions of the 
+first kind are constructive ones such as set up and join 
+the second group of actions include those such as close and 
+leave whose effects are indirectly achieved by updating the 
+interaction protocol 
+as an example of constructive action let s consider the 
+execution of a set up action whose type is defined as 
+follows 
+ 
+setup act · new i 
+inv αnew mem αnew res αnew sub ∅ 
+ αnew state open 
+where the new field represents the new interaction to be 
+initiated its sets of participants agents and resources and 
+sub-interactions must be empty inv and its state must 
+be open inv the setting up of the new interaction may 
+thus affect its protocol and possible application-dependent 
+fields e g the subject of a course interaction according 
+to rule the outcome of the execution is threefold firstly 
+the performer s attempt queue is updated so that the 
+executing action is removed secondly the new interaction is 
+added to the target s set of sub-interactions moreover its 
+initiator field is set to the performer agent last the event 
+representing this change which includes a description of the 
+change the agent that caused it and the action performed 
+is inserted in the output port of the target s event channel 
+αstate exec ∧ α setup ∧ αnew i 
+a playing α qact −→ playing qact 
+αtarget open si c −→ open si ∪ i c 
+ 
+w here i ini 
+ a 
+ c out ev 
+ insert a α sub αtarget 
+ i cout ev 
+ 
+let s consider now the case of a close action this action 
+represents an attempt by the performer to force some 
+interaction to finish thus bypassing its current protocol rules 
+ those concerning the finish function the way to achieve 
+this effect is to cause an update on the protocol so that the 
+finish function returns true afterwards 
+ accordingly we 
+may specify this type of action as follows 
+close act · upd → bool → → bool 
+inv αtarget state open 
+ αtarget context nil 
+ αupd αtarget prot finish 
+where the inherited target field represents the interaction 
+to be closed which must be open and different to the 
+topinteraction according to invariants and and the new 
+ 
+the resulting type consists of the fields of the act record 
+extended with an additional new field 
+ 
+this strategy is also followed in the definition of leave and 
+may also be used in the definition of other types of actions 
+such as fire permit forbid etc 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+update field represents a proper higher-order function to 
+update the target s protocol inv the transition which 
+models the execution of this action specified by rule 
+defines two effects in the target interaction its protocol is 
+updated and the event representing this change is inserted 
+in its output port this event will actually trigger the 
+closing process of the interaction as described in the next 
+subsection 
+αstate exec ∧ α close 
+a playing α qact −→ playing qact 
+αtarget open p c −→ open p c 
+ 
+w here p finish 
+ αupd 
+ pfinish 
+ 
+ c out ev 
+ insert a α finish αtarget 
+ cout ev 
+ 
+ event processing 
+the processing of events is encapsulated in the event 
+channels of interactions channels ranged over by meta-variable 
+c are defined by two input and output ports according to 
+the following definition 
+ch out outp in inp 
+inv ccontext ∈ cout disp finish ccontext 
+ ccontext ∈ cout disp over a 
+ ccontext sub ⊆ cout disp closing ccontext 
+ apartsin ⊆ cout disp leaving a 
+ ccontext ∈ cout disp closed i 
+ ccontext aplayer context ⊆ cout disp left a 
+outp ev queue e disp e → set i int set i ag set a 
+inp ev queue e stage enum int mem obl ag set a 
+the output port stores and processes the events originated 
+within the scope of the channel s interaction its first 
+purpose is to dispatch the local events to the agents 
+identified by the protocol s monitoring function moreover since 
+these events may influence the results of the finishing over 
+and obligation functions of certain protocols they will also 
+be dispatched to the input ports of the interactions 
+identified through a dispatching function - whose invariants will 
+be explained later on thus input ports serve as a 
+coordination mechanism which activate the re-evaluation of the 
+above functios whenever some event is received 
+ 
+accordingly the processing of some event goes through four major 
+stages event dispatching interaction state update member 
+state update and obligations update the first one takes place 
+in the output port of the interaction in which the event 
+originated whereas the other ones execute in separate control 
+threads associated to the input ports of the interactions to 
+which the event was dispatched 
+ event dispatching 
+the processing of some event stored in the output port is 
+triggered when all its preceding events have been dispatched 
+as a first step the auxiliary int and ag fields are initialised 
+ 
+alternatively we may have assumed that interactions are 
+fully aware of any change in the multi-agent community in 
+this scenario interactions would trigger themselves without 
+requiring any explicit notification on the contrary we 
+adhere to the more realistic assumption of limited awareness 
+with the returned values of the dispatching and protocol s 
+monitoring functions respectively rule then additional 
+rules simply iterate over these collections until all agents and 
+interactions have been notified i e both sets are empty 
+last the event is removed from the queue and the auxiliary 
+fields are re-set to nil 
+the dispatching function shall identify the set of 
+interactions possibly empty that may be affected by the event 
+ which may include the channel s interaction itself 
+ for 
+instance according to the finishing rule of university courses 
+mentioned in the last section the event representing the 
+end of the admission stage originated within the scope of 
+the school interaction will be dispatched to every course of 
+the school s degrees concerning the monitoring function 
+according to invariant of protocols if the event is 
+generated as the result of an action performance the agents 
+to be notified will include the performer and addressees of 
+that action thus according to the monitoring rule of 
+university courses if a student of some degree joins a certain 
+course and specifies a colleague as addressee of that action 
+the course s teachers and itself will also be notified of the 
+successful execution 
+ccontext state 
+s open ∧ ccontext prot monitor 
+s mon 
+cs e d nil nil −→ e d e mon e 
+ 
+ interaction state update 
+input port activity is triggered when a new event is 
+received irrespective of the kind of incoming event the first 
+processing action is to check whether the channel s 
+interaction must be finished thus the dispatching of the finish 
+event resulting from a close action inv serves as a 
+trigger of the closing procedure if the interaction has not to 
+be finished the input port stage field is set to the member 
+state update stage and the auxiliary ag field is initialised to 
+the interaction members otherwise we can consider two 
+possible scenarios in the first one the interaction has no 
+members and no sub-interactions in this case the 
+interaction can be inmediately closed down as rule shows 
+the interaction is closed removed from the context s set of 
+sub-interactions and a closed event is inserted in its output 
+channel according to invariant this event will be later 
+inserted to its input channel to allow for further treatment 
+cin ev 
+ ∅ ∧ cin stage 
+ int ∧ pfinish 
+ i ∪ si c −→ si c 
+i ∅ ∅ p c −→ closed 
+ 
+w here c out ev 
+ insert closed i cout ev 
+ 
+in the second scenario the interaction has some member 
+or sub-interaction in this case clean-up is required prior to 
+the disposal of the interaction e g if the admission period 
+ends and no student has matriculated for the course 
+teachers has to be finished before finishing the course itself as 
+rule shows the interaction is moved to the transient 
+closing state and a corresponding event is inserted in the output 
+port according to invariant the closing event will be 
+dispatched to every sub-interaction in order to activate its 
+closing procedure guaranteed by invariant moreover 
+ 
+this is essentially determined by the protocol rules of these 
+interactions the way in which the dispatching function is 
+initialised and updated is out of the scope of this paper 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+the stage and ag fields are properly initialised so that the 
+process goes on in the next member state update stage this 
+stage will further initiate the leaving process of the members 
+ according to invariant 
+cin ev ∅ ∧ cin stage int ∧ pfinish ∧ sa ∅ ∨ si ∅ 
+i open sa si p c −→ closing sa si p c 
+ 
+w here c out ev 
+ insert closing i cout ev 
+ 
+ c in stage 
+ mem 
+ c in ag 
+ sa 
+eventually every member will leave the interaction and 
+every sub-interaction will be closed corresponding events 
+will be received by the interaction according to invariants 
+ and so that the conditions of the first scenario will 
+hold 
+ member state update 
+this stage simply iterates over the members of the 
+interaction to check whether they must be finished according to 
+the protocol s over function when all members have been 
+checked the stage field will be set to the next obligation 
+update stage and the auxiliary ag field will be initalised 
+with the agents identified by the protocol s obligation 
+update function 
+if some member has to end its participation in the 
+interaction and it is not playing any role it will be inmediately 
+abandoned successfully or unsuccessfully according to the 
+satisfaction of its purpose the corresponding event will 
+be forwarded to its interaction and to the interaction of its 
+player agent to account for further changes inv 
+otherwise the member enters the transient leaving state thus 
+preventing any action performance then it waits for the 
+completion of the leaving procedures of its played roles 
+triggered by proper dispatching of the leaving event inv 
+ obligations update 
+in this stage the obligations of agents not necessaryly 
+members of the interaction towards the interaction are 
+updated accordingly when all the identified agents have been 
+updated the event is removed from the input queue and 
+the stage field is set back to the interaction state update 
+for instance when a course interaction receives an event 
+representing the assignment of some department member to 
+its subject an obligation to join the course as a teacher is 
+created for that member moreover the event representing 
+this change is added to the output channel of the department 
+interaction 
+ discussion 
+this paper has attempted to expose a possible 
+semantic core underlying the wide spectrum of interaction types 
+between autonomous social and situated software 
+components in the realm of software architectures this core has 
+been formalised as an operational model of social 
+connectors intended to describe both the basic structure and 
+dynamics of multi-agent interactions from the largest the 
+agent society itself down to the smallest ones 
+ communicative actions thus top-level interactions may represent the 
+kind of agent-web pursued by large-scale initiatives such as 
+the agentcities opennet one large-scale interactions 
+modelling complex aggregates of agent interactions such as 
+those represented by e-institutions or virtual organizations 
+ are also amenable to be conceptualised as 
+particular kinds of first-level social interactions the last 
+levels of the interaction tree may represent small-scale 
+multiagent interactions such as those represented by interaction 
+protocols dialogue games or scenes finally 
+bottom-level interactions may represent communicative 
+actions from this perspective the member types of a ca 
+include the speaker and possibly many listeners the 
+purpose of the speaker coincides with the illocutionary purpose 
+of the ca whereas the purpose of any listener is to 
+declare that it actually the software component successfully 
+processed the meaning of the ca 
+the analysis of social interactions put forward in this 
+paper draws upon current proposals of the literature in 
+several general respects such as the institutional and 
+organizational character of multi-agent systems and the 
+normative perspective on multi-agent protocols 
+these proposals as well as others focusing in relevant 
+abstractions such as power relationships contracts trust and 
+reputation mechanisms in organizational settings etc could 
+be further exploited in order to characterize more accurately 
+the organizational character of some multi-agent 
+interactions similarly the conceptualization of communicative 
+actions as atomic interactions may similarly benefit from 
+public semantics of communicative actions such as the one 
+introduced in last the abstract model of protocols may 
+be refined taking into account existing operational models 
+of norms these analyses shall result in new 
+organizational and communicative abstractions obtained through 
+a refinement and or extension of the general model of 
+social interactions thus the proposed model is not intended 
+to capture every organizational or communicative feature of 
+multi-agent interactions but to reveal their roots in basic 
+interaction mechanisms in turn this would allow for the 
+exploitation of common formalisms particularly concerning 
+protocols 
+unlike the development of individual agents which has 
+greatly benefited from the design of several agent 
+programming languages societal features of multi-agent systems 
+are mostly implemented in terms of visual modelling 
+and a fixed set of interaction abstractions we argue that 
+the current field of multi-agent system programming may 
+greatly benefit from multi-agent programming languages that 
+allow programmers to accommodate an open set of 
+interaction mechanisms the model of social interactions put 
+forward in this paper is intended as the abstract machine 
+of a language of this type this abstract machine would 
+be independent of particular agent architectures and 
+languages i e software components may be programmed in a 
+bdi language such as jason or in a non-agent oriented 
+language 
+on top of the presented execution semantics current and 
+future work aims at the specification of the type system 
+which allows to program the abstract machine the 
+specification of the corresponding surface syntaxes both textual 
+and visual and the design and implementation of a virtual 
+machine over existing middleware technologies such as fipa 
+platforms or web services we also plan to study particular 
+refinements and limitations to the proposed model 
+particularly with respect to the dispatching of events semantics 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+of obligations dynamic updates of protocols and rule 
+formalisms in this latter aspect we plan to investigate the 
+use of answer set programming to specify the rules of 
+protocols attending to the role that incompleteness rules may 
+only specify either necessary or sufficient conditions for 
+instance explicit negation e g prohibitions and defaults 
+play in this domain 
+ acknowledgments 
+the authors thank anonymous reviewers for their 
+comments and suggestions research sponsored by the spanish 
+ministry of science and education mec project 
+tin -c - 
+ references 
+ r allen and d garlan a formal basis for 
+architectural connection acm transactions on 
+software engineering and methodology - 
+june 
+ j l arcos m esteva p noriega j a rodr´ıguez 
+and c sierra engineering open environments with 
+electronic institutions journal on engineering 
+applications of artificial intelligence - 
+ 
+ g boella r damiano j hulstijn and l w n 
+van der torre role-based semantics for agent 
+communication embedding of the mental attitudes 
+and social commitments semantics in aamas 
+pages - 
+ r h bordini l braubach m dastani a e f 
+seghrouchni j j g sanz j leite g o hare 
+a pokahr and a ricci a survey of programming 
+languages and platforms for multi-agent systems 
+informatica - 
+ r h bordini j f h¨ubner and r vieira jason and 
+the golden fleece of agent-oriented programming in 
+r h bordini d m j dix and 
+a el fallah seghrouchni editors multi-agent 
+programming languages platforms and applications 
+chapter springer-verlag 
+ o cliffe m d vos and j a padget specifying and 
+analysing agent-based social institutions using answer 
+set programming in eumas pages - 
+ v dignum j v´azquez-salceda and f dignum 
+omni introducing social structure norms and 
+ontologies into agent organizations in r bordini 
+m dastani j dix and a seghrouchni editors 
+programming multi-agent systems second 
+international workshop promas volume 
+of lnai pages - springer 
+ m esteva d de la cruz and c sierra islander 
+an electronic institutions editor in m gini t ishida 
+c castelfranchi and w l johnson editors 
+proceedings of the first international joint 
+conference on autonomous agents and multiagent 
+systems aamas pages - acm press 
+july 
+ m esteva b rosell j a rodr´ıguez-aguilar and 
+j l arcos ameli an agent-based middleware for 
+electronic institutions in proceedings of the third 
+international joint conference on autonomous agents 
+and multiagent systems volume pages - 
+ 
+ j ferber o gutknecht and f michel from agents 
+to organizations an organizational view of 
+multi-agent systems in aose pages - 
+ foundation for intelligent physical agents fipa 
+interaction protocol library specification 
+http www fipa org repository ips html 
+ a garc´ıa-camino j a rodr´ıguez-aguilar c sierra 
+and w vasconcelos norm-oriented programming of 
+electronic institutions in aamas pages - 
+ 
+ o gutknecht and j ferber the madkit agent 
+platform architecture lecture notes in computer 
+science - 
+ jade the jade project home page 
+http jade cselt it 
+ m luck p mcburney o shehory and s willmott 
+agent technology computing as interaction - a 
+roadmap for agent-based computing agentlink iii 
+ 
+ p mcburney and s parsons a formal framework for 
+inter-agent dialogues in j p m¨uller e andre 
+s sen and c frasson editors proceedings of the 
+fifth international conference on autonomous 
+agents pages - montreal canada may 
+acm press 
+ n r mehta n medvidovic and s phadke towards 
+a taxonomy of software connectors in proceedings of 
+the nd international conference on software 
+engineering pages - acm press june 
+ j pav´on and j g´omez-sanz agent oriented software 
+engineering with ingenias in v marik j muller and 
+m pechoucek editors proceedings of the rd 
+international central and eastern european 
+conference on multi-agent systems springer verlag 
+ 
+ b c pierce types and programming languages the 
+mit press cambridge ma 
+ j pitt l kamara m sergot and a artikis voting 
+in multi-agent systems feb 
+ g plotkin a structural approach to operational 
+semantics technical report daimi fn- aarhus 
+university sept 
+ j searle speech acts cambridge university press 
+ 
+ m sergot a computational theory of normative 
+positions acm transactions on computational logic 
+ - oct 
+ m p singh agent-based abstractions for software 
+development in f bergenti m -p gleizes and 
+f zambonelli editors methodologies and software 
+engineering for agent systems chapter pages - 
+kluwer 
+ s willmot and al agentcities opennet testbed 
+http x-opennet net 
+ f zambonelli n r jennings and m wooldridge 
+developing multiagent systems the gaia 
+methodology acm transactions on software 
+engineering and methodology - july 
+ 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

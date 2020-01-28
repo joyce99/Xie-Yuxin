@@ -1,0 +1,983 @@
+a time machine for text search 
+klaus berberich srikanta bedathur thomas neumann gerhard weikum 
+max-planck institute for informatics 
+saarbr¨ucken germany 
+ kberberi bedathur neumann weikum  mpi-inf mpg de 
+abstract 
+text search over temporally versioned document collections 
+such as web archives has received little attention as a 
+research problem as a consequence there is no scalable and 
+principled solution to search such a collection as of a 
+specified time t in this work we address this shortcoming and 
+propose an efficient solution for time-travel text search by 
+extending the inverted file index to make it ready for 
+temporal search we introduce approximate temporal coalescing 
+as a tunable method to reduce the index size without 
+significantly affecting the quality of results in order to further 
+improve the performance of time-travel queries we 
+introduce two principled techniques to trade off index size for 
+its performance these techniques can be formulated as 
+optimization problems that can be solved to near-optimality 
+finally our approach is evaluated in a comprehensive 
+series of experiments on two large-scale real-world datasets 
+results unequivocally show that our methods make it 
+possible to build an efficient time machine scalable to large 
+versioned text collections 
+categories and subject descriptors 
+h content analysis and indexing indexing 
+methods h information search and retrieval 
+retrieval models search process 
+general terms 
+algorithms experimentation performance 
+ introduction 
+in this work we address time-travel text search over 
+temporally versioned document collections given a keyword 
+query q and a time t our goal is to identify and rank 
+relevant documents as if the collection was in its state as of 
+time t 
+an increasing number of such versioned document 
+collections is available today including web archives 
+collaborative authoring environments like wikis or timestamped 
+information feeds text search on these collections 
+however is mostly time-ignorant while the searched collection 
+changes over time often only the most recent version of 
+a documents is indexed or versions are indexed 
+independently and treated as separate documents even worse for 
+some collections in particular web archives like the 
+internet archive a comprehensive text-search functionality 
+is often completely missing 
+time-travel text search as we develop it in this paper 
+is a crucial tool to explore these collections and to unfold 
+their full potential as the following example demonstrates 
+for a documentary about a past political scandal a 
+journalist needs to research early opinions and statements made 
+by the involved politicians sending an appropriate query 
+to a major web search-engine the majority of returned 
+results contains only recent coverage since many of the early 
+web pages have disappeared and are only preserved in web 
+archives if the query could be enriched with a time point 
+say august th as the day after the scandal got 
+revealed and be issued against a web archive only pages that 
+existed specifically at that time could be retrieved thus better 
+satisfying the journalist s information need 
+document collections like the web or wikipedia as 
+we target them here are already large if only a single 
+snapshot is considered looking at their evolutionary history we 
+are faced with even larger data volumes as a consequence 
+na¨ıve approaches to time-travel text search fail and viable 
+approaches must scale-up well to such large data volumes 
+this paper presents an efficient solution to time-travel 
+text search by making the following key contributions 
+ the popular well-studied inverted file index is 
+transparently extended to enable time-travel text search 
+ temporal coalescing is introduced to avoid an 
+indexsize explosion while keeping results highly accurate 
+ we develop two sublist materialization techniques to 
+improve index performance that allow trading off space 
+vs performance 
+ in a comprehensive experimental evaluation our 
+approach is evaluated on the english wikipedia and parts 
+of the internet archive as two large-scale real-world 
+datasets with versioned documents 
+the remainder of this paper is organized as follows the 
+presented work is put in context with related work in 
+section we delineate our model of a temporally versioned 
+document collection in section we present our time-travel 
+inverted index in section building on it temporal 
+coalescing is described in section in section we describe 
+principled techniques to improve index performance before 
+presenting the results of our experimental evaluation in 
+section 
+ related work 
+we can classify the related work mainly into the following 
+two categories i methods that deal explicitly with 
+collections of versioned documents or temporal databases and 
+ ii methods for reducing the index size by exploiting either 
+the document-content overlap or by pruning portions of the 
+index we briefly review work under these categories here 
+to the best of our knowledge there is very little prior work 
+dealing with historical search over temporally versioned 
+documents anick and flynn while pioneering this research 
+describe a help-desk system that supports historical queries 
+access costs are optimized for accesses to the most recent 
+versions and increase as one moves farther into the past 
+burrows and hisgen in a patent description delineate 
+a method for indexing range-based values and mention its 
+potential use for searching based on dates associated with 
+documents recent work by nørv˚ag and nybø and 
+their earlier proposals concentrate on the relatively simpler 
+problem of supporting text-containment queries only and 
+neglect the relevance scoring of results stack reports 
+practical experiences made when adapting the open source 
+search-engine nutch to search web archives this 
+adaptation however does not provide the intended time-travel 
+text search functionality in contrast research in temporal 
+databases has produced several index structures tailored for 
+time-evolving databases a comprehensive overview of the 
+state-of-art is available in unlike the inverted file 
+index their applicability to text search is not well understood 
+moving on to the second category of related work broder 
+et al describe a technique that exploits large content 
+overlaps between documents to achieve a reduction in index 
+size their technique makes strong assumptions about the 
+structure of document overlaps rendering it inapplicable to 
+our context more recent approaches by hersovici et al 
+and zhang and suel exploit arbitrary content overlaps 
+between documents to reduce index size none of the 
+approaches however considers time explicitly or provides the 
+desired time-travel text search functionality static 
+indexpruning techniques aim to reduce the effective index 
+size by removing portions of the index that are expected 
+to have low impact on the query result they also do not 
+consider temporal aspects of documents and thus are 
+technically quite different from our proposal despite having a 
+shared goal of index-size reduction it should be noted that 
+index-pruning techniques can be adapted to work along with 
+the temporal text index we propose here 
+ model 
+in the present work we deal with a temporally versioned 
+document collection d that is modeled as described in the 
+following each document d ∈ d is a sequence of its versions 
+d dt 
+ dt 
+ 
+each version dti 
+has an associated timestamp ti reflecting 
+when the version was created each version is a vector of 
+searchable terms or features any modification to a 
+document version results in the insertion of a new version with 
+corresponding timestamp we employ a discrete definition 
+of time so that timestamps are non-negative integers the 
+deletion of a document at time ti i e its disappearance 
+from the current state of the collection is modeled as the 
+insertion of a special tombstone version ⊥ the validity 
+time-interval val dti 
+ of a version dti 
+is ti ti if a newer 
+version with associated timestamp ti exists and ti now 
+otherwise where now points to the greatest possible value of 
+a timestamp i e ∀t t now 
+putting all this together we define the state dt 
+of the 
+collection at time t i e the set of versions valid at t that 
+are not deletions as 
+dt 
+ 
+ 
+d∈d 
+ dti 
+∈ d t ∈ val dti 
+ ∧ dti 
+ ⊥ 
+as mentioned earlier we want to enrich a keyword query 
+q with a timestamp t so that q be evaluated over dt 
+ i e 
+the state of the collection at time t the enriched time-travel 
+query is written as q t 
+for brevity 
+as a retrieval model in this work we adopt okapi bm 
+but note that the proposed techniques are not dependent on 
+this choice and are applicable to other retrieval models like 
+tf-idf or language models as well for our considered 
+setting we slightly adapt okapi bm as 
+w q t 
+ dti 
+ 
+x 
+v∈q 
+wtf v dti 
+ · widf v t 
+in the above formula the relevance w q t 
+ dti 
+ of a 
+document version dti 
+to the time-travel query q t 
+is defined 
+we reiterate that q t 
+is evaluated over dt 
+so that only the 
+version dti 
+valid at time t is considered the first factor 
+wtf v dti 
+ in the summation further referred to as the 
+tfscore is defined as 
+wtf v dti 
+ 
+ k · tf v dti 
+ 
+k · − b b · dl d ti 
+avdl ti 
+ tf v dti 
+ 
+it considers the plain term frequency tf v dti 
+ of term v 
+in version dti 
+normalizing it taking into account both the 
+length dl dti 
+ of the version and the average document length 
+avdl ti in the collection at time ti the length-normalization 
+parameter b and the tf-saturation parameter k are inherited 
+from the original okapi bm and are commonly set to 
+values and respectively the second factor widf v t 
+which we refer to as the idf-score in the remainder conveys 
+the inverse document frequency of term v in the collection 
+at time t and is defined as 
+widf v t log 
+n t − df v t 
+df v t 
+where n t dt 
+ is the collection size at time t and df v t 
+gives the number of documents in the collection that contain 
+the term v at time t while the idf-score depends on the 
+whole corpus as of the query time t the tf-score is specific 
+to each version 
+ time-travelinvertedfileindex 
+the inverted file index is a standard technique for text 
+indexing deployed in many systems in this section we 
+briefly review this technique and present our extensions to 
+the inverted file index that make it ready for time-travel text 
+search 
+ inverted file index 
+an inverted file index consists of a vocabulary commonly 
+organized as a b -tree that maps each term to its 
+idfscore and inverted list the index list lv belonging to term 
+v contains postings of the form 
+ d p 
+where d is a document-identifier and p is the so-called 
+payload the payload p contains information about the term 
+frequency of v in d but may also include positional 
+information about where the term appears in the document 
+the sort-order of index lists depends on which queries are 
+to be supported efficiently for boolean queries it is 
+favorable to sort index lists in document-order 
+frequencyorder and impact-order sorted index lists are beneficial for 
+ranked queries and enable optimized query processing that 
+stops early after having identified the k most relevant 
+documents a variety of compression techniques 
+such as encoding document identifiers more compactly have 
+been proposed to reduce the size of index lists for 
+an excellent recent survey about inverted file indexes we 
+refer to 
+ time-travel inverted file index 
+in order to prepare an inverted file index for time travel 
+we extend both inverted lists and the vocabulary structure 
+by explicitly incorporating temporal information the main 
+idea for inverted lists is that we include a validity 
+timeinterval tb te in postings to denote when the payload 
+information was valid the postings in our time-travel inverted 
+file index are thus of the form 
+ d p tb te 
+where d and p are defined as in the standard inverted file 
+index above and tb te is the validity time-interval 
+as a concrete example in our implementation for a 
+version dti 
+having the okapi bm tf-score wtf v dti 
+ for term 
+v the index list lv contains the posting 
+ d wtf v dti 
+ ti ti 
+similarly the extended vocabulary structure maintains 
+for each term a time-series of idf-scores organized as a 
+b tree unlike the tf-score the idf-score of every term could 
+vary with every change in the corpus therefore we take 
+a simplified approach to idf-score maintenance by 
+computing idf-scores for all terms in the corpus at specific possibly 
+periodic times 
+ query processing 
+during processing of a time-travel query q t 
+ for each query 
+term the corresponding idf-score valid at time t is retrieved 
+from the extended vocabulary then index lists are 
+sequentially read from disk thereby accumulating the information 
+contained in the postings we transparently extend the 
+sequential reading which is - to the best of our 
+knowledgecommon to all query processing techniques on inverted file 
+indexes thus making them suitable for time-travel 
+queryprocessing to this end sequential reading is extended by 
+skipping all postings whose validity time-interval does not 
+contain t i e t ∈ tb te whether a posting can be 
+skipped can only be decided after the posting has been 
+transferred from disk into memory and therefore still incurs 
+significant i o cost as a remedy we propose index organization 
+techniques in section that aim to reduce the i o overhead 
+significantly 
+we note that our proposed extension of the inverted file 
+index makes no assumptions about the sort-order of 
+index lists as a consequence existing query-processing 
+techniques and most optimizations e g compression techniques 
+remain equally applicable 
+ temporal coalescing 
+if we employ the time-travel inverted index as described 
+in the previous section to a versioned document collection 
+we obtain one posting per term per document version for 
+frequent terms and large highly-dynamic collections this 
+time 
+score 
+non-coalesced 
+coalesced 
+figure approximate temporal coalescing 
+leads to extremely long index lists with very poor 
+queryprocessing performance 
+the approximate temporal coalescing technique that we 
+propose in this section counters this blowup in index-list 
+size it builds on the observation that most changes in a 
+versioned document collection are minor leaving large parts 
+of the document untouched as a consequence the payload 
+of many postings belonging to temporally adjacent versions 
+will differ only slightly or not at all approximate temporal 
+coalescing reduces the number of postings in an index list by 
+merging such a sequence of postings that have almost equal 
+payloads while keeping the maximal error bounded this 
+idea is illustrated in figure which plots non-coalesced and 
+coalesced scores of postings belonging to a single document 
+approximate temporal coalescing is greatly effective given 
+such fluctuating payloads and reduces the number of 
+postings from to in the example the notion of temporal 
+coalescing was originally introduced in temporal database 
+research by b¨ohlen et al where the simpler problem of 
+coalescing only equal information was considered 
+we next formally state the problem dealt with in 
+approximate temporal coalescing and discuss the computation of 
+optimal and approximate solutions note that the technique 
+is applied to each index list separately so that the following 
+explanations assume a fixed term v and index list lv 
+as an input we are given a sequence of temporally 
+adjacent postings 
+i d pi ti ti d pn− tn− tn 
+each sequence represents a contiguous time period during 
+which the term was present in a single document d if a term 
+disappears from d but reappears later we obtain multiple 
+input sequences that are dealt with separately we seek to 
+generate the minimal length output sequence of postings 
+o d pj tj tj d pm− tm− tm 
+that adheres to the following constraints first o and i 
+must cover the same time-range i e ti tj and tn tm 
+second when coalescing a subsequence of postings of the 
+input into a single posting of the output we want the 
+approximation error to be below a threshold in other words if 
+ d pi ti ti and d pj tj tj are postings of i and 
+o respectively then the following must hold for a chosen 
+error function and a threshold 
+tj ≤ ti ∧ ti ≤ tj ⇒ error pi pj ≤ 
+in this paper as an error function we employ the relative 
+error between payloads i e tf-scores of a document in i 
+and o defined as 
+errrel pi pj pi − pj pi 
+finding an optimal output sequence of postings can be 
+cast into finding a piecewise-constant representation for the 
+points ti pi that uses a minimal number of segments while 
+retaining the above approximation guarantee similar 
+problems occur in time-series segmentation and histogram 
+construction typically dynamic programming is 
+applied to obtain an optimal solution in o n 
+m 
+ 
+time with m 
+being the number of segments in an optimal 
+sequence in our setting as a key difference only a 
+guarantee on the local error is retained - in contrast to a guarantee 
+on the global error in the aforementioned settings 
+exploiting this fact an optimal solution is computable by means of 
+induction in o n 
+ time details of the optimal 
+algorithm are omitted here but can be found in the 
+accompanying technical report 
+the quadratic complexity of the optimal algorithm makes 
+it inappropriate for the large datasets encountered in this 
+work as an alternative we introduce a linear-time 
+approximate algorithm that is based on the sliding-window 
+algorithm given in this algorithm produces nearly-optimal 
+output sequences that retain the bound on the relative error 
+but possibly require a few additional segments more than an 
+optimal solution 
+algorithm temporal coalescing approximate 
+ i d pi ti ti o 
+ pmin pi pmax pi p pi tb ti te ti 
+ for d pj tj tj ∈ i do 
+ pmin min pmin pj pmax max pmax pj 
+ p optrep pmin pmax 
+ if errrel pmin p ≤ ∧ errrel pmax p ≤ then 
+ pmin pmin pmax pmax p p te tj 
+ else 
+ o o ∪ d p tb te 
+ pmin pj pmax pj p pj tb tj te tj 
+ end if 
+ end for 
+ o o ∪ d p tb te 
+algorithm makes one pass over the input sequence i 
+while doing so it coalesces sequences of postings having 
+maximal length the optimal representative for a sequence 
+of postings depends only on their minimal and maximal 
+payload pmin and pmax and can be looked up using optrep in 
+o see for details when reading the next 
+posting the algorithm tries to add it to the current sequence of 
+postings it computes the hypothetical new representative 
+p and checks whether it would retain the approximation 
+guarantee if this test fails a coalesced posting bearing the 
+old representative is added to the output sequence o and 
+following that the bookkeeping is reinitialized the time 
+complexity of the algorithm is in o n 
+note that since we make no assumptions about the sort 
+order of index lists temporal-coalescing algorithms have an 
+additional preprocessing cost in o lv log lv for sorting 
+the index list and chopping it up into subsequences for each 
+document 
+ sublist materialization 
+efficiency of processing a query q t 
+on our time-travel 
+inverted index is influenced adversely by the wasted i o due 
+to read but skipped postings temporal coalescing 
+implicitly addresses this problem by reducing the overall index list 
+size but still a significant overhead remains in this section 
+we tackle this problem by proposing the idea of materializing 
+sublists each of which corresponds to a contiguous 
+subinterval of time spanned by the full index each of these sublists 
+contains all coalesced postings that overlap with the 
+corresponding time interval of the sublist note that all those 
+postings whose validity time-interval spans across the 
+temporal boundaries of several sublists are replicated in each of 
+the spanned sublists thus in order to process the query q t 
+time 
+t t t t t t t t t t 
+d 
+d 
+d 
+document 
+ 
+ 
+ 
+figure sublist materialization 
+it is sufficient to scan any materialized sublist whose 
+timeinterval contains t 
+we illustrate the idea of sublist materialization using an 
+example shown in figure the index list lv visualized in 
+the figure contains a total of postings from three 
+documents d d and d for ease of description we have 
+numbered boundaries of validity time-intervals in increasing 
+time-order as t t and numbered the postings 
+themselves as now consider the processing of a query 
+q t 
+with t ∈ t t using this inverted list although only 
+three postings postings and are valid at time t the 
+whole inverted list has to be read in the worst case suppose 
+that we split the time axis of the list at time t forming two 
+sublists with postings and 
+ respectively then we can process the above query with 
+optimal cost by reading only those postings that existed at 
+this t 
+at a first glance it may seem counterintuitive to reduce 
+index size in the first step using temporal coalescing and 
+then to increase it again using the sublist materialization 
+techniques presented in this section however we reiterate 
+that our main objective is to improve the efficiency of 
+processing queries not to reduce the index size alone the use 
+of temporal coalescing improves the performance by 
+reducing the index size while the sublist materialization improves 
+performance by judiciously replicating entries further the 
+two techniques can be applied separately and are 
+independent if applied in conjunction though there is a synergetic 
+effect - sublists that are materialized from a temporally 
+coalesced index are generally smaller 
+we employ the notation lv ti tj to refer to the 
+materialized sublist for the time interval ti tj that is formally 
+defined as 
+lv ti tj d p tb te ∈ lv tb tj ∧ te ti 
+to aid the presentation in the rest of the paper we first 
+provide some definitions let t t tn be the sorted 
+sequence of all unique time-interval boundaries of an 
+inverted list lv then we define 
+e ti ti ≤ i n 
+to be the set of elementary time intervals we refer to the 
+set of time intervals for which sublists are materialized as 
+m ⊆ ti tj ≤ i j ≤ n 
+and demand 
+∀ t ∈ t tn ∃ m ∈ m t ∈ m 
+i e the time intervals in m must completely cover the 
+time interval t tn so that time-travel queries q t 
+for all 
+t ∈ t tn can be processed we also assume that 
+intervals in m are disjoint we can make this assumption 
+without ruling out any optimal solution with regard to space 
+or performance defined below the space required for the 
+materialization of sublists in a set m is defined as 
+s m 
+x 
+m∈m 
+ lv m 
+i e the total length of all lists in m given a set m we let 
+π ti ti tj tk ∈ m ti ti ⊆ tj tk 
+denote the time interval that is used to process queries q t 
+with t ∈ ti ti the performance of processing queries 
+q t 
+for t ∈ ti ti inversely depends on its processing cost 
+pc ti ti lv π ti ti 
+which is assumed to be proportional to the length of the 
+list lv π ti ti thus in order to optimize the 
+performance of processing queries we minimize their processing 
+costs 
+ performance space-optimal approaches 
+one strategy to eliminate the problem of skipped 
+postings is to eagerly materialize sublists for all elementary time 
+intervals i e to choose m e in doing so for every 
+query q t 
+only postings valid at time t are read and thus the 
+best possible performance is achieved therefore we will 
+refer to this approach as popt in the remainder the initial 
+approach described above that keeps only the full list lv 
+and thus picks m t tn is referred to as sopt in the 
+remainder this approach requires minimal space since it 
+keeps each posting exactly once 
+popt and sopt are extremes the former provides the best 
+possible performance but is not space-efficient the latter 
+requires minimal space but does not provide good 
+performance the two approaches presented in the rest of this 
+section allow mutually trading off space and performance 
+and can thus be thought of as means to explore the 
+configuration spectrum between the popt and the sopt approach 
+ performance-guarantee approach 
+the popt approach clearly wastes a lot of space 
+materializing many nearly-identical sublists in the example 
+illustrated in figure materialized sublists for t t and 
+ t t differ only by one posting if the sublist for t t 
+was materialized instead one could save significant space 
+while incurring only an overhead of one skipped posting for 
+all t ∈ t t the technique presented next is driven by 
+the idea that significant space savings over popt are 
+achievable if an upper-bounded loss on the performance can be 
+tolerated or to put it differently if a performance 
+guarantee relative to the optimum is to be retained in detail 
+the technique which we refer to as pg performance 
+guarantee in the remainder finds a set m that has minimal 
+required space but guarantees for any elementary time 
+interval ti ti and thus for any query q t 
+with t ∈ ti ti 
+that performance is worse than optimal by at most a factor 
+of γ ≥ formally this problem can be stated as 
+argmin 
+m 
+s m s t 
+∀ ti ti ∈ e pc ti ti ≤ γ · lv ti ti 
+an optimal solution to the problem can be computed by 
+means of induction using the recurrence 
+c t tk 
+min c t tj lv tj tk ≤ j ≤ k ∧ condition 
+where c t tj is the optimal cost i e the space 
+required for the prefix subproblem 
+ ti ti ∈ e ti ti ⊆ t tj 
+and condition stands for 
+∀ ti ti ∈ e ti ti ⊆ tj tk 
+⇒ lv tj tk ≤ γ · lv ti ti 
+ 
+intuitively the recurrence states that an optimal solution 
+for t tk be combined from an optimal solution to a 
+prefix subproblem c t tj and a time interval tj tk 
+that can be materialized without violating the performance 
+guarantee 
+pseudocode of the algorithm is omitted for space reasons 
+but can be found in the accompanying technical report 
+the time complexity of the algorithm is in o n 
+ - for each 
+prefix subproblem the above recurrence must be evaluated 
+which is possible in linear time if list sizes l ti tj are 
+precomputed the space complexity is in o n 
+ - the cost 
+of keeping the precomputed sublist lengths and memoizing 
+optimal solutions to prefix subproblems 
+ space-bound approach 
+so far we considered the problem of materializing sublists 
+that give a guarantee on performance while requiring 
+minimal space in many situations though the storage space is 
+at a premium and the aim would be to materialize a set of 
+sublists that optimizes expected performance while not 
+exceeding a given space limit the technique presented next 
+which is named sb tackles this very problem the space 
+restriction is modeled by means of a user-specified 
+parameter κ ≥ that limits the maximum allowed blowup in index 
+size from the space-optimal solution provided by sopt the 
+sb technique seeks to find a set m that adheres to this 
+space limit but minimizes the expected processing cost and 
+thus optimizes the expected performance in the definition 
+of the expected processing cost p ti ti denotes the 
+probability of a query time-point being in ti ti 
+formally this space-bound sublist-materialization problem can 
+be stated as 
+argmin 
+m 
+x 
+ ti ti ∈ e 
+p ti ti · pc ti ti s t 
+x 
+m∈m 
+ lv m ≤ κ lv 
+the problem can be solved by using dynamic 
+programming over an increasing number of time intervals at each 
+time interval in e the algorithms decides whether to start a 
+new materialization time-interval using the known best 
+materialization decision from the previous time intervals and 
+keeping track of the required space consumption for 
+materialization a detailed description of the algorithm is omitted 
+here but can be found in the accompanying technical 
+report unfortunately the algorithm has time complexity 
+in o n 
+ lv and its space complexity is in o n 
+ lv which 
+is not practical for large data sets 
+we obtain an approximate solution to the problem 
+using simulated annealing simulated annealing takes 
+a fixed number r of rounds to explore the solution space 
+in each round a random successor of the current solution 
+is looked at if the successor does not adhere to the space 
+limit it is always rejected i e the current solution is kept 
+a successor adhering to the space limit is always accepted if 
+it achieves lower expected processing cost than the current 
+solution if it achieves higher expected processing cost it is 
+randomly accepted with probability e−∆ r 
+where ∆ is the 
+increase in expected processing cost and r ≥ r ≥ denotes 
+the number of remaining rounds in addition throughout 
+all rounds the method keeps track of the best solution seen 
+so far the solution space for the problem at hand can be 
+efficiently explored as we argued above we solely have 
+to look at sets m that completely cover the time interval 
+ t tn and do not contain overlapping time intervals we 
+represent such a set m as an array of n boolean variables 
+b bn that convey the boundaries of time intervals in the 
+set note that b and bn are always set to true initially 
+all n − intermediate variables assume false which 
+corresponds to the set m t tn a random successor 
+can now be easily generated by switching the value of one 
+of the n − intermediate variables the time complexity of 
+the method is in o n 
+ - the expected processing cost must 
+be computed in each round its space complexity is in o n 
+- for keeping the n boolean variables 
+as a side remark note that for κ the sb method 
+does not necessarily produce the solution that is obtained 
+from sopt but may produce a solution that requires the 
+same amount of space while achieving better expected 
+performance 
+ experimental evaluation 
+we conducted a comprehensive series of experiments on 
+two real-world datasets to evaluate the techniques proposed 
+in this paper 
+ setup and datasets 
+the techniques described in this paper were implemented 
+in a prototype system using java jdk all 
+experiments described below were run on a single sun v z 
+machine having four amd opteron cpus gb ram a large 
+network-attached raid- disk array and running microsoft 
+windows server all data and indexes are kept in an 
+oracle g database that runs on the same machine for 
+our experiments we used two different datasets 
+the english wikipedia revision history referred to as 
+wiki in the remainder is available for free download as 
+a single xml file this large dataset totaling tbytes 
+contains the full editing history of the english wikipedia 
+from january to december the time of our 
+download we indexed all encyclopedia articles excluding 
+versions that were marked as the result of a minor edit e g 
+the correction of spelling errors etc this yielded a total of 
+ documents with versions having a mean 
+ µ of versions per document at standard deviation σ 
+of we built a time-travel query workload using the 
+query log temporarily made available recently by aol 
+research as follows - we first extracted the most frequent 
+keyword queries that yielded a result click on a wikipedia 
+article for e g french revolution hurricane season 
+da vinci code etc the thus extracted queries contained 
+a total of distinct terms for each extracted query we 
+randomly picked a time point for each month covered by 
+the dataset this resulted in a total of × 
+time-travel queries 
+the second dataset used in our experiments was based 
+on a subset of the european archive containing weekly 
+crawls of gov uk websites throughout the years and 
+ amounting close to tbytes of raw data we filtered 
+out documents not belonging to mime-types text plain 
+and text html to obtain a dataset that totals tbytes 
+and which we refer to as ukgov in rest of the paper this 
+included a total of documents with 
+versions µ and σ we built a corresponding 
+query workload as mentioned before this time choosing 
+keyword queries that led to a site in the gov uk domain e g 
+minimum wage inheritance tax citizenship ceremony 
+dates etc and randomly sampling a time point for every 
+month within the two year period spanned by the dataset 
+thus we obtained a total of × time-travel 
+queries for the ukgov dataset in total terms appear 
+in the extracted queries 
+the collection statistics i e n and avdl and term 
+statistics i e df were computed at monthly granularity for 
+both datasets 
+ impact of temporal coalescing 
+our first set of experiments is aimed at evaluating the 
+approximate temporal coalescing technique described in 
+section in terms of index-size reduction and its effect on the 
+result quality for both the wiki and ukgov datasets we 
+compare temporally coalesced indexes for different values of 
+the error threshold computed using algorithm with the 
+non-coalesced index as a baseline 
+wiki ukgov 
+ postings ratio postings ratio 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+table index sizes for non-coalesced index - and 
+coalesced indexes for different values of 
+table summarizes the index sizes measured as the total 
+number of postings as these results demonstrate 
+approximate temporal coalescing is highly effective in reducing 
+index size even a small threshold value e g has a 
+considerable effect by reducing the index size almost by an 
+order of magnitude note that on the ukgov dataset even 
+accurate coalescing manages to reduce the index size 
+to less than of the original size index size continues to 
+reduce on both datasets as we increase the value of 
+how does the reduction in index size affect the query 
+results in order to evaluate this aspect we compared the 
+top-k results computed using a coalesced index against the 
+ground-truth result obtained from the original index for 
+different cutoff levels k let gk and ck be the top-k documents 
+from the ground-truth result and from the coalesced index 
+respectively we used the following two measures for 
+comparison i relative recall at cutoff level k rr k that 
+measures the overlap between gk and ck which ranges in 
+ and is defined as 
+rr k gk ∩ ck k 
+ ii kendall s τ see for a detailed definition at 
+cutoff level k kt k measuring the agreement between two 
+results in the relative order of items in gk ∩ ck with value 
+ or - indicating total agreement or disagreement 
+figure plots for cutoff levels and the mean of 
+rr k and kt k along with and percentiles for 
+different values of the threshold starting from note 
+that for results coincide with those obtained by the 
+original index and hence are omitted from the graph 
+it is reassuring to see from these results that approximate 
+temporal coalescing induces minimal disruption to the query 
+results since rr k and kt k are within reasonable limits 
+for the smallest value of in our experiments 
+rr  for wiki is indicating that the results are 
+- 
+- 
+ 
+ 
+ 
+ε 
+ 
+relative recall   wiki 
+kendall s τ   wiki 
+relative recall   ukgov 
+kendall s τ   ukgov 
+ a   
+- 
+- 
+ 
+ 
+ 
+ε 
+ 
+relative recall   wiki 
+kendall s τ   wiki 
+relative recall   ukgov 
+kendall s τ   ukgov 
+ b   
+figure relative recall and kendall s τ observed on coalesced indexes for different values of 
+almost indistinguishable from those obtained through the 
+original index even the relative order of these common 
+results is quite high as the mean kt  is close to 
+for the extreme value of which results in an index 
+size of just of the original the rr  and kt  
+are about and respectively on the relatively less 
+dynamic ukgov dataset as can be seen from the σ values 
+above results were even better with high values of rr and 
+kt seen throughout the spectrum of values for both cutoff 
+values 
+ sublist materialization 
+we now turn our attention towards evaluating the 
+sublist materialization techniques introduced in section for 
+both datasets we started with the coalesced index produced 
+by a moderate threshold setting of in order to 
+reduce the computational effort boundaries of elementary 
+time intervals were rounded to day granularity before 
+computing the sublist materializations however note that the 
+postings in the materialized sublists still retain their 
+original timestamps for a comparative evaluation of the four 
+approaches - popt sopt pg and sb - we measure space 
+and performance as follows the required space s m as 
+defined earlier is equal to the total number of postings in 
+the materialized sublists to assess performance we 
+compute the expected processing cost epc for all terms in 
+the respective query workload assuming a uniform 
+probability distribution among query time-points we report the 
+mean epc as well as the - and -percentile in other 
+words the mean epc reflects the expected length of the 
+index list in terms of index postings that needs to be scanned 
+for a random time point and a random term from the query 
+workload 
+the sopt and popt approaches are by their definition 
+parameter-free for the pg approach we varied its 
+parameter γ which limits the maximal performance degradation 
+between and analogously for the sb approach 
+the parameter κ as an upper-bound on the allowed space 
+blowup was varied between and solutions for the 
+sb approach were obtained running simulated annealing for 
+r rounds 
+table lists the obtained space and performance figures 
+note that epc values are smaller on wiki than on 
+ukgov since terms in the query workload employed for wiki 
+are relatively rarer in the corpus based on the depicted 
+results we make the following key observations i as 
+expected popt achieves optimal performance at the cost of an 
+enormous space consumption sopt to the contrary while 
+consuming an optimal amount of space provides only poor 
+expected processing cost the pg and sb methods for 
+different values of their respective parameter produce 
+solutions whose space and performance lie in between the 
+extremes that popt and sopt represent ii for the pg method 
+we see that for an acceptable performance degradation of 
+only i e γ the required space drops by more 
+than one order of magnitude in comparison to popt on both 
+datasets iii the sb approach achieves close-to-optimal 
+performance on both datasets if allowed to consume at most 
+three times the optimal amount of space i e κ 
+which on our datasets still corresponds to a space reduction 
+over popt by more than one order of magnitude 
+we also measured wall-clock times on a sample of the 
+queries with results indicating improvements in execution 
+time by up to a factor of 
+ conclusions 
+in this work we have developed an efficient solution for 
+time-travel text search over temporally versioned document 
+collections experiments on two real-world datasets showed 
+that a combination of the proposed techniques can reduce 
+index size by up to an order of magnitude while achieving 
+nearly optimal performance and highly accurate results 
+the present work opens up many interesting questions 
+for future research e g how can we even further improve 
+performance by applying and possibly extending encoding 
+compression and skipping techniques how can we 
+extend the approach for queries q tb te 
+specifying a time 
+interval instead of a time point how can the described 
+time-travel text search functionality enable or speed up text 
+mining along the time axis e g tracking sentiment changes 
+in customer opinions 
+ acknowledgments 
+we are grateful to the anonymous reviewers for their 
+valuable comments - in particular to the reviewer who pointed 
+out the opportunity for algorithmic improvements in 
+section and section 
+ references 
+ v n anh and a moffat pruned query evaluation 
+using pre-computed impacts in sigir 
+ v n anh and a moffat pruning strategies for 
+mixed-mode querying in cikm 
+wiki ukgov 
+s m epc s m epc 
+ mean mean 
+popt 
+sopt 
+pg γ 
+pg γ 
+pg γ 
+pg γ 
+pg γ 
+pg γ 
+pg γ 
+sb κ 
+sb κ 
+sb κ 
+sb κ 
+sb κ 
+sb κ 
+sb κ 
+table required space and expected processing cost in postings observed on coalesced indexes 
+ p g anick and r a flynn versioning a full-text 
+information retrieval system in sigir 
+ r a baeza-yates and b ribeiro-neto modern 
+information retrieval addison-wesley 
+ k berberich s bedathur t neumann and 
+g weikum a time machine for text search 
+technical report mpi-i- - - max-planck 
+institute for informatics 
+ m h b¨ohlen r t snodgrass and m d soo 
+coalescing in temporal databases in vldb 
+ p boldi m santini and s vigna do your worst to 
+make the best paradoxical effects in pagerank 
+incremental computations in waw 
+ a z broder n eiron m fontoura m herscovici 
+r lempel j mcpherson r qi and e j shekita 
+indexing shared content in information retrieval 
+systems in edbt 
+ c buckley and a f lewit optimization of inverted 
+vector searches in sigir 
+ m burrows and a l hisgen method and apparatus 
+for generating and searching range-based index of 
+word locations u s patent 
+ s b¨uttcher and c l a clarke a document-centric 
+approach to static index pruning in text retrieval 
+systems in cikm 
+ d carmel d cohen r fagin e farchi 
+m herscovici y s maarek and a soffer static 
+index pruning for information retrieval systems in 
+sigir 
+ http www europarchive org 
+ r fagin r kumar and d sivakumar comparing 
+top k lists siam j discrete math - 
+ 
+ r fagin a lotem and m naor optimal 
+aggregation algorithms for middleware j comput 
+syst sci - 
+ s guha k shim and j woo rehist relative 
+error histogram construction algorithms in vldb 
+ 
+ m hersovici r lempel and s yogev efficient 
+indexing of versioned document sequences in ecir 
+ 
+ http www archive org 
+ y e ioannidis and v poosala balancing histogram 
+optimality and practicality for query result size 
+estimation in sigmod 
+ h v jagadish n koudas s muthukrishnan 
+v poosala k c sevcik and t suel optimal 
+histograms with quality guarantees in vldb 
+ e j keogh s chu d hart and m j pazzani an 
+online algorithm for segmenting time series in 
+icdm 
+ s kirkpatrick d g jr and m p vecchi 
+optimization by simulated annealing science 
+ - 
+ j kleinberg and e tardos algorithm design 
+addison-wesley 
+ u manber introduction to algorithms a creative 
+approach addison-wesley 
+ k nørv˚ag and a o n nybø dyst dynamic and 
+scalable temporal text indexing in time 
+ j m ponte and w b croft a language modeling 
+approach to information retrieval in sigir 
+ s e robertson and s walker okapi keenbow at 
+trec- in trec 
+ b salzberg and v j tsotras comparison of access 
+methods for time-evolving data acm comput 
+surv - 
+ m stack full text search of web archive 
+collections in iwaw 
+ e terzi and p tsaparas efficient algorithms for 
+sequence segmentation in siam-dm 
+ m theobald g weikum and r schenkel top-k 
+query evaluation with probabilistic guarantees in 
+vldb 
+ http www wikipedia org 
+ i h witten a moffat and t c bell managing 
+gigabytes compressing and indexing documents and 
+images morgan kaufmann publishers inc 
+ j zhang and t suel efficient search in large 
+textual collections with redundancy in www 
+ 
+ j zobel and a moffat inverted files for text search 
+engines acm comput surv 

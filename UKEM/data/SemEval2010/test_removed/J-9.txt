@@ -1,0 +1,1379 @@
+computation in a distributed information market 
+joan feigenbaum 
+† 
+yale university 
+department of computer science 
+new haven ct 
+feigenbaum cs yale edu 
+lance fortnow 
+nec laboratories america 
+ independence way 
+princeton nj 
+fortnow nec-labs com 
+david m pennock 
+‡ 
+overture services inc 
+ n pasadena ave rd floor 
+pasadena ca 
+david pennock overture com 
+rahul sami 
+§ 
+yale university 
+department of computer science 
+new haven ct 
+sami cs yale edu 
+abstract 
+according to economic theory-supported by empirical and 
+laboratory evidence-the equilibrium price of a financial 
+security reflects all of the information regarding the security s 
+value we investigate the computational process on the path 
+toward equilibrium where information distributed among 
+traders is revealed step-by-step over time and incorporated 
+into the market price we develop a simplified model of an 
+information market along with trading strategies in order 
+to formalize the computational properties of the process 
+we show that securities whose payoffs cannot be expressed 
+as weighted threshold functions of distributed input bits are 
+not guaranteed to converge to the proper equilibrium 
+predicted by economic theory on the other hand securities 
+whose payoffs are threshold functions are guaranteed to 
+converge for all prior probability distributions moreover these 
+threshold securities converge in at most n rounds where n 
+is the number of bits of distributed information we also 
+prove a lower bound showing a type of threshold security 
+that requires at least n rounds to converge in the worst 
+case 
+categories and subject descriptors 
+f m theory of computation miscellaneous j 
+ computer applications social and behavioral 
+scienceseconomics c computer systems organization 
+computer-communication networks-distributed systems 
+general terms 
+economics theory 
+ introduction 
+the strong form of the efficient markets hypothesis states 
+that market prices nearly instantly incorporate all 
+information available to all traders as a result market prices 
+encode the best forecasts of future outcomes given all 
+information even if that information is distributed across many 
+sources supporting evidence can be found in empirical 
+studies of options markets political stock markets 
+ sports betting markets horse-racing markets 
+ market games and laboratory investigations of 
+experimental markets 
+the process of information incorporation is at its essence 
+a distributed computation each trader begins with his or 
+her own information as trades are made summary 
+information is revealed through market prices traders learn or 
+infer what information others are likely to have by observing 
+prices then update their own beliefs based on their 
+observations over time if the process works as advertised all 
+information is revealed and all traders converge to the same 
+information state at this point the market is in what is 
+called a rational expectations equilibrium all 
+information available to all traders is now reflected in the 
+going prices and no further trades are desirable until some 
+new information becomes available 
+while most markets are not designed with information 
+aggregation as a primary motivation-for example derivatives 
+ 
+markets are intended mainly for risk management and sports 
+betting markets for entertainment-recently some markets 
+have been created solely for the purpose of aggregating 
+information on a topic of interest the iowa electronic 
+market 
+is a prime example operated by the university of iowa 
+tippie college of business for the purpose of investigating 
+how information about political elections distributed among 
+traders gets reflected in securities prices whose payoffs are 
+tied to actual election outcomes 
+in this paper we investigate the nature of the 
+computational process whereby distributed information is revealed 
+and combined over time into the prices in information 
+markets to do so in section we propose a model of an 
+information market that is tractable for theoretical analysis and 
+we believe captures much of the important essence of real 
+information markets in section we present our main 
+theoretical results concerning this model we prove that only 
+boolean securities whose payoffs can be expressed as 
+threshold functions of the distributed input bits of information are 
+guaranteed to converge as predicted by rational expectations 
+theory boolean securities with more complex payoffs may 
+not converge under some prior distributions we also 
+provide upper and lower bounds on the convergence time for 
+these threshold securities we show that for all prior 
+distributions the price of a threshold security converges to its 
+rational expectations equilibrium price in at most n rounds 
+where n is the number of bits of distributed information we 
+show that this worst-case bound is tight within a factor of 
+two by illustrating a situation in which a threshold security 
+requires n rounds to converge 
+ relationship to related work 
+as mentioned there is a great deal of documented 
+evidence supporting the notion that markets are able to 
+aggregate information in a number of scenarios using a variety 
+of market mechanisms the theoretically ideal mechanism 
+requires what is called a complete market a complete 
+market contains enough linearly independent securities to span 
+the entire state space of interest that is the 
+dimensionality of the available securities equals the dimensionality 
+of the event space over which information is to be 
+aggregated 
+in this ideal case all private information becomes 
+common knowledge in equilibrium and thus any function 
+of the private information can be directly evaluated by any 
+agent or observer however this theoretical ideal is almost 
+never achievable in practice because it generally requires a 
+number of securities exponential in the number of random 
+variables of interest 
+when available securities form an incomplete market 
+in relation to the desired information space-as is usually 
+the case-aggregation may be partial not all private 
+information is revealed in equilibrium and prices may not 
+convey enough information to recover the complete joint 
+probability distribution over all events still it is generally 
+assumed that aggregation does occur along the dimensions 
+represented in the market that is prices do reflect a 
+consistent projection of the entire joint distribution onto the 
+smaller-dimensional space spanned by securities in this 
+pa 
+http www biz uiowa edu iem 
+ 
+when we refer to independence or dimensionality of 
+securities we mean the independence or dimensionality of the 
+random variables on which the security payoffs are based 
+per we investigate cases in which even this partial 
+aggregation fails for example even though there is enough private 
+information to determine completely the price of a security 
+in the market the equilibrium price may in fact reveal no 
+information at all so characterizations of when a rational 
+expectations equilibrium is fully revealing do not 
+immediately apply to our problem we are not asking whether all 
+possible functions of private information can be evaluated 
+but whether a particular target function can be evaluated 
+we show that properties of the function itself play a major 
+role not just the relative dimensionalities of the information 
+and security spaces 
+our second main contribution is examining the dynamics 
+of information aggregation before equilibrium in particular 
+proving upper and lower bounds on the time to convergence 
+in those cases in which aggregation succeeds 
+shoham and tennenholtz define a rationally 
+computable function as a function of agents valuations types 
+that can be computed by a market assuming agents follow 
+rational equilibrium strategies the authors mainly consider 
+auctions of goods as their basic mechanistic unit and 
+examine the communication complexity involved in computing 
+various functions of agents valuations of goods for 
+example they give auction mechanisms that can compute the 
+maximum minimum and kth-highest of the agents 
+valuations of a single good using and n − k bits of 
+communication respectively they also examine the potential 
+tradeoff between communication complexity and revenue 
+ model of an information 
+market 
+to investigate the properties and limitations of the 
+process whereby an information market converges toward its 
+rational-expectations equilibrium we formulate a 
+representative model of the market in designing the model our 
+goals were two-fold to make the model rich enough to 
+be realistic and to make the model simple enough to 
+admit meaningful analysis any modeling decisions must 
+trade off these two generally conflicting goals and the 
+decision process is as much an art as a science nonetheless 
+we believe that our model captures enough of the essence 
+of real information markets to lend credence to the results 
+that follow in this section we present our modeling 
+assumptions and justifications in detail section describes 
+the initial information state of the system section covers 
+the market mechanism and section presents the agents 
+strategies 
+ initial information state 
+there are n agents traders in the system each of whom 
+is privy to one bit of information denoted xi the 
+vector of all n bits is denoted x x x xn in the 
+initial state each agent is aware only of her own bit of 
+information all agents have a common prior regarding the 
+joint distribution of bits among agents but none has any 
+specific information about the actual value of bits held by 
+others note that this common-prior assumption-typical 
+in the economics literature-does not imply that all agents 
+agree to the contrary because each agent has different 
+information the initial state of the system is in general a 
+state of disagreement nearly any disagreement that could 
+be modeled by assuming different priors can instead be 
+mod 
+eled by assuming a common prior with different information 
+and so the common-prior assumption is not as severe as it 
+may seem 
+ market mechanism 
+the security being traded by the agents is a financial 
+instrument whose payoff is a function f x of the agents bits 
+the form of f the description of the security is common 
+knowledge 
+among agents we sometimes refer to the xi as 
+the input bits at some time in the future after trading is 
+completed the true value of f x is revealed 
+and every 
+owner of the security is paid an amount f x in cash per 
+unit owned if an agent ends with a negative quantity of 
+the security by selling short then the agent must pay the 
+amount f x in cash per unit note that if someone were 
+to have complete knowledge of all input bits x then that 
+person would know the true value f x of the security with 
+certainty and so would be willing to buy it at any price 
+lower than f x and short sell it at any price higher than 
+f x 
+following dubey geanakoplos and shubik and 
+jackson and peck we model the market-price formation 
+process as a multiperiod shapley-shubik market game 
+the shapley-shubik process operates as follows the 
+market proceeds in synchronous rounds in each round each 
+agent i submits a bid bi and a quantity qi the semantics 
+are that agent i is supplying a quantity qi of the security and 
+an amount bi of money to be traded in the market for 
+simplicity we assume that there are no restrictions on credit 
+or short sales and so an agent s trade is not constrained 
+by her possessions the market clears in each round by 
+settling at a single price that balances the trade in that 
+round the clearing price is p i bi i qi at the end 
+of the round agent i holds a quantity qi proportional to the 
+money she bid qi bi p in addition she is left with an 
+amount of money bi that reflects her net trade at price p 
+bi bi − p qi − qi pqi note that agent i s net trade in 
+the security is a purchase if p bi qi and a sale if p bi qi 
+after each round the clearing price p is publicly revealed 
+agents then revise their beliefs according to any information 
+garnered from the new price the next round proceeds as 
+the previous the process continues until an equilibrium is 
+reached meaning that prices and bids do not change from 
+one round to the next 
+in this paper we make a further simplifying restriction 
+on the trading in each round we assume that qi for 
+each agent i this modeling assumption serves two 
+analytical purposes first it ensures that there is forced trade in 
+every round classic results in economics show that 
+perfectly rational and risk-neutral agents will never trade with 
+each other for purely speculative reasons even if they have 
+differing information there are many factors that can 
+induce rational agents to trade such as differing degrees of 
+risk aversion the presence of other traders who are trading 
+for liquidity reasons rather than speculative gain or a 
+market maker who is pumping money into the market through a 
+subsidy we sidestep this issue by simply assuming that the 
+ 
+common knowledge is information that all agents know 
+that all agents know that all agents know and so on ad 
+infinitum 
+ 
+the values of the input bits themselves may or may not be 
+publicly revealed 
+ 
+throughout this paper we ignore the time value of money 
+informed agents will trade for unspecified reasons 
+second forcing qi for all i means that the total volume 
+of trade and the impact of any one trader on the clearing 
+price are common knowledge the clearing price p is a simple 
+function of the agents bids p i bi n we will discuss 
+the implications of alternative market models in section 
+ agent strategies 
+in order to draw formal conclusions about the price 
+evolution process we need to make some assumptions about how 
+agents behave essentially we assume that agents are 
+riskneutral myopic 
+and bid truthfully each agent in each 
+round bids his or her current valuation of the security which 
+is that agent s estimation of the expected payoff of the 
+security expectations are computed according to each agent s 
+probability distribution which is updated via bayes rule 
+when new information revealed via the clearing prices 
+becomes available we also assume that it is common 
+knowledge that all the agents behave in the specified manner 
+would rational agents actually behave according to this 
+strategy it s hard to say certainly we do not claim that 
+this is an equilibrium strategy in the game-theoretic sense 
+furthermore it is clear that we are ignoring some 
+legitimate tactics e g bidding falsely in one round in order to 
+effect other agents judgments in the following rounds 
+ nonmyopic reasoning however we believe that the strategy 
+outlined is a reasonable starting point for analysis solving 
+for a true game-theoretic equilibrium strategy in this setting 
+seems extremely difficult our assumptions seem 
+reasonable when there are enough agents in the system such that 
+extremely complex meta-reasoning is not likely to improve 
+upon simply bidding one s true expected value in this case 
+according the the shapley-shubik mechanism if the 
+clearing price is below an agent s expected value that agent will 
+end up buying increasing expected profit otherwise if the 
+clearing price is above the agent s expected value the agent 
+will end up selling also increasing expected profit 
+ computational properties 
+in this section we study the computational power of 
+information markets for a very simple class of aggregation 
+functions boolean functions of n variables we characterize the 
+set of boolean functions that can be computed in our market 
+model for all prior distributions and then prove upper and 
+lower bounds on the worst-case convergence time for these 
+markets 
+the information structure we assume is as follows there 
+are n agents and each agent i has a single bit of private 
+information xi we use x to denote the vector x xn of 
+inputs all the agents also have a common prior probability 
+distribution p n 
+→ over the values of x we 
+define a boolean aggregate function f x n 
+→ 
+that we would like the market to compute note that x and 
+hence f x is completely determined by the combination of 
+all the agents information but it is not known to any one 
+agent the agents trade in a boolean security f which 
+pays off if f x and if f x so an omniscient 
+ 
+risk neutrality implies that each agent s utility for the 
+security is linearly related to his or her subjective estimation of 
+the expected payoff of the security myopic behavior means 
+that agents treat each round as if it were the final round 
+they do not reason about how their bids may affect the bids 
+of other agents in future rounds 
+ 
+agent with access to all the agents bits would know the true 
+value of security f-either exactly or exactly in 
+reality risk-neutral agents with limited information will value 
+f according to their expectation of its payoff or ei f x 
+where ei is the expectation operator applied according to 
+agent i s probability distribution 
+for any function f trading in f may happen to converge 
+to the true value of f x by coincidence if the prior 
+probability distribution is sufficiently degenerate more 
+interestingly we would like to know for which functions f does the 
+price of the security f always converge to f x for all prior 
+probability distributions p 
+in section we prove a 
+necessary and sufficient condition that guarantees convergence 
+in section we address the natural follow-up question 
+by deriving upper and lower bounds on the worst-case 
+number of rounds of trading required for the value of f x to be 
+revealed 
+ equilibrium price characterization 
+our analysis builds on a characterization of the 
+equilibrium price of f that follows from a powerful result on 
+common knowledge of aggregates due to mckelvey and page 
+later extended by nielsen et al 
+information markets aim to aggregate the knowledge of 
+all the agents procedurally this occurs because the agents 
+learn from the markets the price of the security conveys 
+information to each agent about the knowledge of other 
+agents we can model the flow of information through prices 
+as follows 
+let ω n 
+be the set of possible values of x we say 
+that ω denotes the set of possible states of the world the 
+prior p defines everyone s initial belief about the likelihood 
+of each state as trading proceeds some possible states can 
+be logically ruled out but the relative likelihoods among the 
+remaining states are fully determined by the prior p so the 
+common knowledge after any stage is completely described 
+by the set of states that an external observer-with no 
+information beyond the sequence of prices observed-considers 
+possible along with the prior similarly the knowledge of 
+agent i at any point is also completely described by the set 
+of states she considers possible we use the notation sr 
+to 
+denote the common-knowledge possibility set after round r 
+and sr 
+i to denote the set of states that agent i considers 
+possible after round r 
+initially the only common knowledge is that the input 
+vector x is in ω in other words the set of states considered 
+possible by an external observer before trading has occurred 
+is the set s 
+ ω however each agent i also knows the 
+value of her bit xi thus her knowledge set s 
+i is the set 
+ y ∈ ω yi xi agent i s first-round bid is her conditional 
+expectation of the event f x given that x ∈ s 
+i all 
+the agents bids are processed and the clearing price p 
+is 
+announced an external observer could predict agent i s bid 
+if he knew the value of xi thus if he knew the value of 
+x he could predict the value of p 
+ in other words the 
+external observer knows the function price 
+ x that relates 
+the first round price to the true state x of course he does 
+not know the value of x however he can rule out any vector 
+x that would have resulted in a different clearing price from 
+the observed price p 
+ 
+ 
+we assume that the common prior is consistent with x in 
+the sense that it assigns a non-zero probability to the actual 
+value of x 
+thus the common knowledge after round is the set 
+s 
+ y ∈ s 
+ price 
+ y p 
+ agent i knows the 
+common knowledge and in addition knows the value of bit xi 
+hence after every round r the knowledge of agent i is given 
+by sr 
+i y ∈ sr 
+ yi xi note that because knowledge 
+can only improve over time we must always have sr 
+i ⊆ sr− 
+i 
+and sr 
+⊆ sr− 
+ thus only a finite number of changes 
+in each agent s knowledge are possible and so eventually 
+we must converge to an equilibrium after which no player 
+learns any further information we use s∞ 
+to denote the 
+common knowledge at this point and s∞ 
+i to denote agent 
+i s knowledge at this point let p∞ 
+denote the clearing price 
+at equilibrium 
+informally mckelvey and page show that if n 
+people with common priors but different information about the 
+likelihood of some event a agree about a suitable 
+aggregate of their individual conditional probabilities then their 
+individual conditional probabilities of event a s occurring 
+must be identical the precise definition of suitable is 
+described below there is a strong connection to rational 
+expectation equilibria in markets which was noted in the 
+original mckelvey-page paper the market price of a 
+security is common knowledge at the point of equilibrium thus 
+if the price is a suitable aggregate of the conditional 
+expectations of all the agents then in equilibrium they must 
+have identical conditional expectations of the event that the 
+security will pay off note that their information may still 
+be different 
+definition a function g n 
+→ is called 
+stochastically monotone if it can be written in the form g x 
+i gi xi where each function gi → is strictly 
+increasing 
+bergin and brandenburger proved that this simple 
+definition of stochastically monotone functions is equivalent to 
+the original definition in mckelvey-page 
+definition a function g n 
+→ is called 
+stochastically regular if it can be written in the form g h ◦ g 
+where g is stochastically monotone and h is invertible on 
+the range of g 
+we can now state the mckelvey-page result as generalized 
+by nielsen et al in our context the following simple 
+theorem statement suffices more general versions of this 
+theorem can be found in 
+theorem nielsen et al suppose that at 
+equilibrium the n agents have a common prior but possibly 
+different information about the value of a random variable f 
+as described above for all i let p∞ 
+i e f x ∈ s∞ 
+i if g 
+is a stochastically regular function and g p∞ 
+ p∞ 
+ p∞ 
+n is 
+common knowledge then it must be the case that 
+p∞ 
+ p∞ 
+ · · · p∞ 
+n e f x ∈ s∞ 
+ p∞ 
+in one round of our simplified shapley-shubik trading 
+model the announced price is the mean of the conditional 
+expectations of the n agents the mean is a stochastically 
+regular function hence theorem shows that at 
+equilibrium all agents have identical conditional expectations of 
+the payoff of the security it follows that the equilibrium 
+ 
+price p∞ 
+must be exactly the conditional expectations of all 
+agents at equilibrium 
+theorem does not in itself say how the equilibrium is 
+reached mckelvey and page extending an argument due 
+to geanakoplos and polemarchakis show that repeated 
+announcement of the aggregate will eventually result in 
+common knowledge of the aggregate in our context this is 
+achieved by announcing the current price at the end of each 
+round this will ultimately converge to a state in which all 
+agents bid the same price p∞ 
+ 
+however reaching an equilibrium price is not sufficient for 
+the purposes of information aggregation we also want the 
+price to reveal the actual value of f x it is possible that 
+the equilibrium price p∞ 
+of the security f will not be either 
+ or and so we cannot infer the value of f x from it 
+example consider two agents and with private input 
+bits x and x respectively suppose the prior probability 
+distribution is uniform i e x x x takes the values 
+ and each with probability 
+ 
+ now 
+suppose the aggregate function we want to compute is the 
+xor function f x x ⊕ x to this end we design a 
+market to trade in a boolean security f which will 
+eventually payoff iff x ⊕ x 
+if agent observes x she estimates the expected 
+value of f to be the probability that x given x 
+which is 
+ 
+ if she observes x her expectation of the 
+value of f is the conditional probability that x which 
+is also 
+ 
+ thus in either case agent will bid for f 
+in the first round similarly agent will also always bid 
+ in the first round hence the first round of trading 
+ends with a clearing price of from this agent can 
+infer that agent bid but this gives her no information 
+about the value of x -it is still equally likely to be or 
+ agent also gains no information from the first round 
+of trading and hence neither agent changes her bid in the 
+following rounds thus the market reaches equilibrium at 
+this point as predicted by theorem both agents have the 
+same conditional expectation at equilibrium however 
+the equilibrium price of the security f does not reveal the 
+value of f x x even though the combination of agents 
+information is enough to determine it precisely 
+ characterizing computable aggregates 
+we now give a necessary and sufficient characterization of 
+the class of functions f such that for any prior distribution 
+on x the equilibrium price of f will reveal the true value 
+of f we show that this is exactly the class of weighted 
+threshold functions 
+definition a function f n 
+→ is a 
+weighted threshold function iff there are real constants w w 
+ wn such that 
+f x iff 
+n 
+i 
+wixi ≥ 
+theorem if f is a weighted threshold function then 
+for any prior probability distribution p the equilibrium price 
+of f is equal to f x 
+proof 
+let s∞ 
+i denote the possibility set of agent i at equilibrium 
+as before we use p∞ 
+to denote the final trading price at 
+this point note that by theorem p∞ 
+is exactly agent i s 
+conditional expectation of the value of f x given her final 
+possibility set s∞ 
+i 
+first observe that if p∞ 
+is or then we must have 
+f x p∞ 
+ regardless of the form of f for instance if 
+p∞ 
+ this means that e f y y ∈ s∞ 
+ as f · 
+can only take the values or it follows that p f y 
+ y ∈ s∞ 
+ the actual value x is always in the final 
+possibility set s∞ 
+ and furthermore it must have non-zero 
+prior probability because it actually occurred hence it 
+follows that f x in this case an identical argument 
+shows that if p∞ 
+ f x 
+hence it is enough to show that if f is a weighted 
+threshold function then p∞ 
+is either or we prove this by 
+contradiction let f · be a weighted threshold function 
+corresponding to weights wi and assume that p∞ 
+ by 
+theorem we must have 
+p f y y ∈ s∞ 
+ p∞ 
+ 
+∀i p f y y ∈ s∞ 
+i p∞ 
+ 
+recall that s∞ 
+i y ∈ s∞ 
+ yi xi thus equation 
+can be written as 
+∀i p f y y ∈ s∞ 
+ yi xi p∞ 
+ 
+now define 
+j 
+i p yi y ∈ s∞ 
+ f y 
+j− 
+i p yi y ∈ s∞ 
+ f y 
+j 
+ 
+n 
+i 
+wij 
+i 
+j− 
+ 
+n 
+i 
+wij− 
+i 
+because by assumption p∞ 
+ both j 
+i and j− 
+i are 
+well-defined for all i neither is conditioned on a 
+zeroprobability event 
+claim eqs and imply that j 
+i j− 
+i for all i 
+proof of claim we consider the two cases xi and 
+xi separately 
+case i xi we can assume that j− 
+i and j 
+i are not 
+both or else the claim is trivially true in this case we 
+have 
+p f y y ∈ s∞ 
+ · j 
+i 
+p f y y ∈ s∞ · j 
+i p f y y ∈ s∞ · j− 
+i 
+ p f y yi y ∈ s∞ 
+ bayes law 
+p∞ 
+j 
+i 
+p∞j 
+i − p∞ j− 
+i 
+ p∞ 
+ by eqs and 
+j 
+i p∞ 
+j 
+i − p∞ 
+ j− 
+i 
+ ⇒ j 
+i j− 
+i as p∞ 
+ 
+case ii xi when xi observe that the argument 
+of case i can be used to prove that − j 
+i − j− 
+i 
+it immediately follows that j 
+i j− 
+i as well 
+hence we must also have j 
+ j− 
+ but using linearity 
+of expectation we can also write j 
+as 
+j 
+ e 
+n 
+i 
+wiyi y ∈ s∞ 
+ f y 
+ 
+and because f y only when i wiyi ≥ this gives us 
+j 
+≥ similarly 
+j− 
+ e 
+n 
+i 
+wiyi y ∈ s∞ 
+ f y 
+and thus j− 
+ this implies j− 
+ j 
+ which leads to a 
+contradiction 
+perhaps surprisingly the converse of theorem also holds 
+theorem suppose f n 
+→ cannot be 
+expressed as a weighted threshold function then there exists 
+a prior distribution p for which the price of the security f 
+does not converge to the value of f x 
+proof we start from a geometric characterization of 
+weighted threshold functions consider the boolean hypercube 
+ n 
+as a set of points in n 
+ it is well known that f 
+is expressible as a weighted threshold function iff there is a 
+hyperplane in n 
+that separates all the points at which f 
+has value from all the points at which f has value 
+now consider the sets 
+h 
+ conv f− 
+ 
+and 
+h− 
+ conv f− 
+ 
+where conv s denotes the convex hull of s in n 
+ h 
+and 
+h− 
+are convex sets in n 
+ and so if they do not intersect we 
+can find a separating hyperlane between them this means 
+that if f is not expressible as a weighted threshold function 
+h 
+and h− 
+must intersect in this case we show how to 
+construct a prior p for which f x is not computed by the 
+market 
+let x 
+∈ n 
+be a point in h 
+∩ h− 
+ because x 
+is in 
+h 
+ there exists some points z 
+ z 
+ zm 
+and constants 
+λ λ λm such that the following constraints are 
+satisfied 
+∀k zk 
+∈ n 
+ and f zk 
+ 
+∀k λk ≤ 
+m 
+k 
+λk 
+m 
+k 
+λkzk 
+ x 
+similarly because x 
+∈ h− 
+ there are points y 
+ y 
+ yl 
+and constants µ µ µl such that 
+∀j yj 
+∈ n 
+ and f yj 
+ 
+∀j µj ≤ 
+l 
+j 
+µj 
+l 
+j 
+µj yj 
+ x 
+we now define our prior distribution p as follows 
+p zk 
+ 
+λk 
+ 
+for k m 
+p yj 
+ 
+µj 
+ 
+for j l 
+and all other points are assigned probability it is easy to 
+see that this is a valid probability distribution under this 
+distribution p first observe that p f x 
+ 
+ further 
+for any i such that x 
+i we have 
+p f x xi 
+p f x ∧ xi 
+p xi 
+ 
+x 
+i 
+ 
+x 
+i 
+ 
+ 
+ 
+and 
+p f x xi 
+p f x ∧ xi 
+p xi 
+ 
+ −x 
+i 
+ 
+ − x 
+i 
+ 
+ 
+ 
+for indices i such that x 
+i is or exactly i s private 
+information reveals no additional information under prior p 
+and so here too we have p f x xi p f x 
+ xi 
+ 
+ 
+hence regardless of her private bit xi each agent i will 
+bid for security f in the first round the clearing price 
+of also reveals no additional information and so this is 
+an equilibrium with price p∞ 
+ that does not reveal the 
+value of f x 
+the xor function is one example of a function that 
+cannot be expressed as weighted threshold function example 
+illustrates theorem for this function 
+ convergence time bounds 
+we have shown that the class of boolean functions 
+computable in our model is the class of weighted threshold 
+functions the next natural question to ask is how many 
+rounds of trading are necessary before the equilibrium is 
+reached we analyze this problem using the same 
+simplified shapley-shubik model of market clearing in each round 
+we first prove that in the worst case at most n rounds are 
+required 
+the idea of the proof is to consider the sequence of 
+common knowledge sets ω s 
+ s 
+ and show that until 
+the market reaches equilibrium each set has a strictly lower 
+dimension than the previous set 
+definition for a set s ⊆ n 
+ the dimension of 
+set s is the dimension of the smallest linear subspace of n 
+that contains all the points in s we use the notation dim s 
+to denote it 
+lemma if sr 
+ sr− 
+ then dim sr 
+ dim sr− 
+ 
+proof let k dim sr− 
+ consider the bids in round r 
+in our model agent i will bid her current expectation for 
+the value of f 
+br 
+i e f y y ∈ sr− 
+ yi xi 
+thus depending on the value of xi br 
+i will take on one of 
+two values h 
+ 
+i or h 
+ 
+i note that h 
+ 
+i and h 
+ 
+i depend only 
+on the set sr− 
+ which is common knowledge before round 
+ 
+r setting di h 
+ 
+i − h 
+ 
+i we can write br 
+i h 
+ 
+i dixi it 
+follows that the clearing price in round r is given by 
+pr 
+ 
+ 
+n 
+n 
+i 
+ h 
+ 
+i dixi 
+all the agents already know all the h 
+ 
+i and di values and 
+they observe the price pr 
+at the end of the rth round thus 
+they effectively have a linear equation in x x xn that 
+they use to improve their knowledge by ruling out any 
+possibility that would not have resulted in price pr 
+ in other 
+words after r rounds the common knowledge set sr 
+is the 
+intersection of sr− 
+with the hyperplane defined by 
+equation 
+it follows that sr 
+is contained in the intersection of this 
+hyperplane with the k-dimension linear space containing 
+sr− 
+ if sr 
+is not equal to sr− 
+ this intersection defines a 
+linear subspace of dimension k − that contains sr 
+ and 
+hence sr 
+has dimension at most k − 
+theorem let f be a weighted threshold function and 
+let p be an arbitrary prior probability distribution then 
+after at most n rounds of trading the price reaches its 
+equilibrium value p∞ 
+ f x 
+proof consider the sequence of common knowledge sets 
+s 
+ s 
+ and let r be the minimum index such that sr 
+ 
+sr− 
+ then the rth round of trading does not improve any 
+agent s knowledge and thus we must have s∞ 
+ sr− 
+and 
+p∞ 
+ pr− 
+ observing that dim s 
+ n and applying 
+lemma to the first r − rounds we must have r − ≤ 
+n thus the price reaches its equilibrium value within n 
+rounds 
+theorem provides an upper bound of o n on the 
+number of rounds required for convergence we now show that 
+this bound is tight to within a factor of by constructing a 
+threshold function with n inputs and a prior distribution 
+for which it takes n rounds to determine the value of f x 
+in the worst case 
+the functions we use are the carry-bit functions the 
+function cn takes n inputs for convenience we write the 
+inputs as x x xn y y yn or as a pair x y the 
+function value is the value of the high-order carry bit when 
+the binary numbers xnxn− · · · x and ynyn− · · · y are 
+added together in weighted threshold form this can be written 
+as 
+cn x y iff 
+n 
+i 
+xi yi 
+ n −i 
+≥ 
+for this proof let us call the agents a a an b b 
+ bn where ai holds input bit xi and bi holds input bit 
+yi 
+we first illustrate our technique by proving that 
+computing c requires rounds in the worst case to do this we 
+construct a common prior p as follows 
+ the pair x y takes on the values 
+ uniformly i e with probability 
+ 
+each 
+ we extend this to a distribution on x x y y by 
+specifying the conditional distribution of x y given 
+ x y if x y then x y takes the 
+values with probabilities 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+respectively otherwise x y takes the values 
+ with probabilities 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+respectively 
+now suppose x turns out to be and consider agent 
+a s bid in the first round it is given by 
+b 
+a 
+ p c x x y y x 
+ p y x 
+· p x y x y 
+ p y x 
+· p x y x y 
+ 
+ 
+ 
+· 
+ 
+ 
+ 
+ 
+ 
+· 
+ 
+ 
+ 
+ 
+ 
+on the other hand if x turns out to be agent a s bid 
+would be given by 
+b 
+a 
+ p c x x y y x 
+ p x y x 
+ 
+ 
+ 
+thus irrespective of her bit a will bid in the first 
+round note that the function and distribution are 
+symmetric between x and y and so the same argument shows that 
+b will also bid in the first round thus the price p 
+announced at the end of the first round reveals no 
+information about x or y the reason this occurs is that under 
+this distribution the second carry bit c is statistically 
+independent of the first carry bit x ∧ y we will use this 
+trick again in the general construction 
+now suppose that x y is either or then 
+even if x and y are completely revealed by the first-round 
+price the value of c x x y y is not revealed it will 
+be if x y and otherwise thus we have shown 
+that at least rounds of trading will be required to reveal 
+the function value in this case 
+we now extend this construction to show by induction 
+that the function cn takes n rounds to reach an equilibrium 
+in the worst case 
+theorem there is a function cn with n inputs and a 
+prior distribution pn such that in the worst case the market 
+takes n rounds to reveal the value of cn · 
+proof we prove the theorem by induction on n the base 
+case for n has already been shown to be true 
+starting from the distribution p described above we construct 
+the distributions p p pn by inductively applying the 
+following rule 
+ let x−n 
+denote the vector x x xn− and 
+define y−n 
+similarly we extend the distribution pn− 
+on x−n 
+ y−n 
+ to a distribution pn on x y by 
+specifying the conditional distribution of xn yn given 
+ x−n 
+ y−n 
+ if cn− x−n 
+ y−n 
+ then xn yn takes 
+the values with 
+probabilities 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+respectively otherwise xn yn takes 
+the values with probabilities 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+respectively 
+claim under distribution pn for all i n 
+p cn x y xi p cn x y xi 
+ 
+proof of claim a similar calculation to that used for c 
+above shows that the value of cn x y under this 
+distribution is statistically independent of cn− x−n 
+ y−n 
+ for 
+i n xi can affect the value of cn only through cn− also 
+by contruction of pn given the value of cn− the 
+distribution of cn is independent of xi it follows that cn x y is 
+statistically independent of xi as well of course a similar 
+result holds for yi by symmetry 
+thus in the first round for all i n − the 
+bids of agents ai and bi do not reveal anything about their 
+private information thus the first-round price does not 
+reveal any information about the value of x−n 
+ y−n 
+ 
+on the other hand agents an and bn do have different 
+expectations of cn x depending on whether their input bit 
+is a or a thus the first-round price does reveal whether 
+neither one or both of xn and yn are now consider 
+a situation in which xn yn takes on the value or 
+ we show that in this case after one round we are 
+left with the residual problem of computing the value of 
+cn− x−n 
+ y−n 
+ under the prior pn− 
+clearly when xn yn cn x y cn− x−n 
+ y−n 
+ 
+further according to the construction of pn the event xn 
+yn has the same probability for all values of 
+ x−n 
+ y−n 
+ thus conditioning on this fact does not alter 
+the probability distribution over x−n 
+ y−n 
+ it must still be 
+pn− 
+finally the inductive assumption tells us that solving this 
+residual problem will take at least n − more rounds in the 
+worst case and hence that finding the value of cn x y takes 
+at least n rounds in the worst case 
+ discussion 
+our results have been derived in a simplified model of an 
+information market in this section we discuss the 
+applicability of these results to more general trading models 
+assuming that agents bid truthfully theorem holds in 
+any model in which the price is a known stochastically 
+monotone aggregate of agents bids while it seems reasonable 
+that the market price satisfies monotonicity properties the 
+exact form of the aggregate function may not be known if 
+the volume of each user s trades is not observable this 
+depends on the details of the market process theorem and 
+theorem hold more generally they only require that an 
+agent s strategy depends only on her conditional 
+expectation of the security s value perhaps the most fragile 
+result is theorem which relies on the linear form of the 
+shapley-shubik clearing price in addition to the conditions 
+for theorem however it seems plausible that a similar 
+dimension-based bound will hold for other families of 
+nonlinear clearing prices 
+up to this point we have described the model with the 
+same number of agents as bits of information however all 
+the results hold even if there is competition in the form of a 
+known number of agents who know each bit of information 
+indeed modeling such competition may help alleviate the 
+strategic problems in our current model 
+another interesting approach to addressing the strategic 
+issue is to consider alternative markets that are at least 
+myopically incentive compatible one example is a 
+market mechanism called a market scoring rule suggested by 
+hanson these markets have the property that a 
+riskneutral agent s best myopic strategy is to truthfully bid her 
+current expected value of the security additionally the 
+number of securities involved in each trade is fixed and 
+publicly known if the market structure is such that for 
+example the current scoring rule is posted publicly after each 
+agent s trade then in equilibrium there is common 
+knowledge of all agents expectation and hence theorem holds 
+theorem also applies in this case and hence we have the 
+same characterization for the set of computable boolean 
+functions this suggests that the problem of eliciting 
+truthful responses may be orthogonal to the problem of 
+computing the desired aggregate reminiscent of the revelation 
+principle 
+in this paper we have restricted our attention to the 
+simplest possible aggregation problem computing boolean 
+functions of boolean inputs the proofs of theorems and 
+also hold if we consider boolean functions of real inputs 
+where each agent s private information is a real number 
+further theorem also holds provided the market reaches 
+equilibrium with real inputs and arbitrary prior 
+distributions however it is not clear that the market will reach an 
+equilibrium in a finite number of steps 
+ conclusion 
+ summary 
+we have framed the process of information aggregation in 
+markets as a computation on distributed information we 
+have developed a simplified model of an information 
+market that we believe captures many of the important aspects 
+of real agent interaction in an information market within 
+this model we prove several results characterizing precisely 
+what the market can compute and how quickly specifically 
+we show that the market is guaranteed to converge to the 
+true rational expectations equilibrium if and only if the 
+security payoff function is a weighted threshold function we 
+prove that the process whereby agents reveal their 
+information over time and learn from the resulting announced 
+prices takes at most n rounds to converge to the correct 
+full-information price in the worst case we show that this 
+bound is tight within a factor of two 
+ future work 
+we view this paper as a first step towards understanding 
+the computational power of information markets some 
+interesting and important next steps include gaining a better 
+understanding of the following 
+ the effect of price accuracy and precision we have 
+assumed that the clearing price is known with unlimited 
+precision in practice this will not be true further 
+we have neglected influences on the market price other 
+than from rational traders the market price may also 
+be influenced by other factors such as misinformed or 
+irrational traders it is interesting to ask what 
+aggregates can be computed even in the presence of noisy 
+prices 
+ incremental updates if the agents have computed the 
+value of the function and a small number of input bits 
+are switched can the new value of the function be 
+computed incrementally and quickly 
+ distributed computation in our model distributed 
+information is aggregated through a centralized market 
+ 
+computation in a sense some of the computation 
+itself is distributed among the participating agents but 
+can the market computation also be distributed for 
+example can we find a good distributed-computational 
+model of a decentralized market 
+ agents computation we have not accounted for the 
+complexity of the computations that agents must do 
+to accurately update their beliefs after each round 
+ strategic market models for reasons of simplicity and 
+tractability we have directly assumed that agents bid 
+truthfully a more satisfying approach would be to 
+assume only rationality and solve for the resulting 
+gametheoretic solution strategy either in our current 
+computational model or another model of an information 
+market 
+ the common-prior assumption can we say anything 
+about the market behavior when agents priors are 
+only approximately the same or when they differ 
+greatly 
+ average-case analysis our negative results theorems 
+ and examine worst-case scenarios and thus 
+involve very specific prior probability distributions it is 
+interesting to ask whether we would get very different 
+results for generic prior distributions 
+ information market design non-threshold functions 
+can be implemented by layering two or more 
+threshold functions together what is the minimum number 
+of threshold securities required to implement a given 
+function this is exactly the problem of minimizing 
+the size of a neural network a well-studied problem 
+known to be np-hard what configuration of 
+securities can best approximate a given function are 
+there ways to define and configure securities to speed 
+up convergence to equilibrium what is the 
+relationship between machine learning e g neural-network 
+learning and information-market design 
+acknowledgments 
+we thank joe kilian for many helpful discussions we thank 
+robin hanson and the anonymous reviewers for useful 
+insights and pointers 
+ references 
+ k j arrow the role of securities in the optimal 
+allocation of risk-bearing review of economic 
+studies - 
+ j bergin and a brandenburger a simple 
+characterization of stochastically monotone functions 
+econometrica - sept 
+ s debnath d m pennock c l giles and 
+s lawrence information incorporation in online 
+in-game sports betting markets in proceedings of the 
+fourth annual acm conference on electronic 
+commerce ec june 
+ p dubey j geanakoplos and m shubik the 
+revelation of information in strategic market games a 
+critique of rational expectations equilibrium journal 
+of mathematical economics - 
+ r fagin j y halpern y moses and m y vardi 
+reasoning about knowledge mit press cambridge 
+ma 
+ r forsythe and r lundholm information 
+aggregation in an experimental market econometrica 
+ - 
+ r forsythe f nelson g r neumann and 
+j wright anatomy of an experimental political stock 
+market american economic review - 
+ 
+ r forsythe t a rietz and t w ross wishes 
+expectations and actions a survey on price formation 
+in election stock markets journal of economic 
+behavior and organization - 
+ j m gandar w h dare c r brown and r a 
+zuber informed traders and price variations in the 
+betting market for professional basketball games 
+journal of finance liii - 
+ j geanakoplos and h polemarchakis we can t 
+disagree forever journal of economic theory 
+ - 
+ s j grossman an introduction to the theory of 
+rational expectations under asymmetric information 
+review of economic studies - 
+ r hanson combinatorial information market design 
+information systems frontiers 
+ m jackson and j peck asymmetric information in a 
+strategic market game reexamining the implications 
+of rational expectations economic theory 
+ - 
+ j c jackwerth and m rubinstein recovering 
+probability distributions from options prices journal 
+of finance - dec 
+ j -h lin and j s vitter complexity results on 
+learning by neural nets machine learning - 
+ 
+ r e lucas expectations and the neutrality of 
+money journal of economic theory - 
+ 
+ m magill and m quinzii theory of incomplete 
+markets vol mit press 
+ a mas-colell m d whinston and j r green 
+microeconomic theory oxford university press new 
+york 
+ r d mckelvey and t page common knowledge 
+consensus and aggregate information econometrica 
+ - 
+ p milgrom and n stokey information trade and 
+common knowledge journal of economic theory 
+ - 
+ l t nielsen a brandenburger j geanakoplos 
+r mckelvey and t page common knowledge of an 
+aggregate of expectations econometrica 
+ - 
+ d m pennock s debnath e j glover and c l 
+giles modeling information incorporation in markets 
+with application to detecting and explaining events in 
+proceedings of the eighteenth conference on 
+uncertainty in artificial intelligence 
+ 
+ d m pennock s lawrence c l giles and f ˚a 
+nielsen the real power of artificial markets science 
+ - february 
+ d m pennock s lawrence f ˚a nielsen and c l 
+giles extracting collective probabilistic forecasts from 
+web games in proceedings of the th acm sigkdd 
+international conference on knowledge discovery and 
+data mining pages - 
+ c r plott and s sunder rational expectations and 
+the aggregation of diverse information in laboratory 
+security markets econometrica - 
+ 
+ c r plott j wit and w c yang parimutuel 
+betting markets as information aggregation devices 
+experimental results technical report social science 
+working paper california institute of 
+technology apr 
+ c schmidt and a werwatz how accurate do 
+markets predict the outcome of an event the euro 
+ soccer championships experiment technical 
+report - max planck institute for research 
+into economic systems 
+ l shapley and m shubik trade using one 
+commodity as a means of payment journal of 
+political economy - 
+ y shoham and m tennenholtz rational 
+computation and the communication complexity of 
+auctions games and economic behavior 
+ - - 
+ r h thaler and w t ziemba anomalies 
+parimutuel betting markets racetracks and lotteries 
+journal of economic perspectives - 
+ h r varian the arbitrage principle in financial 
+economics journal of economic perspectives 
+ - 
+ 

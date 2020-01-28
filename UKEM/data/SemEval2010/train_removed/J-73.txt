@@ -1,0 +1,1156 @@
+competitive algorithms for vwap 
+and limit order trading 
+sham m kakade 
+computer and information science 
+university of pennsylvania 
+kakade linc cis upenn edu 
+michael kearns 
+computer and information science 
+university of pennsylvania 
+mkearns cis upenn edu 
+yishay mansour 
+computer science 
+tel aviv university 
+mansour post tau ac il 
+luis e ortiz 
+computer and information science 
+university of pennsylvania 
+leortiz linc cis upenn edu 
+abstract 
+we introduce new online models for two important aspects 
+of modern financial markets volume weighted average price 
+trading and limit order books we provide an extensive 
+study of competitive algorithms in these models and relate 
+them to earlier online algorithms for stock trading 
+categories and subject descriptors 
+f analysis of algorithms and problem 
+complexity miscellaneous j social and behavioral sciences 
+economics 
+general terms 
+algorithms economics 
+ introduction 
+while popular images of wall street often depict 
+swashbuckling traders boldly making large gambles on just their 
+market intuitions the vast majority of trading is actually 
+considerably more technical and constrained the constraints 
+often derive from a complex combination of business 
+regulatory and institutional issues and result in certain kinds 
+of standard trading strategies or criteria that invite 
+algorithmic analysis 
+one of the most common activities in modern financial 
+markets is known as volume weighted average price or 
+vwap trading informally the vwap of a stock over a 
+specified market period is simply the average price paid per 
+share during that period so the price of each transaction in 
+the market is weighted by its volume in vwap trading 
+one attempts to buy or sell a fixed number of shares at a 
+price that closely tracks the vwap 
+very large institutional trades constitute one of the main 
+motivations behind vwap activity a typical scenario goes 
+as follows suppose a very large mutual fund holds of 
+the outstanding shares of a large publicly traded company 
+- a huge fraction of the shares - and that this fund s 
+manager decides he would like to reduce this holding to over 
+a -month period such a decision might be forced by the 
+fund s own regulations or other considerations typically 
+such a fund manager would be unqualified to sell such a large 
+number of shares in the open market - it requires a 
+professional broker to intelligently break the trade up over time 
+and possibly over multiple exchanges in order to minimize 
+the market impact of such a sizable transaction thus the 
+fund manager would approach brokerages for help in selling 
+the 
+the brokerage will typically alleviate the fund manager s 
+problem immediately by simply buying the shares directly 
+from the fund manager and then selling them off 
+laterbut what price should the brokerage pay the fund manager 
+paying the price on the day of the sale is too risky for the 
+brokerage as they need to sell the shares themselves over an 
+extended period and events beyond their control such as 
+wars could cause the price to fall dramatically the usual 
+answer is that the brokerage offers to buy the shares from 
+the fund manager at a per-share price tied to the vwap 
+over some future period - in our example the brokerage 
+might offer to buy the at a per-share price of the 
+coming month s vwap minus cent the brokerage now has a 
+very clean challenge by selling the shares themselves over 
+the next month in a way that exactly matches the vwap 
+a penny per share is earned in profits if they can beat the 
+vwap by a penny they make two cents per share such 
+small-margin high-volume profits can be extremely 
+lucrative for a large brokerage the importance of the vwap 
+has led to many automated vwap trading algorithms - 
+indeed every major brokerage has at least one vwap box 
+ 
+price volume model order book model macroscopic distribution model 
+owt θ log r from o log r log n e pbins 
+maxprice 
+ e pbins 
+maxprice for -approx of pbins 
+maxprice 
+θ log q same as above plus 
+vwap θ log r o log r log n from above e pbins 
+vol 
+ω q fixed schedule o log q for large n e pbins 
+vol for -approx of pbins 
+vol 
+ for volume in n qn 
+figure the table summarizes the results presented in this paper the rows represent results for either the owt 
+or vwap criterion the columns represent which model we are working in the entry in the table is the competitive 
+ratio between our algorithm and an optimal algorithm and the closer the ratio is to the better the parameter r 
+represents a bound on the maximum to the minimum price fluctuation and the parameter q represents a bound on the 
+maximum to minimum volume fluctuation in the respective model see section for a description of the macroscopic 
+distribution model all the results for the owt trading criterion which is a stronger criterion directly translate 
+to the vwap criterion however in the vwap setting considering a restriction on the maximum to the minimum 
+volume fluctuation q leads to an additional class of results which depends on q 
+and some small companies focus exclusively on proprietary 
+vwap trading technology 
+in this paper we provide the first study of vwap trading 
+algorithms in an online competitive ratio setting we first 
+formalize the vwap trading problem in a basic online model 
+we call the price-volume model which can be viewed as a 
+generalization of previous theoretical online trading models 
+incorporating market volume information in this model we 
+provide vwap algorithms and competitive ratios and 
+compare this setting with the one-way trading owt problem 
+studied in 
+our most interesting results however examine the vwap 
+trading problem in a new online trading model capturing the 
+important recent phenomenon of limit order books in 
+financial markets briefly a limit buy or sell order specifies both 
+the number of shares and the desired price and will only 
+be executed if there is a matching party on the opposing 
+side according to a well-defined matching procedure used 
+by all the major exchanges while limit order books the 
+list of limit orders awaiting possible future execution have 
+existed since the dawn of equity exchanges only very 
+recently have these books become visible to traders in real 
+time thus opening the way to trading algorithms of all 
+varieties that attempt to exploit this rich market microstructure 
+data such data and algorithms are a topic of great current 
+interest on wall street 
+we thus introduce a new online trading model 
+incorporating limit order books and examine both the one-way and 
+vwap trading problems in it our results are summarized 
+in figure see the caption for a summary 
+ theprice-volumetradingmodel 
+we now present a trading model which includes both price 
+and volume information about the sequence of trades while 
+this model is a generalization of previous formalisms for 
+online trading it makes an infinite liquidity assumption which 
+fails to model the negative market impact that trading a 
+large number of shares typically has this will be addressed 
+in the order book model studied in the next section 
+a note on terminology throughout the paper unless 
+otherwise specified we shall use the term market to describe 
+all activity or orders other than those of the algorithm 
+under consideration the setting we consider can be viewed as 
+a game between our algorithm and the market 
+ the model 
+in the price-volume trading model we assume that the 
+intraday trading activity in a given stock is summarized by 
+a discrete sequence of price and volume pairs pt vt for 
+t t here t corresponds to the day s 
+market open and t t to the close while there is nothing 
+technically special about the time horizon of a single day it 
+is particularly consistent with limit order book trading on 
+wall street the pair pt vt represents the fact that a total 
+of vt shares were traded at an average price per share pt 
+in the market between time t − and t realistically we 
+should imagine the number of intervals t being reasonably 
+large so that it is sensible to assign a common approximate 
+price to all shares traded within an interval 
+in the price-volume model we shall make an infinite 
+liquidity assumption for our trading algorithms more 
+precisely in this online model we see the price-volume sequence 
+one pair at a time following the observation of pt vt 
+we are permitted to sell any possibly fractional number 
+of shares nt at the price pt let us assume that our goal 
+is to sell n shares over the course of the day hence at 
+each time we must select a possibly fractional number of 
+shares nt to sell at price pt subject to the global constraint 
+t 
+t nt n it is thus assumed that if we have left over 
+shares to sell after time t − we are forced to sell them at 
+the closing price of the market - that is nt n − t − 
+t nt 
+is sold at pt in this way we are certain to sell exactly n 
+shares over the course of the day the only thing an 
+algorithm must do is determine the schedule of selling based on 
+the incoming market price-volume stream 
+any algorithm which sells fractional volumes can be 
+converted to a randomized algorithm which only sells integral 
+volumes with the same expected number of shares sold if 
+we keep the hard constraint of selling exactly n shares we 
+might incur an additional slight loss in the conversion note 
+that we only allow fractional volumes in the price-volume 
+model where liquidity is not an issue in the order book 
+model to follow we do not allow fractional volumes 
+in vwap trading the goal of an online algorithm a which 
+sells exactly n shares is not to maximize profits per se but 
+to track the market vwap the market vwap for an 
+intraday trading sequence s p v pt vt is simply the 
+average price paid per share over the course of the trading 
+ 
+day ie 
+vwapm s 
+t 
+t 
+ptvt v 
+where v is the total daily volume i e v t 
+t vt if on 
+the sequence s the algorithm a sells its n stocks using the 
+volume sequence n nt then we analogously define the 
+vwap of a on market sequence s by 
+vwapa s 
+t 
+t 
+ptnt n 
+note that the market vwap does not include the shares 
+that the algorithm sells 
+the vwap competitive ratio of a with respect to a set 
+of sequences σ is then 
+rvwap a max 
+s∈σ 
+ vwapm s vwapa s 
+in the case that a is randomized we generalize the definition 
+above by taking an expectation over vwapa s inside the 
+max we note that unlike on wall street our definition of 
+vwapm does not take our own trading into account it is 
+easy to see that this makes it a more challenging criterion 
+to track 
+in contrast to the vwap another common measure of 
+the performance of an online selling algorithm would be its 
+one-way trading owt competitive ratio with respect 
+to a set of sequences σ 
+rowt a max 
+s∈σ 
+max 
+ ≤t≤t 
+ pt vwapa s 
+where the algorithms performance is compared to the largest 
+individual price appearing in the sequence s 
+in both vwap and owt we are comparing the average 
+price per share received by a selling algorithm to some 
+measure of market performance in the case of owt we 
+compare to the rather ambitious benchmark of the high price of 
+the day ignoring volumes entirely in vwap trading we 
+have the more modest goal of comparing favorably to the 
+overall market average of the day as we shall see there are 
+some important commonalities and differences to these two 
+approaches for now we note one simple fact on any specific 
+sequence s vwapa s may be larger that vwapm s 
+however rvwap a cannot be smaller than since on any 
+sequence s in which all price pt are identical it is impossible 
+to get a better average share per price thus for all 
+algorithms a both rvwap a and rowt a are larger than 
+ and the closer to they are the better a is tracking its 
+respective performance measure 
+ vwap results in the price-volume model 
+as in previous work on online trading it is generally not 
+possible to obtain finite bounds on competitive ratios with 
+absolutely no assumptions on the set of sequences 
+σbounds on the maximum variation in price or volume are 
+required depending on the exact setting we thus introduce 
+the following two assumptions 
+ volume variability assumption 
+let vmin ≤ vmax be known positive constants and 
+define q vmax vmin for all intraday trading sequences 
+s ∈ σ the total daily volume v ∈ vmin vmax 
+ price variability assumption 
+let pmin ≤ pmax be known positive constants and 
+define r pmax pmin for all intraday trading sequences s ∈ 
+σ the prices satisfy pt ∈ pmin pmax for all t t 
+competitive ratios are generally taken over all sets σ 
+consistent with at least one of these assumptions to gain some 
+intuition consider the two trivial cases of r and q 
+in the case of r where there is no fluctuation in price 
+any schedule is optimal in the case of q where the 
+total volume v over the trading period is known we can 
+gain a competitive ratio of by selling vt 
+v 
+n shares after each 
+time period 
+for the owt problem in the price-volume model 
+volumes are irrelevant for the performance criterion but for 
+the vwap criterion they are central for the owt problem 
+under the price variability assumption the results of 
+established that the optimal competitive ratio was θ log r 
+our first result establishes that the optimal competitive 
+ratio for vwap under the volume variability assumption is 
+θ log q and is achieved by an algorithm that ignores the 
+price data 
+theorem in the price-volume model under the volume 
+variability assumption there exists an online algorithm a 
+for selling n shares achieving competitive ratio rvwap a ≤ 
+ log q in addition if only the volume variability and not 
+the price variability assumption holds any online algorithm 
+a for selling n shares has rvwap a ω log q 
+proof sketch for the upper bound the idea is 
+similar to the price reservation algorithm of for the owt 
+problem and similar in spirit to the general technique of 
+classify and select consider algorithms which use a 
+parameter ˆv which is interpreted as an estimate for the total 
+volume for the day then at each time t if the market 
+price and volume is pt vt the algorithm sells a fraction 
+vt ˆv of its shares we consider a family of log q such 
+algorithms where algorithm ai uses ˆv vmin i− 
+ clearly 
+one of the ai has a competitive ratio of we can derive an 
+o log q vwap competitive ratio by running these 
+algorithms in parallel and letting each algorithm sell n log q 
+shares alternatively we can randomly select one ai and 
+guarantee the same expected competitive ratio 
+we now sketch the proof of the lower bound which 
+relates performance in the vwap and owt problems any 
+algorithm that is c-competitive in the vwap setting 
+ under fixed q is c-competitive in the owt setting with 
+r q to show this we take any sequence s of prices 
+for the owt problem and convert it into a price-volume 
+sequence for the vwap problem the prices in the vwap 
+sequence are the same as in s to construct the volumes in the 
+vwap sequence we segment the prices in s into log r 
+intervals i− 
+pmin i 
+pmin suppose pt ∈ i− 
+pmin i 
+pmin 
+and this is the first time in s that a price has fallen in this 
+interval then in the vwap sequence we set the volume 
+vt i− 
+ if this is not the first visit to the interval 
+containing pt we set vt assume that the maximum price 
+in s is pmax the vwap of our sequence is at least pmax 
+since we had a c competitive algorithm its average sell is at 
+least pmax c the lower bound now follows using the lower 
+bound in 
+an alternative approach to vwap is to ignore the 
+volumes in favor of prices and apply an algorithm for the owt 
+problem note that the lower bound in this theorem unlike 
+in the previous one only assumes a price variation bound 
+ 
+theorem in the price-volume model under the price 
+variability assumption there exists an online algorithm a 
+for selling n shares achieving competitive ratio rvwap a 
+o log r in addition if only the price variability and not 
+the volume variability assumption holds any online a for 
+selling n shares has rvwap a ω log r 
+proof sketch follows immediately from the results of 
+ for owt the upper bound from the simple fact that for 
+any sequence s vwapa s is less than max ≤t≤t pt and 
+the lower bound from a reduction to owt 
+theorems and demonstrate that one can achieve 
+logarithmic vwap competitive ratios under the assumption of 
+either bounded variability of total volume or bounded 
+variability of maximum price if both assumptions hold it is 
+possible to give an algorithm accomplishing the minimum 
+of log q and log r this flexibility of approach derives 
+from the fact that the vwap is a quantity in which both 
+prices and volumes matter as opposed to owt 
+ relatedresultsintheprice-volumemodel 
+all of the vwap algorithms we have discussed so far 
+make some use of the daily data pt vt as it unfolds 
+using either the price or volume information in contrast a 
+fixed schedule vwap algorithm has a predetermined 
+distribution f f ft and simply sells ftn shares at time t 
+independent of pt vt fixed schedule vwap algorithms 
+or slight variants of them are surprisingly common on wall 
+street and the schedule is usually derived from historical 
+intraday volume data our next result demonstrates that 
+such algorithms can perform considerably worse than 
+dynamically adaptive algorithms in terms of the worst case 
+competitive ratio 
+theorem in the price-volume model under both the 
+volume and price variability assumptions any fixed schedule 
+vwap algorithm a for selling n shares has sell vwap 
+competitive ratio rvwap a ω min t r 
+the proofs of all the results in this subsection are in the 
+appendix 
+so far our emphasis has been on vwap algorithms that 
+must sell exactly n shares in many realistic circumstances 
+however there is actually some flexibility in the precise 
+number of shares to be sold for instance this is true at 
+large brokerages where many separate vwap trades may 
+be pooled and executed by a common algorithm and the 
+firm would be quite willing to carry a small position of 
+unsold shares overnight if it resulted in better execution prices 
+the following theorem which interestingly has no analogue 
+for the owt problem demonstrates that this trade-off in 
+shares sold and performance can be realized dramatically in 
+our model it states that if we are willing to let the number 
+of shares sold vary with q we can in fact achieve a vwap 
+competitive ratio of 
+theorem in the price-volume model under the volume 
+variability assumption there exists an algorithm a that 
+always sells between n and qn shares and that the average 
+price per sold share is exactly vwapm s 
+in many online problems there is a clear distinction 
+between benefit problems and cost problems in the 
+vwap setting selling shares is a benefit problem and 
+buying shares is a cost problem the definitions of the 
+competitive ratios rbuy 
+vwap a and rbuy 
+owt a for algorithms which 
+figure sample island order books for msft 
+buy exactly n shares are maxs∈σ vwapa s vwapm s 
+and maxs∈σ maxt vwapa s pt respectively eventhough 
+theorem also holds for buying in general the competitive 
+ratio of the buy cost problem is much higher as stated in 
+the following theorem 
+theorem in the price-volume model under the volume 
+and price variability assumptions there exists an online 
+algorithm a for buying n shares achieving buy vwap 
+competitive ratio rbuy 
+vwap a o min q 
+√ 
+r in addition 
+any online algorithm a for buying n shares has buy vwap 
+competitive ratio rbuy 
+vwap a ω min q 
+√ 
+r 
+ a limit order book trading 
+model 
+before we can define our online trading model based on 
+limit order books we give some necessary background on 
+the detailed mechanics of financial markets which are 
+sometimes referred to as market microstructure we then provide 
+results and algorithms for both the owt and vwap 
+problems 
+ 
+ background on limit order books and 
+market microstructure 
+a fundamental distinction in stock trading is that between 
+a limit order and a market order suppose we wish to 
+purchase shares of microsoft msft stock in a limit 
+order we specify not only the desired volume shares 
+but also the desired price suppose that msft is currently 
+trading at roughly a share see figure which shows 
+an actual snapshot of a recent msft order book on 
+island www island com a well-known electronic exchange 
+for nasdaq stocks but we are only willing to buy the 
+ shares at a share or lower we can choose to 
+submit a limit order with this specification and our order 
+will be placed in a queue called the buy order book which 
+is ordered by price with the highest offered unexecuted buy 
+price at the top often referred to as the bid if there are 
+multiple limit orders at the same price they are ordered by 
+time of arrival with older orders higher in the book in the 
+example provided by figure our order would be placed 
+immediately after the extant order for shares at 
+though we offer the same price this order has arrived before 
+ours similarly a sell order book for sell limit orders for 
+instance we might want to sell shares of msft at 
+or higher is maintained this time with the lowest sell price 
+offered often referred to as the ask 
+thus the order books are sorted from the most 
+competitive limit orders at the top high buy prices and low sell 
+prices down to less competitive limit orders the bid and 
+ask prices which again are simply the prices in the limit 
+orders at the top of the buy and sell books respectively 
+together are sometimes referred to as the inside market and 
+the difference between them as the spread by definition 
+the order books always consist exclusively of unexecuted 
+orders - they are queues of orders hopefully waiting for the 
+price to move in their direction 
+how then do orders get executed there are two 
+methods first any time a market order arrives it is immediately 
+matched with the most competitive limit orders on the 
+opposing book thus a market order to buy shares is 
+matched with enough volume on the sell order book to fill 
+the shares for instance in the example of figure 
+such an order would be filled by the two limit sell orders 
+for shares at the shares at the 
+shares at and then of the shares at 
+the remaining shares of this last limit order would 
+remain as the new top of the sell limit order book second 
+if a buy sell respectively limit order comes in above the 
+ask below the bid respectively price then the order is 
+matched with orders on the opposing books it is important 
+to note that the prices of executions are the prices specified 
+in the limit orders already in the books not the prices of the 
+incoming order that is immediately executed 
+every market or limit order arrives atomically and 
+instantaneously - there is a strict temporal sequence in which 
+orders arrive and two orders can never arrive simultaneously 
+this gives rise to the definition of the last price of the 
+exchange which is simply the last price at which the exchange 
+executed an order it is this quantity that is usually meant 
+when people casually refer to the ticker price of a stock 
+note that a limit buy sell respectively order with a 
+price of infinity respectively is effectively a market 
+order we shall thus assume without loss of generality that 
+all orders are placed as limit order although limit orders 
+which are unexecuted may be removed by the party which 
+placed them for simplicity we assume that limit orders are 
+never removed from the books 
+we refer the reader to for further discussion of modern 
+electronic exchanges and market microstructure 
+ the model 
+the online order book trading model is intended to capture 
+the realistic details of market microstructure just discussed 
+in a competitive ratio setting in this refined model a day s 
+market activity is described by a sequence of limit orders 
+ pt vt bt here bt is a bit indicating whether the order is 
+a buy or sell order while pt is the limit order price and vt 
+the number of shares desired following the arrival of each 
+such limit order an online trading algorithm is permitted 
+to place its own limit order these two interleaved sources 
+ market and algorithm of limit orders are then simply 
+operated on according to the matching process described in 
+section any limit order that is not immediately 
+executable according to this process is placed in the appropriate 
+ buy or sell book for possible future execution arriving 
+orders that can be partially or fully executed are so executed 
+with any residual shares remaining on the respective book 
+the goal of a vwap or owt selling algorithm is 
+essentially the same as in the price-volume model but the 
+context has changed in the following two fundamental ways 
+first the assumption of infinite liquidity in the price-volume 
+model is eliminated entirely the number of shares available 
+at any given price is restricted to the total volume of limit 
+orders offering that price second all incoming orders and 
+therefore the complete limit order books are assumed to 
+be visible to the algorithm this is consistent with modern 
+electronic financial exchanges and indeed is the source of 
+much current interest on wall street 
+in general the definition of competitive ratios in the order 
+book model is complicated by the fact that now our 
+algorithm s activity influences the sequence of executed prices 
+and volumes we thus first define the execution sequence 
+determined by a limit order sequence placed by the 
+market and our algorithm let s p v b pt vt bt 
+be a limit order sequence placed by the market and let 
+s p v b pt vt bt be a limit order sequence 
+placed by our algorithm unless otherwise specified all bt are 
+of the sell type let merge s s be the merged sequence 
+ p v b p v b pt vt bt pt vt bt which is 
+the time sequence of orders placed by the market and 
+algorithm note that the algorithm has the option of not placing 
+an order which we can view as a zero volume order 
+if we conducted the order book maintenance and order 
+execution process described in section on the sequence 
+merge s s at irregular intervals a trade occurs for some 
+number of shares and some price in each executed trade 
+the selling party is either the market or the algorithm let 
+execm s s q w qt wt be the sequence of 
+executions where the market that is a party other than 
+the algorithm was the selling party where the qt are the 
+execution prices and wt the execution volumes similarly 
+we define execa s s r x rt xt to be the 
+sequence of executions in which the algorithm was the selling 
+party thus execa s s ∪ execm s s is the set of all 
+executions we generally expect t to be possibly much 
+smaller than t 
+the revenue of the algorithm and the market are defined 
+ 
+as 
+revm s s ≡ 
+t 
+t 
+qtwt reva s s ≡ 
+t 
+t 
+rtxt 
+note that both these quantities are solely determined by the 
+execution sequences execm s s and execa s s 
+respectively 
+for an algorithm a which is constrained to sell exactly n 
+shares we define the owt competitive ratio of a rowt a 
+as the maximum ratio under any s ∈ σ of the revenue 
+obtained by a as compared to the revenue obtained by an 
+optimal oﬄine algorithm a 
+ more formally for a 
+which 
+is constrained to sell exactly n shares we define 
+rowt a max 
+s∈σ 
+max 
+a 
+reva s s 
+ 
+reva s s 
+where s 
+is the limit order sequence placed by a 
+on s if 
+the algorithm a is randomized then we take the appropriate 
+expectation with respect to s ∼ a 
+we define the vwap competitive ratio rvwap a as 
+the maximum ratio under any s ∈ σ between the market 
+and algorithm vwaps more formally define vwapm s s 
+as revm s s t 
+t wt where the denominator is just 
+the total executed volume of orders placed by the 
+market similarly we define vwapa s s as reva s s n 
+since we assume the algorithm sells no more than n shares 
+ this definition implicitly assumes that a gets a price for 
+unsold shares the vwap competitive ratio of a is then 
+rvwap a max 
+s∈σ 
+ vwapm s s vwapa s s 
+where s is the online sequence of limit orders generated by 
+a in response to the sequence s 
+ owt results in the order book model 
+for the owt problem in the order book model we 
+introduce a more subtle version of the price variability 
+assumption this is due to the fact that our algorithm s trading 
+can impact the high and low prices of the day for the 
+assumption below note that execm s ∅ is the sequence of 
+executions without the interaction of our algorithm 
+ order book price variability assumption 
+let pmin ≤ pmax be known positive constants and 
+define r pmax pmin for all intraday trading sequences 
+s ∈ σ the prices pt in the sequence execm s ∅ satisfy 
+pt ∈ pmin pmax for all t t 
+note that this assumption does not imply that the ratios 
+of high to low prices under the sequences execm s s or 
+execa s s are bounded by r in fact the ratio in the 
+sequence execa s s could be infinite if the algorithm ends 
+up selling some stocks at a price 
+theorem in the order book model under the order 
+book price variability assumption there exists an online 
+algorithm a for selling n shares achieving sell owt competitive 
+ratio rowt a log r log n 
+proof the algorithm a works by guessing a price p in 
+the set pmin i 
+ ≤ i ≤ log r and placing a sell limit 
+order for all n shares at the price p at the beginning of 
+the day alternatively algorithm a can place log r sell 
+limit orders where the i-th one has price i 
+pmin and volume 
+n log r by placing an order at the beginning of the day 
+the algorithm undercuts all sell orders that will be placed 
+during the day for a price of p or higher meaning the 
+algorithm s n shares must be filled first at this price hence 
+if there were k shares that would have been sold at price p 
+or higher without our activity then a would sell at least kp 
+shares 
+we define pj to be the multiset of prices of 
+individual shares that are either executed or are buy limit order 
+shares that remained unexecuted excluding the activity of 
+our algorithm that is assuming our algorithm places no 
+orders assume without loss of generality that p ≥ p ≥ 
+consider guessing the kth highest such price pk if an 
+order for n shares is placed at the day s start at price pk 
+then we are guaranteed to obtain a return of kpk let 
+k 
+ argmaxk kpk we can view our algorithm as 
+attempting to guess pk and succeeding if the guess p 
+satisfies p ∈ pk pk hence we are log r competitive 
+with the quantity max ≤k≤n kpk note that 
+ρ ≡ 
+n 
+i 
+pi 
+ 
+n 
+i 
+ 
+i 
+ipi 
+≤ max 
+ ≤k≤n 
+kpk 
+n 
+i 
+ 
+i 
+≤ log n max 
+ ≤k≤n 
+kpk 
+where ρ is defined as the sum of the top n prices pi without 
+a s involvement 
+similarly let pj be the multiset of prices of 
+individual executed shares or the prices of unexecuted buy order 
+shares but now including the orders placed by some selling 
+algorithm a we now wish to show that for all algorithms 
+a which sell n shares reva ≤ n 
+i pi ≤ ρ 
+essentially this inequality states the intuitive idea that a selling 
+algorithm can only lower executed or unmatched buy 
+order share prices to prove this we use induction to show 
+that the removal of the activity of a selling algorithm causes 
+these prices to increase first remove the last share in the 
+last sell order placed by either a or the market on an 
+arbitrary sequence merge s s - by this we mean take the 
+last sell order placed by a or the market and decrease its 
+volume by one share after this modification the top n 
+prices p pn will not decrease this is because either this 
+sell order share was not executed in which case the claim 
+is trivially true or if it was executed the removal of this 
+sell order share leaves an additional unexecuted buy order 
+share of equal or higher price for induction assume that if 
+we remove a share from any sell order that was placed by 
+a or the market at or after time t then the top n prices 
+do not decrease we now show that if we remove a share 
+from the last sell order that was placed by a or the market 
+before time t then the top n prices do not decrease if this 
+sell order share was not executed then the claim is trivially 
+true else if the sell order share was executed then claim 
+is true because by removing this executed share from the 
+sell order either i the corresponding buy order share of 
+equal or higher value is unmatched on the remainder of the 
+sequence in which case the claim is true or ii this buy 
+ 
+order matches some sell order share at an equal or higher 
+price which has the effect of removing a share from a sell 
+order on the remainder of the sequence and by the 
+inductive assumption this can only increase prices hence we 
+have proven that for all a which sell n shares reva ≤ ρ 
+we have now established that our revenue satisfies 
+ log r es ∼a reva s s ≥ max 
+ ≤k≤n 
+ kpk 
+≥ ρ log n 
+≥ max 
+a 
+ reva log n 
+where a performs an arbitrary sequence of n sell limit 
+orders 
+ vwap results in the order book model 
+the owt algorithm from theorem can be applied to 
+obtain the following vwap result 
+corollary in the order book model under the order 
+book price variability assumption there exists an online 
+algorithm a for selling n shares achieving sell vwap 
+competitive ratio rvwap a o log r log n 
+we now make a rather different assumption on the 
+sequences s 
+ bounded order volume and max price 
+assumption 
+the set of sequences σ satisfies the following two 
+properties first we assume that each order placed by the market 
+is of volume less than γ which we view as a mild assumption 
+since typically single orders on the market are not of high 
+volume due to liquidity issues this assumption allows our 
+algorithm to place at least one limit order at a time 
+interleaved with approximately γ market executions second we 
+assume that there is large volume in the sell order books 
+below the price pmax which means that no orders placed by 
+the market will be executed above the price pmax the 
+simplest way to instantiate this latter assumption in the order 
+book model is to assume that each sequence s ∈ σ starts 
+by placing a huge number of sell orders more than vmax 
+at price pmax 
+although this assumption has a maximum price 
+parameter it does not imply that the price ratio r is finite since 
+it does not imply any lower bound on the prices of buy or 
+executed shares aside from the trivial one of 
+theorem consider the order book model under the 
+bounded order volume and max price assumption there 
+exists an algorithm a in which after exactly γn market 
+executions have occurred then a has sold at most n shares 
+and 
+reva s s 
+n 
+ vwapa s s 
+≥ − vwapm s s − 
+pmax 
+n 
+where s is a sequence of n sell limit orders generated by a 
+when observing s 
+proof the algorithm divides the trading day into 
+volume intervals whose real-time duration may vary for each 
+period i in which γ shares have been executed in the 
+market the algorithm computes the market vwap of only those 
+shares traded in period i let us denote this by vwapi 
+following this ith volume interval the algorithm places a limit 
+order to sell exactly one share at a price close to vwapi 
+more precisely the algorithm only places orders at the 
+discrete prices − pmax − 
+pmax following volume 
+interval i the algorithm places a limit order to sell one share 
+at the discretized price that is closest to vwapi but which 
+is strictly smaller 
+for the analysis we begin by noting that if all of the 
+algorithm s limit orders are executed during the day the 
+total revenue received by the algorithm would be at least 
+ − vwapm s s n to see this it suffices to note that 
+vwapm s s is a uniform mixture of the vwapi since 
+by definition they each cover the same amount of market 
+volume and if all the algorithm s limit orders were 
+executed they each received more than − vwapi dollars 
+for the interval i they followed 
+we now count the potential lost revenue of the 
+algorithm due to unexecuted limit orders by the assumption 
+that individual orders are placed with volume less than γ 
+then our algorithm is able to place a limit order during every 
+block of γ shares have been traded hence after γn market 
+orders have been executed a has placed n orders in the 
+market 
+note that there can be at most one limit order and thus 
+at most one share left unexecuted at each level of the 
+discretized price ladder defined above this is because 
+following interval i the algorithm places its limit order strictly 
+below vwapi so if vwapj ≥ vwapi for j i this limit 
+order must have been executed thus unexecuted limit 
+orders bound the vwaps of the remainder of the day 
+resulting in at most one unexecuted order per price level 
+a bound on the lost revenue is thus the sum of the 
+discretized prices ∞ 
+i − i 
+pmax ≤ pmax clearly our 
+algorithm has sold at most n shares 
+note that as n becomes large vwapa approaches − 
+times the market vwap if we knew that the final total 
+volume of the market executions is v then we can set γ 
+v n assuming that γ if we have only an upper and 
+lower bound on v we should be able to guess and incur a 
+logarithmic loss the following assumption tries to capture 
+the market volume variability 
+ order book volume variability assumption 
+we now assume that the total volume which includes 
+the shares executed by both our algorithm and the market 
+is variable within some known region and that the market 
+volume will be greater than our algorithms volume more 
+formally for all s ∈ σ assume that the total volume v 
+of shares traded in execm s s for any sequence s of n 
+sell limit orders satisfies n ≤ vmin ≤ v ≤ vmax let 
+q vmax vmin 
+the following corollary is derived using a constant 
+and observing that if we set γ such that v ≤ γn ≤ v then 
+our algorithm will place between n and n limit orders 
+corollary in the order book model if the bounded 
+order volume and max price assumption and the order book 
+volume variability assumption hold there exists an online 
+algorithm a for selling at most n shares such that 
+vwapa s s ≥ 
+ 
+ log q 
+vwapm s s − 
+ pmax 
+n 
+ 
+ 
+x 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+qqq log q e 
+ 
+x 
+ 
+ 
+ 
+ 
+ 
+ 
+jnpr log q e 
+ 
+x 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+mchp log q e 
+ 
+x 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+chkp log q e 
+figure here we present bounds from section based on the empirical volume distributions for four real stocks 
+qqq mchp jnpr and chkp the plots show histograms for the total daily volumes transacted on island for 
+these stocks in the last year and a half along with the corresponding values of log q and e pbins 
+vol denoted by e 
+we assume that the minimum and maximum daily volumes in the data correspond to vmin and vmax respectively 
+the worst-case competitive ratio bounds which are twice log q of our algorithm for those stocks are 
+and respectively the corresponding bounds on the competitive ratio performance of our algorithm under the 
+volume distribution model which are twice e pbins 
+vol are better and respectively a − relative 
+improvement using a finer volume binning along with a slightly more refined bound on the competitive ratio we can 
+construct algorithms that using the empirical volume distribution given as correct guarantee even better competitive 
+ratios of and respectively for those stocks details omitted 
+ macroscopic distribution 
+models 
+we conclude our results with a return to the price-volume 
+model where we shall introduce some refined methods of 
+analysis for online trading algorithms we leave the 
+generalization of these methods to the order book model for 
+future work 
+the competitive ratios defined so far measure performance 
+relative to some baseline criterion in the worst case over all 
+market sequences s ∈ σ it has been observed in many 
+online settings that such worst-case metrics can yield 
+pessimistic results and various relaxations have been 
+considered such as permitting a probability distribution over the 
+input sequence 
+we now consider distributional models that are 
+considerably weaker than assuming a distribution over complete 
+market sequences s ∈ σ in the volume distribution model 
+we assume only that there exists a distribution pvol over the 
+total volume v traded in the market for the day and then 
+examine the worst-case competitive ratio over sequences 
+consistent with the randomly chosen volume more precisely 
+we define 
+rvwap a pvol ev ∼pvol max 
+s∈seq v 
+vwapm s 
+vwapa s 
+ 
+here v ∼ pvol denotes that v is chosen with respect to 
+distribution pvol and seq v ⊂ σ is the set of all market 
+sequences p v pt vt satisfying t 
+t vt v 
+similarly for owt we can define 
+rowt a pmaxprice ep∼pmaxprice max 
+s∈seq p 
+p 
+vwapa s 
+ 
+here pmaxprice is a distribution over just the maximum price 
+of the day and we then examine worst-case sequences 
+consistent with this price seq p ⊂ σ is the set of all market 
+sequences satisfying max ≤t≤t pt p analogous buy-side 
+definitions can be given 
+we emphasize that in these models only the distribution 
+of maximum volume and price is known to the algorithm 
+we also note that our probabilistic assumptions on s are 
+considerably weaker than typical statistical finance 
+models which would posit a detailed stochastic model for the 
+step-by-step evolution of pt vt here we instead permit 
+only a distribution over crude macroscopic measures of the 
+entire day s market activity such as the total volume and 
+high price and analyze the worst-case performance 
+consistent with these crude measures for this reason we refer to 
+such settings as the macroscopic distribution model 
+the work of el-yaniv et al examines distributional 
+assumptions similar to ours but they emphasize the 
+worst 
+case choices for the distributions as well and show that this 
+leads to results no better than the original worst-case 
+analysis over all sequences in contrast we feel that the analysis 
+of specific distributions pvol and pmaxprice is natural in many 
+financial contexts and our preliminary experimental results 
+show significant improvements when this rather crude 
+distributional information is taken into account see figure 
+our results in the vwap setting examine the cases where 
+these distributions are known exactly or only approximately 
+similar results can be obtained for macroscopic distributions 
+of maximum daily price for the one-way trading setting 
+ results in the macroscopic distribution 
+model 
+we begin by noting that the algorithms examined so far 
+work by binning total volumes or maximum prices into bins 
+of exponentially increasing size and then guessing the 
+index of the bin in which the actual quantity falls it is 
+thus natural that the macroscopic distribution model 
+performance of such algorithms which are common in 
+competitive analysis might depend on the distribution of the true 
+bin index 
+in the remaining we assume that q is a power of and 
+the base of the logarithm is let pvol denote the 
+distribution of total daily market volume we define the 
+related distribution pbins 
+vol over bin indices i as follows for 
+all i log q − pbins 
+vol i is equal to the 
+probability under pvol that the daily volume falls in the interval 
+ vmin i− 
+ vmin i 
+ and pbins 
+vol log q is for the last interval 
+ vmax vmax 
+we define e as 
+e pbins 
+vol ≡ ei∼p bins 
+vol 
+ pbins 
+vol i 
+ 
+ 
+ 
+ 
+log q 
+i 
+pbins 
+vol i 
+ 
+ 
+ 
+ 
+since the support of pbins 
+vol has only log q elements e pbins 
+vol 
+can vary from for distributions pvol that place all of 
+their weight in only one of the log q intervals between 
+vmin vmin vmin vmax to log q for distributions 
+pvol in which the total daily volume is equally likely to fall 
+in any one of these intervals note that distributions pvol 
+of this latter type are far from uniform over the entire range 
+ vmin vmax 
+theorem in the volume distribution model under the 
+volume variability assumption there exists an online 
+algorithm a for selling n shares that using only knowledge of 
+the total volume distribution pvol achieves rvwap a pvol ≤ 
+ e pbins 
+vol 
+all proofs in this section are provided in the appendix 
+as a concrete example consider the case in which pvol 
+is the uniform distribution over vmin vmax in that case 
+pbins 
+vol is exponentially increasing and peaks at the last bin 
+which having the largest width also has the largest weight 
+in this case e pbins 
+vol is a constant i e independent of q 
+leading to a constant competitive ratio on the other hand 
+if pvol is exponential then pbins 
+vol is uniform leading to an 
+o log q competitive ratio just as in the more adversarial 
+price-volume setting discussed earlier in figure we 
+provide additional specific bounds obtained for empirical total 
+daily volume distributions computed for some real stocks 
+we now examine the setting in which pvol is unknown 
+but an approximation ˜pvol is available let us define 
+c pbins 
+vol ˜pbins 
+vol log q 
+j 
+˜pbins 
+vol j log q 
+i 
+p bins 
+vol i 
+√ ˜p bins 
+vol 
+ i 
+ 
+c is minimized at c pbins 
+vol pbins 
+vol e pbins 
+vol and c may 
+be infinite if ˜pbins 
+vol i is when pbins 
+vol i 
+theorem in the volume distribution model under the 
+volume variability assumption there exists an online 
+algorithm a for selling n shares that using only knowledge of 
+an approximation ˜pvol of pvol achieves rvwap a pvol ≤ 
+ c pbins 
+vol ˜pbins 
+vol 
+as an example of this result suppose our approximation 
+obeys α pbins 
+vol i ≤ ˜pbins 
+vol i ≤ αpbins 
+vol i for all i for 
+some α thus our estimated bin index probabilities 
+are all within a factor of α of the truth then it is easy 
+to show that c pbins 
+vol ˜pbins 
+vol ≤ αe pbins 
+vol so according to 
+theorems and our penalty for using the approximate 
+distribution is a factor of α in competitive ratio 
+ references 
+ b awerbuch y bartal a fiat and a ros´en 
+competitive non-preemptive call control in proc th 
+acm-siam symp on discrete algorithms pages 
+ - 
+ a borodin and r el-yaniv online computation and 
+competitive analysis cambridge university press 
+ 
+ r el-yaniv a fiat r m karp and g turpin 
+optimal search and one-way trading online algorithms 
+algorithmica - 
+ m kearns and l ortiz the penn-lehman automated 
+trading project ieee intelligent systems to 
+appear 
+ appendix 
+ proofs from subsection 
+proof sketch of theorem w l o g assume that q 
+ and the total volume is v consider the time t where the 
+fixed schedule f sells the least then ft ≤ n t consider the 
+sequences where at time t we have pt pmax vt v and 
+for times t t we have pt pmin and vt the vwap 
+is pmax and the fixed schedule average is n t pmax n − 
+n t pmin 
+proof sketch of theorem the algorithm simply sells 
+ut vt vmin n shares at time t the total number of 
+shares sold u is clearly more than n and 
+u 
+t 
+ut 
+t 
+ vt vmin n v vmin n ≤ qn 
+the average price is 
+v wapa s 
+t 
+ptut u 
+t 
+pt vt v v wapm s 
+where we used the fact that ut u vt v 
+ 
+proof of theorem we start with the proof of the 
+lower bound consider the following scenario for the first 
+t time units we have a price of 
+√ 
+rpmin and a total volume 
+of vmin we observe how many shares the online algorithm 
+has bought if it has bought more than half of the shares 
+the remaining time steps have price pmin and volume vmax − 
+vmin otherwise the remaining time steps have price pmax 
+and negligible volume 
+in the first case the online has paid at least 
+√ 
+rpmin 
+while the vwap is at most 
+√ 
+rpmin q pmin therefore 
+in this case the competitive ratio is ω q in the second case 
+the online has to buy at least half of the shares at pmax so 
+its average cost is at least pmax the market vwap is√ 
+rpmin pmax 
+√ 
+r hence the competitive ratio is ω 
+√ 
+r 
+for the upper bound we can get a 
+√ 
+r competitive ratio 
+by buying all the shares once the price drops below 
+√ 
+rpmin 
+the q upper bound is derive by running an algorithm that 
+assumes the volume is vmin the online pays a cost of p 
+while the vwap will be at least p q 
+ proofs from section 
+proof sketch of theorem we use the idea of 
+guessing the total volume from theorem but now allow for the 
+possibility of an arbitrary but known distribution over the 
+total volume in particular consider constructing a 
+distribution gbins 
+vol over a set of volume values using pvol and use 
+it to guess the total volume v let the algorithm guess 
+ˆv vmin i 
+with probability gbins 
+vol i then note that 
+for any price-volume sequence s if v ∈ vmin i− 
+ vmin i 
+ 
+vwapa s ≥ gbins 
+vol i vwapm s this implies an 
+upper bound on rvwap a pvol in terms of gbins 
+vol we then 
+get that gbins 
+vol i ∝ pbins 
+vol i minimizes the upper bound 
+which leads to the upper bound stated in the theorem 
+proof sketch of theorem replace pvol with ˜pvol 
+in the expression for gbins 
+vol in the proof sketch for the last 
+result 
+ 

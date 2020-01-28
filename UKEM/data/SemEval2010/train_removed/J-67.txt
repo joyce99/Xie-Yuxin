@@ -1,0 +1,1532 @@
+mechanism design for online real-time scheduling 
+ryan porter 
+computer science department 
+stanford university 
+stanford ca 
+rwporter stanford edu 
+abstract 
+for the problem of online real-time scheduling of jobs on a 
+single processor previous work presents matching upper and 
+lower bounds on the competitive ratio that can be achieved 
+by a deterministic algorithm however these results only 
+apply to the non-strategic setting in which the jobs are 
+released directly to the algorithm motivated by emerging 
+areas such as grid computing we instead consider this 
+problem in an economic setting in which each job is released to 
+a separate self-interested agent the agent can then delay 
+releasing the job to the algorithm inflate its length and 
+declare an arbitrary value and deadline for the job while the 
+center determines not only the schedule but the payment 
+of each agent for the resulting mechanism design problem 
+ in which we also slightly strengthen an assumption from 
+the non-strategic setting we present a mechanism that 
+addresses each incentive issue while only increasing the 
+competitive ratio by one we then show a matching lower bound 
+for deterministic mechanisms that never pay the agents 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-multiagent systems j social and 
+behavioral sciences economics f computation by 
+abstract devices modes of computation-online 
+computation 
+general terms 
+algorithms economics design theory 
+ introduction 
+we consider the problem of online scheduling of jobs on 
+a single processor each job is characterized by a release 
+time a deadline a processing time and a value for successful 
+completion by its deadline the objective is to maximize the 
+sum of the values of the jobs completed by their respective 
+deadlines the key challenge in this online setting is that 
+the schedule must be constructed in real-time even though 
+nothing is known about a job until its release time 
+competitive analysis with its roots in is a 
+well-studied approach for analyzing online algorithms by 
+comparing them against the optimal oﬄine algorithm which 
+has full knowledge of the input at the beginning of its 
+execution one interpretation of this approach is as a game 
+between the designer of the online algorithm and an adversary 
+first the designer selects the online algorithm then the 
+adversary observes the algorithm and selects the sequence of 
+jobs that maximizes the competitive ratio the ratio of the 
+value of the jobs completed by an optimal oﬄine algorithm 
+to the value of those completed by the online algorithm 
+two papers paint a complete picture in terms of 
+competitive analysis for this setting in which the algorithm is 
+assumed to know k the maximum ratio between the value 
+densities value divided by processing time of any two jobs 
+for k presents a -competitive algorithm and proves 
+that this is a lower bound on the competitive ratio for 
+deterministic algorithms the same paper also generalizes the 
+lower bound to 
+√ 
+k 
+for any k ≥ and then 
+presents a matching 
+√ 
+k 
+-competitive algorithm 
+the setting addressed by these papers is completely 
+nonstrategic and the algorithm is assumed to always know the 
+true characteristics of each job upon its release however 
+in domains such as grid computing see for example 
+ this assumption is invalid because buyers of processor 
+time choose when and how to submit their jobs 
+furthermore sellers not only schedule jobs but also determine 
+the amount that they charge buyers an issue not addressed 
+in the non-strategic setting 
+thus we consider an extension of the setting in which 
+each job is owned by a separate self-interested agent 
+instead of being released to the algorithm each job is now 
+released only to its owning agent each agent now has four 
+different ways in which it can manipulate the algorithm it 
+decides when to submit the job to the algorithm after the 
+true release time it can artificially inflate the length of the 
+job and it can declare an arbitrary value and deadline for 
+the job because the agents are self-interested they will 
+choose to manipulate the algorithm if doing so will cause 
+ 
+their job to be completed and indeed one can find 
+examples in which agents have incentive to manipulate the 
+algorithms presented in and 
+the addition of self-interested agents moves the problem 
+from the area of algorithm design to that of mechanism 
+design the science of crafting protocols for self-interested 
+agents recent years have seen much activity at the 
+interface of computer science and mechanism design see e g 
+ in general a mechanism defines a protocol for 
+interaction between the agents and the center that 
+culminates with the selection of an outcome in our setting a 
+mechanism will take as input a job from each agent and 
+return a schedule for the jobs and a payment to be made by 
+each agent to the center a basic solution concept of 
+mechanism design is incentive compatibility which in our setting 
+requires that it is always in each agent s best interests to 
+immediately submit its job upon release and to truthfully 
+declare its value length and deadline 
+in order to evaluate a mechanism using competitive 
+analysis the adversary model must be updated in the new 
+model the adversary still determines the sequence of jobs 
+but it is the self-interested agents who determine the 
+observed input of the mechanism thus in order to achieve a 
+competitive ratio of c an online mechanism must both be 
+incentive compatible and always achieve at least 
+c 
+of the 
+value that the optimal oﬄine mechanism achieves on the 
+same sequence of jobs 
+the rest of the paper is structured as follows in 
+section we formally define and review results from the 
+original non-strategic setting after introducing the incentive 
+issues through an example we formalize the mechanism 
+design setting in section in section we present our first 
+main result a 
+√ 
+k 
+ -competitive mechanism and 
+formally prove incentive compatibility and the competitive 
+ratio we also show how we can simplify this mechanism for 
+the special case in which k and each agent cannot alter 
+the length of its job returning the general setting we show 
+in section that this competitive ratio is a lower bound for 
+deterministic mechanisms that do not pay agents finally 
+in section we discuss related work other than the directly 
+relevant and before concluding with section 
+ non-strategic setting 
+in this section we formally define the original non-strategic 
+setting and recap previous results 
+ formulation 
+there exists a single processor on which jobs can execute 
+and n jobs although this number is not known beforehand 
+each job i is characterized by a tuple θi ri di li vi 
+which denotes the release time deadline length of 
+processing time required and value respectively the space θi of 
+possible tuples is the same for each job and consists of all 
+θi such that ri di li vi ∈ thus the model of time is 
+continuous each job is released at time ri at which point 
+its three other characteristics are known nothing is known 
+about the job before its arrival each deadline is firm or 
+hard which means that no value is obtained for a job that 
+is completed after its deadline preemption of jobs is 
+allowed and it takes no time to switch between jobs thus 
+job i is completed if and only if the total time it executes 
+on the processor before di is at least li 
+let θ θ θn denote the vector of tuples for all 
+jobs and let θ−i θ θi− θi θn denote the 
+same vector without the tuple for job i thus θi θ−i 
+denotes a complete vector of tuples 
+define the value density ρi vi 
+li 
+of job i to be the ratio of 
+its value to its length for an input θ denote the maximum 
+and minimum value densities as ρmin mini ρi and ρmax 
+maxi ρi the importance ratio is then defined to be ρmax 
+ρmin 
+ 
+the maximal ratio of value densities between two jobs the 
+algorithm is assumed to always know an upper bound k on 
+the importance ratio for simplicity we normalize the range 
+of possible value densities so that ρmin 
+an online algorithm is a function f θ × × θn → 
+o that maps the vector of tuples for any number n to 
+an outcome o an outcome o ∈ o is simply a schedule of 
+jobs on the processor recorded by the function s → 
+ n which maps each point in time to the active 
+job or to if the processor is idle 
+to denote the total elapsed time that a job has spent on 
+the processor at time t we will use the function ei t 
+t 
+ 
+µ s x i dx where µ · is an indicator function that 
+returns if the argument is true and zero otherwise a 
+job s laxity at time t is defined to be di − t − li ei t 
+the amount of time that it can remain inactive and still be 
+completed by its deadline a job is abandoned if it cannot 
+be completed by its deadline formally if di −t ei t li 
+also overload s · and ei · so that they can also take a 
+vector θ as an argument for example s θ t is shorthand 
+for the s t of the outcome f θ and it denotes the active 
+job at time t when the input is θ 
+since a job cannot be executed before its release time the 
+space of possible outcomes is restricted in that s θ t i 
+implies ri ≤ t also because the online algorithm must 
+produce the schedule over time without knowledge of future 
+inputs it must make the same decision at time t for inputs 
+that are indistinguishable at this time formally let θ t 
+denote the subset of the tuples in θ that satisfy ri ≤ t the 
+constraint is then that θ t θ t implies s θ t s θ t 
+the objective function is the sum of the values of the jobs 
+that are completed by their respective deadlines w o θ 
+i vi · µ ei θ di ≥ li let w 
+ θ maxo∈o w o θ 
+denote the maximum possible total value for the profile θ 
+in competitive analysis an online algorithm is evaluated 
+by comparing it against an optimal oﬄine algorithm 
+because the oﬄine algorithm knows the entire input θ at time 
+ but still cannot start each job i until time ri it 
+always achieves w 
+ θ an online algorithm f · is strictly 
+c-competitive if there does not exist an input θ such that 
+c · w f θ θ w 
+ θ an algorithm that is c-competitive 
+is also said to achieve a competitive ratio of c 
+we assume that there does not exist an overload period 
+of infinite duration a period of time ts 
+ tf 
+ is overloaded 
+if the sum of the lengths of the jobs whose release time and 
+deadline both fall within the time period exceeds the 
+duration of the interval formally if tf 
+−ts 
+≤ i ts≤ri di≤tf li 
+without such an assumption it is not possible to achieve a 
+finite competitive ratio 
+ previous results 
+in the non-strategic setting presents a -competitive 
+algorithm called td version for the case of k while 
+ presents a 
+√ 
+k 
+-competitive algorithm called dover 
+for the general case of k ≥ matching lower bounds for 
+deterministic algorithms for both of these cases were shown 
+ 
+in in this section we provide a high-level description of 
+td version using an example 
+td version divides the schedule into intervals each 
+of which begins when the processor transitions from idle to 
+busy call this time tb 
+ and ends with the completion of 
+a job the first active job of an interval may have laxity 
+however for the remainder of the interval preemption of the 
+active job is only considered when some other job has zero 
+laxity for example when the input is the set of jobs listed 
+in table the first interval is the complete execution of 
+job over the range no preemption is considered 
+during this interval because job has laxity until time 
+then a new interval starts at tb 
+ when job becomes 
+active before job can finish preemption is considered at 
+time when job is released with zero laxity 
+in order to decide whether to preempt the active job td 
+ version uses two more variables te 
+and p loss the 
+former records the latest deadline of a job that would be 
+abandoned if the active job executes to completion or if 
+no such job exists the time that the active job will finish 
+if it is not preempted in this case te 
+ the value 
+te 
+−tb 
+represents the an upper bound on the amount of 
+possible execution time lost to the optimal oﬄine algorithm 
+due to the completion of the active job the other variable 
+p loss is equal to the length of the first active job of the 
+current interval because in general this job could have 
+laxity the oﬄine algorithm may be able to complete it outside 
+of the range tb 
+ te 
+ 
+if the algorithm completes the active 
+job and this job s length is at least te 
+−tb 
+ p loss 
+ 
+ then the 
+algorithm is guaranteed to be -competitive for this 
+interval note that k implies that all jobs have the same 
+value density and thus that lengths can used to compute 
+the competitive ratio because this is not case at time 
+ since te 
+−tb 
+ p loss 
+ 
+ − 
+ 
+ l the algorithm 
+preempts job for job which then executes to completion 
+job ri di li vi 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table input used to recap td version 
+the up and down arrows represent ri and di 
+respectively while the length of the box equals li 
+ mechanism design setting 
+however false information about job would cause td 
+ version to complete this job for example if job s 
+deadline were declared as ˆd then it would have zero laxity 
+at time at this time the algorithm would preempt job 
+ for job because te 
+−tb 
+ p loss 
+ 
+ − 
+ 
+ l 
+job would then complete before the arrival of job 
+ 
+while it would be easy to alter the algorithm to recognize 
+that this is not possible for the jobs in table our example 
+does not depend on the use of p loss 
+ 
+while we will not describe the significantly more complex 
+in order to address incentive issues such as this one we 
+need to formalize the setting as a mechanism design 
+problem in this section we first present the mechanism design 
+formulation and then define our goals for the mechanism 
+ formulation 
+there exists a center who controls the processor and 
+n agents where the value of n is unknown by the center 
+beforehand each job i is owned by a separate agent i the 
+characteristics of the job define the agent s type θi ∈ θi 
+at time ri agent i privately observes its type θi and has 
+no information about job i before ri thus jobs are still 
+released over time but now each job is revealed only to the 
+owning agent 
+agents interact with the center through a direct 
+mechanism γ θ θn g · in which each agent declares a 
+job denoted by ˆθi ˆri ˆdi ˆli ˆvi and g θ × ×θn → o 
+maps the declared types to an outcome o ∈ o an outcome 
+o s · p pn consists of a schedule and a payment 
+from each agent to the mechanism 
+in a standard mechanism design setting the outcome is 
+enforced at the end of the mechanism however since the 
+end is not well-defined in this online setting we choose to 
+model returning the job if it is completed and collecting a 
+payment from each agent i as occurring at ˆdi which 
+according to the agent s declaration is the latest relevant point of 
+time for that agent that is even if job i is completed before 
+ˆdi the center does not return the job to agent i until that 
+time this modelling decision could instead be viewed as a 
+decision by the mechanism designer from a larger space of 
+possible mechanisms indeed as we will discuss later this 
+decision of when to return a completed job is crucial to our 
+mechanism 
+each agent s utility ui g ˆθ θi vi · µ ei ˆθ di ≥ li · 
+µ ˆdi ≤ di − pi ˆθ is a quasi-linear function of its value for 
+its job if completed and returned by its true deadline and 
+the payment it makes to the center we assume that each 
+agent is a rational expected utility maximizer 
+agent declarations are restricted in that an agent cannot 
+declare a length shorter than the true length since the center 
+would be able to detect such a lie if the job were completed 
+on the other hand in the general formulation we will allow 
+agents to declare longer lengths since in some settings it 
+may be possible add unnecessary work to a job however 
+we will also consider a restricted formulation in which this 
+type of lie is not possible the declared release time ˆri 
+is the time that the agent chooses to submit job i to the 
+center and it cannot precede the time ri at which the job 
+is revealed to the agent the agent can declare an arbitrary 
+deadline or value to summarize agent i can declare any 
+type ˆθi ˆri ˆdi ˆli ˆvi such that ˆli ≥ li and ˆri ≥ ri 
+while in the non-strategic setting it was sufficient for the 
+algorithm to know the upper bound k on the ratio ρmax 
+ρmin 
+ 
+in the mechanism design setting we will strengthen this 
+assumption so that the mechanism also knows ρmin or 
+equivalently the range ρmin ρmax of possible value densities 
+dover 
+ we note that it is similar in its use of intervals and 
+its preference for the active job also we note that the 
+lower bound we will show in section implies that false 
+information can also benefit a job in dover 
+ 
+ 
+note that we could then force agent declarations to satisfy 
+ρmin ≤ ˆvi 
+ˆli 
+≤ ρmax however this restriction would not 
+ 
+while we feel that it is unlikely that a center would know k 
+without knowing this range we later present a mechanism 
+that does not depend on this extra knowledge in a restricted 
+setting 
+the restriction on the schedule is now that s ˆθ t i 
+implies ˆri ≤ t to capture the fact that a job cannot be 
+scheduled on the processor before it is declared to the mechanism 
+as before preemption of jobs is allowed and job switching 
+takes no time 
+the constraints due to the online mechanism s lack of 
+knowledge of the future are that ˆθ t ˆθ t implies s ˆθ t 
+s ˆθ t and ˆθ ˆdi ˆθ ˆdi implies pi ˆθ pi ˆθ for each 
+agent i the setting can then be summarized as follows 
+ overview of the setting 
+for all t do 
+the center instantiates s ˆθ t ← i for some i s t ˆri ≤ t 
+if ∃i ri t then 
+θi is revealed to agent i 
+if ∃i t ≥ ri and agent i has not declared a job then 
+agent i can declare any job ˆθi s t ˆri t and ˆli ≥ li 
+if ∃i ˆdi t ∧ ei ˆθ t ≥ li then 
+completed job i is returned to agent i 
+if ∃i ˆdi t then 
+center sets and collects payment pi ˆθ from agent i 
+ mechanism goals 
+our aim as mechanism designer is to maximize the value 
+of completed jobs subject to the constraints of incentive 
+compatibility and individual rationality 
+the condition for dominant strategy incentive 
+compatibility is that for each agent i regardless of its true type 
+and of the declared types of all other agents agent i cannot 
+increase its utility by unilaterally changing its declaration 
+definition a direct mechanism γ satisfies incentive 
+compatibility ic if ∀i θi θi ˆθ−i 
+ui g θi ˆθ−i θi ≥ ui g θi ˆθ−i θi 
+from an agent perspective dominant strategies are 
+desirable because the agent does not have to reason about either 
+the strategies of the other agents or the distribution from 
+the which other agent s types are drawn from a 
+mechanism designer perspective dominant strategies are 
+important because we can reasonably assume that an agent who 
+has a dominant strategy will play according to it for these 
+reasons in this paper we require dominant strategies as 
+opposed to a weaker equilibrium concept such as bayes-nash 
+under which we could improve upon our positive results 
+decrease the lower bound on the competitive ratio 
+ 
+a possible argument against the need for incentive 
+compatibility is that an agent s lie may actually improve the 
+schedule in fact this was the case in the example we showed 
+for the false declaration ˆd however if an agent lies 
+due to incorrect beliefs over the future input then the lie 
+could instead make the schedule the worse for example if 
+job were never released then job would have been 
+unnecessarily abandoned furthermore if we do not know the 
+beliefs of the agents and thus cannot predict how they will 
+lie then we can no longer provide a competitive guarantee 
+for our mechanism 
+while restricting ourselves to incentive compatible direct 
+mechanisms may seem limiting at first the revelation 
+principle for dominant strategies see e g tells us that if 
+our goal is dominant strategy implementation then we can 
+make this restriction without loss of generality 
+the second goal for our mechanism individual rationality 
+requires that agents who truthfully reveal their type never 
+have negative utility the rationale behind this goal is that 
+participation in the mechanism is assumed to be voluntary 
+definition a direct mechanism γ satisfies individual 
+rationality ir if ∀i θi ˆθ−i ui g θi ˆθ−i θi ≥ 
+finally the social welfare function that we aim to 
+maximize is the same as the objective function of the non-strategic 
+setting w o θ i vi · µ ei θ di ≥ li as in the 
+nonstrategic setting we will evaluate an online mechanism using 
+competitive analysis to compare it against an optimal oﬄine 
+mechanism which we will denote by γoffline an oﬄine 
+mechanism knows all of the types at time and thus can 
+always achieve w 
+ θ 
+definition an online mechanism γ is strictly 
+ccompetitive if it satisfies ic and ir and if there does not 
+exist a profile of agent types θ such that c·w g θ θ w 
+ θ 
+ results 
+in this section we first present our main positive result a 
+ 
+√ 
+k 
+ -competitive mechanism γ after providing 
+some intuition as to why γ satisfies individual rationality 
+and incentive compatibility we formally prove first these two 
+properties and then the competitive ratio we then consider 
+a special case in which k and agents cannot lie about the 
+length of their job which allows us to alter this mechanism 
+so that it no longer requires either knowledge of ρmin or the 
+collection of payments from agents 
+unlike td version and dover 
+ γ gives no 
+preference to the active job instead it always executes the 
+available job with the highest priority ˆvi 
+√ 
+k · ei ˆθ t · ρmin 
+each agent whose job is completed is then charged the 
+lowest value that it could have declared such that its job still 
+would have been completed holding constant the rest of its 
+declaration 
+by the use of a payment rule similar to that of a 
+secondprice auction γ satisfies both ic with respect to values 
+and ir we now argue why it satisfies ic with respect to 
+the other three characteristics declaring an improved job 
+ i e declaring an earlier release time a shorter length or 
+a later deadline could possibly decrease the payment of an 
+agent however the first two lies are not possible in our 
+setting while the third would cause the job if it is completed 
+to be returned to the agent after the true deadline this is 
+the reason why it is important to always return a completed 
+job at its declared deadline instead of at the point at which 
+it is completed 
+ 
+another possibility is to allow only the agents to know 
+their types at time and to force γoffline to be incentive 
+compatible so that agents will truthfully declare their types 
+at time however this would not affect our results since 
+executing a vcg mechanism see e g at time both 
+satisfies incentive compatibility and always maximizes social 
+welfare 
+ 
+mechanism γ 
+execute s ˆθ · according to algorithm 
+for all i do 
+if ei ˆθ ˆdi ≥ ˆli agent i s job is completed then 
+pi ˆθ ← arg minvi≥ ei ˆri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli 
+else 
+pi ˆθ ← 
+algorithm 
+for all t do 
+avail ← i t ≥ ˆri ∧ ei ˆθ t ˆli ∧ ei ˆθ t ˆdi−t ≥ ˆli 
+ set of all released non-completed non-abandoned jobs 
+if avail ∅ then 
+s ˆθ t ← arg maxi∈avail ˆvi 
+√ 
+k · ei ˆθ t · ρmin 
+ break ties in favor of lower ˆri 
+else 
+s ˆθ t ← 
+it remains to argue why an agent does not have incentive 
+to worsen its job the only possible effects of an inflated 
+length are delaying the completion of the job and causing it 
+to be abandoned and the only possible effects of an earlier 
+declared deadline are causing to be abandoned and causing 
+it to be returned earlier which has no effect on the agent s 
+utility in our setting on the other hand it is less obvious 
+why agents do not have incentive to declare a later release 
+time consider a mechanism γ that differs from γ in that 
+it does not preempt the active job i unless there exists 
+another job j such that ˆvi 
+√ 
+k·li ˆθ t ·ρmin ˆvj note that 
+as an active job approaches completion in γ its condition 
+for preemption approaches that of γ 
+however the types in table for the case of k show 
+why an agent may have incentive to delay the arrival of its 
+job under γ job becomes active at time and job 
+is abandoned upon its release at time because 
+v l v then at time job is preempted by job 
+ because v l v job then executes 
+to completion forcing job to be abandoned however job 
+ had more weight than job and would have prevented 
+job from being executed if it had been the active job at 
+time since v l v thus if agent 
+ had falsely declared ˆr then job would have been 
+abandoned at time and job would have completed over 
+the range 
+job ri di li vi 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table jobs used to show why a slightly altered 
+version of γ would not be incentive compatible with 
+respect to release times 
+intuitively γ avoids this problem because of two 
+properties first when a job becomes active it must have a greater 
+priority than all other available jobs second because a job s 
+priority can only increase through the increase of its elapsed 
+time ei ˆθ t the rate of increase of a job s priority is 
+independent of its characteristics these two properties together 
+imply that while a job is active there cannot exist a time 
+at which its priority is less than the priority that one of 
+these other jobs would have achieved by executing on the 
+processor instead 
+ proof of individual rationality and 
+incentive compatibility 
+after presenting the trivial proof of ir we break the 
+proof of ic into lemmas 
+theorem mechanism γ satisfies individual 
+rationality 
+proof for arbitrary i θi ˆθ−i if job i is not completed 
+then agent i pays nothing and thus has a utility of zero 
+that is pi θi ˆθ−i and ui g θi ˆθ−i θi on the 
+other hand if job i is completed then its value must 
+exceed agent i s payment formally ui g θi ˆθ−i θi vi − 
+arg minvi≥ ei ri di li vi ˆθ−i di ≥ li ≥ must hold 
+since vi vi satisfies the condition 
+to prove ic we need to show that for an arbitrary agent 
+i and an arbitrary profile ˆθ−i of declarations of the other 
+agents agent i can never gain by making a false declaration 
+ˆθi θi subject to the constraints that ˆri ≥ ri and ˆli ≥ li 
+we start by showing that regardless of ˆvi if truthful 
+declarations of ri di and li do not cause job i to be completed 
+then worse declarations of these variables that is 
+declarations that satisfy ˆri ≥ ri ˆli ≥ li and ˆdi ≤ di can never 
+cause the job to be completed we break this part of the 
+proof into two lemmas first showing that it holds for the 
+release time regardless of the declarations of the other 
+variables and then for length and deadline 
+lemma in mechanism γ the following condition holds 
+for all i θi ˆθ−i ∀ ˆvi ˆli ≥ li ˆdi ≤ di ˆri ≥ ri 
+ei ˆri ˆdi ˆli ˆvi ˆθ−i ˆdi ≥ ˆli ⇒ 
+ei ri ˆdi ˆli ˆvi ˆθ−i ˆdi ≥ ˆli 
+proof assume by contradiction that this condition does 
+not hold- that is job i is not completed when ri is truthfully 
+declared but is completed for some false declaration ˆri ≥ 
+ri we first analyze the case in which the release time is 
+truthfully declared and then we show that job i cannot be 
+completed when agent i delays submitting it to the center 
+case i agent i declares ˆθi ri ˆdi ˆli ˆvi 
+first define the following three points in the execution of 
+job i 
+ let ts 
+ arg mint s ˆθi ˆθ−i t i be the time that 
+job i first starts execution 
+ let tp 
+ arg mint ts s ˆθi ˆθ−i t i be the time 
+that job i is first preempted 
+ let ta 
+ arg mint ei ˆθi ˆθ−i t ˆdi − t ˆli be the 
+time that job i is abandoned 
+ 
+if ts 
+and tp 
+are undefined because job i never becomes 
+active then let ts 
+ tp 
+ ta 
+ 
+also partition the jobs declared by other agents before ta 
+into the following three sets 
+ x j ˆrj tp 
+ ∧ j i consists of the jobs other 
+than i that arrive before job i is first preempted 
+ y j tp 
+≤ ˆrj ≤ ta 
+ ∧ ˆvj ˆvi 
+√ 
+k·ei ˆθi ˆθ−i ˆrj 
+consists of the jobs that arrive in the range tp 
+ ta 
+ and 
+that when they arrive have higher priority than job i 
+ note that we are make use of the normalization 
+ z j tp 
+≤ ˆrj ≤ ta 
+ ∧ ˆvj ≤ ˆvi 
+√ 
+k ·ei ˆθi ˆθ−i ˆrj 
+consists of the jobs that arrive in the range tp 
+ ta 
+ and 
+that when they arrive have lower priority than job i 
+we now show that all active jobs during the range tp 
+ ta 
+ 
+must be either i or in the set y unless tp 
+ ta 
+ in which case 
+this property trivially holds it must be the case that job i 
+has a higher priority than an arbitrary job x ∈ x at time tp 
+ 
+since at the time just preceding tp 
+job x was available and job 
+i was active formally ˆvx 
+√ 
+k · ex ˆθi ˆθ−i tp 
+ ˆvi 
+√ 
+k · 
+ei ˆθi ˆθ−i tp 
+ must hold 
+we can then show that over the 
+range tp 
+ ta 
+ no job x ∈ x runs on the processor assume 
+by contradiction that this is not true let tf 
+∈ tp 
+ ta 
+ be 
+the earliest time in this range that some job x ∈ x is active 
+which implies that ex ˆθi ˆθ−i tf 
+ ex ˆθi ˆθ−i tp 
+ we 
+can then show that job i has a higher priority at time tf 
+as 
+follows ˆvx 
+√ 
+k·ex ˆθi ˆθ−i tf 
+ ˆvx 
+√ 
+k·ex ˆθi ˆθ−i tp 
+ 
+ˆvi 
+√ 
+k · ei ˆθi ˆθ−i tp 
+ ≤ ˆvi 
+√ 
+k · ei ˆθi ˆθ−i tf 
+ 
+contradicting the fact that job x is active at time tf 
+ 
+a similar argument applies to an arbitrary job z ∈ z 
+starting at it release time ˆrz tp 
+ since by definition job i 
+has a higher priority at that time the only remaining jobs 
+that can be active over the range tp 
+ ta 
+ are i and those in 
+the set y 
+case ii agent i declares ˆθi ˆri ˆdi ˆli ˆvi where ˆri ri 
+we now show that job i cannot be completed in this case 
+given that it was not completed in case i first we can 
+restrict the range of ˆri that we need to consider as follows 
+declaring ˆri ∈ ri ts 
+ would not affect the schedule since 
+ts 
+would still be the first time that job i executes also 
+declaring ˆri ta 
+could not cause the job to be completed 
+since di − ta 
+ ˆli holds which implies that job i would be 
+abandoned at its release thus we can restrict consideration 
+to ˆri ∈ ts 
+ ta 
+ 
+in order for declaring ˆθi to cause job i to be completed a 
+necessary condition is that the execution of some job yc 
+∈ y 
+must change during the range tp 
+ ta 
+ since the only jobs 
+other than i that are active during that range are in y 
+let tc 
+ arg mint∈ tp ta ∃yc 
+∈ y s ˆθi ˆθ−i t yc 
+ ∧ 
+ s ˆθi ˆθ−i t yc 
+ be the first time that such a change 
+occurs we will now show that for any ˆri ∈ ts 
+ ta 
+ there 
+cannot exist a job with higher priority than yc 
+at time tc 
+ 
+contradicting s ˆθi ˆθ−i t yc 
+ 
+first note that job i cannot have a higher priority since 
+there would have to exist a t ∈ tp 
+ tc 
+ such that ∃y ∈ 
+ 
+for simplicity when we give the formal condition for a job x 
+to have a higher priority than another job y we will assume 
+that job x s priority is strictly greater than job y s because 
+in the case of a tie that favors x future ties would also be 
+broken in favor of job x 
+y s ˆθi ˆθ−i t y ∧ s ˆθi ˆθ−i t i contradicting 
+the definition of tc 
+ 
+now consider an arbitrary y ∈ y such that y yc 
+ in case 
+i we know that job y has lower priority than yc 
+at time tc 
+ 
+that is ˆvy 
+√ 
+k·ey ˆθi ˆθ−i tc 
+ ˆvyc 
+√ 
+k·eyc ˆθi ˆθ−i tc 
+ 
+thus moving to case ii job y must replace some other job 
+before tc 
+ since ˆry ≥ tp 
+ the condition is that there must 
+exist some t ∈ tp 
+ tc 
+ such that ∃w ∈ y ∪ i s ˆθi ˆθ−i t 
+w ∧ s ˆθi ˆθ−i t y since w ∈ y would contradict the 
+definition of tc 
+ we know that w i that is the job that y 
+replaces must be i by definition of the set y we know that 
+ˆvy ˆvi 
+√ 
+k · ei ˆθi ˆθ−i ˆry thus if ˆry ≤ t then job i 
+could not have executed instead of y in case i on the other 
+hand if ˆry t then job y obviously could not execute at 
+time t contradicting the existence of such a time t 
+now consider an arbitrary job x ∈ x we know that 
+in case i job i has a higher priority than job x at time 
+ts 
+ or formally that ˆvx 
+√ 
+k · ex ˆθi ˆθ−i ts 
+ ˆvi 
+√ 
+k · 
+ei ˆθi ˆθ−i ts 
+ we also know that ˆvi 
+√ 
+k·ei ˆθi ˆθ−i tc 
+ 
+ˆvyc 
+√ 
+k · eyc ˆθi ˆθ−i tc 
+ since delaying i s arrival will 
+not affect the execution up to time ts 
+ and since job x 
+cannot execute instead of a job y ∈ y at any time t ∈ 
+ tp 
+ tc 
+ by definition of tc 
+ the only way for job x s 
+priority to increase before tc 
+as we move from case i to ii 
+is to replace job i over the range ts 
+ tc 
+ thus an 
+upper bound on job x s priority when agent i declares ˆθi is 
+ˆvx 
+√ 
+k· ex ˆθi ˆθ−i ts 
+ ei ˆθi ˆθ−i tc 
+ −ei ˆθi ˆθ−i ts 
+ 
+ˆvi 
+√ 
+k· ei ˆθi ˆθ−i ts 
+ ei ˆθi ˆθ−i tc 
+ −ei ˆθi ˆθ−i ts 
+ 
+ˆvi 
+√ 
+k · ei ˆθi ˆθ−i tc 
+ ˆvyc 
+√ 
+k · eyc ˆθi ˆθ−i tc 
+ 
+thus even at this upper bound job yc 
+would execute 
+instead of job x at time tc 
+ a similar argument applies to 
+an arbitrary job z ∈ z starting at it release time ˆrz since 
+the sets i x y z partition the set of jobs released before 
+ta 
+ we have shown that no job could execute instead of job 
+yc 
+ contradicting the existence of tc 
+ and completing the 
+proof 
+lemma in mechanism γ the following condition holds 
+for all i θi ˆθ−i ∀ ˆvi ˆli ≥ li ˆdi ≤ di 
+ei ri ˆdi ˆli ˆvi ˆθ−i ˆdi ≥ ˆli ⇒ 
+ei ri di li ˆvi ˆθ−i ˆdi ≥ li 
+proof assume by contradiction there exists some 
+instantiation of the above variables such that job i is not 
+completed when li and di are truthfully declared but is 
+completed for some pair of false declarations ˆli ≥ li and 
+ˆdi ≤ di 
+note that the only effect that ˆdi and ˆli have on the 
+execution of the algorithm is on whether or not i ∈ avail 
+specifically they affect the two conditions ei ˆθ t ˆli 
+and ei ˆθ t ˆdi − t ≥ ˆli because job i is completed when 
+ˆli and ˆdi are declared the former condition for 
+completion must become false before the latter since truthfully 
+declaring li ≤ ˆli and di ≥ ˆdi will only make the former 
+condition become false earlier and the latter condition become 
+false later the execution of the algorithm will not be 
+affected when moving to truthful declarations and job i will 
+be completed a contradiction 
+we now use these two lemmas to show that the payment 
+for a completed job can only increase by falsely declaring 
+worse ˆli ˆdi and ˆri 
+ 
+lemma in mechanism γ the following condition holds 
+for all i θi ˆθ−i ∀ ˆli ≥ li ˆdi ≤ di ˆri ≥ ri 
+arg min 
+vi≥ 
+ei ˆri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli ≥ 
+arg min 
+vi≥ 
+ei ri di li vi ˆθ−i di ≥ li 
+proof assume by contradiction that this condition does 
+not hold this implies that there exists some value vi such 
+that the condition ei ˆri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli holds 
+but ei ri di li vi ˆθ−i di ≥ li does not applying 
+lemmas and ei ˆri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli ⇒ 
+ ei ri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli ⇒ 
+ ei ri di li vi ˆθ−i di ≥ li a contradiction 
+finally the following lemma tells us that the completion 
+of a job is monotonic in its declared value 
+lemma in mechanism γ the following condition holds 
+for all i ˆθi ˆθ−i ∀ ˆvi ≥ ˆvi 
+ei ˆri ˆdi ˆli ˆvi ˆθ−i ˆdi ≥ ˆli ⇒ 
+ei ˆri ˆdi ˆli ˆvi ˆθ−i ˆdi ≥ ˆli 
+the proof by contradiction of this lemma is omitted 
+because it is essentially identical to that of lemma for ˆri in 
+case i agent i declares ˆri ˆdi ˆli ˆvi and the job is not 
+completed while in case ii he declares ˆri ˆdi ˆli ˆvi and the job 
+is completed the analysis of the two cases then proceeds as 
+before- the execution will not change up to time ts 
+because 
+the initial priority of job i decreases as we move from case 
+i to ii and as a result there cannot be a change in the 
+execution of a job other than i over the range tp 
+ ta 
+ 
+we can now combine the lemmas to show that no 
+profitable deviation is possible 
+theorem mechanism γ satisfies incentive 
+compatibility 
+proof for an arbitrary agent i we know that ˆri ≥ ri 
+and ˆli ≥ li hold by assumption we also know that agent 
+i has no incentive to declare ˆdi di because job i would 
+never be returned before its true deadline then because 
+the payment function is non-negative agent i s utility could 
+not exceed zero by ir this is the minimum utility it would 
+achieve if it truthfully declared θi thus we can restrict 
+consideration to ˆθi that satisfy ˆri ≥ ri ˆli ≥ li and ˆdi ≤ di 
+again using ir we can further restrict consideration to ˆθi 
+that cause job i to be completed since any other ˆθi yields a 
+utility of zero 
+if truthful declaration of θi causes job i to be completed 
+then by lemma any such false declaration ˆθi could not 
+decrease the payment of agent i on the other hand if 
+truthful declaration does not cause job i to be completed 
+then declaring such a ˆθi will cause agent i to have negative 
+utility since vi arg minvi≥ ei ri di li vi ˆθ−i ˆdi ≥ 
+li ≤ arg minvi≥ ei ˆri ˆdi ˆli vi ˆθ−i ˆdi ≥ ˆli holds by 
+lemmas and respectively 
+ proof of competitive ratio 
+the proof of the competitive ratio which makes use of 
+techniques adapted from those used in is also broken 
+into lemmas having shown ic we can assume truthful 
+declaration ˆθ θ since we have also shown ir in order 
+to prove the competitive ratio it remains to bound the loss 
+of social welfare against γoffline 
+denote by f the sequence of jobs completed by 
+γ divide time into intervals if topen 
+f tclose 
+f one for 
+each job f in this sequence set tclose 
+f to be the time at 
+which job f is completed and set topen 
+f tclose 
+f− for f ≥ 
+and topen 
+ for f also let tbegin 
+f be the first time 
+that the processor is not idle in interval if 
+lemma for any interval if the following inequality 
+holds tclose 
+f − tbegin 
+f ≤ √ 
+k 
+ · vf 
+proof interval if begins with a possibly zero length 
+period of time in which the processor is idle because there is 
+no available job then it continuously executes a sequence 
+of jobs c where each job i in this sequence is 
+preempted by job i except for job c which is completed 
+ thus job c in this sequence is the same as job f is the global 
+sequence of completed jobs let ts 
+i be the time that job i 
+begins execution note that ts 
+ tbegin 
+f 
+over the range tbegin 
+f tclose 
+f the priority vi 
+√ 
+k·ei θ t 
+of the active job is monotonically increasing with time 
+because this function linearly increases while a job is active 
+and can only increase at a point in time when preemption 
+occurs thus each job i in this sequence begins 
+execution at its release time that is ts 
+i ri because its priority 
+does not increase while it is not active 
+we now show that the value of the completed job c 
+exceeds the product of 
+√ 
+k and the time spent in the interval 
+on jobs through c− or more formally that the following 
+condition holds vc ≥ 
+√ 
+k c− 
+h eh θ ts 
+h − eh θ ts 
+h to 
+show this we will prove by induction that the stronger 
+condition vi ≥ 
+√ 
+k i− 
+h eh θ ts 
+h holds for all jobs i in the 
+sequence 
+base case for i v ≥ 
+√ 
+k 
+h eh θ ts 
+h 
+since the sum is over zero elements 
+inductive step for an arbitrary ≤ i c we assume 
+that vi ≥ 
+√ 
+k i− 
+h eh θ ts 
+h holds at time ts 
+i we 
+know that vi ≥ vi 
+√ 
+k · ei θ ts 
+i holds because ts 
+i 
+ri these two inequalities together imply that vi ≥√ 
+k i 
+h eh θ ts 
+h completing the inductive step 
+we also know that tclose 
+f − ts 
+c ≤ lc ≤ vc must hold by the 
+simplifying normalization of ρmin and the fact that job 
+c s execution time cannot exceed its length we can thus 
+bound the total execution time of if by tclose 
+f − tbegin 
+f 
+ tclose 
+f −ts 
+c c− 
+h eh θ ts 
+h −eh θ ts 
+h ≤ √ 
+k 
+ vf 
+we now consider the possible execution of uncompleted 
+jobs by γoffline associate each job i that is not completed 
+by γ with the interval during which it was abandoned all 
+jobs are now associated with an interval since there are no 
+gaps between the intervals and since no job i can be 
+abandoned after the close of the last interval at tclose 
+f because 
+the processor is idle after tclose 
+f any such job i would 
+become active at some time t ≥ tclose 
+f which would lead to the 
+completion of some job creating a new interval and 
+contradicting the fact that if is the last one 
+ 
+the following lemma is equivalent to lemma of 
+but the proof is different for our mechanism 
+lemma for any interval if and any job i abandoned 
+in if the following inequality holds vi ≤ 
+√ 
+k vf 
+proof assume by contradiction that there exists a job 
+i abandoned in if such that vi 
+√ 
+k vf at tclose 
+f 
+the priority of job f is vf 
+√ 
+k · lf 
+√ 
+k vf because 
+the priority of the active job monotonically increases over 
+the range tbegin 
+f tclose 
+f job i would have a higher priority 
+than the active job and thus begin execution at some time 
+t ∈ tbegin 
+f tclose 
+f again applying monotonicity this would 
+imply that the priority of the active job at tclose 
+f exceeds 
+ 
+√ 
+k vf contradicting the fact that it is 
+√ 
+k vf 
+as in for each interval if we give γoffline the 
+following gift k times the amount of time in the range 
+ tbegin 
+f tclose 
+f that it does not schedule a job additionally 
+we give the adversary vf since the adversary may be able 
+to complete this job at some future time due to the fact 
+that γ ignores deadlines the following lemma is lemma 
+ in and its proof now applies directly 
+lemma with the above gifts the total net gain 
+obtained by the clairvoyant algorithm from scheduling the jobs 
+abandoned during if is not greater than 
+√ 
+k · vf 
+the intuition behind this lemma is that the best that 
+the adversary can do is to take almost all of the gift of 
+k · tclose 
+f −tbegin 
+f intuitively this is equivalent to executing 
+jobs with the maximum possible value density over the time 
+that γ is active and then begin execution of a job 
+abandoned by γ right before tclose 
+f by lemma the value of 
+this job is bounded by 
+√ 
+k · vf we can now combine 
+the results of these lemmas to prove the competitive ratio 
+theorem mechanism γ is 
+√ 
+k -competitive 
+proof using the fact that the way in which jobs are 
+associated with the intervals partitions the entire set of jobs 
+we can show the competitive ratio by showing that γ is 
+ 
+√ 
+k 
+ -competitive for each interval in the sequence 
+ f over an arbitrary interval if the oﬄine 
+algorithm can achieve at most tclose 
+f −tbegin 
+f ·k vf 
+√ 
+k vf 
+from the two gifts and the net gain bounded by lemma 
+ applying lemma this quantity is then bounded from 
+above by √ 
+k 
+ ·vf ·k vf 
+√ 
+k vf 
+√ 
+k 
+ ·vf 
+since γ achieves vf the competitive ratio holds 
+ special case unalterable length and k 
+while so far we have allowed each agent to lie about all 
+four characteristics of its job lying about the length of the 
+job is not possible in some settings for example a user 
+may not know how to alter a computational problem in a 
+way that both lengthens the job and allows the solution of 
+the original problem to be extracted from the solution to 
+the altered problem another restriction that is natural in 
+some settings is uniform value densities k which was 
+the case considered by if the setting satisfies these two 
+conditions then by using mechanism γ we can achieve a 
+competitive ratio of which is the same competitive ratio 
+as γ for the case of k without knowledge of ρmin and 
+without the use of payments the latter property may be 
+necessary in settings that are more local than grid 
+computing e g within a department but in which the users are 
+still self-interested 
+mechanism γ 
+execute s ˆθ · according to algorithm 
+for all i do 
+pi ˆθ ← 
+algorithm 
+for all t do 
+avail ← i t ≥ ˆri ∧ ei ˆθ t li ∧ ei ˆθ t ˆdi−t ≥ li 
+if avail ∅ then 
+s ˆθ t ← arg maxi∈avail li ei ˆθ t 
+ break ties in favor of lower ˆri 
+else 
+s ˆθ t ← 
+theorem when k and each agent i cannot 
+falsely declare li mechanism γ satisfies individual 
+rationality and incentive compatibility 
+theorem when k and each agent i cannot 
+falsely declare li mechanism γ is -competitive 
+since this mechanism is essentially a simplification of γ 
+we omit proofs of these theorems basically the fact that 
+k and ˆli li both hold allows γ to substitute the 
+priority li ei ˆθ t for the priority used in γ and since ˆvi 
+is ignored payments are no longer needed to ensure incentive 
+compatibility 
+ competitive lower bound 
+we now show that the competitive ratio of 
+√ 
+k 
+ 
+ achieved by γ is a lower bound for deterministic 
+online mechanisms to do so we will appeal to third 
+requirement on a mechanism non-negative payments nnp 
+which requires that the center never pays an agent formally 
+∀i ˆθ pi ˆθi ≥ unlike ic and ir this requirement is not 
+standard in mechanism design we note however that both 
+γ and γ satisfy it trivially and that in the following proof 
+zero only serves as a baseline utility for an agent and could 
+be replaced by any non-positive function of ˆθ−i 
+the proof of the lower bound uses an adversary argument 
+similar to that used in to show a lower bound of √ 
+k 
+in the non-strategic setting with the main novelty 
+lying in the perturbation of the job sequence and the related 
+incentive compatibility arguments we first present a lemma 
+relating to the recurrence used for this argument with the 
+proof omitted due to space constraints 
+lemma for any k ≥ for the recurrence defined by 
+li λ · li − k · i 
+h lh and l where 
+√ 
+k 
+− 
+λ 
+√ 
+k 
+ there exists an integer m ≥ such that 
+lm k· m− 
+h 
+lh 
+lm 
+ λ 
+ 
+while payments are not required in this setting γ can be 
+changed to collect a payments without affecting incentive 
+compatibility by charging some fixed fraction of li for each 
+job i that is completed 
+ 
+theorem there does not exist a deterministic online 
+mechanism that satisfies nnp and that achieves a 
+competitive ratio less than 
+√ 
+k 
+ 
+proof assume by contradiction that there exists a 
+deterministic online mechanism γ that satisfies nnp and that 
+achieves a competitive ratio of c 
+√ 
+k 
+ − for 
+some and by implication satisfies ic and ir as 
+well since a competitive ratio of c implies a competitive 
+ratio of c x for any x we assume without loss of 
+generality that first we will construct a profile of 
+agent types θ using an adversary argument after possibly 
+slightly perturbing θ to assure that a strictness property is 
+satisfied we will then use a more significant perturbation of 
+θ to reach a contradiction 
+we now construct the original profile θ pick an α such 
+that α and define δ α 
+ck k 
+ the adversary uses 
+two sequences of jobs minor and major minor jobs i are 
+characterized by li δ vi k · δ and zero laxity the first 
+minor job is released at time and ri di− for all i 
+the sequence stops whenever γ completes any job 
+major jobs also have zero laxity but they have the 
+smallest possible value ratio that is vi li the lengths of the 
+major jobs that may be released starting with i are 
+determined by the following recurrence relation 
+li c − α · li − k · 
+i 
+h 
+lh 
+l 
+the bounds on α imply that 
+√ 
+k 
+− c − α 
+ 
+√ 
+k 
+ which allows us to apply lemma let m be the 
+smallest positive number such that 
+lm k· m− 
+h 
+lh 
+lm 
+ c− α 
+the first major job has a release time of and each major 
+job i has a release time of ri di− − δ just before 
+the deadline of the previous job the adversary releases 
+major job i ≤ m if and only if each major job j i was 
+executed continuously over the range ri ri no major 
+job is released after job m 
+in order to achieve the desired competitive ratio γ must 
+complete some major job f because γoffline can always at 
+least complete major job for a value of and γ can 
+complete at most one minor job for a value of α 
+c 
+ 
+c 
+ 
+also in order for this job f to be released the processor 
+time preceding rf can only be spent executing major jobs 
+that are later abandoned if f m then major job f 
+will be released and it will be the final major job γ cannot 
+complete job f because rf lf df rf therefore 
+θ consists of major jobs through f or f if f m 
+plus minor jobs from time through time df 
+we now possibly perturb θ slightly by ir we know 
+that vf ≥ pf θ since we will later need this inequality 
+to be strict if vf pf θ then change θf to θf where 
+rf rf but vf lf and df are all incremented by δ over 
+their respective values in θf by ic job f must still be 
+completed by γ for the profile θf θ−f if not then by 
+ir and nnp we know that pf θf θ−f and thus that 
+uf g θf θ−f θf however agent f could then increase 
+its utility by falsely declaring the original type of θf 
+receiving a utility of uf g θf θ−f θf vf − pf θ δ 
+violating ic furthermore agent f must be charged the same 
+amount that is pf θf θ−f pf θ due to a similar 
+incentive compatibility argument thus for the remainder of 
+the proof assume that vf pf θ 
+we now use a more substantial perturbation of θ to 
+complete the proof if f m then define θf to be identical 
+to θf except that df df lf allowing job f to be 
+completely executed after job f is completed if f m 
+then instead set df df lf ic requires that for the profile 
+ θf θ−f γ still executes job f continuously over the range 
+ rf rf lf thus preventing job f from being completed 
+assume by contradiction that this were not true then at 
+the original deadline of df job f is not completed consider 
+the possible profile θf θ−f θx which differs from the new 
+profile only in the addition of a job x which has zero laxity 
+rx df and vx lx max df − df c · lf lf 
+because this new profile is indistinguishable from θf θ−f 
+to γ before time df it must schedule jobs in the same way 
+until df then in order to achieve the desired competitive 
+ratio it must execute job x continuously until its deadline 
+which is by construction at least as late as the new deadline 
+df of job f thus job f will not be completed and by 
+ir and nnp it must be the case that pf θf θ−f θx 
+ and uf g θf θ−f θx θf using the fact that θ is 
+indistinguishable from θf θ−f θx up to time df if agent 
+f falsely declared his type to be the original θf then its job 
+would be completed by df and it would be charged pf θ 
+its utility would then increase to uf g θf θ−f θx θf 
+vf − pf θ contradicting ic 
+while γ s execution must be identical for both θf θ−f 
+and θf θ−f γoffline can take advantage of the change if 
+f m then γ achieves a value of at most lf δ the value of 
+job f if it were perturbed while γoffline achieves a value of 
+at least k· f 
+h lh − δ lf lf by executing minor jobs 
+until rf followed by job f and then job f we subtract 
+two δ s instead of one because the last minor job before rf 
+may have to be abandoned substituting in for lf the 
+competitive ratio is then at least 
+k· 
+f 
+h 
+lh− δ lf lf 
+lf δ 
+ 
+k· 
+f 
+h 
+lh − k·δ c− α ·lf −k· 
+f 
+h 
+lh lf 
+lf δ 
+ 
+c·lf α·lf − k·δ 
+lf δ 
+≥ 
+c·lf ck k δ− k·δ 
+lf δ 
+ c 
+if instead f m then γ achieves a value of at most lm δ 
+while γoffline achieves a value of at least k · m 
+h lh − 
+ δ lm by completing minor jobs until dm rm lm 
+and then completing job m the competitive ratio is then 
+at least 
+k· m 
+h lh− δ lm 
+lm δ 
+ 
+k· m− 
+h 
+lh − k·δ klm lm 
+lm δ 
+ 
+ c− α ·lm− k·δ klm 
+lm δ 
+ c k− ·lm αlm− k·δ 
+lm δ 
+ c 
+ related work 
+in this section we describe related work other than the 
+two papers and on which this paper is based 
+recent work related to this scheduling domain has focused on 
+competitive analysis in which the online algorithm uses a 
+faster processor than the oﬄine algorithm see e g 
+ mechanism design was also applied to a scheduling 
+problem in in their model the center owns the jobs 
+in an oﬄine setting and it is the agents who can execute 
+them the private information of an agent is the time it will 
+require to execute each job several incentive compatible 
+mechanisms are presented that are based on approximation 
+algorithms for the computationally infeasible optimization 
+problem this paper also launched the area of 
+algorithmic mechanism design in which the mechanism must 
+sat 
+isfy computational requirements in addition to the standard 
+incentive requirements a growing sub-field in this area is 
+multicast cost-sharing mechanism design see e g in 
+which the mechanism must efficiently determine for each 
+agent in a multicast tree whether the agent receives the 
+transmission and the price it must pay for a survey of 
+this and other topics in distributed algorithmic mechanism 
+design see 
+online execution presents a different type of algorithmic 
+challenge and several other papers study online algorithms 
+or mechanisms in economic settings for example 
+considers an online market clearing setting in which the 
+auctioneer matches buy and sells bids which are assumed to be 
+exogenous that arrive and expire over time in a 
+general method is presented for converting an online algorithm 
+into an online mechanism that is incentive compatible with 
+respect to values truthful declaration of values is also 
+considered in and which both consider multi-unit online 
+auctions the main difference between the two is that the 
+former considers the case of a digital good which thus has 
+unlimited supply it is pointed out in that their results 
+continue to hold when the setting is extended so that bidders 
+can delay their arrival 
+the only other paper we are aware of that addresses the 
+issue of incentive compatibility in a real-time system is 
+which considers several variants of a model in which the 
+center allocates bandwidth to agents who declare both their 
+value and their arrival time a dominant strategy ic 
+mechanism is presented for the variant in which every point in time 
+is essentially independent while a bayes-nash ic 
+mechanism is presented for the variant in which the center s 
+current decision affects the cost of future actions 
+ conclusion 
+in this paper we considered an online scheduling domain 
+for which algorithms with the best possible competitive 
+ratio had been found but for which new solutions were 
+required when the setting is extended to include self-interested 
+agents we presented a mechanism that is incentive 
+compatible with respect to release time deadline length and value 
+and that only increases the competitive ratio by one we 
+also showed how this mechanism could be simplified when 
+k and each agent cannot lie about the length of its job 
+we then showed a matching lower bound on the 
+competitive ratio that can be achieved by a deterministic mechanism 
+that never pays the agents 
+several open problems remain in this setting one is to 
+determine whether the lower bound can be strengthened by 
+removing the restriction of non-negative payments also 
+while we feel that it is reasonable to strengthen the 
+assumption of knowing the maximum possible ratio of value 
+densities k to knowing the actual range of possible value 
+densities it would be interesting to determine whether there 
+exists a 
+√ 
+k 
+ -competitive mechanism under the 
+original assumption finally randomized mechanisms 
+provide an unexplored area for future work 
+ references 
+ a archer j feigenbaum a krishnamurthy 
+r sami and s shenker approximation and collusion 
+in multicast cost sharing games and economic 
+behavior to appear 
+ b awerbuch y azar and a meyerson reducing 
+truth-telling online mechanisms to online 
+optimization proceedings on the th symposium on 
+the theory of computing 
+ z bar-yossef k hildrum and f wu 
+incentive-compatible online auctions for digital goods 
+proceedings of the th annual acm-siam 
+symposium on discrete algorithms 
+ s baruah g koren d mao b mishra 
+a raghunathan l rosier d shasha and f wang 
+on the competitiveness of on-line real-time task 
+scheduling journal of real-time systems 
+no - 
+ a blum t sandholm and m zinkevich online 
+algorithms for market clearing proceedings of the 
+ th annual acm-siam symposium on discrete 
+algorithms 
+ a borodin and r el-yaniv online computation and 
+competitive analysis cambridge university press 
+ 
+ r buyya d abramson j giddy and h stockinger 
+economic models for resource management and 
+scheduling in grid computing the journal of 
+concurrency and computation practice and 
+experience - 
+ n camiel s london n nisan and o regev the 
+popcorn project distributed computation over the 
+internet in java th international world wide web 
+conference 
+ j feigenbaum and s shenker distributed algorithmic 
+mechanism design recent results and future 
+directions proceedings of the th international 
+workshop on discrete algorithms and methods for 
+mobile computing and communications 
+pp - 
+ a fiat and g woeginger editors online 
+algorithms the state of the art springer verlag 
+ e friedman and d parkes pricing wifi at 
+starbucksissues in online mechanism design ec 
+ r l graham bounds for certain multiprocessor 
+anomalies bell system technical journal 
+ - 
+ b kalyanasundaram and k pruhs speed is as 
+powerful as clairvoyance journal of the acm 
+ - 
+ c koo t lam t ngan and k to on-line 
+scheduling with tight deadlines theoretical computer 
+science - 
+ g koren and d shasha d-over an optimal on-line 
+scheduling algorithm for overloaded real-time systems 
+siam journal of computing no 
+ - 
+ r lavi and n nisan competitive analysis of online 
+auctions ec 
+ a mas-colell m whinston and j green 
+microeconomic theory oxford university press 
+ n nisan and a ronen algorithmic mechanism 
+design games and economic behavior 
+ - 
+ c papadimitriou algorithms games and the 
+internet stoc pp - 
+ 

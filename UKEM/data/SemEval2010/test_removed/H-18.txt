@@ -1,0 +1,1056 @@
+topic segmentation with shared topic detection and 
+alignment of multiple documents 
+bingjun sun prasenjit mitra † 
+ hongyuan zha‡ 
+ c lee giles † 
+ john yen † 
+ department of computer science and engineering 
+† 
+college of information sciences and technology 
+the pennsylvania state university 
+university park pa 
+‡ 
+college of computing 
+the georgia institute of technology 
+atlanta ga 
+ bsun cse psu edu † 
+ pmitra giles jyen  ist psu edu ‡ 
+zha cc gatech edu 
+abstract 
+topic detection and tracking and topic segmentation 
+ play an important role in capturing the local and 
+sequential information of documents previous work in this 
+area usually focuses on single documents although similar 
+multiple documents are available in many domains in this 
+paper we introduce a novel unsupervised method for shared 
+topic detection and topic segmentation of multiple similar 
+documents based on mutual information mi and weighted 
+mutual information wmi that is a combination of mi and 
+term weights the basic idea is that the optimal 
+segmentation maximizes mi or wmi our approach can detect 
+shared topics among documents it can find the optimal 
+boundaries in a document and align segments among 
+documents at the same time it also can handle single-document 
+segmentation as a special case of the multi-document 
+segmentation and alignment our methods can identify and 
+strengthen cue terms that can be used for segmentation and 
+partially remove stop words by using term weights based on 
+entropy learned from multiple documents our experimental 
+results show that our algorithm works well for the tasks of 
+single-document segmentation shared topic detection and 
+multi-document segmentation utilizing information from 
+multiple documents can tremendously improve the 
+performance of topic segmentation and using wmi is even better 
+than using mi for the multi-document segmentation 
+categories and subject descriptors 
+h information storage and retrieval 
+information search and retrieval-clustering h information 
+storage and retrieval content analysis and 
+indexinglinguistic processing i artificial intelligence 
+natural language processing-text analysis i pattern 
+recognition clustering-algorithms similarity measures 
+general terms 
+algorithms design experimentation 
+ introduction 
+many researchers have worked on topic detection and 
+tracking tdt and topic segmentation during the past decade 
+topic segmentation intends to identify the boundaries in a 
+document with the goal to capture the latent topical 
+structure topic segmentation tasks usually fall into two 
+categories text stream segmentation where topic transition 
+is identified and coherent document segmentation in which 
+documents are split into sub-topics the former category 
+has applications in automatic speech recognition while the 
+latter one has more applications such as partial-text query 
+of long documents in information retrieval text summary 
+and quality measurement of multiple documents previous 
+research in connection with tdt falls into the former 
+category targeted on topic tracking of broadcast speech data 
+and newswire text while the latter category has not been 
+studied very well 
+traditional approaches perform topic segmentation on 
+documents one at a time most of them perform 
+badly in subtle tasks like coherent document segmentation 
+ often end-users seek documents that have the 
+similar content search engines like google provide links to 
+obtain similar pages at a finer granularity users may 
+actually be looking to obtain sections of a document similar 
+to a particular section that presumably discusses a topic of 
+the users interest thus the extension of topic 
+segmentation from single documents to identifying similar segments 
+from multiple similar documents with the same topic is a 
+natural and necessary direction and multi-document topic 
+segmentation is expected to have a better performance since 
+more information is utilized 
+traditional approaches using similarity measurement based 
+on term frequency generally have the same assumption that 
+similar vocabulary tends to be in a coherent topic segment 
+ however they usually suffer the issue of 
+identifying stop words for example additional document-dependent 
+stop words are removed together with the generic stop words 
+in there are two reasons that we do not remove stop 
+words directly first identifying stop words is another 
+issue that requires estimation in each domain removing 
+common stop words may result in the loss of useful 
+information in a specific domain second even though stop words 
+can be identified hard classification of stop words and 
+nonstop words cannot represent the gradually changing amount 
+of information content of each word we employ a soft 
+classification using term weights 
+in this paper we view the problem of topic segmentation 
+as an optimization issue using information theoretic 
+techniques to find the optimal boundaries of a document given 
+the number of text segments so as to minimize the loss of 
+mutual information mi or a weighted mutual information 
+ wmi after segmentation and alignment this is equal to 
+maximizing the mi or wmi the mi focuses on 
+measuring the difference among segments whereas previous research 
+focused on finding the similarity e g cosine distance of 
+segments topic alignment of multiple similar 
+documents can be achieved by clustering sentences on the 
+same topic into the same cluster single-document topic 
+segmentation is just a special case of the multi-document 
+topic segmentation and alignment problem terms can be 
+co-clustered as in at the same time given the number of 
+clusters but our experimental results show that this method 
+results in a worse segmentation see tables and 
+usually human readers can identify topic transition based on 
+cue words and can ignore stop words inspired by this we 
+give each term or term cluster a weight based on entropy 
+among different documents and different segments of 
+documents not only can this approach increase the contribution 
+of cue words but it can also decrease the effect of common 
+stop words noisy word and document-dependent stop words 
+these words are common in a document many methods 
+based on sentence similarity require that these words are 
+removed before topic segmentation can be performed 
+our results in figure show that term weights are useful 
+for multi-document topic segmentation and alignment 
+the major contribution of this paper is that it introduces 
+a novel method for topic segmentation using mi and shows 
+that this method performs better than previously used 
+criteria also we have addressed the problem of topic 
+segmentation and alignment across multiple documents whereas 
+most existing research focused on segmentation of single 
+documents multi-document segmentation and alignment 
+can utilize information from similar documents and improves 
+the performance of topic segmentation greatly obviously 
+our approach can handle single documents as a special case 
+when multiple documents are unavailable it can detect 
+shared topics among documents to judge if they are multiple 
+documents on the same topic we also introduce the new 
+criterion of wmi based on term weights learned from 
+multiple similar documents which can improve performance of 
+topic segmentation further we propose an iterative greedy 
+algorithm based on dynamic programming and show that it 
+works well in practice some of our prior work is in 
+the rest of this paper is organized as follows in section 
+we review related work section contains a formulation of 
+the problem of topic segmentation and alignment of multiple 
+documents with term co-clustering a review of the criterion 
+of mi for clustering and finally an introduction to wmi in 
+section we first propose the iterative greedy algorithm of 
+topic segmentation and alignment with term co-clustering 
+and then describe how the algorithm can be optimized by 
+usfigure illustration of multi-document 
+segmentation and alignment 
+ing dynamic programming in section experiments about 
+single-document segmentation shared topic detection and 
+multi-document segmentation are described and results are 
+presented and discussed to evaluate the performance of our 
+algorithm conclusions and some future directions of the 
+research work are discussed in section 
+ previous work 
+generally the existing approaches to text segmentation 
+fall into two categories supervised learning 
+and unsupervised learning 
+supervised learning usually has good performance since it learns 
+functions from labelled training sets however often 
+getting large training sets with manual labels on document 
+sentences is prohibitively expensive so unsupervised 
+approaches are desired some models consider dependence 
+between sentences and sections such as hidden markov model 
+ maximum entropy markov model and 
+conditional random fields while many other approaches are 
+based on lexical cohesion or similarity of sentences 
+ some approaches also focus on cue words as hints 
+of topic transitions while some existing methods only 
+consider information in single documents others 
+utilize multiple documents there are not many works 
+in the latter category even though the performance of 
+segmentation is expected to be better with utilization of 
+information from multiple documents previous research studied 
+methods to find shared topics and topic segmentation 
+and summarization between just a pair of documents 
+text classification and clustering is a related research area 
+which categorizes documents into groups using supervised or 
+unsupervised methods topical classification or clustering is 
+an important direction in this area especially co-clustering 
+of documents and terms such as lsa plsa and 
+approaches based on distances and bipartite graph 
+partitioning or maximum mi or maximum entropy 
+ criteria of these approaches can be utilized in the 
+issue of topic segmentation some of those methods have been 
+extended into the area of topic segmentation such as plsa 
+ and maximum entropy but to our best knowledge 
+using mi for topic segmentation has not been studied 
+ problem formulation 
+our goal is to segment documents and align the segments 
+across documents figure let t be the set of terms 
+ t t tl which appear in the unlabelled set of 
+documents d d d dm let sd be the set of sentences 
+for document d ∈ d i e s s snd we have a d 
+matrix of term frequency in which the three dimensions are 
+random variables of d sd and t sd actually is a random 
+vector including a random variable for each d ∈ d the 
+term frequency can be used to estimate the joint probability 
+distribution p d sd t which is p t d s t t d s nd 
+where t t d s is the number of t in d s sentence s and nd 
+is the total number of terms in d ˆs represents the set of 
+segments ˆs ˆs ˆsp after segmentation and alignment 
+among multiple documents where the number of segments 
+ ˆs p a segment ˆsi of document d is a sequence of 
+adjacent sentences in d since for different documents si may 
+discuss different sub-topics our goal is to cluster adjacent 
+sentences in each document into segments and align similar 
+segments among documents so that for different documents 
+ˆsi is about the same sub-topic the goal is to find the 
+optimal topic segmentation and alignment mapping 
+segd si s s snd → ˆs ˆs ˆsp 
+and alid ˆsi ˆs ˆs ˆsp → ˆs ˆs ˆsp for all d ∈ 
+d where ˆsi is ith 
+segment with the constraint that only 
+adjacent sentences can be mapped to the same segment 
+i e for d si si sj → ˆsq where q ∈ p 
+where p is the segment number and if i j then for d 
+ˆsq is missing after segmentation and alignment random 
+vector sd becomes an aligned random variable ˆs thus 
+p d sd t becomes p d ˆs t 
+term co-clustering is a technique that has been employed 
+ to improve the accuracy of document clustering we 
+evaluate the effect of it for topic segmentation a term t 
+is mapped to exactly one term cluster term co-clustering 
+involves simultaneously finding the optimal term clustering 
+mapping clu t t t tl → ˆt ˆt ˆtk where k ≤ 
+l l is the total number of words in all the documents and 
+k is the number of clusters 
+ methodology 
+we now describe a novel algorithm which can handle 
+singledocument segmentation shared topic detection and 
+multidocument segmentation and alignment based on mi or wmi 
+ mutual information 
+mi i x y is a quantity to measure the amount of 
+information which is contained in two or more random variables 
+ for the case of two random variables we have 
+i x y 
+x∈x y∈y 
+p x y log 
+p x y 
+p x p y 
+ 
+obviously when random variables x and y are 
+independent i x y thus intuitively the value of mi 
+depends on how random variables are dependent on each other 
+the optimal co-clustering is the mapping clux x → ˆx and 
+cluy y → ˆy that minimizes the loss i x y − i ˆx ˆy 
+which is equal to maximizing i ˆx ˆy this is the criterion 
+of mi for clustering 
+in the case of topic segmentation the two random 
+variables are the term variable t and the segment variable s 
+and each sample is an occurrence of a term t t in a 
+particular segment s s i t s is used to measure how 
+dependent t and s are however i t s cannot be 
+computed for documents before segmentation since we do not 
+have a set of s due to the fact that sentences of document d 
+si ∈ sd is not aligned with other documents thus instead 
+of minimizing the loss of mi we can maximize mi after topic 
+segmentation computed as 
+i ˆt ˆs 
+ˆt∈ ˆt ˆs∈ ˆs 
+p ˆt ˆs log 
+p ˆt ˆs 
+p ˆt p ˆs 
+ 
+where p ˆt ˆs are estimated by the term frequency tf of term 
+cluster ˆt and segment ˆs in the training set d note that 
+here a segment ˆs includes sentences about the the same topic 
+among all documents the optimal solution is the mapping 
+clut t → ˆt segd sd → ˆs and alid ˆs → ˆs which 
+maximizes i ˆt ˆs 
+ weighted mutual information 
+in topic segmentation and alignment of multiple 
+documents if p d ˆs t is known based on the marginal 
+distributions p d t and p ˆs t for each term t ∈ t we can 
+categorize terms into four types in the data set 
+ common stop words are common both along the 
+dimensions of documents and segments 
+ document-dependent stop words that depends on the 
+personal writing style are common only along the 
+dimension of segments for some documents 
+ cue words are the most important elements for 
+segmentation they are common along the dimension of 
+documents only for the same segment and they are 
+not common along the dimensions of segments 
+ noisy words are other words which are not common 
+along both dimensions 
+entropy based on p d t and p ˆs t can be used to 
+identify different types of terms to reinforce the contribution 
+of cue words in the mi computation and simultaneously 
+reduce the effect of the other three types of words similar as 
+the idea of the tf-idf weight we use entropies of each 
+term along the dimensions of document d and segment ˆs 
+i e ed ˆt and eˆs ˆt to compute the weight a cue word 
+usually has a large value of ed ˆt but a small value of eˆs ˆt 
+we introduce term weights or term cluster weights 
+wˆt 
+ed ˆt 
+maxˆt ∈ ˆt ed ˆt 
+ a 
+ − 
+eˆs ˆt 
+maxˆt ∈ ˆt eˆs ˆt 
+ b 
+ 
+where ed ˆt d∈d p d ˆt log d 
+ 
+p d ˆt 
+ 
+eˆs ˆt ˆs∈ ˆs p ˆs ˆt log ˆs 
+ 
+p ˆs ˆt 
+ and a and b are 
+powers to adjust term weights usually a and b 
+as default and maxˆt ∈ ˆt ed ˆt and maxˆt ∈ ˆt eˆs ˆt are 
+used to normalize the entropy values term cluster weights 
+are used to adjust p ˆt ˆs 
+pw ˆt ˆs 
+wˆtp ˆt ˆs 
+ˆt∈ ˆt ˆs∈ ˆs wˆtp ˆt ˆs 
+ 
+and 
+iw ˆt ˆs 
+ˆt∈ ˆt ˆs∈ ˆs 
+pw ˆt ˆs log 
+pw ˆt ˆs 
+pw ˆt pw ˆs 
+ 
+where pw ˆt and pw ˆs are marginal distributions of pw ˆt ˆs 
+however since we do not know either the term weights 
+or p d ˆs t we need to estimate them but wˆt depends 
+on p ˆs t and ˆs while ˆs and p ˆs t also depend on wˆt that 
+is still unknown thus an iterative algorithm is required 
+to estimate term weights wˆt and find the best 
+segmentation and alignment to optimize the objective function iw 
+concurrently after a document is segmented into sentences 
+input 
+joint probability distribution p d sd t 
+number of text segments p ∈ max sd 
+number of term clusters k ∈ l if k l no term 
+co-clustering required and 
+weight type w ∈ indicating to use i or iw respectively 
+output 
+mapping clu seg ali and term weights wˆt 
+initialization 
+ i initialize clu 
+ 
+t seg 
+ 
+d and ali 
+ 
+d initialize w 
+ 
+ˆt 
+using equation if w 
+stage 
+ if d k l and w check all sequential 
+segmentations of d into p segments and find the best one 
+segd s argmaxˆsi ˆt ˆs 
+and return segd otherwise if w and k l go to 
+stage 
+ if k l for each term t find the best cluster ˆt as 
+clu i t argmaxˆti ˆt ˆs i 
+based on seg i and ali i 
+ for each d check all sequential segmentations of d into p 
+segments with mapping s → ˆs → ˆs and find the best one 
+ali 
+ i 
+d seg 
+ i 
+d s argmaxˆsi ˆt i ˆs 
+based on clu i t if k l or clu t if k l 
+ i if clu seg or ali changed go to otherwise 
+if w return clu i seg i and ali i else j go to 
+stage 
+ update w 
+ i j 
+ˆt 
+based on seg i j ali i j and clu i 
+using equation 
+ for each d check all sequential segmentations of d into p 
+segments with mapping s → ˆs → ˆs and find the best one 
+ali 
+ i j 
+d seg 
+ i j 
+d s argmaxˆsiw ˆt i ˆs 
+based on clu i and w 
+ i j 
+ˆt 
+ 
+ j if iw ˆt ˆs changes go to step otherwise stop 
+and return clu i seg i j ali i j and w 
+ i j 
+ˆt 
+ 
+figure algorithm topic segmentation and 
+alignment based on mi or wmi 
+and each sentence is segmented into words each word is 
+stemmed then the joint probability distribution p d sd t 
+can be estimated finally this distribution can be used to 
+compute mi in our algorithm 
+ iterative greedy algorithm 
+our goal is to maximize the objective function i ˆt ˆs or 
+iw ˆt ˆs which can measure the dependence of term 
+occurrences in different segments generally first we do not know 
+the estimate term weights which depend on the optimal 
+topic segmentation and alignment and term clusters 
+moreover this problem is np-hard even though if we know 
+the term weights thus an iterative greedy algorithm is 
+desired to find the best solution even though probably only 
+local maxima are reached we present the iterative greedy 
+algorithm in figure to find a local maximum of i ˆt ˆs or 
+iw ˆt ˆs with simultaneous term weight estimation this 
+algorithm can is iterative and greedy for multi-document 
+cases or single-document cases with term weight estimation 
+and or term co-clustering otherwise since it is just a one 
+step algorithm to solve the task of single-document 
+segmentation the global maximum of mi is guaranteed 
+we will show later that term co-clustering reduces the 
+accuracy of the results and is not necessary and for 
+singledocument segmentation term weights are also not required 
+ initialization 
+in step the initial term clustering clut and topic 
+segmentation and alignment segd and alid are important to 
+avoid local maxima and reduce the number of iterations 
+first a good guess of term weights can be made by using 
+the distributions of term frequency along sentences for each 
+document and averaging them to get the initial values of wˆt 
+wt 
+ed t 
+maxt ∈t ed t 
+ − 
+es t 
+maxt ∈t es t 
+ 
+where 
+es t 
+ 
+ dt 
+d∈dt 
+ − 
+s∈sd 
+p s t log sd 
+ 
+p s t 
+ 
+where dt is the set of documents which contain term t 
+then for the initial segmentation seg 
+ we can simply 
+segment documents equally by sentences or we can find 
+the optimal segmentation just for each document d which 
+maximizes the wmi seg 
+ 
+d argmaxˆsiw t ˆs where 
+w w 
+ 
+ˆt 
+ for the initial alignment ali 
+ we can first 
+assume that the order of segments for each d is the same 
+for the initial term clustering clu 
+ first cluster labels can 
+be set randomly and after the first time of step a good 
+initial term clustering is obtained 
+ different cases 
+after initialization there are three stages for different 
+cases totally there are eight cases d or d 
+k l or k l w or w single document 
+segmentation without term clustering and term weight estimation 
+ d k l w only requires stage step if 
+term clustering is required k l stage step 
+and is executed iteratively if term weight estimation 
+is required w stage step and is 
+executed iteratively if both are required k l w stage 
+and run one after the other for multi-document 
+segmentation without term clustering and term weight estimation 
+ d k l w only iteration of step and 
+are required 
+at stage the global maximum can be found based on 
+i ˆt ˆs using dynamic programming in section 
+simultaneously finding a good term clustering and estimated term 
+weights is impossible since when moving a term to a new 
+term cluster to maximize iw ˆt ˆs we do not know that the 
+weight of this term should be the one of the new cluster or 
+the old cluster thus we first do term clustering at stage 
+ and then estimate term weights at stage 
+at stage step is to find the best term clustering 
+and step is to find the best segmentation this cycle is 
+repeated to find a local maximum based on mi i until it 
+converges the two steps are based on current term 
+clustering cluˆt for each document d the algorithm segments 
+all the sentences sd into p segments sequentially some 
+segments may be empty and put them into the p segments 
+ˆs of the whole training set d all possible cases of different 
+segmentation segd and alignment alid are checked to find 
+the optimal case and based on the current segmentation 
+and alignment for each term t the algorithm finds the best 
+term cluster of t based on the current segmentation segd 
+and alignment alid after finding a good term clustering 
+term weights are estimated if w 
+at stage similar as stage step is term weight 
+re-estimation and step is to find a better segmentation 
+they are repeated to find a local maximum based on wmi 
+iw until it converges however if the term clustering in 
+stage is not accurate then the term weight estimation at 
+stage may have a bad result finally at step this 
+algorithm converges and return the output this algorithm can 
+handle both single-document and multi-document 
+segmentation it also can detect shared topics among documents 
+by checking the proportion of overlapped sentences on the 
+same topics as described in sec 
+ algorithm optimization 
+in many previous works on segmentation dynamic 
+programming is a technique used to maximize the objective 
+function similarly at step and of our algorithm 
+we can use dynamic programming for stage using 
+dynamic programming can still find the global optimum but 
+for stage and stage we can only find the optimum for 
+each step of topic segmentation and alignment of a 
+document here we only show the dynamic programming for 
+step using wmi step and are similar but they can 
+use either i or iw there are two cases that are not shown 
+in the algorithm in figure a single-document 
+segmentation or multi-document segmentation with the same 
+sequential order of segments where alignment is not required 
+and b multi-document segmentation with different 
+sequential orders of segments where alignment is necessary the 
+alignment mapping function of the former case is simply just 
+alid ˆsi ˆsi while for the latter one s alignment mapping 
+function alid ˆsi ˆsj i and j may be different the 
+computational steps for the two cases are listed below 
+case no alignment 
+for each document d 
+ compute pw ˆt partial pw ˆt ˆs and partial pw ˆs 
+without counting sentences from d then put sentences from i 
+to j into part k and compute partial wmi 
+piw ˆt ˆsk si si sj 
+ˆt∈ ˆt 
+pw ˆt ˆsk log 
+pw ˆt ˆsk 
+pw ˆt pw ˆsk 
+ 
+where alid si si sj k k ∈ p ≤ i ≤ j ≤ 
+nd and segd sq ˆsk for all i ≤ q ≤ j 
+ let m sm piw ˆt ˆs s s sm then 
+m sm l maxi m si− l − piw ˆt ˆsl si sm 
+where ≤ m ≤ nd l p ≤ i ≤ m and when 
+i m no sentences are put into ˆsk when compute piw 
+ note piw ˆt ˆs si sm for single-document 
+segmentation 
+ finally m snd p maxi m si− p − 
+piw ˆt ˆsp si snd where ≤ i ≤ nd the optimal 
+iw is found and the corresponding segmentation is the best 
+case alignment required 
+for each document d 
+ compute pw ˆt partial pw ˆt ˆs and partial pw ˆs and 
+piw ˆt ˆsk si si sj similarly as case 
+ let m sm k piw ˆt ˆsk s s sm where 
+k ∈ p then m sm l kl maxi j m si− l − 
+ kl j piw ˆt ˆsalid ˆsl 
+ j si si sm 
+where ≤ m ≤ nd l p ≤ i ≤ m kl ∈ 
+set p l which is the set of all p 
+l p−l 
+combinations of 
+l segments chosen from all p segments j ∈ kl the set 
+of l segments chosen from all p segments and kl j is the 
+combination of l − segments in kl except segment j 
+ finally m snd p kp maxi j m si− p − kp j 
+ piw ˆt ˆsalid ˆsl 
+ j si si snd 
+where kp is just the combination of all p segments and ≤ 
+i ≤ nd which is the optimal iw and the corresponding 
+segmentation is the best 
+the steps of case and are similar except in case 
+alignment is considered in addition to segmentation first 
+basic items of probability for computing iw are computed 
+excluding doc d and then partial wmi by putting every 
+possible sequential segment including empty segment of d 
+into every segment of the set second the optimal sum of 
+piw for l segments and the leftmost m sentences m sm l 
+is found finally the maximal wmi is found among 
+different sums of m sm p − and piw for segment p 
+ experiments 
+in this section single-document segmentation shared topic 
+detection and multi-document segmentation will be tested 
+different hyper parameters of our method are studied for 
+convenience we refer to the method using i as mik if w 
+and iw as wmik if w or as wmik if w where k 
+is the number of term clusters and if k l where l is the 
+total number of terms then no term clustering is required 
+i e mil and wmil 
+ single-document segmentation 
+ test data and evaluation 
+the first data set we tested is a synthetic one used in 
+previous research and many other papers it has 
+ samples each is a concatenation of ten segments each 
+segment is the first n sentence selected randomly from the 
+brown corpus which is supposed to have a different topic 
+from each other currently the best results on this data 
+set is achieved by ji et al to compare the 
+performance of our methods the criterion used widely in previous 
+research is applied instead of the unbiased criterion 
+introduced in it chooses a pair of words randomly if they 
+are in different segments different for the real 
+segmentation real but predicted pred as in the same segment 
+it is a miss if they are in the same segment same but 
+predicted as in different segments it is a false alarm thus 
+the error rate is computed using the following equation 
+p err real pred p miss real pred diff p diff real 
+ p false alarm real pred same p same real 
+ experiment results 
+we tested the case when the number of segments is known 
+table shows the results of our methods with different hyper 
+parameter values and three previous approaches c 
+u and addp on this data set when the 
+segment number is known in wmi for single-document 
+segmentation the term weights are computed as follows wˆt 
+ −eˆs ˆt maxˆt ∈ ˆt eˆs ˆt for this case our methods mil 
+and wmil both outperform all the previous approaches 
+we compared our methods with addp using one-sample 
+one-sided t-test and p-values are shown in table from 
+the p-values we can see that mostly the differences are very 
+table average error rates of single-document 
+segmentation given segment numbers known 
+range of n - - - - 
+sample size 
+c 
+u 
+addp 
+mil 
+wmil 
+mi 
+table single-document segmentation p-values 
+of t-test on error rates 
+range of n - - - - 
+addp mil 
+addp wmil 
+mil wmil 
+significant we also compare the error rates between our 
+two methods using two-sample two-sided t-test to check the 
+hypothesis that they are equal we cannot reject the 
+hypothesis that they are equal so the difference are not 
+significant even though all the error rates for mil are smaller 
+than wmil however we can conclude that term weights 
+contribute little in single-document segmentation the 
+results also show that mi using term co-clustering k 
+decreases the performance we tested different number of 
+term clusters and found that the performance becomes 
+better when the cluster number increases to reach l wmik l 
+has similar results that we did not show in the table 
+as mentioned before using mi may be inconsistent on 
+optimal boundaries given different numbers of segments this 
+situation occurs especially when the similarities among 
+segments are quite different i e some transitions are very 
+obvious while others are not this is because usually a 
+document is a hierarchical structure instead of only a 
+sequential structure when the segments are not at the same 
+level this situation may occur thus a hierarchical topic 
+segmentation approach is desired and the structure highly 
+depends on the number of segments for each internal node 
+and the stop criteria of splitting for this data set of 
+singledocument segmentation since it is just a synthetic set which 
+is just a concatenation of several segments about different 
+topics it is reasonable that approaches simply based on term 
+frequency have a good performance usually for the tasks 
+of segmenting coherent documents for sub-topics the 
+effectiveness decreases much 
+ shared topic detection 
+ test data and evaluation 
+the second data set contains news articles from google 
+news there are eight topics and each has articles we 
+randomly split the set into subsets with different document 
+numbers and each subset has all eight topics we 
+compare our approach mil and wmil with lda lda 
+treats a document in the data set as a bag of words finds 
+its distribution on topics and its major topic mil and 
+wmil views each sentence as a bag of words and tag it 
+with a topic label then for each pair of documents lda 
+determines if they are on the same topic while mil and 
+table shared topic detection average error 
+rates for different numbers of documents in each 
+subset 
+ doc 
+lda 
+mil θ 
+wmil θ 
+wmil check whether the proportion overlapped sentences 
+on the same topic is larger than the adjustable threshold θ 
+that is in mil and wmil for a pair of documents d d 
+if s∈sd s ∈sd 
+ topics topics min sd sd θ where 
+sd is the set of sentences of d and sd is the number of 
+sentences of d then d and d have the shared topic 
+for a pair of documents selected randomly the error rate 
+is computed using the following equation 
+p err real pred p miss real pred same p same real 
+ p false alarm real pred diff p diff real 
+where a miss means if they have the same topic same 
+for the real case real but predicted pred as on the same 
+topic if they are on different topics diff but predicted 
+as on the same topic it is a false alarm 
+ experiment results 
+the results are shown in table if most documents have 
+different topics in wmil the estimation of term weights in 
+equation is not correct thus wmil is not expected to 
+have a better performance than mil when most documents 
+have different topics when there are fewer documents in 
+a subset with the same number of topics more documents 
+have different topics so wmil is more worse than mil we 
+can see that for most cases mil has a better or at least 
+similar performance than lda after shared topic 
+detection multi-document segmentation of documents with the 
+shared topics is able to be executed 
+ multi-document segmentation 
+ test data and evaluation 
+for multi-document segmentation and alignment our goal 
+is to identify these segments about the same topic among 
+multiple similar documents with shared topics using iw 
+is expected to perform better than i since without term 
+weights the result is affected seriously by document-dependent 
+stop words and noisy words which depends on the personal 
+writing style it is more likely to treat the same segments 
+of different documents as different segments under the effect 
+of document-dependent stop words and noisy words term 
+weights can reduce the effect of document-dependent stop 
+words and noisy words by giving cue terms more weights 
+the data set for multi-document segmentation and 
+alignment has samples and sentences totally each is 
+the introduction part of a lab report selected from the course 
+of biol w pennsylvania state university each sample 
+has two segments introduction of plant hormones and the 
+content in the lab the length range of samples is from 
+two to sentences some samples only have one part and 
+some have a reverse order the these two segments it is not 
+hard to identify the boundary between two segments for 
+human we labelled each sentence manually for evaluation 
+the criterion of evaluation is just using the proportion of 
+the number of sentences with wrong predicted segment 
+labels in the total number of sentences in the whole training 
+table average error rates of multi-document 
+segmentation given segment numbers known 
+ doc mil wmil k mik wmik 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+table multi-document segmentation p-values of 
+t-test on error rates for mil and wmil 
+ doc 
+p-value 
+set as the error rate 
+p error predicted real 
+ d∈d s∈sd 
+ predicteds reals d∈d nd 
+in order to show the benefits of multi-document 
+segmentation and alignment we compared our method with different 
+parameters on different partitions of the same training set 
+except the cases that the number of documents is and 
+one they are special cases of using the whole set and the 
+pure single-document segmentation we randomly divided 
+the training set into m partitions and each has 
+ and document samples then we applied our 
+methods on each partition and calculated the error rate of the 
+whole training set each case was repeated for times for 
+computing the average error rates for different partitions 
+of the training set different k values are used since the 
+number of terms increases when the document number in each 
+partition increases 
+ experiment results 
+from the experiment results in table we can see the 
+following observations when the number of documents 
+increases all methods have better performances only from 
+one to two documents mil has decrease a little we can 
+observe this from figure at the point of document 
+number most curves even have the worst results at this 
+point there are two reasons first because samples vote 
+for the best multi-document segmentation and alignment 
+but if only two documents are compared with each other the 
+one with missing segments or a totally different sequence will 
+affect the correct segmentation and alignment of the other 
+second as noted at the beginning of this section if two 
+documents have more document-dependent stop words or noisy 
+words than cue words then the algorithm may view them 
+as two different segments and the other segment is missing 
+generally we can only expect a better performance when 
+the number of documents is larger than the number of 
+segments except single-document segmentation wmil is 
+always better than mil and when the number of documents 
+is reaching one or increases to a very large number their 
+performances become closer table shows p-values of 
+twosample one-sided t-test between mil and wmil we also 
+can see this trend from p-values when document number 
+ we reached the smallest p-value and the largest difference 
+between error rates of mil and wmil for single-document 
+table multi-document segmentation average 
+error rate for document number in each 
+subset with different number of term clusters 
+ cluster l 
+mik 
+segmentation wmil is even a little bit worse than mil 
+which is similar as the results of the single-document 
+segmentation on the first data set the reason is that for 
+singledocument segmentation we cannot estimate term weights 
+accurately since multiple documents are unavailable 
+using term clustering usually gets worse results than mil 
+and wmil using term clustering in wmik is even worse 
+than in mik since in wmik term clusters are found first 
+using i before using iw if the term clusters are not correct 
+then the term weights are estimated worse which may 
+mislead the algorithm to reach even worse results from the 
+results we also found that in multi-document segmentation 
+and alignment most documents with missing segments and 
+a reverse order are identified correctly 
+table illustrates the experiment results for the case of 
+partitions each has five document samples of the training 
+set and topic segmentation and alignment using mik with 
+different numbers of term clusters k notice that when the 
+number of term clusters increases the error rate becomes 
+smaller without term clustering we have the best result 
+we did not show results for wmik with term clustering 
+but the results are similar 
+we also tested wmil with different hyper parameters 
+of a and b to adjust term weights the results are 
+presented in figure it was shown that the default case 
+wmil a b gave the best results for different 
+partitions of the training set we can see the trend that when 
+the document number is very small or large the difference 
+between mil a b and wmil a b 
+becomes quite small when the document number is not large 
+ about from to all the cases using term weights have 
+better performances than mil a b without term 
+weights but when the document number becomes larger 
+the cases wmil a b and wmil a b 
+become worse than mil a b when the document 
+number becomes very large they are even worse than cases 
+with small document numbers this means that a proper 
+way to estimate term weights for the criterion of wmi is 
+very important figure shows the term weights learned 
+from the whole training set four types of words are 
+categorized roughly even though the transition among them are 
+subtle figure illustrates the change in weighted mutual 
+information for mil and wmil as expected mutual 
+information for mil increases monotonically with the number of 
+steps while wmil does not finally mil and wmil are 
+scalable with computational complexity shown in figure 
+one advantage for our approach based on mi is that 
+removing stop words is not required another important 
+advantage is that there are no necessary hyper parameters to 
+adjust in single-document segmentation the performance 
+based on mi is even better for that based on wmi so no 
+extra hyper parameter is required in multi-document 
+segmentation we show in the experiment a and b 
+is the best our method gives more weights to cue terms 
+however usually cue terms or sentences appear at the 
+beginning of a segment while the end of the segment may be 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+document number 
+errorrate 
+mil 
+ a b 
+wmi 
+l 
+ a b 
+wmi 
+l 
+ a b 
+wmi 
+l 
+ a b 
+figure error rates for 
+different hyper 
+parameters of term weights 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+normalized document entropy 
+normalizedsegmententropy 
+noisy words 
+cue words 
+common stop words 
+doc−dep stop words 
+figure term weights 
+learned from the whole 
+training set 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of steps 
+ weighted mutualinformation 
+mi 
+l 
+wmi 
+l 
+figure change in 
+ weighted mi for mil 
+and wmil 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+document number 
+timetoconverge sec 
+mi 
+l 
+wmi 
+l 
+figure time to 
+converge for mil and 
+wmil 
+much noisy one possible solution is giving more weights to 
+terms at the beginning of each segment moreover when the 
+length of segments are quite different long segments have 
+much higher term frequencies so they may dominate the 
+segmentation boundaries normalization of term 
+frequencies versus the segment length may be useful 
+ conclusions and future work 
+we proposed a novel method for multi-document topic 
+segmentation and alignment based on weighted mutual 
+information which can also handle single-document cases we 
+used dynamic programming to optimize our algorithm our 
+approach outperforms all the previous methods on 
+singledocument cases moreover we also showed that doing 
+segmentation among multiple documents can improve the 
+performance tremendously our results also illustrated that 
+using weighted mutual information can utilize the information 
+of multiple documents to reach a better performance 
+we only tested our method on limited data sets more 
+data sets especially complicated ones should be tested more 
+previous methods should be compared with moreover 
+natural segmentations like paragraphs are hints that can be 
+used to find the optimal boundaries supervised learning 
+also can be considered 
+ acknowledgments 
+the authors want to thank xiang ji and prof j scott 
+payne for their help 
+ references 
+ a banerjee i ghillon j ghosh s merugu and 
+d modha a generalized maximum entropy approach to 
+bregman co-clustering and matrix approximation in 
+proceedings of sigkdd 
+ r bekkerman r el-yaniv and a mccallum multi-way 
+distributional clustering via pairwise interactions in 
+proceedings of icml 
+ d m blei and p j moreno topic segmentation with an 
+aspect hidden markov model in proceedings of sigir 
+ 
+ d m blei a ng and m jordan latent dirichlet 
+allocation journal of machine learning research 
+ - 
+ t brants f chen and i tsochantaridis topic-based 
+document segmentation with probabilistic latent semantic 
+analysis in proceedings of cikm 
+ f choi advances in domain indepedent linear text 
+segmentation in proceedings of the naacl 
+ h christensen b kolluru y gotoh and s renals 
+maximum entropy segmentation of broadcast news in 
+proceedings of icassp 
+ t cover and j thomas elements of information theory 
+john wiley and sons new york usa 
+ s deerwester s dumais g furnas t landauer and 
+r harshman indexing by latent semantic analysis journal 
+of the american society for information systems 
+ i dhillon s mallela and d modha information-theoretic 
+co-clustering in proceedings of sigkdd 
+ m hajime h takeo and o manabu text segmentation 
+with multiple surface linguistic cues in proceedings of 
+coling-acl 
+ t k ho stop word location and identification for 
+adaptive text recognition international journal of 
+document analysis and recognition august 
+ t hofmann probabilistic latent semantic analysis in 
+proceedings of the uai 
+ x ji and h zha correlating summarization of a pair of 
+multilingual documents in proceedings of ride 
+ x ji and h zha domain-independent text segmentation 
+using anisotropic diffusion and dynamic programming in 
+proceedings of sigir 
+ x ji and h zha extracting shared topics of multiple 
+documents in proceedings of the th pakdd 
+ j lafferty a mccallum and f pereira conditional 
+random fields probabilistic models for segmenting and 
+labeling sequence data in proceedings of icml 
+ t li s ma and m ogihara entropy-based criterion in 
+categorical clustering in proceedings of icml 
+ a mccallum d freitag and f pereira maximum 
+entropy markov models for information extraction and 
+segmentation in proceedings of icml 
+ l pevzner and m hearst a critique and improvement of 
+an evaluation metric for text segmentation computational 
+linguistic - 
+ j c reynar statistical models for topic segmentation in 
+proceedings of acl 
+ g salton and m mcgill introduction to modern 
+information retrieval mcgraw hill 
+ b sun q tan p mitra and c l giles extraction and 
+search of chemical formulae in text documents on the web 
+in proceedings of www 
+ b sun d zhou h zha and j yen multi-task text 
+segmentation and alignment based on weighted mutual 
+information in proceedings of cikm 
+ m utiyama and h isahara a statistical model for 
+domain-independent text segmentation in proceedings of 
+the th acl 
+ c wayne multilingual topic detection and tracking 
+successful research enabled by corpora and evaluation in 
+proceedings of lrec 
+ j yamron i carp l gillick s lowe and p van 
+mulbregt a hidden markov model approach to text 
+segmentation and event tracking in proceedings of 
+icassp 
+ h zha and x ji correlating multilingual documents via 
+bipartite graph modeling in proceedings of sigir 

@@ -1,0 +1,933 @@
+implementation of a dynamic adjustment mechanism with 
+efficient replica selection in data grid environments 
+chao-tung yang i-hsien yang chun-hsiang chen shih-yu wang 
+high-performance computing laboratory 
+department of computer science and information engineering 
+tunghai university 
+taichung city taiwan r o c 
+ctyang thu edu tw g  thu edu tw 
+abstract 
+the co-allocation architecture was developed in order to enable 
+parallel downloading of datasets from multiple servers several 
+co-allocation strategies have been coupled and used to exploit rate 
+differences among various client-server links and to address 
+dynamic rate fluctuations by dividing files into multiple blocks of 
+equal sizes however a major obstacle the idle time of faster 
+servers having to wait for the slowest server to deliver the final 
+block makes it important to reduce differences in finishing time 
+among replica servers in this paper we propose a dynamic 
+coallocation scheme namely recursive-adjustment co-allocation 
+scheme to improve the performance of data transfer in data grids 
+our approach reduces the idle time spent waiting for the slowest 
+server and decreases data transfer completion time we also 
+provide an effective scheme for reducing the cost of reassembling 
+data blocks 
+categories and subject descriptors 
+c distributed systems distributed applications 
+h online information services data sharing web-based 
+services 
+general terms 
+management performance design experimentation 
+ introduction 
+data grids aggregate distributed resources for solving large-size 
+dataset management problems most data grid applications 
+execute simultaneously and access large numbers of data files in 
+the grid environment certain data-intensive scientific 
+applications such as high-energy physics bioinformatics 
+applications and virtual astrophysical observatories entail huge 
+amounts of data that require data file management systems to 
+replicate files and manage data transfers and distributed data 
+access the data grid infrastructure integrates data storage devices 
+and data management services into the grid environment which 
+consists of scattered computing and storage resources perhaps 
+located in different countries regions yet accessible to users 
+replicating popular content in distributed servers is widely used 
+in practice recently large-scale data-sharing 
+scientific communities such as those described in used this 
+technology to replicate their large datasets over several sites 
+downloading large datasets from several replica locations may 
+result in varied performance rates because the replica sites may 
+have different architectures system loadings and network 
+connectivity bandwidth quality is the most important factor 
+affecting transfers between clients and servers since download 
+speeds are limited by the bandwidth traffic congestion in the links 
+connecting the servers to the clients 
+one way to improve download speeds is to determine the best 
+replica locations using replica selection techniques this 
+method selects the best servers to provide optimum transfer rates 
+because bandwidth quality can vary unpredictably due to the 
+sharing nature of the internet another way is to use co-allocation 
+technology to download data co-allocation of data transfers 
+enables the clients to download data from multiple locations by 
+establishing multiple connections in parallel this can improve 
+the performance compared to the single-server cases and alleviate 
+the internet congestion problem several co-allocation 
+strategies were provided in previous work an idle-time 
+drawback remains since faster servers must wait for the slowest 
+server to deliver its final block therefore it is important to 
+reduce the differences in finishing time among replica servers 
+in this paper we propose a dynamic co-allocation scheme based 
+on co-allocation grid data transfer architecture called 
+recursiveadjustment co-allocation scheme that reduces the idle time spent 
+waiting for the slowest server and improves data transfer 
+performance experimental results show that our approach is 
+superior to previous methods and achieved the best overall 
+performance we also discuss combination cost and provide an 
+effective scheme for reducing it 
+the remainder of this paper is organized as follows related 
+background review and studies are presented in section and the 
+co-allocation architecture and related work are introduced in 
+section in section an efficient replica selection service is 
+proposed by us our research approaches are outlined in section 
+and experimental results and a performance evaluation of our 
+scheme are presented in section section concludes this 
+research paper 
+ background 
+ data grid 
+the data grids enable the sharing selection and connection of a 
+wide variety of geographically distributed computational and 
+storage resources for solving large-scale data intensive scientific 
+applications e g high energy physics bioinformatics 
+applications and astrophysical virtual observatory the term 
+data grid traditionally represents the network of distributed 
+storage resources from archival systems to caches and databases 
+which are linked using a logical name space to create global 
+persistent identifiers and provide uniform access mechanisms 
+data grids federate a lot of storage resources large 
+collections of measured or computed data are emerging as 
+important resources in many data intensive applications 
+ replica management 
+replica management involves creating or removing replicas at a 
+data grid site in other words the role of a replica manager is 
+to create or delete replicas within specified storage systems most 
+often these replicas are exact copies of the original files created 
+only to harness certain performance benefits a replica manager 
+typically maintains a replica catalog containing replica site 
+addresses and the file instances the replica management service 
+is responsible for managing the replication of complete and partial 
+copies of datasets defined as collections of files 
+the replica management service is just one component in a data 
+grid environment that provides support for high-performance 
+data-intensive applications a replica or location is a subset of a 
+collection that is stored on a particular physical storage system 
+there may be multiple possibly overlapping subsets of a 
+collection stored on multiple storage systems in a data grid 
+these grid storage systems may use a variety of underlying 
+storage technologies and data movement protocols which are 
+independent of replica management 
+ replica catalog 
+as mentioned above the purpose of the replica catalog is to 
+provide mappings between logical names for files or collections 
+and one or more copies of the objects on physical storage systems 
+the replica catalog includes optional entries that describe 
+individual logical files logical files are entities with globally 
+unique names that may have one or more physical instances the 
+catalog may optionally contain one logical file entry in the replica 
+catalog for each logical file in a collection 
+a data grid may contain multiple replica catalogs for example 
+a community of researchers interested in a particular research 
+topic might maintain a replica catalog for a collection of data sets 
+of mutual interest it is possible to create hierarchies of replica 
+catalogs to impose a directory-like structure on related logical 
+collections in addition the replica manager can perform access 
+control on entire catalogs as well as on individual logical files 
+ replica selection 
+the purpose of replica selection is to select a replica from 
+among the sites which constitute a data grid the criteria of 
+selection depend on characteristics of the application by using 
+this mechanism users of the data grid can easily manage replicas 
+of data sets at their sites with better performance much previous 
+effort has been devoted to the replica selection problem the 
+common process of replica selection consists of three steps data 
+preparation preprocessing and prediction then applications can 
+select a replica according to its specific attributes replica 
+selection is important to data-intensive applications and it can 
+provide location transparency when a user requests for accessing 
+a data set the system determines an appropriate way to deliver the 
+replica to the user 
+ globus toolkit and gridftp 
+the globus project provides software tools 
+collectively called the globus toolkit that makes it easier to 
+build computational grids and grid-based applications many 
+organizations use the globus toolkit to build computational grids 
+to support their applications the composition of the globus 
+toolkit can be pictured as three pillars resource management 
+information services and data management each pillar 
+represents a primary component of the globus toolkit and makes 
+use of a common foundation of security gram implements a 
+resource management protocol mds implements an information 
+services protocol and gridftp implements a data transfer 
+protocol they all use the gsi security protocol at the connection 
+layer the globus alliance proposed a common 
+data transfer and access protocol called gridftp that provides 
+secure efficient data movement in grid environments this 
+protocol which extends the standard ftp protocol provides a 
+superset of the features offered by the various grid storage 
+systems currently in use 
+in order to solve the appearing problems the data grid 
+community tries to develop a secure efficient data transport 
+mechanism and replica management services gridftp is a 
+reliable secure and efficient data transport protocol which is 
+developed as a part of the globus project there is another key 
+technology from globus project called replica catalog which 
+is used to register and manage complete and partial copies of data 
+sets the replica catalog contains the mapping information from a 
+logical file or collection to one or more physical files 
+ network weather service 
+the network weather service nws is a generalized and 
+distributed monitoring system for producing short-term 
+performance forecasts based on historical performance 
+measurements the goal of the system is to dynamically 
+characterize and forecast the performance deliverable at the 
+application level from a set of network and computational 
+resources a typical installation involves one nws nameserver 
+one or more nws memory which may reside on different 
+machines and an nws sensor running on each machine with 
+resources which are to be monitored the system includes sensors 
+for end-to-end tcp ip performance bandwidth and latency 
+available cpu percentage and available non-paged memory 
+ 
+ sysstat utilities 
+the sysstat utilities are a collection of performance 
+monitoring tools for the linux os the sysstat package 
+incorporates the sar mpstat and iostat commands the 
+sar command collects and reports system activity information 
+which can also be saved in a system activity file for future 
+inspection the iostat command reports cpu statistics and i o 
+statistics for tty devices and disks the statistics reported by sar 
+concern i o transfer rates paging activity process-related 
+activities interrupts network activity memory and swap space 
+utilization cpu utilization kernel activities and tty statistics 
+among others uniprocessor up and symmetric multiprocessor 
+ smp machines are fully supported 
+ co-allocation architecture 
+and related work 
+the co-allocation architecture proposed in consists of three 
+main components an information service a broker co-allocator 
+and local storage systems figure shows the co-allocation of 
+grid data transfers which is an extension of the basic template 
+for resource management provided by globus toolkit 
+applications specify the characteristics of desired data and pass 
+the attribute description to a broker the broker queries available 
+resources and gets replica locations from information services 
+and replica management services and then gets a list of 
+physical locations for the desired files 
+figure data grid co-allocation architecture 
+the candidate replica locations are passed to a replica selection 
+service which was presented in a previous work this 
+replica selection service provides estimates of candidate transfer 
+performance based on a cost model and chooses appropriate 
+amounts to request from the better locations the co-allocation 
+agent then downloads the data in parallel from the selected 
+servers 
+in these researches gridftp was used to enable 
+parallel data transfers gridftp is a high-performance secure 
+reliable data transfer protocol optimized for high-bandwidth 
+widearea networks among its many features are security parallel 
+streams partial file transfers third-party transfers and reusable 
+data channels its partial file transfer ability allows files to be 
+retrieved from data servers by specifying the start and end offsets 
+of file sections 
+data grids consist of scattered computing and storage resources 
+located in different countries regions yet accessible to users 
+in this study we used the grid middleware globus toolkit as 
+the data grid infrastructure the globus toolkit provides solutions 
+for such considerations as security resource management data 
+management and information services one of its primary 
+components is mds which is designed to provide 
+a standard mechanism for discovering and publishing resource 
+status and configuration information it provides a uniform and 
+flexible interface for data collected by lower-level information 
+providers in two modes static e g os cpu types and system 
+architectures and dynamic data e g disk availability memory 
+availability and loading and it uses gridftp a 
+reliable secure and efficient data transport protocol to provide 
+efficient management and transfer of terabytes or petabytes of 
+data in a wide-area distributed-resource environment 
+as datasets are replicated within grid environments for reliability 
+and performance clients require the abilities to discover existing 
+data replicas and create and register new replicas a replica 
+location service rls provides a mechanism for discovering 
+and registering existing replicas several prediction metrics have 
+been developed to help replica selection for instance vazhkudai 
+and schopf used past data transfer histories to 
+estimate current data transfer throughputs 
+in our previous work we proposed a replica selection 
+cost model and a replica selection service to perform replica 
+selection in the author proposes co-allocation architecture 
+for co-allocating grid data transfers across multiple connections 
+by exploiting the partial copy feature of gridftp it also provides 
+brute-force history-base and dynamic load balancing for 
+allocating data block 
+brute-force co-allocation brute-force co-allocation 
+works by dividing the file size equally among available 
+flows it does not address the bandwidth differences among 
+the various client-server links 
+history-based co-allocation the history-based 
+coallocation scheme keeps block sizes per flow proportional 
+to predicted transfer rates 
+conservative load balancing one of their dynamic 
+coallocation is conservative load balancing the 
+conservative load balancing dynamic co-allocation 
+strategy divides requested datasets into k disjoint blocks 
+of equal size available servers are assigned single blocks 
+to deliver in parallel when a server finishes delivering a 
+block another is requested and so on till the entire file is 
+downloaded the loadings on the co-allocated flows are 
+automatically adjusted because the faster servers will 
+deliver more quickly providing larger portions of the file 
+aggressive load balancing another dynamic 
+coallocation strategy presented in is the aggressive 
+load balancing the aggressive load balancing dynamic 
+co-allocation strategy presented in adds functions that 
+change block size de-liveries by progressively 
+increasing the amounts of data requested from faster 
+servers and reducing the amounts of data requested 
+from slower servers or ceasing to request data from them 
+altogether 
+the co-allocation strategies described above do not handle the 
+shortcoming of faster servers having to wait for the slowest server 
+to deliver its final block in most cases this wastes much time and 
+decreases overall performance thus we propose an efficient 
+approach called recursive-adjustment co-allocation and based 
+ 
+on a co-allocation architecture it improves dynamic co-allocation 
+and reduces waiting time thus improving overall transfer 
+performance 
+ an efficient replica selection 
+service 
+we constructed a replica selection service to enable clients to 
+select the better replica servers in data grid environments see 
+below for a detailed description 
+ replica selection scenario 
+our proposed replica selection model is illustrated in which 
+shows how a client identifies the best location for a desired 
+replica transfer the client first logins in at a local site and 
+executes the data grid platform application which checks to see 
+if the files are available at the local site if they are present at the 
+local site the application accesses them immediately otherwise 
+it passes the logical file names to the replica catalog server which 
+returns a list of physical locations for all registered copies the 
+application passes this list of replica locations to a replica 
+selection server which identifies the storage system destination 
+locations for all candidate data transfer operations 
+the replica selection server sends the possible destination 
+locations to the information server which provides performance 
+measurements and predictions of the three system factors 
+described below the replica selection server chooses better 
+replica locations according to these estimates and returns location 
+information to the transfer application which receives the replica 
+through gridftp when the application finishes it returns the 
+results to the user 
+ system factors 
+determining the best database from many with the same 
+replications is a significant problem in our model we consider 
+three system factors that affect replica selection 
+network bandwidth this is one of the most significant 
+data grid factors since data files in data grid 
+environments are usually very large in other words data 
+file transfer times are tightly dependent on network 
+bandwidth situations because network bandwidth is an 
+unstable dynamic factor we must measure it frequently and 
+predict it as accurately as possible the network weather 
+service nws is a powerful toolkit for this purpose 
+cpu load grid platforms consist of numbers of 
+heterogeneous systems built with different system 
+architectures e g cluster platforms supercomputers pcs 
+cpu loading is a dynamic system factor and a heavy 
+system cpu load will certainly affect data file downloads 
+process from the site the measurement of it is done by the 
+globus toolkit mds 
+i o state data grid nodes consist of different 
+heterogeneous storage systems data files in data grids are 
+huge if the i o state of a site that we wish to download 
+files from is very busy it will directly affect data transfer 
+performance we measure i o states using sysstat 
+utilities 
+ our replica selection cost model 
+the target function of a cost model for distributed and replicated 
+data storage is the information score from the information service 
+we listed some influencing factors for our cost model in the 
+preceding section however we must express these factors in 
+mathematical notation for further analysis we assume node i is 
+the local site the user or application logs in on and node j 
+possesses the replica the user or application wants the seven 
+system parameters our replica selection cost model considers are 
+scorei-j the score value represents how efficiently a user or 
+application at node i can acquire a replica from node j 
+bw 
+jip 
+ percentage of bandwidth available from node i to 
+node j current bandwidth divided by highest theoretical 
+bandwidth 
+bbw 
+ network bandwidth weight defined by the data grid 
+administrator 
+cpu 
+jp 
+ percentage of node j cpu idle states 
+wcpu 
+ cpu load weight defined by the data grid 
+administrator 
+oi 
+jp 
+ percentage of node j i o idle states 
+wi o 
+ i o state weight defined by the data grid 
+administrator 
+we define the following general formula using these system 
+factors 
+oioi 
+j 
+cpucpu 
+j 
+bwbw 
+jiji wpwpwpscore 
+ 
+the three influencing factors in this formula wbw 
+ wcpu 
+ and 
+wi o 
+describe cpu i o and network bandwidth weights which 
+can be determined by data grid organization administrators 
+according to the various attributes of the storage systems in data 
+grid nodes since some storage equipment does not affect cpu 
+loading after several experimental measurements we determined 
+that network bandwidth is the most significant factor directly 
+influencing data transfer times when we performed data transfers 
+using the gridftp protocol we discovered that cpu and i o 
+statuses slightly affect data transfer performance their respective 
+values in our data grid environment are and 
+ co-allocation cost analysis 
+when clients download datasets using gridftp co-allocation 
+technology three time costs are incurred the time required for 
+client authentication to the gridftp server actual data 
+transmission time and data block reassembly time 
+authentication time before a transfer the client must load 
+a globus proxy and authenticate itself to the gridftp 
+server with specified user credentials the client then 
+establishes a control channel sets up transfer parameters 
+and requests data channel creation when the channel has 
+been established the data begins flowing 
+transmission time transmission time is measured from 
+the time when the client starts transferring to the time when 
+all transmission jobs are finished and it includes the time 
+ 
+required for resetting data channels between transfer 
+requests data pathways need be opened only once and 
+may handle many transfers before being closed this 
+allows the same data pathways to be used for multiple file 
+transfers however data channels must be explicitly reset 
+between transfer requests this is less time-costly 
+combination time co-allocation architecture exploits the 
+partial copy feature of the gridftp data movement tool to 
+enable data transfers across multiple connections with 
+partial file transfer file sections can be retrieved from data 
+servers by specifying only the section start and end offsets 
+when these file sections are delivered they may need to be 
+reassembled the reassembly operation incurs an additional 
+time cost 
+ dynamic co-allocation 
+strategy 
+dynamic co-allocation described above is the most efficient 
+approach to reducing the influence of network variations between 
+clients and servers however the idle time of faster servers 
+awaiting the slowest server to deliver the last block is still a major 
+factor affecting overall efficiency which conservative load 
+balancing and aggressive load balancing cannot effectively 
+avoid the approach proposed in the present paper a dynamic 
+allocation mechanism called recursive-adjustment 
+coallocation can overcome this and thus improve data transfer 
+performance 
+ recursive-adjustment co-allocation 
+recursive-adjustment co-allocation works by continuously 
+adjusting each replica server s workload to correspond to its 
+realtime bandwidth during file transfers the goal is to make the 
+expected finish time of all servers the same as figure shows 
+when an appropriate file section is first selected it is divided into 
+proper block sizes according to the respective server bandwidths 
+the co-allocator then assigns the blocks to servers for transfer at 
+this moment it is expected that the transfer finish time will be 
+consistent at e t however since server bandwidths may 
+fluctuate during segment deliveries actual completion time may 
+be dissimilar solid line in figure once the quickest server 
+finishes its work at time t the next section is assigned to the 
+servers again this allows each server to finish its assigned 
+workload by the expected time at e t these adjustments are 
+repeated until the entire file transfer is finished 
+server 
+server 
+server 
+round round 
+e t e t t 
+file a section section 
+ 
+figure the adjustment process 
+the recursive-adjustment co-allocation process is illustrated in 
+figure when a user requests file a the replica selection service 
+responds with the subset of all available servers defined by the 
+maximum performance matrix the co-allocation service gets this 
+list of selected replica servers assuming n replica servers are 
+selected si denotes server i such that i n a connection for 
+file downloading is then built to each server the 
+recursiveadjustment co-allocation process is as follows a new section of 
+a file to be allocated is first defined the section size sej is 
+sej unassignedfilesize 
+where sej denotes the section j such that j k assuming we 
+allocate k times for the download process and thus there are k 
+sections while tj denotes the time section j allocated 
+unassignedfilesize is the portion of file a not yet distributed for 
+downloading initially unassignedfilesize is equal to the total 
+size of file a is the rate that determines how much of the 
+section remains to be assigned 
+figure the recursive-adjustment co-allocation process 
+in the next step sej is divided into several blocks and assigned to 
+n servers each server has a real-time transfer rate to the client 
+of bi which is measured by the network weather service nws 
+ the block size per flow from sej for each server i at time 
+tj is 
+i 
+n 
+i 
+ii 
+n 
+i 
+iji zeunfinishsibbzeunfinishsises - 
+ 
+ 
+where unfinishsizei denotes the size of unfinished transfer 
+blocks that is assigned in previous rounds at server i 
+unfinishsizei is equal to zero in first round ideally depending to 
+the real time bandwidth at time tj every flow is expected to 
+finish its workload in future 
+this fulfills our requirement to minimize the time faster servers 
+must wait for the slowest server to finish if in some cases 
+network variations greatly degrade transfer rates unfinishsizei 
+may exceed 
+n 
+i 
+ii 
+n 
+i 
+ij bbzeunfinishsise 
+ 
+ which is the 
+total block size expected to be transferred after tj in such cases 
+the co-allocator eliminates the servers in advance and assigns sej 
+to other servers after allocation all channels continue 
+transferring data blocks when a faster channel finishes its 
+assigned data blocks the co-allocator begins allocating an 
+unassigned section of file a again the process of allocating data 
+ 
+blocks to adjust expected flow finish time continues until the 
+entire file has been allocated 
+ determining when to stop continuous 
+adjustment 
+our approach gets new sections from whole files by dividing 
+unassigned file ranges in each round of allocation these 
+unassigned portions of the file ranges become smaller after each 
+allocation since adjustment is continuous it would run as an 
+endless loop if not limited by a stop condition 
+however when is it appropriate to stop continuous adjustment 
+we provide two monitoring criteria leastsize and 
+expectfinishedtime to enable users to define stop thresholds 
+when a threshold is reached the co-allocation server stopped 
+dividing the remainder of the file and assigns that remainder as 
+the final section the leastsize criterion specifies the smallest file 
+we want to process and when the unassigned portion of 
+unassignedfilesize drops below the leastsize specification 
+division stops expectfinishedtime criterion specifies the 
+remaining time transfer is expected to take when the expected 
+transfer time of the unassigned portion of a file drops below the 
+time specified by expectfinishedtime file division stops the 
+expected rest time value is determined by 
+ 
+n 
+i 
+ibfilesizeunassigned 
+these two criteria determine the final section size allocated 
+higher threshold values will induce fewer divisions and yield 
+lower co-allocation costs which include establishing connections 
+negotiation reassembly etc however although the total 
+coallocation adjustment time may be lower bandwidth variations 
+may also exert more influence by contrast lower threshold 
+values will induce more frequent dynamic server workload 
+adjustments and in the case of greater network fluctuations result 
+in fewer differences in server transfer finish time however lower 
+values will also increase co-allocation times and hence increase 
+co-allocation costs therefore the internet environment 
+transferred file sizes and co-allocation costs should all be 
+considered in determining optimum thresholds 
+ reducing the reassembly overhead 
+the process of reassembling blocks after data transfers using 
+coallocation technology results in additional overhead and decreases 
+overall performance the reassembly overhead is related to total 
+block size and could be reduced by upgrading hardware 
+capabilities or using better software algorithms we propose an 
+efficient alternative reassembly mechanism to reduce the added 
+combination overhead after all block transmissions are finished it 
+differs from the conventional method in which the software starts 
+assembly after all blocks have been delivered by starting to 
+assemble blocks once the first deliveries finish of course this 
+makes it necessary to maintain the original splitting order 
+co-allocation strategies such as conservative load balancing and 
+recursive-adjustment co-allocation produce additional blocks 
+during file transfers and can benefit from enabling reassembly 
+during data transfers if some blocks are assembled in advance 
+the time cost for assembling the blocks remaining after all 
+transfers finish can be reduced 
+ experimental results and 
+analysis 
+in this section we discuss the performance of our 
+recursiveadjustment co-allocation strategy we evaluate four 
+coallocation schemes brute-force brute history-based 
+ history conservative load balancing conservative and 
+recursive-adjustment co-allocation recursive we analyze the 
+performance of each scheme by comparing their transfer finish 
+time and the total idle time faster servers spent waiting for the 
+slowest server to finish delivering the last block we also analyze 
+the overall performances in the various cases 
+we performed wide-area data transfer experiments using our 
+gridftp gui client tool we executed our co-allocation client 
+tool on our testbed at tunghai university thu taichung city 
+taiwan and fetched files from four selected replica servers one 
+at providence university pu one at li-zen high school lz 
+one at hsiuping institute of technology school hit and one at 
+da-li high school dl all these institutions are in taiwan and 
+each is at least km from thu figure shows our data grid 
+testbed our servers have globus or above installed 
+internet 
+thu 
+li-zen high 
+school lz 
+hitceleron mhz 
+ mb ram 
+ gb hd 
+amd athlon tm xp 
+ mb ram 
+ gb hd 
+pentium ghz 
+ mb ram 
+ gb hd 
+pu 
+da-li high 
+school dl 
+athlon mp mhz 
+ gb ram 
+ gb hd 
+pentium ghz 
+ mb ram 
+ gb hd 
+pentium ghz 
+ mb ram 
+ gb hd 
+figure our data grid testbed 
+in the following experiments we set the leastsize 
+threshold to mb and experimented with file sizes of mb 
+ mb mb mb mb mb and mb for 
+comparison we measured the performance of conservative load 
+balancing on each size using the same block numbers figure 
+shows a snapshot of our gridftp client tool this client tool is 
+developed by using java cog it allows easier and more rapid 
+application development by encouraging collaborative code reuse 
+and avoiding duplication of effort among problem-solving 
+environments science portals grid middleware and collaborative 
+pilots table shows average transmission rates between thu 
+and each replica server these numbers were obtained by 
+transferring files of mb mb and mb from a single 
+replica server using our gridftp client tool and each number is 
+an average over several runs 
+table gridftp end-to-end transmission rate from thu to 
+various servers 
+server average transmission rate 
+hit mbps 
+lz mbps 
+dl mbps 
+pu mbps 
+ 
+figure our gridftp client tool 
+we analyzed the effect of faster servers waiting for the slowest 
+server to deliver the last block for each scheme figure a shows 
+total idle time for various file sizes note that our 
+recursiveadjustment co-allocation scheme achieved significant 
+performance improvements over other schemes for every file size 
+these results demonstrate that our approach efficiently reduces 
+the differences in servers finish times the experimental results 
+shown in figure b indicate that our scheme beginning block 
+reassembly as soon as the first blocks have been completely 
+delivered reduces combination time thus aiding co-allocation 
+strategies like conservative load balancing and 
+recursiveadjustment co-allocation that produce more blocks during data 
+transfers 
+figure shows total completion time experimental results in a 
+detailed cost structure view servers were at pu dl and hit 
+with the client at thu the first three bars for each file size 
+denote the time to download the entire file from single server 
+while the other bars show co-allocated downloads using all three 
+servers our co-allocation scheme finished the job faster than the 
+other co-allocation strategies thus we may infer that the main 
+gains our technology offers are lower transmission and 
+combination times than other co-allocation strategies 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+file size mb 
+waittime sec 
+brute history conservative recursive 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+file size mb 
+combinationtime sec 
+brute history conservative recursive 
+figure a idle times for various methods servers are at pu 
+dl and hit b combination times for various methods 
+servers are at pu dl and hit 
+in the next experiment we used the recursive-adjustment 
+coallocation strategy with various sets of replica servers and 
+measured overall performances where overall performance is 
+total performance file size total completion time 
+table lists all experiments we performed and the sets of replica 
+servers used the results in figure a show that using 
+coallocation technologies yielded no improvement for smaller file 
+sizes such as mb they also show that in most cases overall 
+performance increased as the number of co-allocated flows 
+increased we observed that for our testbed and our co-allocation 
+technology overall performance reached its highest value in the 
+rec case however in the rec case when we added one 
+flow to the set of replica servers the performance did not increase 
+on the contrary it decreased we can infer that the co-allocation 
+efficiency reached saturation in the rec case and that 
+additional flows caused additional overhead and reduced overall 
+performance this means that more download flows do not 
+necessarily result in higher performance we must choose 
+appropriate numbers of flows to achieve optimum performance 
+we show the detailed cost structure view for the case of rec 
+and the case of rec in figure b the detailed cost consists of 
+authentication time transfer time and combination time 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pu 
+dl 
+hit 
+bru 
+his 
+con 
+rec 
+pu 
+dl 
+hit 
+bru 
+his 
+con 
+rec 
+pu 
+dl 
+hit 
+bru 
+his 
+con 
+rec 
+pu 
+dl 
+hit 
+bru 
+his 
+con 
+rec 
+ 
+file size mb 
+completiontime sec 
+authentication time transmission time combination time 
+figure completion times for various methods servers are 
+at pu dl and hit 
+table the sets of replica servers for all cases 
+case servers 
+pu pu 
+dl dl 
+rec pu dl 
+rec pu dl lz 
+rec pu dl hit 
+rec pu dl hit lz 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+file size mb 
+overallperformance mbits 
+pu dl rec rec rec rec 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+rec 
+ 
+file size mb 
+overallperformance mbits 
+authentication time transmission time combination time 
+figure a overall performances for various sets of servers 
+ b detailed cost structure view for the case of rec and 
+the case of rec 
+ conclusions 
+the co-allocation architecture provides a coordinated agent for 
+assigning data blocks a previous work showed that the dynamic 
+co-allocation scheme leads to performance improvements 
+however it cannot handle the idle time of faster servers which 
+must wait for the slowest server to deliver its final block we 
+proposed the recursive-adjustment co-allocation scheme to 
+improve data transfer performances using the co-allocation 
+architecture in in this approach the workloads of selected 
+replica servers are continuously adjusted during data transfers 
+and we provide a function that enables users to define a final 
+ 
+block threshold according to their data grid environment 
+experimental results show the effectiveness of our proposed 
+technique in improving transfer time and reducing overall idle 
+time spent waiting for the slowest server we also discussed the 
+re-combination cost and provided an effective scheme for 
+reducing it 
+ references 
+ b allcock j bester j bresnahan a chervenak i foster 
+c kesselman s meder v nefedova d quesnel and s 
+tuecke data management and transfer in 
+highperformance computational grid environments parallel 
+computing - may 
+ b allcock j bester j bresnahan a chervenak i foster 
+c kesselman s meder v nefedova d quesnel and s 
+tuecke secure efficient data transport and replica 
+management for high-performance data-intensive 
+computing proc of the eighteenth ieee symposium on 
+mass storage systems and technologies pp - 
+ b allcock s tuecke i foster a chervenak and c 
+kesselman protocols and services for distributed 
+dataintensive science acat proceedings pp - 
+ 
+ a chervenak e deelman i foster l guy w hoschek 
+a iamnitchi c kesselman p kunszt and m ripeanu 
+giggle a framework for constructing scalable replica 
+location services proc of sc baltimore md 
+ a chervenak i foster c kesselman c salisbury and s 
+tuecke the data grid towards an architecture for the 
+distributed management and analysis of large scientific 
+datasets journal of network and computer applications 
+ - 
+ k czajkowski s fitzgerald i foster and c kesselman 
+grid information services for distributed resource 
+sharing proc of the tenth ieee international symposium 
+on high-performance distributed computing hpdc- 
+ - august 
+ k czajkowski i foster and c kesselman resource 
+coallocation in computational grids proc of the eighth 
+ieee international symposium on high performance 
+distributed computing hpdc- august 
+ f donno l gaido a ghiselli f prelz and m sgaravatto 
+datagrid prototype terena networking conference 
+ 
+http www terena nl conferences tnc papers p a ghiselli pdf june 
+ i foster c kesselman and s tuecke the anatomy of 
+the grid enabling scalable virtual organizations int j of 
+supercomputer applications and high performance 
+computing pp - 
+ i foster and c kesselman globus a metacomputing 
+infrastructure toolkit intl j supercomputer applications 
+ pp - 
+ global grid forum http www ggf org 
+ w hoschek j jaen-martinez a samar h stockinger and 
+k stockinger data management in an international data 
+grid project proc of first ieee acm international 
+workshop on grid computing - grid bangalore india 
+december 
+ ibm red books introduction to grid computing with 
+globus ibm press 
+www redbooks ibm com redbooks pdfs sg pdf 
+ h stockinger a samar b allcock i foster k holtman 
+and b tierney file and object replication in data grids 
+journal of cluster computing - 
+ sysstat utilities home page 
+http perso wanadoo fr sebastien godard 
+ the globus alliance http www globus org 
+ s vazhkudai enabling the co-allocation of grid data 
+transfers proc of fourth international workshop on grid 
+computing pp - november 
+ s vazhkudai and j schopf using regression techniques 
+to predict large data transfers international journal of 
+high performance computing applications ijhpca 
+ - august 
+ s vazhkudai s tuecke and i foster replica selection in 
+the globus data grid proc of the st international 
+symposium on cluster computing and the grid ccgrid 
+ pp - may 
+ s vazhkudai j schopf predicting sporadic grid data 
+transfers proc of th ieee international symposium on 
+high performance distributed computing hpdc-   
+pp - july 
+ s vazhkudai j schopf and i foster predicting the 
+performance of wide area data transfers proc of the 
+ th international parallel and distributed processing 
+symposium ipdps pp - april pp - 
+ r wolski n spring and j hayes the network weather 
+service a distributed resource performance forecasting 
+service for metacomputing future generation computer 
+systems - - 
+ chao-tung yang chun-hsiang chen kuan-ching li and 
+ching-hsien hsu performance analysis of applying 
+replica selection technology for data grid environments 
+pact lecture notes in computer science vol 
+pp - springer-verlag september 
+ chao-tung yang i-hsien yang kuan-ching li and 
+chinghsien hsu a recursive-adjustment co-allocation scheme 
+in data grid environments ica pp algorithm and 
+architecture for parallel processing lecture notes in 
+computer science vol pp - springer-verlag 
+october 
+ x zhang j freschl and j schopf a performance study 
+of monitoring and information services for distributed 
+systems proc of th ieee international symposium on 
+high performance distributed computing hpdc-   
+pp - august 
+ 

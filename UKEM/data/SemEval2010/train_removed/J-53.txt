@@ -1,0 +1,1378 @@
+a price-anticipating resource allocation mechanism 
+for distributed shared clusters 
+michal feldman 
+mfeldman sims berkeley edu 
+kevin lai† 
+kevin lai hp com 
+li zhang† 
+l zhang hp com 
+abstract 
+in this paper we formulate the fixed budget resource allocation 
+game to understand the performance of a distributed 
+marketbased resource allocation system multiple users decide how to 
+distribute their budget bids among multiple machines 
+according to their individual preferences to maximize their individual 
+utility we look at both the efficiency and the fairness of the 
+allocation at the equilibrium where fairness is evaluated through 
+the measures of utility uniformity and envy-freeness we show 
+analytically and through simulations that despite being highly 
+decentralized such a system converges quickly to an equilibrium 
+and unlike the social optimum that achieves high efficiency but 
+poor fairness the proposed allocation scheme achieves a nice 
+balance of high degrees of efficiency and fairness at the equilibrium 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems c performance of systems f analysis 
+of algorithms and problem complexity 
+nonnumerical algorithms and problems j social and behavioral 
+sciences economics 
+general terms 
+algorithms performance design economics 
+ introduction 
+the primary advantage of distributed shared clusters like 
+the grid and planetlab is their ability to pool 
+together shared computational resources this allows increased 
+throughput because of statistical multiplexing and the bursty 
+utilization pattern of typical users sharing nodes that are 
+dispersed in the network allows lower delay because 
+applications can store data close to users finally sharing allows 
+greater reliability because of redundancy in hosts and 
+network connections 
+however resource allocation in these systems remains the 
+major challenge the problem is how to allocate a shared 
+resource both fairly and efficiently where efficiency is the 
+ratio of the achieved social welfare to the social optimal 
+with the presence of strategic users who act in their own 
+interests 
+several non-economic allocation algorithms have been 
+proposed but these typically assume that task values i e their 
+importance are the same or are inversely proportional to 
+the resources required or are set by an omniscient 
+administrator however in many cases task values vary 
+significantly are not correlated to resource requirements and are 
+difficult and time-consuming for an administrator to set 
+instead we examine a market-based resource allocation 
+system others are described in that allows 
+users to express their preferences for resources through a 
+bidding mechanism 
+in particular we consider a price-anticipating scheme 
+in which a user bids for a resource and receives the ratio of 
+his bid to the sum of bids for that resource this 
+proportional scheme is simpler more scalable and more 
+responsive than auction-based schemes previous 
+work has analyzed price-anticipating schemes in the context 
+of allocating network capacity for flows for users with 
+unlimited budgets in this work we examine a price-anticipating 
+scheme in the context of allocating computational 
+capacity for users with private preferences and limited budgets 
+resulting in a qualitatively different game as discussed in 
+section 
+in this paper we formulate the fixed budget resource 
+allocation game and study the existence and performance of 
+the nash equilibria of this game for evaluating the nash 
+equilibria we consider both their efficiency measuring how 
+close the social welfare at equilibrium is to the social 
+optimum and fairness measuring how different the users 
+utilities are although rarely considered in previous game 
+theoretical study we believe fairness is a critical metric for a 
+resource allocation schemes because the perception of 
+unfairness will cause some users to reject a system with more 
+efficient but less fair resource allocation in favor of one with 
+less efficient more fair resource allocation we use both 
+utility uniformity and envy-freeness to measure fairness 
+utility uniformity which is common in computer science work 
+measures the closeness of utilities of different users 
+envyfreeness which is more from the economic perspective 
+measures the happiness of users with their own resources 
+compared to the resources of others 
+our contributions are as follows 
+ we analyze the existence and performance of 
+ 
+nash equilibria using analysis we show that there is 
+always a nash equilibrium in the fixed budget game if the 
+utility functions satisfy a fairly weak and natural condition 
+of strong competitiveness we also show the worst case 
+performance bounds for m players the efficiency at equilibrium 
+is ω 
+√ 
+m the utility uniformity is ≥ m and the 
+envyfreeness ≥ 
+√ 
+ − ≈ although these bounds are quite 
+low the simulations described below indicate these bounds 
+are overly pessimistic 
+ we describe algorithms that allow strategic users 
+to optimize their utility as part of the fixed budget 
+game analysis we show that strategic users with linear 
+utility functions can calculate their bids using a best response 
+algorithm that quickly results in an allocation with high 
+efficiency with little computational and communication 
+overhead we present variations of the best response algorithm 
+for both finite and infinite parallelism tasks in addition we 
+present a local greedy adjustment algorithm that converges 
+more slowly than best response but allows for non-linear or 
+unformulatable utility functions 
+ we show that the price-anticipating resource 
+allocation mechanism achieves a high degree of 
+efficiency and fairness using simulation we find that 
+although the socially optimal allocation results in perfect 
+efficiency it also results in very poor fairness likewise 
+allocating according to only users preference weights results in a 
+high fairness but a mediocre efficiency intuition would 
+suggest that efficiency and fairness are exclusive surprisingly 
+the nash equilibrium reached by each user iteratively 
+applying the best response algorithm to adapt his bids achieves 
+nearly the efficiency of the social optimum and nearly the 
+fairness of the weight-proportional allocation the efficiency 
+is ≥ the utility uniformity is ≥ and the 
+envyfreeness is ≥ independent of the number of users in 
+the system in addition the time to converge to the 
+equilibrium is ≤ iterations when all users use the best response 
+strategy the local adjustment algorithm performs similarly 
+when there is sufficient competitiveness but takes to 
+iterations to stabilize 
+as a result we believe that shared distributed systems 
+based on the fixed budget game can be highly decentralized 
+yet achieve a high degree of efficiency and fairness 
+the rest of the paper is organized as follows we 
+describe the model in section and derive the performance 
+at the nash equilibria for the infinite parallelism model in 
+section in section we describe algorithms for users 
+to optimize their own utility in the fixed budget game in 
+section we describe our simulator and simulation results 
+we describe related work in section we conclude by 
+discussing some limit of our model and future work in section 
+ the model 
+price-anticipating resource allocation we study 
+the problem of allocating a set of divisible resources or 
+machines suppose that there are m users and n machines 
+each machine can be continuously divided for allocation 
+to multiple users an allocation scheme ω r rm 
+where ri ri · · · rin with rij representing the share of 
+machine j allocated to user i satisfies that for any ≤ i ≤ m 
+and ≤ j ≤ n rij ≥ and 
+pm 
+i rij ≤ let ω denote the 
+set of all the allocation schemes 
+we consider the price anticipating mechanism in which 
+each user places a bid to each machine and the price of the 
+machine is determined by the total bids placed formally 
+suppose that user i submits a non-negative bid xij to 
+machine j the price of machine j is then set to yj 
+pn 
+i xij 
+the total bids placed on the machine j consequently user i 
+receives a fraction of rij 
+xij 
+yj 
+of j when yj i e when 
+there is no bid on a machine the machine is not allocated 
+to anyone we call xi xi xin the bidding vector of 
+user i 
+the additional consideration we have is that each user i 
+has a budget constraint xi therefore user i s total bids 
+have to sum up to his budget i e 
+pn 
+j xij xi the 
+budget constraints come from the fact that the users do not 
+have infinite budget 
+utility functions each user i s utility is represented 
+by a function ui of the fraction ri rin the user receives 
+from each machine given the problem domain we consider 
+we assume that each user has different and relatively 
+independent preferences for different machines therefore the 
+basic utility function we consider is the linear utility 
+function ui ri · · · rin wi ri · · · winrin where wij ≥ 
+is user i s private preference also called his weight on 
+machine j for example suppose machine has a faster cpu 
+but less memory than machine and user runs cpu 
+bounded applications while user runs memory bounded 
+applications as a result w w and w w 
+our definition of utility functions corresponds to the user 
+having enough jobs or enough parallelism within jobs to 
+utilize all the machines consequently the user s goal is to grab 
+as much of a resource as possible we call this the infinite 
+parallelism model in practice a user s application may have 
+an inherent limit on parallelization e g some computations 
+must be done sequentially or there may be a system limit 
+ e g the application s data is being served from a file server 
+with limited capacity to model this we also consider the 
+more realistic finite parallelism model where the user s 
+parallelism is bounded by ki and the user s utility ui is the 
+sum of the ki largest wijrij in this model the user only 
+submits bids to up to ki machines our abstraction is to 
+capture the essense of the problem and facilitate our 
+analysis in section we discuss the limit of the above definition 
+of utility functions 
+best response as typically we assume the users are 
+selfish and strategic - they all act to maximize their own 
+utility defined by their utility functions from the 
+perspective of user i if the total bids of the other users placed on 
+each machine j is yj then the best response of user i to the 
+system is the solution of the following optimization problem 
+maximize ui 
+xij 
+xij yj 
+ subject to 
+pn 
+j xij xi and xij ≥ 
+the difficulty of the above optimization problem depends 
+on the formulation of ui we will show later how to solve 
+it for the infinite parallelism model and provide a heuristic 
+for finite parallelism model 
+nash equilibrium by the assumption that the user is 
+selfish each user s bidding vector is the best response to the 
+system the question we are most interested in is whether 
+there exists a collection of bidding vectors one for each user 
+such that each user s bidding vector is the best response to 
+those of the other users such a state is known as the nash 
+equilibrium a central concept in game theory formally 
+the bidding vectors x xm is a nash equilibrium if for 
+ 
+any ≤ i ≤ m xi is the best response to the system or for 
+any other bidding vector xi 
+ui x xi xm ≥ ui x xi xm 
+the nash equilibrium is desirable because it is a stable 
+state at which no one has incentive to change his strategy 
+but a game may not have an equilibrium indeed a nash 
+equilibrium may not exist in the price anticipating scheme 
+we define above this can be shown by a simple example of 
+two players and two machines for example let u r r 
+r and u r r r r then player should never bid 
+on machine because it has no value to him now player 
+has to put a positive bid on machine to claim the machine 
+but there is no lower limit resulting in the non-existence of 
+the nash equilibrium we should note that even the mixed 
+strategy equilibrium does not exist in this example clearly 
+this happens whenever there is a resource that is wanted 
+by only one player to rule out this case we consider those 
+strongly competitive games 
+under the infinite parallelism 
+model a game is called strongly competitive if for any ≤ 
+j ≤ n there exists an i k such that wij wkj under 
+such a condition we have that see for a proof 
+theorem there always exists a pure strategy nash 
+equilibrium in a strongly competitive game 
+given the existence of the nash equilibrium the next 
+important question is the performance at the nash equilibrium 
+which is often measured by its efficiency and fairness 
+efficiency price of anarchy for an allocation scheme 
+ω ∈ ω denote by u ω 
+p 
+i ui ri the social welfare under 
+ω let u 
+ maxω∈ω u ω denote the optimal social welfare 
+- the maximum possible aggregated user utilities the 
+efficiency at an allocation scheme ω is defined as π ω u ω 
+u 
+let ω denote the set of the allocation at the nash 
+equilibrium when there exists nash equilibrium i e ω ∅ 
+define the efficiency of a game q to be π q minω∈ω π ω 
+it is usually the case that π i e there is an efficiency 
+loss at a nash equilibrium this is the price of anarchy 
+paid for not having central enforcement of the user s good 
+behavior this price is interesting because central control 
+results in the best possible outcome but is not possible in 
+most cases 
+fairness while the definition of efficiency is standard 
+there are multiple ways to define fairness we consider two 
+metrics one is by comparing the users utilities the utility 
+uniformity τ ω of an allocation scheme ω is defined to be 
+mini ui ω 
+maxi ui ω 
+ the ratio of the minimum utility and the 
+maximum utility among the users such definition or utility 
+discrepancy defined similarly as maxi ui ω 
+mini ui ω 
+ is used 
+extensively in computer science literature under this 
+definition the utility uniformity τ q of a game q is defined to 
+be τ q minω∈ω τ ω 
+the other metric extensively studied in economics is the 
+concept of envy-freeness unlike the utility uniformity 
+metric the enviness concerns how the user perceives the 
+value of the share assigned to him compared to the shares 
+other users receive within such a framework define the 
+envy-freeness of an allocation scheme ω by ρ ω mini j 
+ui ri 
+ui rj 
+ 
+ alternatives include adding a reservation price or limiting the 
+lowest allowable bid to each machine these alternatives 
+however introduce the problem of coming up with the right price 
+or limit 
+when ρ ω ≥ the scheme is known as an envy-free 
+allocation scheme likewise the envy-freeness ρ q of a game 
+q is defined to be ρ q minω∈ω ρ ω 
+ nash equilibrium 
+in this section we present some theoretical results 
+regarding the performance at nash equilibrium under the infinite 
+parallelism model we assume that the game is strongly 
+competitive to guarantee the existence of equilibria for a 
+meaningful discussion of efficiency and fairness we assume 
+that the users are symmetric by requiring that xi andpn 
+j wij for all the ≤ i ≤ m or informally we 
+require all the users have the same budget and they have 
+the same utility when they own all the resources this 
+precludes the case when a user has an extremely high budget 
+resulting in very low efficiency or low fairness at equilibrium 
+we first provide a characterization of the equilibria by 
+definition the bidding vectors x xm is a nash 
+equilibrium if and only if each player s strategy is the best 
+response to the group s bids since ui is a linear function 
+and the domain of each users bids xi xin 
+p 
+j xij 
+xi and xij ≥ is a convex set the optimality condition is 
+that there exists λi such that 
+∂ui 
+∂xij 
+ wij 
+yj − xij 
+y 
+j 
+ 
+ λi if xij and 
+ λi if xij 
+ 
+or intuitively at an equilibrium each user has the same 
+marginal value on machines where they place positive bids 
+and has lower marginal values on those machines where they 
+do not bid 
+under the infinite parallelism model it is easy to compute 
+the social optimum u 
+as it is achieved when we allocate 
+each machine wholly to the person who has the maximum 
+weight on the machine i e u 
+ 
+pn 
+j max ≤i≤m wij 
+ two-player games 
+we first show that even in the simplest nontrivial case 
+when there are two users and two machines the game has 
+interesting properties we start with two special cases to 
+provide some intuition about the game the weight 
+matrices are shown in figure a and b which correspond 
+respectively to the equal-weight and opposite-weight games 
+let x and y denote the respective bids of users and on 
+machine denote by s x y and δ − s s 
+equal-weight game in figure both users have equal 
+valuations for the two machines by the optimality 
+condition for the bid vectors to be in equilibrium they need to 
+satisfy the following equations according to 
+α 
+y 
+ x y 
+ − α 
+ − y 
+ − x − y 
+α 
+x 
+ x y 
+ − α 
+ − x 
+ − x − y 
+by simplifying the above equations we obtain that δ 
+ − α and x y α thus there exists a unique nash 
+equilibrium of the game where the two users have the same 
+bidding vector at the equilibrium the utility of each user 
+is and the social welfare is on the other hand the 
+social optimum is clearly thus the equal-weight game 
+is ideal as the efficiency utility uniformity and the 
+envyfreeness are all 
+ 
+m m 
+u α − α 
+u α − α 
+m m 
+u α − α 
+u − α α 
+ a equal weight game b opposite weight game 
+figure two special cases of two-player games 
+opposite-weight game the situation is different for 
+the opposite game in which the two users put the exact 
+opposite weights on the two machines assume that α ≥ 
+ similarly for the bid vectors to be at the equilibrium 
+they need to satisfy 
+α 
+y 
+ x y 
+ − α 
+ − y 
+ − x − y 
+ − α 
+x 
+ x y 
+ α 
+ − x 
+ − x − y 
+by simplifying the above equations we have that each 
+nash equilibrium corresponds to a nonnegative root of the 
+cubic equation f δ δ 
+− cδ 
+ cδ − where c 
+ 
+ α −α 
+− 
+clearly δ is a root of f δ when δ we have 
+that x α y − α which is the symmetric equilibrium 
+that is consistent with our intuition - each user puts a 
+bid proportional to his preference of the machine at this 
+equilibrium u − α − α u 
+ α and u u 
+ 
+ α 
+α 
+ − which is minimized when α 
+√ 
+ 
+ 
+with the 
+minimum value of 
+√ 
+ − ≈ however when α is 
+large enough there exist two other roots corresponding to 
+less intuitive asymmetric equilibria 
+intuitively the asymmetric equilibrium arises when user 
+values machine a lot but by placing even a relatively small 
+bid on machine he can get most of the machine because 
+user values machine very little and thus places an even 
+smaller bid in this case user gets most of machine and 
+almost half of machine 
+the threshold is at when f i e when c 
+ α −α 
+ 
+ this solves to α 
+√ 
+ 
+ 
+≈ those asymmetric 
+equilibria at δ are bad as they yield lower efficiency 
+than the symmetric equilibrium let δ be the minimum 
+root when α → c → ∞ and δ c o c → 
+then x y → thus u → u 
+→ and u u 
+→ 
+from the above simple game we already observe that the 
+nash equilibrium may not be unique which is different from 
+many congestion games in which the nash equilibrium is 
+unique 
+for the general two player game we can show that 
+is actually the worst efficiency bound with a proof in 
+further at the asymmetric equilibrium the utility 
+uniformity approaches when α → this is the worst possible 
+for two player games because as we show in section a 
+user s utility at any nash equilibrium is at least m in the 
+m-player game 
+another consequence is that the two player game is 
+always envy-free suppose that the two user s shares are r 
+ r r n and r r r n respectively then 
+u r u r u r r u because 
+ri ri for all ≤ i ≤ n again by that u r ≥ 
+we have that u r ≥ u r i e any equilibrium 
+allocation is envy-free 
+theorem for a two player game π q ≥ τ q ≥ 
+ and ρ q all the bounds are tight in the worst case 
+ multi-player game 
+for large numbers of players the loss in social welfare 
+can be unfortunately large the following example shows 
+the worst case bound consider a system with m n 
+ n 
+players and n machines of the players there are n 
+who 
+have the same weights on all the machines i e n on each 
+machine the other n players have weight each on a 
+different machine and or a sufficiently small on all the 
+other machines clearly u 
+ n the following allocation 
+is an equilibrium the first n 
+players evenly distribute their 
+money among all the machines the other n player invest all 
+of their money on their respective favorite machine hence 
+the total money on each machine is n at this 
+equilibrium each of the first n 
+players receives 
+n 
+ n 
+n 
+ 
+n n 
+on 
+each machine resulting in a total utility of n 
+· 
+n n 
+ 
+the other n players each receives 
+n 
+on their favorite 
+machine resulting in a total utility of n · 
+n 
+ therefore 
+the total utility of the equilibrium is while the social 
+optimum is n θ 
+√ 
+m this bound is the worst possible 
+what about the utility uniformity of the multi-player 
+allocation game we next show that the utility uniformity of 
+the m-player allocation game cannot exceed m 
+let s sn be the current total bids on the n 
+machines excluding user i user i can ensure a utility of m 
+by distributing his budget proportionally to the current bids 
+that is user i by bidding sij xi 
+pn 
+i si on machine j 
+obtains a resource level of 
+rij 
+sij 
+sij sj 
+ 
+sj 
+pn 
+i si 
+sj 
+pn 
+i si sj 
+ 
+ 
+ 
+pn 
+i si 
+ 
+where 
+pn 
+j sj 
+pm 
+j xj − xi m − 
+therefore rij 
+ m− 
+ 
+m 
+ the total utility of user i 
+is 
+nx 
+j 
+rijwij m 
+nx 
+j 
+wij m 
+since each user s utility cannot exceed the minimal 
+possible uniformity is m 
+while the utility uniformity can be small the envy-freeness 
+on the other hand is bounded by a constant of 
+√ 
+ − ≈ 
+ as shown in to summarize we have that 
+theorem for the m-player game q π q ω 
+√ 
+m 
+τ q ≥ m and ρ q ≥ 
+√ 
+ − all of these bounds are 
+tight in the worst case 
+ algorithms 
+in the previous section we present the performance bounds 
+of the game under the infinite parallelism model however 
+the more interesting questions in practice are how the 
+equilibrium can be reached and what is the performance at the 
+nash equilibrium for the typical distribution of utility 
+functions in particular we would like to know if the intuitive 
+strategy of each player constantly re-adjusting his bids 
+according to the best response algorithm leads to the 
+equilibrium to answer these questions we resort to simulations 
+in this section we present the algorithms that we use to 
+compute or approximate the best response and the social 
+optimum in our experiments we consider both the infinite 
+parallelism and finite parallelism model 
+ 
+ infinite parallelism model 
+as we mentioned before it is easy to compute the social 
+optimum under the infinite parallelism model - we simply 
+assign each machine to the user who likes it the most we 
+now present the algorithm for computing the best response 
+recall that for weights w wn total bids y yn and 
+the budget x the best response is to solve the following 
+optimization problem 
+maximize u 
+pn 
+j wj 
+xj 
+xj yj 
+subject to 
+pn 
+j xj x and xj ≥ 
+to compute the best response we first sort 
+wj 
+yj 
+in 
+decreasing order without loss of generality suppose that 
+w 
+y 
+≥ 
+w 
+y 
+≥ 
+wn 
+yn 
+ 
+suppose that x 
+ x 
+ x 
+n is the optimum solution 
+we show that if x 
+i then for any j i x 
+j too 
+suppose this were not true then 
+∂u 
+∂xj 
+ x 
+ wj 
+yj 
+ x 
+j yj 
+ wj 
+yj 
+y 
+j 
+ 
+wj 
+yj 
+≤ 
+wi 
+yi 
+ 
+∂u 
+∂xi 
+ x 
+ 
+thus it contradicts with the optimality condition 
+suppose that k max i x 
+i again by the optimality 
+condition there exists λ such that wi 
+yi 
+ x 
+i yi λ for ≤ i ≤ k 
+and x 
+i for i k equivalently we have that 
+x 
+i 
+r 
+wiyi 
+λ 
+− yi for ≤ i ≤ k and x 
+i for i k 
+replacing them in the equation 
+pn 
+i x 
+i x we can 
+solve for λ 
+ 
+pk 
+i 
+√ 
+wiyi 
+ x 
+pk 
+i yi thus 
+x 
+i 
+√ 
+wiyi 
+pk 
+i 
+√ 
+wiyi 
+ x 
+kx 
+i 
+yi − yi 
+the remaining question is how to determine k it is the 
+largest value such that x 
+k thus we obtain the 
+following algorithm to compute the best response of a user 
+ sort the machines according to wi 
+yi 
+in decreasing order 
+ compute the largest k such that 
+√ 
+wkyk 
+pk 
+i 
+√ 
+wiyi 
+ x 
+kx 
+i 
+yi − yk ≥ 
+ set xj for j k and for ≤ j ≤ k set 
+xj 
+√ 
+wjyj 
+pk 
+i 
+√ 
+wiyi 
+ x 
+kx 
+i 
+yi − yj 
+the computational complexity of this algorithm is o n log n 
+dominated by the sorting in practice the best response can 
+be computed infrequently e g once a minute so for a 
+typically powerful modern host this cost is negligible 
+the best response algorithm must send and receive o n 
+messages because each user must obtain the total bids from 
+each host in practice this is more significant than the 
+computational cost note that hosts only reveal to users the sum 
+of the bids on them as a result hosts do not reveal the 
+private preferences and even the individual bids of one user to 
+another 
+ finite parallelism model 
+recall that in the finite parallelism model each user i only 
+places bids on at most ki machines of course the infinite 
+parallelism model is just a special case of finite parallelism 
+model in which ki n for all the i s in the finite parallelism 
+model computing the social optimum is no longer trivial 
+due to bounded parallelism it can instead be computed by 
+using the maximum matching algorithm 
+consider the weighted complete bipartite graph g u × 
+v where u ui ≤ i ≤ m and ≤ ≤ ki v 
+ n with edge weight wij assigned to the edge ui vj 
+a matching of g is a set of edges with disjoint nodes and 
+the weight of a matching is the total weights of the edges in 
+the matching as a result the following lemma holds 
+lemma the social optimum is the same as the 
+maximum weight matching of g 
+thus we can use the maximum weight matching 
+algorithm to compute the social optimum the maximum weight 
+matching is a classical network problem and can be solved 
+in polynomial time we choose to implement the 
+hungarian algorithm because of its simplicity there 
+may exist a more efficient algorithm for computing the 
+maximum matching by exploiting the special structure of g this 
+remains an interesting open question 
+however we do not know an efficient algorithm to 
+compute the best response under the finite parallelism model 
+instead we provide the following local search heuristic 
+suppose we again have n machines with weights w wn 
+and total bids y yn let the user s budget be x and 
+the parallelism bound be k our goal is to compute an 
+allocation of x to up to k machines to maximize the user s 
+utility 
+for a subset of machines a denote by x a the best 
+response on a without parallelism bound and by u a the 
+utility obtained by the best response algorithm the local 
+search works as follows 
+ set a to be the k machines with the highest wi yi 
+ compute u a by the infinite parallelism best response 
+algorithm sec on a 
+ for each i ∈ a and each j ∈ a repeat 
+ let b a − i j compute u b 
+ if u b u a let a ← b and goto 
+ output x a 
+intuitively by the local search heuristic we test if we can 
+swap a machine in a for one not in a to improve the best 
+response utility if yes we swap the machines and repeat the 
+process otherwise we have reached a local maxima and 
+output that value we suspect that the local maxima that 
+this algorithm finds is also the global maximum with 
+respect to an individual user and that this process stop after 
+a few number of iterations but we are unable to establish 
+it however in our simulations this algorithm quickly 
+converges to a high ≥ efficiency 
+ 
+ local greedy adjustment 
+the above best response algorithms only work for the 
+linear utility functions described earlier in practice 
+utility functions may have more a complicated form or even 
+worse a user may not have a formulation of his utility 
+function we do assume that the user still has a way to measure 
+his utility which is the minimum assumption necessary for 
+any market-based resource allocation mechanism in these 
+situations users can use a more general strategy the local 
+greedy adjustment method which works as follows a user 
+finds the two machines that provide him with the highest 
+and lowest marginal utility he then moves a fixed small 
+amount of money from the machine with low marginal 
+utility to the machine with the higher one this strategy aims 
+to adjust the bids so that the marginal values at each 
+machine being bid on are the same this condition guarantees 
+the allocation is the optimum when the utility function is 
+concave the tradeoff for local greedy adjustment is that it 
+takes longer to stabilize than best-response 
+ simulation results 
+while the analytic results provide us with worst-case 
+analysis for the infinite parallelism model in this section we 
+employ simulations to study the properties of the nash 
+equilibria in more realistic scenarios and for the finite parallelism 
+model first we determine whether the user bidding process 
+converges and if so what the rate of convergence is 
+second in cases of convergence we look at the performance at 
+equilibrium using the efficiency and fairness metrics defined 
+above 
+iterative method in our simulations each user starts 
+with an initial bid vector and then iteratively updates his 
+bids until a convergence criterion described below is met 
+the initial bid is set proportional to the user s weights on 
+the machines we experiment with two update methods the 
+best response methods as described in section and 
+and the local greedy adjustment method as described in 
+section 
+convergence criteria convergence time measures how 
+quickly the system reaches equilibrium it is particularly 
+important in the highly dynamic environment of distributed 
+shared clusters in which the system s conditions may change 
+before reaching the equilibrium thus a high convergence 
+rate may be more significant than the efficiency at the 
+equilibrium 
+there are several different criteria for convergence the 
+strongest criterion is to require that there is only negligible 
+change in the bids of each user the problem with this 
+criterion is that it is too strict users may see negligible change 
+in their utilities but according to this definition the 
+system has not converged the less strict utility gap criterion 
+requires there to be only negligible change in the users 
+utility given users concern for utility this is a more natural 
+definition indeed in practice the user is probably not 
+willing to re-allocate their bids dramatically for a small utility 
+gain therefore we use the utility gap criterion to measure 
+convergence time for the best response update method i e 
+we consider that the system has converged if the utility gap 
+of each user is smaller than in our experiments 
+however this criterion does not work for the local greedy 
+adjustment method because users of that method will 
+experience constant fluctuations in utility as they move money 
+around for this method we use the marginal utility gap 
+criterion we compare the highest and lowest utility 
+margins on the machines if the difference is negligible then we 
+consider the system to be converged 
+in addition to convergence to the equilibrium we also 
+consider the criterion from the system provider s view the 
+social welfare stabilization criterion under this criterion 
+a system has stabilized if the change in social welfare is 
+≤ individual users utility may not have converged this 
+criterion is useful to evaluate how quickly the system as a 
+whole reaches a particular efficiency level 
+user preferences we experiment with two models of 
+user preferences random distribution and correlated 
+distribution with random distribution users weights on the 
+different machines are independently and identically 
+distributed according the uniform distribution in practice 
+users preferences are probably correlated based on factors 
+like the hosts location and the types of applications that 
+users run to capture these correlations we associate with 
+each user and machine a resource profile vector where each 
+dimension of the vector represents one resource e g cpu 
+memory and network bandwidth for a user i with a 
+profile pi pi pi pik represents user i s need for 
+resource k for machine j with profile qj qj qj 
+qjk represents machine j s strength with respect to resource 
+k then wij is the dot product of user i s and machine 
+j s resource profiles i e wij pi · qj 
+p 
+k pikqjk by 
+using these profiles we compress the parameter space and 
+introduce correlations between users and machines 
+in the following simulations we fix the number of 
+machines to and vary the number of users from to 
+ but we only report the results for the range of − 
+users since the results remain similar for a larger number of 
+users sections and present the simulation results 
+when we apply the infinite parallelism and finite parallelism 
+models respectively if the system converges we report the 
+number of iterations until convergence a convergence time 
+of iterations indicates non-convergence in which case 
+we report the efficiency and fairness values at the point we 
+terminate the simulation 
+ infinite parallelism 
+in this section we apply the infinite parallelism model 
+which assumes that users can use an unlimited number of 
+machines we present the efficiency and fairness at the 
+equilibrium compared to two baseline allocation methods 
+social optimum and weight-proportional in which users 
+distribute their bids proportionally to their weights on the 
+machines which may seem a reasonable distribution method 
+intuitively 
+we present results for the two user preference models 
+with uniform preferences users weights for the different 
+machines are independently and identically distributed 
+according to the uniform distribution u ∼ and are 
+normalized thereafter in correlated preferences each user s 
+and each machine s resource profile vector has three 
+dimensions and their values are also taken from the uniform 
+distribution u ∼ 
+convergence time figure shows the convergence 
+time efficiency and fairness of the infinite parallelism model 
+under uniform left and correlated right preferences plots 
+ a and b show the convergence and stabilization time 
+of the best-response and local greedy adjustment methods 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+convergencetime iterations 
+number of users 
+uniform preferences 
+ a 
+best-response 
+greedy convergence 
+greedy stabilization 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+correlated preferences 
+ b 
+best-response 
+greedy convergence 
+greedy stabilization 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+efficiency 
+number of users 
+ c 
+nash equilibrium 
+weight-proportional 
+social optimum 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+ d 
+nash equilibrium 
+weight-proportional 
+social optimum 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+utilityuniformity 
+number of users 
+ e 
+nash equilibrium 
+weight-proportional 
+social optimum 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+ f 
+nash equilibrium 
+weight proportional 
+social optimum 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+envy-freeness 
+number of users 
+ g 
+nash equilibrium 
+weight proportional 
+social optimum 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+ h 
+nash equilibrium 
+weight proportional 
+social optimum 
+figure efficiency utility uniformity enviness and convergence time as a function of the number of users under the 
+infinite parallelism model with uniform and correlated preferences n 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+efficiency 
+iteration number 
+best-response 
+greedy 
+figure efficiency level over time under the infinite 
+parallelism model number of users n 
+the best-response algorithm converges within a few number 
+of iterations for any number of users in contrast the local 
+greedy adjustment algorithm does not converge even within 
+ iterations when the number of users is smaller than 
+but does converge for a larger number of users we believe 
+that for small numbers of users there are dependency cycles 
+among the users that prevent the system from converging 
+because one user s decisions affects another user whose 
+decisions affect another user etc regardless the local greedy 
+adjustment method stabilizes within iterations 
+figure presents the efficiency over time for a system 
+with users it demonstrates that while both adjustment 
+methods reach the same social welfare the best-response 
+algorithm is faster 
+in the remainder of this paper we will refer to the nash 
+equilibrium independent of the adjustment method used to 
+reach it 
+efficiency figure c and d present the efficiency as 
+a function of the number of users we present the efficiency 
+at equilibrium and use the social optimum and the 
+weightproportional static allocation methods for comparison 
+social optimum provides an efficient allocation by definition 
+for both user preference models the efficiency at the 
+equilibrium is approximately independent of the number of 
+users which is only slightly worse than the social optimum 
+the efficiency at the equilibrium is ≈ improvement over 
+the weight-proportional allocation method for uniform 
+preferences and ≈ improvement for correlated preferences 
+fairness figure e and f present the utility 
+uniformity as a function of the number of users and figures g 
+and h present the envy-freeness while the social optimum 
+yields perfect efficiency it has poor fairness the 
+weightproportional method achieves the highest fairness among the 
+three allocation methods but the fairness at the equilibrium 
+is close 
+the utility uniformity is slightly better at the equilibrium 
+under uniform preferences than under correlated 
+preferences since when users preferences are more 
+aligned users happiness is more likely going to be at the 
+expense of each other although utility uniformity decreases 
+in the number of users it remains reasonable even for a large 
+number of users and flattens out at some point at the 
+social optimum utility uniformity can be infinitely poor as 
+some users may be allocated no resources at all the same is 
+true with respect to envy-freeness the difference between 
+uniform and correlated preferences is best demonstrated in 
+the social optimum results when the number of users is 
+small it may be possible to satisfy all users to some extent 
+if their preferences are not aligned but if they are aligned 
+even with a very small number of users some users get no 
+resources thus both utility uniformity and envy-freeness go 
+to zero as the number of users increases it becomes almost 
+impossible to satisfy all users independent of the existence 
+of correlation 
+these results demonstrate the tradeoff between the 
+different allocation methods the efficiency at the equilibrium is 
+lower than the social optimum but it performs much 
+better with respect to fairness the equilibrium allocation is 
+completely envy-free under uniform preferences and almost 
+envy-free under correlated preferences 
+ finite parallelism 
+ 
+ 
+ 
+ 
+ 
+ 
+convergencetime iterations 
+number of users 
+ machines user 
+ machines user 
+figure convergence time under the finite parallelism 
+model n 
+ 
+ 
+ 
+ 
+ 
+ 
+efficiency 
+iteration number 
+ -machines user users 
+ -machines user users 
+figure efficiency level over time under the finite 
+parallelism model with local search algorithm n 
+we also consider the finite parallelism model and use the 
+local search algorithm as described in section to 
+adjust user s bids we again experimented with both the 
+uniform and correlated preferences distributions and did not 
+find significant differences in the results so we present the 
+simulation results for only the uniform distribution 
+in our experiments the local search algorithm stops quickly 
+- it usually discovers a local maximum within two 
+iterations as mentioned before we cannot prove that a local 
+maximum is the global maximum but our experiments 
+indicate that the local search heuristic leads to high efficiency 
+ 
+convergence time let ∆ denote the parallelism bound 
+that limits the maximum number of machines each user can 
+bid on we experiment with ∆ and ∆ in both 
+cases we use machines and vary the number of users 
+figure shows that the system does not always converge 
+but if it does the convergence happens quickly the 
+nonconvergence occurs when the number of users is between 
+and for ∆ between and for ∆ we 
+believe that the non-convergence is caused by moderate 
+competition no competition allows the system to equilibrate 
+quickly because users do not have to change their bids in 
+reaction to changes in others bids high competition also 
+allows convergence because each user s decision has only a 
+small impact on other users so the system is more stable 
+and can gradually reach convergence however when there 
+is moderate competition one user s decisions may cause 
+dramatic changes in another s decisions and cause large 
+fluctuations in bids in both cases of non-convergence the ratio of 
+competitors per machine δ m×∆ n for m users and n 
+machines is in the interval although the system does 
+not converge in these bad ranges the system nontheless 
+achieves and maintains a high level of overall efficiency after 
+a few iterations as shown in figure 
+performance in figure we present the efficiency 
+utility uniformity and envy-freeness at the nash 
+equilibrium for the finite parallelism model when the system does 
+not converge we measure performance by taking the 
+minimum value we observe after running for many iterations 
+when ∆ there is a performance drop in particular 
+with respect to the fairness metrics in the range between 
+ and users where it does not converge for a larger 
+number of users the system converges and achieves a lower 
+level of utility uniformity but a high degree of efficiency and 
+envy-freeness similar to those under the infinite parallelism 
+model as described above this is due the competition ratio 
+falling into the head-to-head range when the parallelism 
+bound is large ∆ the performance is closer to the 
+infinite parallelism model and we do not observe this drop 
+in performance 
+ related work 
+there are two main groups of related work in resource 
+allocation those that incorporate an economic mechanism 
+and those that do not 
+one non-economic approach is scheduling surveyed by 
+pinedo examples of this approach are queuing in 
+first-come first-served fcfs order queueing using the 
+resource consumption of tasks e g and scheduling 
+using combinatorial optimization these all assume that 
+the values and resource consumption of tasks are reported 
+accurately which does not apply in the presence of strategic 
+users we view scheduling and resource allocation as two 
+separate functions resource allocation divides a resource 
+among different users while scheduling takes a given 
+allocation and orders a user s jobs 
+examples of the economic approach are spawn work 
+by stoica et al the millennium resource allocator 
+work by wellman et al bellagio and tycoon 
+spawn and the work by wellman et al uses a reservation 
+abstraction similar to the way airline seats are allocated 
+unfortunately reservations have a high latency to acquire 
+resources unlike the price-anticipating scheme we consider 
+the tradeoff of the price-anticipating schemes is that users 
+have uncertainty about exactly how much of the resources 
+they will receive 
+bellagio uses the share centralized allocator share 
+allocates resources using a centralized combinatorial auction 
+that allows users to express preferences with 
+complementarities solving the np-complete combinatorial auction 
+problem provides an optimally efficient allocation the 
+priceanticipating scheme that we consider does not explicitly 
+operate on complementarities thereby possibly losing some 
+efficiency but it also avoids the complexity and overhead of 
+combinatorial auctions 
+there have been several analyses of 
+variations of price-anticipating allocation schemes in the 
+context of allocation of network capacity for flows their 
+methodology follows the study of congestion potential games 
+ by relating the nash equilibrium to the solution of a 
+ usually convex global optimization problem but those 
+techniques no longer apply to our game because we model 
+users as having fixed budgets and private preferences for 
+machines for example unlike those games there may 
+exist multiple nash equilibria in our game milchtaich 
+studied congestion games with private preferences but the 
+technique in is specific to the congestion game 
+ conclusions 
+this work studies the performance of a market-based 
+mechanism for distributed shared clusters using both analyatical 
+and simulation methods we show that despite the worst 
+case bounds the system can reach a high performance level 
+at the nash equilibrium in terms of both efficiency and 
+fairness metrics in addition with a few exceptions under 
+the finite parallelism model the system reaches equilibrium 
+quickly by using the best response algorithm and when the 
+number of users is not too small by the greedy local 
+adjustment method 
+while our work indicates that the price-anticipating scheme 
+may work well for resource allocation for shared clusters 
+there are many interesting directions for future work one 
+direction is to consider more realistic utility functions for 
+example we assume that there is no parallelization cost and 
+there is no performance degradation when multiple users 
+share the same machine in practice both assumptions may 
+not be correct for examples the user must copy code and 
+data to a machine before running his application there and 
+there is overhead for multiplexing resources on a single 
+machine when the job size is large enough and the degree 
+of multiplexing is sufficiently low we can probably ignore 
+those effects but those costs should be taken into account 
+for a more realistic modeling another assumption is that 
+users have infinite work so the more resources they can 
+acquire the better in practice users have finite work one 
+approach to address this is to model the user s utility 
+according to the time to finish a task rather than the amount 
+of resources he receives 
+another direction is to study the dynamic properties of 
+the system when the users needs change over time 
+according to some statistical model in addition to the usual 
+questions concerning repeated games it would also be important 
+to understand how users should allocate their budgets wisely 
+over time to accomodate future needs 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+ a limit machines user 
+efficiency 
+utility uniformity 
+envy-freeness 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of users 
+ b limit machines user 
+efficiency 
+utility uniformity 
+envy-freeness 
+figure efficiency utility uniformity and envy-freeness under the finite parallelism model n 
+ acknowledgements 
+we thank bernardo huberman lars rasmusson eytan 
+adar and moshe babaioff for fruitful discussions we also 
+thank the anonymous reviewers for their useful comments 
+ references 
+ http planet-lab org 
+ a auyoung b n chun a c snoeren and a vahdat 
+resource allocation in federated distributed computing 
+infrastructures in proceedings of the st workshop on 
+operating system and architectural support for the 
+on-demand it infrastructure 
+ b chun c ng j albrecht d c parkes and a vahdat 
+computational resource exchanges for distributed 
+resource allocation 
+ b n chun and d e culler market-based proportional 
+resource sharing for clusters technical report csd- 
+university of california at berkeley computer science 
+division january 
+ m feldman k lai and l zhang a price-anticipating 
+resource allocation mechanism for distributed shared 
+clusters technical report arxiv 
+http arxiv org abs cs dc 
+ d ferguson y yemimi and c nikolaou microeconomic 
+algorithms for load balancing in distributed computer 
+systems in international conference on distributed 
+computer systems pages - 
+ i foster and c kesselman globus a metacomputing 
+infrastructure toolkit the international journal of 
+supercomputer applications and high performance 
+computing - summer 
+ m l fredman and r e tarjan fibonacci heaps and 
+their uses in improved network optimization algorithms 
+journal of the acm - 
+ h n gabow data structures for weighted matching and 
+nearest common ancestors with linking in proceedings of 
+ st annual acm-siam symposium on discrete 
+algorithms pages - 
+ b hajek and s yang strategic buyers in a sum bid 
+game for flat networks manuscript http 
+ tesla csl uiuc edu  hajek papers hajekyang pdf 
+ 
+ r johari and j n tsitsiklis efficiency loss in a network 
+resource allocation game mathematics of operations 
+research 
+ f p kelly charging and rate control for elastic traffic 
+european transactions on telecommunications - 
+ 
+ f p kelly and a k maulloo rate control in 
+communication networks shadow prices proportional 
+fairness and stability operational research society 
+ - 
+ h w kuhn the hungarian method for the assignment 
+problem naval res logis quart - 
+ k lai l rasmusson s sorkin l zhang and b a 
+huberman tycoon an implemention of a distributed 
+market-based resource allocation system manuscript 
+http www hpl hp com research tycoon papers and 
+presentations 
+ i milchtaich congestion games with player-specific 
+payoff functions games and economic behavior 
+ - 
+ d monderer and l s sharpley potential games games 
+and economic behavior - 
+ c papadimitriou algorithms games and the internet in 
+proceedings of rd stoc 
+ c h papadimitriou and k steiglitz combinatorial 
+optimization dover publications inc 
+ m pinedo scheduling prentice hall 
+ o regev and n nisan the popcorn market online 
+markets for computational resources in proceedings of 
+ st international conference on information and 
+computation economies pages - 
+ r w rosenthal a class of games possessing 
+pure-strategy nash equilibria internation journal of 
+game theory - 
+ s sanghavi and b hajek optimal allocation of a 
+divisible good to strategic buyers manuscript http 
+ tesla csl uiuc edu  hajek papers optdivisible pdf 
+ 
+ i stoica h abdel-wahab and a pothen a 
+microeconomic scheduler for parallel computers in 
+proceedings of the workshop on job scheduling strategies 
+for parallel processing pages - april 
+ h r varian equity envy and efficiency journal of 
+economic theory - 
+ c a waldspurger t hogg b a huberman j o 
+kephart and s stornetta spawn a distributed 
+computational economy ieee transactions on software 
+engineering - february 
+ m p wellman w e walsh p r wurman and j k 
+mackie-mason auction protocols for decentralized 
+scheduling games and economic behavior - 
+ 
+ a wierman and m harchol-balter classifying scheduling 
+policies with respect to unfairness in an m gi in 
+proceedings of the acm sigmetrics conference 
+on measurement and modeling of computer systems 
+ l zhang on the efficiency and fairness of a fixed budget 
+resource allocation game manuscript 
+ 

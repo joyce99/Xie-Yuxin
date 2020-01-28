@@ -1,0 +1,1072 @@
+understanding user behavior in online 
+feedback reporting 
+arjun talwar 
+ecole polytechnique f´ed´erale 
+de lausanne epfl 
+artificial intelligence lab 
+lausanne switzerland 
+arjun math stanford edu 
+radu jurca 
+ecole polytechnique f´ed´erale 
+de lausanne epfl 
+artificial intelligence lab 
+lausanne switzerland 
+radu jurca epfl ch 
+boi faltings 
+ecole polytechnique f´ed´erale 
+de lausanne epfl 
+artificial intelligence lab 
+lausanne switzerland 
+boi faltings epfl ch 
+abstract 
+online reviews have become increasingly popular as a way 
+to judge the quality of various products and services 
+previous work has demonstrated that contradictory reporting and 
+underlying user biases make judging the true worth of a 
+service difficult in this paper we investigate underlying factors 
+that influence user behavior when reporting feedback we 
+look at two sources of information besides numerical ratings 
+linguistic evidence from the textual comment accompanying 
+a review and patterns in the time sequence of reports we 
+first show that groups of users who amply discuss a certain 
+feature are more likely to agree on a common rating for that 
+feature second we show that a user s rating partly reflects 
+the difference between true quality and prior expectation of 
+quality as inferred from previous reviews both give us a 
+less noisy way to produce rating estimates and reveal the 
+reasons behind user bias our hypotheses were validated by 
+statistical evidence from hotel reviews on the tripadvisor 
+website 
+categories and subject descriptors 
+j social and behavioral sciences economics 
+general terms 
+economics experimentation reliability 
+ motivations 
+the spread of the internet has made it possible for online 
+feedback forums or reputation mechanisms to become an 
+important channel for word-of-mouth regarding products 
+services or other types of commercial interactions 
+numerous empirical studies show that buyers 
+seriously consider online feedback when making purchasing 
+decisions and are willing to pay reputation premiums for 
+products or services that have a good reputation 
+recent analysis however raises important questions 
+regarding the ability of existing forums to reflect the real 
+quality of a product in the absence of clear incentives users 
+with a moderate outlook will not bother to voice their 
+opinions which leads to an unrepresentative sample of reviews 
+for example show that amazon 
+ratings of books or 
+cds follow with great probability bi-modal u-shaped 
+distributions where most of the ratings are either very good 
+or very bad controlled experiments on the other hand 
+reveal opinions on the same items that are normally 
+distributed under these circumstances using the arithmetic 
+mean to predict quality as most forums actually do gives 
+the typical user an estimator with high variance that is often 
+false 
+improving the way we aggregate the information available 
+from online reviews requires a deep understanding of the 
+underlying factors that bias the rating behavior of users hu 
+et al propose the brag-and-moan model where users 
+rate only if their utility of the product drawn from a normal 
+distribution falls outside a median interval the authors 
+conclude that the model explains the empirical distribution 
+of reports and offers insights into smarter ways of estimating 
+the true quality of the product 
+in the present paper we extend this line of research and 
+attempt to explain further facts about the behavior of users 
+when reporting online feedback using actual hotel reviews 
+from the tripadvisor 
+website we consider two additional 
+sources of information besides the basic numerical ratings 
+submitted by users the first is simple linguistic evidence 
+from the textual review that usually accompanies the 
+numerical ratings we use text-mining techniques similar to 
+ and however we are only interested in identifying 
+what aspects of the service the user is discussing without 
+computing the semantic orientation of the text we find 
+that users who comment more on the same feature are more 
+likely to agree on a common numerical rating for that 
+particular feature intuitively lengthy comments reveal the 
+importance of the feature to the user since people tend to be 
+more knowledgeable in the aspects they consider important 
+users who discuss a given feature in more details might be 
+assumed to have more authority in evaluating that feature 
+second we investigate the relationship between a review 
+ 
+http www amazon com 
+ 
+http www tripadvisor com 
+ 
+figure the tripadvisor page displaying reviews 
+for a popular boston hotel name of hotel and 
+advertisements were deliberatively erased 
+and the reviews that preceded it a perusal of online 
+reviews shows that ratings are often part of discussion threads 
+where one post is not necessarily independent of other posts 
+one may see for example users who make an effort to 
+contradict or vehemently agree with the remarks of previous 
+users by analyzing the time sequence of reports we 
+conclude that past reviews influence the future reports as they 
+create some prior expectation regarding the quality of 
+service the subjective perception of the user is influenced by 
+the gap between the prior expectation and the actual 
+performance of the service which will later reflect 
+in the user s rating we propose a model that captures the 
+dependence of ratings on prior expectations and validate it 
+using the empirical data we collected 
+both results can be used to improve the way reputation 
+mechanisms aggregate the information from individual 
+reviews our first result can be used to determine a 
+featureby-feature estimate of quality where for each feature a 
+different subset of reviews i e those with lengthy comments 
+of that feature is considered the second leads to an 
+algorithm that outputs a more precise estimate of the real 
+quality 
+ the data set 
+we use in this paper real hotel reviews collected from the 
+popular travel site tripadvisor tripadvisor indexes hotels 
+from cities across the world along with reviews written by 
+travelers users can search the site by giving the hotel s 
+name and location optional the reviews for a given hotel 
+are displayed as a list ordered from the most recent to the 
+oldest with reviews per page the reviews contain 
+ information about the author of the review e g dates 
+of stay username of the reviewer location of the 
+reviewer 
+ the overall rating from lowest to highest 
+ a textual review containing a title for the review free 
+comments and the main things the reviewer liked and 
+disliked 
+ numerical ratings from lowest to highest for 
+different features e g cleanliness service location 
+etc 
+below the name of the hotel tripadvisor displays the 
+address of the hotel general information number of rooms 
+number of stars short description etc the average overall 
+rating the tripadvisor ranking and an average rating for 
+each feature figure shows the page for a popular boston 
+hotel whose name along with advertisements was explicitly 
+erased 
+we selected three cities for this study boston sydney 
+and las vegas for each city we considered all hotels that 
+had at least reviews and recorded all reviews table 
+presents the number of hotels considered in each city the 
+total number of reviews recorded for each city and the 
+distribution of hotels with respect to the star-rating as 
+available on the tripadvisor site note that not all hotels have 
+a star-rating 
+table a summary of the data set 
+city reviews hotels of hotels with 
+ stars 
+boston 
+sydney 
+las vegas 
+for each review we recorded the overall rating the 
+textual review title and body of the review and the numerical 
+rating on features rooms r service s cleanliness c 
+value v food f location l and noise n 
+tripadvisor does not require users to submit anything other than 
+the overall rating hence a typical review rates few 
+additional features regardless of the discussion in the textual 
+comment only the features rooms r service s 
+cleanliness c and value v are rated by a significant number 
+of users however we also selected the features food f 
+location l and noise n because they are referred to in a 
+significant number of textual comments for each feature we 
+record the numerical rating given by the user or when the 
+rating is missing the typical length of the textual comment 
+amounts to approximately words all data was collected 
+by crawling the tripadvisor site in september 
+ formal notation 
+we will formally refer to a review by a tuple r t where 
+ r rf is a vector containing the ratings 
+rf ∈ for the features f ∈ f 
+ o r s c v f l n note that the overall rating 
+ro is abusively recorded as the rating for the feature 
+overall o 
+ t is the textual comment that accompanies the review 
+ 
+reviews are indexed according to the variable i such that 
+ ri 
+ ti 
+ is the ith 
+review in our database since we don t 
+record the username of the reviewer we will also say that 
+the ith 
+review in our data set was submitted by user i when 
+we need to consider only the reviews of a given hotel h we 
+will use ri h 
+ ti h 
+ to denote the ith 
+review about the hotel 
+h 
+ evidence from textual 
+comments 
+the free textual comments associated to online reviews 
+are a valuable source of information for understanding the 
+reasons behind the numerical ratings left by the reviewers 
+the text may for example reveal concrete examples of 
+aspects that the user liked or disliked thus justifying some of 
+the high respectively low ratings for certain features the 
+text may also offer guidelines for understanding the 
+preferences of the reviewer and the weights of different features 
+when computing an overall rating 
+the problem however is that free textual comments are 
+difficult to read users are required to scroll through many 
+reviews and read mostly repetitive information significant 
+improvements would be obtained if the reviews were 
+automatically interpreted and aggregated unfortunately this 
+seems a difficult task for computers since human users often 
+use witty language abbreviations cultural specific phrases 
+and the figurative style 
+nevertheless several important results use the textual 
+comments of online reviews in an automated way using well 
+established natural language techniques reviews or parts of 
+reviews can be classified as having a positive or negative 
+semantic orientation pang et al classify movie reviews 
+into positive negative by training three different classifiers 
+ naive bayes maximum entropy and svm using 
+classification features based on unigrams bigrams or part-of-speech 
+tags 
+dave et al analyze reviews from cnet and 
+amazon and surprisingly show that classification features based 
+on unigrams or bigrams perform better than higher-order 
+n-grams this result is challenged by cui et al who 
+look at large collections of reviews crawled from the web 
+they show that the size of the data set is important and 
+that bigger training sets allow classifiers to successfully use 
+more complex classification features based on n-grams 
+hu and liu also crawl the web for product reviews and 
+automatically identify product attributes that have been 
+discussed by reviewers they use wordnet to compute the 
+semantic orientation of product evaluations and summarize 
+user reviews by extracting positive and negative evaluations 
+of different product features popescu and etzioni 
+analyze a similar setting but use search engine hit-counts to 
+identify product attributes the semantic orientation is 
+assigned through the relaxation labeling technique 
+ghose et al analyze seller reviews from the amazon 
+secondary market to identify the different dimensions e g 
+delivery packaging customer support etc of reputation 
+they parse the text and tag the part-of-speech for each 
+word frequent nouns noun phrases and verbal phrases 
+are identified as dimensions of reputation while the 
+corresponding modifiers i e adjectives and adverbs are used to 
+derive numerical scores for each dimension the enhanced 
+reputation measure correlates better with the pricing 
+information observed in the market pavlou and dimoka 
+analyze ebay reviews and find that textual comments have 
+an important impact on reputation premiums 
+our approach is similar to the previously mentioned 
+works in the sense that we identify the aspects i e 
+hotel features discussed by the users in the textual reviews 
+however we do not compute the semantic orientation of the 
+text nor attempt to infer missing ratings 
+we define the weight wi 
+f of feature f ∈ f in the text 
+ti 
+associated with the review ri 
+ ti 
+ as the fraction of ti 
+dedicated to discussing aspects both positive and negative 
+related to feature f we propose an elementary method to 
+approximate the values of these weights for each feature 
+we manually construct the word list lf containing 
+approximately words that are most commonly associated to the 
+feature f the initial words were selected from reading some 
+of the reviews and seeing what words coincide with 
+discussion of which features the list was then extended by adding 
+all thesaurus entries that were related to the initial words 
+finally we brainstormed for missing words that would 
+normally be associated with each of the features 
+let lf ∩ti 
+be the list of terms common to both lf and ti 
+each term of lf is counted the number of times it appears 
+in ti 
+ with two exceptions 
+ in cases where the user submits a title to the review 
+we account for the title text by appending it three 
+times to the review text ti 
+ the intuitive assumption 
+is that the user s opinion is more strongly reflected in 
+the title rather than in the body of the review for 
+example many reviews are accurately summarized by 
+titles such as excellent service terrible location or 
+bad value for money 
+ certain words that occur only once in the text are 
+counted multiple times if their relevance to that 
+feature is particularly strong these were root words for 
+each feature e g staff is a root word for the feature 
+service and were weighted either or each 
+feature was assigned up to such root words so almost 
+all words are counted only once 
+the list of words for the feature rooms is given for reference 
+in appendix a 
+the weight wi 
+f is computed as 
+wi 
+f 
+ lf ∩ ti 
+f∈f lf ∩ ti 
+ 
+where lf ∩ti 
+ is the number of terms common to lf and ti 
+ 
+the weight for the feature overall was set to min t i 
+ 
+ 
+ 
+where ti 
+ is the number of character in ti 
+ 
+the following is a tripadvisor review for a boston hotel 
+ the name of the hotel is omitted i ll start by saying that 
+i m more of a holiday inn person than a type so i get 
+frustrated when i pay double the room rate and get half the 
+amenities that i d get at a hampton inn or holiday inn the 
+location was definitely the main asset of this place it was 
+only a few blocks from the hynes center subway stop and it 
+was easy to walk to some good restaurants in the back bay 
+area boylston isn t far off at all so i had no trouble with 
+foregoing a rental car and taking the subway from the 
+airport to the hotel and using the subway for any other travel 
+otherwise they make you pay for anything and everything 
+ 
+and when you ve already dropped night on the room 
+that gets frustrating the room itself was decent about what i 
+would expect staff was also average not bad and not 
+excellent again i think you re paying for location and the ability 
+to walk to a lot of good stuff but i think next time i ll stay 
+in brookline get more amenities and use the subway a bit 
+more 
+this numerical ratings associated to this review are ro 
+ rr rs rc rv for features overall o 
+rooms r service s cleanliness c and value v 
+respectively the ratings for the features food f location l and 
+noise n are absent i e rf rl rn 
+the weights wf are computed from the following lists of 
+common terms 
+lr ∩ t room wr 
+ls ∩ t staff amenities ws 
+lc ∩ t ∅ wc 
+lv ∩ t rate wv 
+lf ∩ t restaurant wf 
+ll ∩ t center walk location area wl 
+ln ∩ t ∅ wn 
+the root words staff and center were tripled and 
+doubled respectively the overall weight of the textual review 
+is wo these values account reasonably well for the 
+weights of different features in the discussion of the reviewer 
+one point to note is that some terms in the lists lf possess 
+an inherent semantic orientation for example the word 
+ grime belonging to the list lc would be used most often 
+to assert the presence and not the absence of grime this is 
+unavoidable but care was taken to ensure words from both 
+sides of the spectrum were used for this reason some lists 
+such as lr contain only nouns of objects that one would 
+typically describe in a room see appendix a 
+the goal of this section is to analyse the influence of the 
+weights wi 
+f on the numerical ratings ri 
+f intuitively users 
+who spent a lot of their time discussing a feature f i e wi 
+f 
+is high had something to say about their experience with 
+regard to this feature obviously feature f is important for 
+user i since people tend to be more knowledgeable in the 
+aspects they consider important our hypothesis is that the 
+ratings ri 
+f corresponding to high weights wi 
+f constitute a 
+subset of expert ratings for feature f 
+figure plots the distribution of the rates r 
+i h 
+c with 
+respect to the weights w 
+i h 
+c for the cleanliness of a las vegas 
+hotel h here the high ratings are restricted to the reviews 
+that discuss little the cleanliness whenever cleanliness 
+appears in the discussion the ratings are low many hotels 
+exhibit similar rating patterns for various features ratings 
+corresponding to low weights span the whole spectrum from 
+ to while the ratings corresponding to high weights are 
+more grouped together either around good or bad ratings 
+we therefore make the following hypothesis 
+hypothesis the ratings ri 
+f corresponding to the 
+reviews where wi 
+f is high are more similar to each other than 
+to the overall collection of ratings 
+to test the hypothesis we take the entire set of reviews 
+and feature by feature we compute the standard deviation 
+of the ratings with high weights and the standard deviation 
+of the entire set of ratings high weights were defined as 
+those belonging to the upper of the weight range for 
+the corresponding feature if hypothesis were true the 
+standard deviation of all ratings should be higher than the 
+standard deviation of the ratings with high weights 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+rating 
+weight 
+figure the distribution of ratings against the 
+weight of the cleanliness feature 
+we use a standard t-test to measure the significance of 
+the results city by city and feature by feature table 
+presents the average standard deviation of all ratings and 
+the average standard deviation of ratings with high weights 
+indeed the ratings with high weights have lower standard 
+deviation and the results are significant at the standard 
+significance threshold although for certain cities taken 
+independently there doesn t seem to be a significant difference 
+the results are significant for the entire data set please 
+note that only the features o r s c and v were considered 
+since for the others f l and n we didn t have enough 
+ratings 
+table average standard deviation for all 
+ratings and average standard deviation for ratings with 
+high weights in square brackets the corresponding 
+p-values for a positive difference between the two 
+city o r s c v 
+all 
+boston high 
+p-val 
+all 
+sydney high 
+p-val 
+all 
+vegas high 
+p-val 
+hypothesis not only provides some basic understanding 
+regarding the rating behavior of online users it also suggests 
+some ways of computing better quality estimates we can 
+for example construct a feature-by-feature quality estimate 
+with much lower variance for each feature we take the 
+subset of reviews that amply discuss that feature and output 
+as a quality estimate the average rating for this subset 
+initial experiments suggest that the average feature-by-feature 
+ratings computed in this way are different from the average 
+ratings computed on the whole data set given that 
+indeed high weights are indicators of expert opinions the 
+estimates obtained in this way are more accurate than the 
+current ones nevertheless the validation of this underlying 
+assumption requires further controlled experiments 
+ 
+ the influence of past ratings 
+two important assumptions are generally made about 
+reviews submitted to online forums the first is that ratings 
+truthfully reflect the quality observed by the users the 
+second is that reviews are independent from one another while 
+anecdotal evidence challenges the first assumption 
+ 
+in this section we address the second 
+a perusal of online reviews shows that reviews are often 
+part of discussion threads where users make an effort to 
+contradict or vehemently agree with the remarks of previous 
+users consider for example the following review 
+i don t understand the negative reviews the hotel was a 
+little dark but that was the style it was very artsy yes 
+it was close to the freeway but in my opinion the sound 
+of an occasional loud car is better than hearing the ding 
+ding of slot machines all night the staff on-hand is 
+fabulous the waitresses are great and does not deserve 
+the bad review she got she was attentive to us the 
+bartenders are friendly and professional at the same time 
+here the user was disturbed by previous negative reports 
+addressed these concerns and set about trying to correct 
+them not surprisingly his ratings were considerably higher 
+than the average ratings up to this point 
+it seems that tripadvisor users regularly read the reports 
+submitted by previous users before booking a hotel or 
+before writing a review past reviews create some prior 
+expectation regarding the quality of service and this expectation 
+has an influence on the submitted review we believe this 
+observation holds for most online forums the subjective 
+perception of quality is directly proportional to how well 
+the actual experience meets the prior expectation a fact 
+confirmed by an important line of econometric and 
+marketing research 
+the correlation between the reviews has also been 
+confirmed by recent research on the dynamics of online review 
+forums 
+ prior expectations 
+we define the prior expectation of user i regarding the 
+feature f as the average of the previously available ratings 
+on the feature f 
+ 
+ef i 
+j i r 
+j 
+f 
+ 
+rj 
+f 
+j i r 
+j 
+f 
+ 
+ 
+as a first hypothesis we assert that the rating ri 
+f is a 
+function of the prior expectation ef i 
+hypothesis for a given hotel and feature given the 
+reviews i and j such that ef i is high and ef j is low the 
+rating rj 
+f exceeds the rating ri 
+f 
+we define high and low expectations as those that are 
+above respectively below a certain cutoff value θ the set 
+of reviews preceded by high respectively low expectations 
+ 
+part of amazon reviews were recognized as strategic posts 
+by book authors or competitors 
+ 
+if no previous ratings were assigned for feature f ef i is 
+assigned a default value of 
+table average ratings for reviews preceded by 
+low first value in the cell and high second value 
+in the cell expectations the p-values for a positive 
+difference are given square brackets 
+city o r s c v 
+ 
+boston 
+ 
+ 
+sydney 
+ 
+ 
+las vegas 
+ 
+are defined as follows 
+rhigh 
+f ri 
+f ef i θ 
+rlow 
+f ri 
+f ef i θ 
+these sets are specific for each hotel feature pair and 
+in our experiments we took θ this rather high value 
+is close to the average rating across all features across all 
+hotels and is justified by the fact that our data set contains 
+mostly high quality hotels 
+for each city we take all hotels and compute the average 
+ratings in the sets rhigh 
+f and rlow 
+f see table the average 
+rating amongst reviews following low prior expectations is 
+significantly higher than the average rating following high 
+expectations 
+as further evidence we consider all hotels for which the 
+function ev i the expectation for the feature value has 
+a high value greater than for some i and a low value 
+ less than for some other i intuitively these are the 
+hotels for which there is a minimal degree of variation in the 
+timely sequence of reviews i e the cumulative average of 
+ratings was at some point high and afterwards became low 
+or vice-versa such variations are observed for about half 
+of all hotels in each city figure plots the median across 
+considered hotels rating rv when ef i is not more than 
+x but greater than x − 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+medianofrating 
+expectation 
+boston 
+sydney 
+vegas 
+figure the ratings tend to decrease as the 
+expectation increases 
+ 
+there are two ways to interpret the function ef i 
+ the expected value for feature f obtained by user i 
+before his experience with the service acquired by 
+reading reports submitted by past users in this case an 
+overly high value for ef i would drive the user to 
+submit a negative report or vice versa stemming from 
+the difference between the actual value of the service 
+and the inflated expectation of this value acquired 
+before his experience 
+ the expected value of feature f for all subsequent 
+visitors of the site if user i were not to submit a report in 
+this case the motivation for a negative report 
+following an overly high value of ef is different user i seeks 
+to correct the expectation of future visitors to the site 
+unlike the interpretation above this does not require 
+the user to derive an a priori expectation for the value 
+of f 
+note that neither interpretation implies that the average 
+up to report i is inversely related to the rating at report i 
+there might exist a measure of influence exerted by past 
+reports that pushes the user behind report i to submit 
+ratings which to some extent conforms with past reports a low 
+value for ef i can influence user i to submit a low rating 
+for feature f because for example he fears that submitting 
+a high rating will make him out to be a person with low 
+standards 
+ this at first appears to contradict hypothesis 
+ however this conformity rating cannot continue 
+indefinitely once the set of reports project a sufficiently deflated 
+estimate for vf future reviewers with comparatively positive 
+impressions will seek to correct this misconception 
+ impact of textual comments on quality 
+expectation 
+further insight into the rating behavior of tripadvisor 
+users can be obtained by analyzing the relationship between 
+the weights wf and the values ef i in particular we 
+examine the following hypothesis 
+hypothesis when a large proportion of the text of a 
+review discusses a certain feature the difference between the 
+rating for that feature and the average rating up to that point 
+tends to be large 
+the intuition behind this claim is that when the user is 
+adamant about voicing his opinion regarding a certain 
+feature his opinion differs from the collective opinion of 
+previous postings this relies on the characteristic of reputation 
+systems as feedback forums where a user is interested in 
+projecting his opinion with particular strength if this opinion 
+differs from what he perceives to be the general opinion 
+to test hypothesis we measure the average absolute 
+difference between the expectation ef i and the rating ri 
+f 
+when the weight wi 
+f is high respectively low weights are 
+classified high or low by comparing them with certain cutoff 
+values wi 
+f is low if smaller than while wi 
+f is high if 
+greater than θf different cutoff values were used for 
+different features θr θs θc and θv 
+cleanliness has a lower cutoff since it is a feature rarely 
+discussed value has a high cutoff for the opposite reason 
+results are presented in table 
+ 
+the idea that negative reports can encourage further 
+negative reporting has been suggested before 
+table average of ri 
+f −ef i when weights are high 
+ first value in the cell and low second value in the 
+cell with p-values for the difference in sq brackets 
+city r s c v 
+ 
+boston 
+ 
+ 
+sydney 
+ 
+ 
+las vegas 
+ 
+this demonstrates that when weights are unusually high 
+users tend to express an opinion that does not conform to 
+the net average of previous ratings as we might expect 
+for a feature that rarely was a high weight in the discussion 
+ e g cleanliness the difference is particularly large even 
+though the difference in the feature value is quite large for 
+sydney the p-value is high this is because only few reviews 
+discussed value heavily the reason could be cultural or 
+because there was less of a reason to discuss this feature 
+ reporting incentives 
+previous models suggest that users who are not highly 
+opinionated will not choose to voice their opinions in 
+this section we extend this model to account for the 
+influence of expectations the motivation for submitting 
+feedback is not only due to extreme opinions but also to the 
+difference between the current reputation i e the prior 
+expectation of the user and the actual experience 
+such a rating model produces ratings that most of the 
+time deviate from the current average rating the ratings 
+that confirm the prior expectation will rarely be submitted 
+we test on our data set the proportion of ratings that 
+attempt to correct the current estimate we define a deviant 
+rating as one that deviates from the current expectation by 
+at least some threshold θ i e ri 
+f − ef i ≥ θ for each 
+of the three considered cities the following tables show the 
+proportion of deviant ratings for θ and θ 
+table proportion of deviant ratings with θ 
+city o r s c v 
+boston 
+sydney 
+las vegas 
+table proportion of deviant ratings with θ 
+city o r s c v 
+boston 
+sydney 
+las vegas 
+the above results suggest that a large proportion of users 
+ close to one half even for the high threshold value θ 
+ deviate from the prior average this reinforces the idea 
+that users are more likely to submit a report when they 
+believe they have something distinctive to add to the current 
+stream of opinions for some feature such conclusions are in 
+total agreement with prior evidence that the distribution of 
+reports often follows bi-modal u-shaped distributions 
+ 
+ modelling the behavior of 
+raters 
+to account for the observations described in the previous 
+sections we propose a model for the behavior of the users 
+when submitting online reviews for a given hotel we make 
+the assumption that the quality experienced by the users is 
+normally distributed around some value vf which represents 
+the objective quality offered by the hotel on the feature 
+f the rating submitted by user i on feature f is 
+ˆri 
+f δf vi 
+f − δf · sign vi 
+f − ef i c d vi 
+f ef i wi 
+f 
+where 
+ vi 
+f is the unknown quality actually experienced by 
+the user vi 
+f is assumed normally distributed around 
+some value vf 
+ δf ∈ can be seen as a measure of the bias when 
+reporting feedback high values reflect the fact that 
+users rate objectively without being influenced by 
+prior expectations the value of δf may depend on 
+various factors we fix one value for each feature f 
+ c is a constant between and 
+ wi 
+f is the weight of feature f in the textual comment 
+of review i computed according to eq 
+ d vi 
+f ef i wi 
+f is a distance function between the 
+expectation and the observation of user i the distance 
+function satisfies the following properties 
+- d y z w ≥ for all y z ∈ w ∈ 
+- d y z w d z x w if y − z z − x 
+- d y z w d y z w if w w 
+- c d vf ef i wi 
+f ∈ 
+the second term of eq encodes the bias of the 
+rating the higher the distance between the true 
+observation vi 
+f and the function ef the higher the bias 
+ model validation 
+we use the data set of tripadvisor reviews to validate the 
+behavior model presented above we split for convenience 
+the rating values in three ranges bad b 
+indifferent i and good g and perform the 
+following two tests 
+ first we will use our model to predict the ratings that 
+have extremal values for every hotel we take the 
+sequence of reports and whenever we encounter a rating 
+that is either good or bad but not indifferent we try 
+to predict it using eq 
+ second instead of predicting the value of extremal 
+ratings we try to classify them as either good or bad 
+for every hotel we take the sequence of reports and 
+for each report regardless of it value we classify it as 
+being good or bad 
+however to perform these tests we need to estimate the 
+objective value vf that is the average of the true quality 
+observations vi 
+f the algorithm we are using is based on the 
+intuition that the amount of conformity rating is minimized 
+in other words the value vf should be such that as often as 
+possible bad ratings follow expectations above vf and good 
+ratings follow expectations below vf 
+formally we define the sets 
+γ i ef i vf and ri 
+f ∈ b 
+γ i ef i vf and ri 
+f ∈ g 
+that correspond to irregularities where even though the 
+expectation at point i is lower than the delivered value the 
+rating is poor and vice versa we define vf as the value 
+that minimize these union of the two sets 
+vf arg min 
+vf 
+ γ ∪ γ 
+in eq we replace vi 
+f by the value vf computed in eq 
+ and use the following distance function 
+d vf ef i wi 
+f 
+ vf − ef i 
+vf − ef i 
+ vf 
+ − ef i 
+ · wi 
+f 
+the constant c ∈ i was set to min max ef i the 
+values for δf were fixed at for the 
+features overall rooms service cleanliness value 
+respectively the weights are computed as described in section 
+as a first experiment we take the sets of extremal 
+ratings ri 
+f ri 
+f ∈ i for each hotel and feature for every such 
+rating ri 
+f we try to estimate it by computing ˆri 
+f using eq 
+ we compare this estimator with the one obtained by 
+simply averaging the ratings over all hotels and features 
+i e 
+¯rf 
+j r 
+j 
+f 
+ 
+rj 
+f 
+j r 
+j 
+f 
+ 
+ 
+ 
+table presents the ratio between the root mean square 
+error rmse when using ˆri 
+f and ¯rf to estimate the actual 
+ratings in all cases the estimate produced by our model is 
+better than the simple average 
+table average of 
+rmse ˆrf 
+rmse ¯rf 
+city o r s c v 
+boston 
+sydney 
+las vegas 
+as a second experiment we try to distinguish the sets 
+bf i ri 
+f ∈ b and gf i ri 
+f ∈ g of bad respectively 
+good ratings on the feature f for example we compute the 
+set bf using the following classifier called σ 
+ri 
+f ∈ bf σf i ⇔ ˆri 
+f ≤ 
+tables and present the precision p recall r and 
+s pr 
+p r 
+for classifier σ and compares it with a naive 
+majority classifier τ τf i ⇔ bf ≥ gf 
+we see that recall is always higher for σ and precision is 
+usually slightly worse for the s metric σ tends to add a 
+ 
+table precision p recall r s pr 
+p r 
+while 
+spotting poor ratings for boston 
+o r s c v 
+p 
+σ r 
+s 
+p 
+τ r 
+s 
+table precision p recall r s pr 
+p r 
+while 
+spotting poor ratings for las vegas 
+o r s c v 
+p 
+σ r 
+s 
+p 
+τ r 
+s 
+ - improvement over τ much higher in some cases for 
+hotels in sydney this is likely because sydney reviews are 
+more positive than those of the american cities and cases 
+where the number of bad reviews exceeded the number of 
+good ones are rare replacing the test algorithm with one 
+that plays a with probability equal to the proportion of 
+bad reviews improves its results for this city but it is still 
+outperformed by around 
+ summary of results and 
+conclusion 
+the goal of this paper is to explore the factors that drive 
+a user to submit a particular rating rather than the 
+incentives that encouraged him to submit a report in the first 
+place for that we use two additional sources of information 
+besides the vector of numerical ratings first we look at the 
+textual comments that accompany the reviews and second 
+we consider the reports that have been previously submitted 
+by other users 
+using simple natural language processing algorithms we 
+were able to establish a correlation between the weight of a 
+certain feature in the textual comment accompanying the 
+review and the noise present in the numerical rating 
+specifically it seems that users who discuss amply a certain feature 
+are likely to agree on a common rating this observation 
+allows the construction of feature-by-feature estimators of 
+quality that have a lower variance and are hopefully less 
+noisy nevertheless further evidence is required to support 
+the intuition that ratings corresponding to high weights are 
+expert opinions that deserve to be given higher priority when 
+computing estimates of quality 
+second we emphasize the dependence of ratings on 
+previous reports previous reports create an expectation of 
+quality which affects the subjective perception of the user we 
+validate two facts about the hotel reviews we collected from 
+tripadvisor first the ratings following low expectations 
+ where the expectation is computed as the average of the 
+previous reports are likely to be higher than the ratings 
+table precision p recall r s pr 
+p r 
+while 
+spotting poor ratings for sydney 
+o r s c v 
+p 
+σ r 
+s 
+p 
+τ r 
+s 
+following high expectations intuitively the perception of 
+quality and consequently the rating depends on how well 
+the actual experience of the user meets her expectation 
+second we include evidence from the textual comments and 
+find that when users devote a large fraction of the text to 
+discussing a certain feature they are likely to motivate a 
+divergent rating i e a rating that does not conform to the 
+prior expectation intuitively this supports the hypothesis 
+that review forums act as discussion groups where users are 
+keen on presenting and motivating their own opinion 
+we have captured the empirical evidence in a behavior 
+model that predicts the ratings submitted by the users the 
+final rating depends as expected on the true observation 
+and on the gap between the observation and the expectation 
+the gap tends to have a bigger influence when an important 
+fraction of the textual comment is dedicated to discussing a 
+certain feature the proposed model was validated on the 
+empirical data and provides better estimates of the ratings 
+actually submitted 
+one assumption that we make is about the existence of an 
+objective quality value vf for the feature f this is rarely 
+true especially over large spans of time other 
+explanations might account for the correlation of ratings with past 
+reports for example if ef i reflects the true value of f at a 
+point in time the difference in the ratings following high and 
+low expectations can be explained by hotel revenue models 
+that are maximized when the value is modified accordingly 
+however the idea that variation in ratings is not primarily 
+a function of variation in value turns out to be a useful one 
+our approach to approximate this elusive objective value is 
+by no means perfect but conforms neatly to the idea behind 
+the model 
+a natural direction for future work is to examine 
+concrete applications of our results significant improvements 
+of quality estimates are likely to be obtained by 
+incorporating all empirical evidence about rating behavior exactly 
+how different factors affect the decisions of the users is not 
+clear the answer might depend on the particular 
+application context and culture 
+ references 
+ a admati and p pfleiderer noisytalk com 
+broadcasting opinions in a noisy environment 
+working paper r stanford university 
+ p b l lee and s vaithyanathan thumbs up 
+sentiment classification using machine learning 
+techniques in proceedings of the emnlp- the 
+conference on empirical methods in natural 
+language processing 
+ h cui v mittal and m datar comparative 
+ 
+experiments on sentiment classification for online 
+product reviews in proceedings of aaai 
+ k dave s lawrence and d pennock mining the 
+peanut gallery opinion extraction and semantic 
+classification of product reviews in proceedings of the 
+ th international conference on the world wide 
+web www 
+ c dellarocas n awad and x zhang exploring the 
+value of online product ratings in revenue 
+forecasting the case of motion pictures working 
+paper 
+ c forman a ghose and b wiesenfeld a 
+multi-level examination of the impact of social 
+identities on economic transactions in electronic 
+markets available at ssrn 
+http ssrn com abstract july 
+ a ghose p ipeirotis and a sundararajan 
+reputation premiums in electronic peer-to-peer 
+markets analyzing textual feedback and network 
+structure in third workshop on economics of 
+peer-to-peer systems p pecon 
+ a ghose p ipeirotis and a sundararajan the 
+dimensions of reputation in electronic markets 
+working paper ceder- - new york university 
+ 
+ a harmon amazon glitch unmasks war of 
+reviewers the new york times february 
+ d houser and j wooders reputation in auctions 
+theory and evidence from ebay journal of 
+economics and management strategy - 
+ 
+ m hu and b liu mining and summarizing customer 
+reviews in proceedings of the acm sigkdd 
+international conference on knowledge discovery and 
+data mining kdd 
+ n hu p pavlou and j zhang can online reviews 
+reveal a product s true quality in proceedings of 
+acm conference on electronic commerce ec 
+ 
+ k kalyanam and s mcintyre return on reputation 
+in online auction market working paper 
+ - -wp leavey school of business santa clara 
+university 
+ l khopkar and p resnick self-selection slipping 
+salvaging slacking and stoning the impacts of 
+negative feedback at ebay in proceedings of acm 
+conference on electronic commerce ec 
+ m melnik and j alm does a seller s reputation 
+matter evidence from ebay auctions journal of 
+industrial economics - 
+ r olshavsky and j miller consumer expectations 
+product performance and perceived product quality 
+journal of marketing research - february 
+ 
+ a parasuraman v zeithaml and l berry a 
+conceptual model of service quality and its 
+implications for future research journal of 
+marketing - 
+ a parasuraman v zeithaml and l berry 
+servqual a multiple-item scale for measuring 
+consumer perceptions of service quality journal of 
+retailing - 
+ p pavlou and a dimoka the nature and role of 
+feedback text comments in online marketplaces 
+implications for trust building price premiums and 
+seller differentiation information systems research 
+ - 
+ a popescu and o etzioni extracting product 
+features and opinions from reviews in proceedings of 
+the human language technology conference and 
+conference on empirical methods in natural 
+language processing 
+ r teas expectations performance evaluation and 
+consumers perceptions of quality journal of 
+marketing - 
+ e white chatting a singer up the pop charts the 
+wall street journal october 
+appendix 
+a list of words lr associated to 
+the feature rooms 
+all words serve as prefixes room space interior decor 
+ambiance atmosphere comfort bath toilet bed building 
+wall window private temperature sheet linen pillow hot 
+water cold water shower lobby furniture carpet air 
+condition mattress layout design mirror ceiling lighting 
+lamp sofa chair dresser wardrobe closet 
+ 

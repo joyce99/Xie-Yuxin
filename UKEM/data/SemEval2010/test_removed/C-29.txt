@@ -1,0 +1,983 @@
+implementation and performance evaluation of 
+conflex-g grid-enabled molecular conformational 
+space search program with omnirpc 
+yoshihiro nakajima 
+graduate school of systems information 
+engineering university of tsukuba 
+tsukuba - japan 
+yoshihiro hpcs is tsukuba ac jp 
+mitsuhisa sato 
+institute of information sciences and electronics 
+university of tsukuba 
+tsukuba - japan 
+msato is tsukuba ac jp 
+hitoshi goto 
+knowledge-based information engineering 
+toyohashi university of technology 
+toyohashi - japan 
+gotoh cochem tutkie tut ac jp 
+taisuke boku daisuke takahashi 
+institute of information sciences and electronics 
+university of tsukuba 
+tsukuba - japan 
+ taisuke daisuke  hpcs is tsukuba ac jp 
+abstract 
+conflex-g is the grid-enabled version of a molecular 
+conformational space search program called conflex we 
+have implemented conflex-g using a grid rpc system 
+called omnirpc in this paper we report the performance 
+of conflex-g in a grid testbed of several geographically 
+distributed pc clusters in order to explore many 
+conformation of large bio-molecules conflex-g generates 
+trial structures of the molecules and allocates jobs to 
+optimize a trial structure with a reliable molecular mechanics 
+method in the grid omnirpc provides a restricted 
+persistence model to support the parametric search applications 
+in this model when the initialization procedure is defined 
+in the rpc module the module is automatically 
+initialized at the time of invocation by calling the initialization 
+procedure this can eliminate unnecessary communication 
+and initialization at each call in conflex-g 
+conflexg can achieve performance comparable to conflex mpi 
+and can exploit more computing resources by allowing the 
+use of a cluster of multiple clusters in the grid the 
+experimental result shows that conflex-g achieved a speedup 
+of times in the case of the bl molecule where the 
+molecule consists of a large number of atoms and each trial 
+structure optimization requires significant time the load 
+imbalance of the optimization time of the trial structure 
+may also cause performance degradation 
+categories and subject descriptors 
+c computer systems organization 
+computercommunication network-distributed systems 
+j computer applications physical sciences 
+and engineering 
+general terms 
+design performance 
+ introduction 
+elucidation of the stable conformations and the folding 
+process of proteins is one of the most fundamental and 
+challenging goals in life science while some of the most 
+common secondary structures e g certain types of helix the 
+beta-strand and the coil are well known precise 
+analysis of the thousands of chemically important conformers 
+and pico-second-order analysis of their conformational 
+interconversions via the transition states on the potential energy 
+surface are required for the microsecond-order investigation 
+of the folding process toward the tertiary structure 
+formations 
+recently the concept of the computational grid has begun 
+to attract significant interest in the field of high-performance 
+network computing rapid advances in wide-area 
+networking technology and infrastructure have made it possible to 
+construct large-scale high-performance distributed 
+computing environments or computational grids that provide 
+dependable consistent and pervasive access to enormous 
+computational resources 
+conflex is one of the most efficient and reliable 
+conformational space search programs we have applied this 
+ 
+program to parallelization using global computing the 
+performance of the parallelized conflex enables exploration 
+of the lower-energy region of the conformational space of 
+small peptides within an available elapsed time using a local 
+pc cluster since trial structure optimization in conflex 
+is calculated via molecular mechanics conformational space 
+search can be performed quickly compared to that using 
+molecular orbital calculation 
+although the parallelized version of conflex was used 
+to calculate in parallel the structure optimization which 
+takes up over of the processing in the molecular 
+conformation search sufficient improvement in the speedup could 
+not be achieved by this method alone therefore for high 
+polymers from live organisms such as hiv protease the 
+use one pc cluster is insufficient due to the requirement 
+for optimization of a huge number of trial structures this 
+requires the vast computer resources of a grid computing 
+environment 
+in this paper we describe conflex-g a grid-enabled 
+molecular conformational search program using omnirpc 
+and report its performance in a grid of several pc 
+clusters which are geographically distributed the prototype 
+conflex-g allocates calculation trial structures 
+optimization which is a very time-consuming task to worker nodes 
+in the grid environment in order to obtain high throughput 
+in addition we compare the performance of conflex-g 
+in a local pc cluster to that in a grid testbed 
+omnirpc is a thread-safe implementation of ninf 
+rpc which is a grid rpc facility for grid 
+environment computing several systems adopt the concept of the 
+rpc as the basic model for grid environment computing 
+including ninf-g netsolve and corba the 
+rpcstyle system provides an easy-to-use intuitive programming 
+interface allowing users of the grid system to easily 
+create grid-enabled applications in order to support parallel 
+programming an rpc client can issue asynchronous call 
+requests to a different remote computer to exploit 
+networkwide parallelism via omnirpc 
+in this paper we propose the omnirpc persistence model 
+to a grid rpc system and demonstrate its effectiveness in 
+order to support a typical application for a grid 
+environment such as a parametric search application in which the 
+same function is executed with different input parameters on 
+the same data set in the current gridrpc system the 
+data set by the previous call cannot be used by subsequent 
+calls in the omnirpc system once a remote executable 
+is invoked the client attempts to use the invoked remote 
+executable and its initialized state for subsequent rpc calls 
+to the same remote functions in order to eliminate the 
+invocation cost of each call 
+this paper demonstrates that conflex-g is able to 
+exploit the huge computer resources of a grid environment 
+and search large-scale molecular conformers we 
+demonstrate conflex-g on our grid testbed using the actual 
+protein as a sample molecule the omnirpc facility of the 
+automatic initializable module aim allows the system to 
+efficiently calculate numerous conformers furthermore by 
+using omnirpc the user can grid-parallelize the existing 
+application and move from the cluster to the grid 
+environment without modifying program code and compiling the 
+program in addition the user can easily build a private 
+grid environment 
+the rest of this paper is organized as follows an overview 
+selection of 
+initial structure 
+conformations 
+database 
+local 
+perturbation 
+geometry 
+optimization 
+comparison 
+and registration 
+figure algorithm of conformational space search 
+in the original conflex 
+of the conflex system is presented in section and the 
+implementation and design of conflex-g are described 
+in section we report experimental results obtained using 
+conflex-g and discuss its performance in section in 
+section we present conclusions and discuss subjects for 
+future study 
+ conflex 
+conflex is an efficient conformational space search 
+program which can predominately and exhaustively search 
+the conformers in the lower-energy region applications of 
+conflex include the elucidation of the reactivity and 
+selectivity of drugs and possible drug materials with regard to 
+their conformational flexibility 
+ algorithm of conformationalspacesearch 
+the basic strategy of conflex is an exhaustive search 
+of only the low-energy regions the original conflex 
+performs the following four major steps 
+ selection of an initial structure among the previously 
+discovered unique conformers sorted in a 
+conformational database an input structure is used as the 
+first initial structure at the beginning of a search 
+execution only 
+ generation of trial structures by local perturbations 
+to the selected initial structure 
+ geometry optimization for the newly generated trial 
+structures 
+ comparison of the successfully optimized trial 
+structures with the other conformers stored in a 
+conformation database and preservation of newly discovered 
+unique conformers in the database 
+figure shows the outline of conflex the original 
+conformational space search algorithm 
+these procedures incorporate two unique strategies 
+figure shows the strategies for generating local perturbations 
+in conflex the first strategy involves both corner 
+flapping and edge flipping for the ring atoms and stepwise 
+rotation for side-chains or backbone chains these methods 
+provide a highly efficient way to produce several good trial 
+structures these perturbations can be considered to mimic 
+ 
+stepwise rotation 
+corner flap 
+edge flip 
+figure strategies used to generate the local 
+perturbations 
+a barrier-crossing step in the elementary process of the 
+thermal conformational inter-conversion actually the 
+perturbations of an initial structure correspond to the precise 
+performance around the space of the initial structure because 
+of localization and weakness of the perturbation 
+the selection rule of the initial structure the 
+lowestconformer-first rule is the second strategy for directing 
+the conformation search expanded to the low-energy regions 
+the initial structure is selected as the set of lowest energy 
+conformers stored in the conformation database this rule 
+is effective in moving down the search space toward lower 
+energy regions like water from a stream running into an 
+empty reservoir while filling local depressions along the 
+way therefore these tactical procedures of the conflex 
+search are referred to as the reservoir filling algorithm 
+in order to remain in the low-energy region and perform 
+an exhaustive search the search limit sel which 
+determines the maximum energy of the initial structures is 
+pre-defined gradually increasing sel allows only the 
+lowenergy conformers to be searched and avoids straying into 
+unnecessarily high-energy regions 
+ parallelization of conflex for cluster 
+for application to over atoms conflex was 
+improved using high-performance parallel computing techniques 
+in the conflex search algorithm the geometry 
+optimization procedures always take of the elapsed time of the 
+search execution therefore we parallelized this 
+optimization using the master worker parallelization technique 
+we modified the search procedures as follows after trial 
+structures are generated step they are temporarily stored 
+in a task pool on the master node then each worker node 
+is dynamically supplied with one trial structure from the 
+master node after an optimization on a worker node is 
+finished the worker is immediately supplied with another 
+trial structure when all of the trial structures related to a 
+given initial structure are optimized only the master 
+procedure is used in comparison by parallelizing conflex 
+the speedup of searching molecular conformers obtained is 
+as reported in 
+ conflex-g 
+originally conflex was intended for use in 
+exploring the conformers of the large bio-molecules such hiv 
+protease in such molecules the number of trial 
+structures increases and the time required for optimization of 
+rpc 
+selection of 
+initial structure 
+conformations 
+database 
+local 
+perturbation 
+comparison 
+and registration 
+client program 
+task pool of 
+geometry 
+optimization 
+rpc 
+rpc 
+grid environment 
+cluster b 
+cluster a 
+cluster c 
+trial structuretrial structure 
+trial structure 
+trial structure 
+figure procedure of conflex-g 
+agent 
+rexrex rex 
+client 
+jones tsukuba ac jp 
+hpc-serv hpcc jp 
+hpc hpc hpc 
+agent invocation 
+communicationnetwork 
+figure overview of the omnirpc system for the 
+remote cluster having a private ip address 
+the trial structure becomes immense we implemented the 
+parallelized version of conflex which cannot treat such 
+molecules using only a local pc cluster 
+in order to exploit the vast computing resources of a grid 
+environment we designed and implemented conflex-g 
+which is a grid-enabled version of conflex with the 
+omnirpc system conflex-g allocates jobs to optimize 
+a trial structure to the computational nodes of each 
+cluster in the grid environment figure shows the process of 
+conflex-g the worker programs are initialized by the 
+initialize method which is provided by the omnirpc aim 
+facility at worker invocation at each rpc call the 
+initialized state is reused on the remote host in other words the 
+client program can eliminate the initialization for each rpc 
+call and can therefore optimize trial structures efficiently 
+ the omnirpc system 
+omnirpc is a grid rpc system which allows seamless 
+parallel programming from a pc cluster to a grid 
+environment omnirpc inherits its api and basic architecture 
+from ninf a client and the remote computational hosts 
+which execute the remote procedures may be connected via 
+a network the remote libraries are implemented as an 
+executable program which contains a network stub routine as 
+its main routine we call this executable program a remote 
+executable program rex 
+when the omnirpc client program starts the 
+initialization function of omnirpc system invokes the omnirpc 
+agent program omrpc-agent in the remote hosts listed in 
+the host file to invoke the agent the user can use the 
+remote shell command rsh in a local-area network the gram 
+ globus resource allocation manager api of the globus 
+ 
+toolkit in a grid environment or the secure remote shell 
+command ssh the user can switch the configurations only 
+by changing the host file 
+omnirpccall is a simple client programming interface for 
+calling remote functions when omnirpccall makes a 
+remote procedure call the call is allocated to an appropriate 
+remote host when the client issues the rpc request it 
+requests that the agent in the selected host submit the job 
+of the remote executable with the local job scheduler 
+specified in the host file if the job scheduler is not specified the 
+agent executes the remote executable in the same node by 
+the fork system call the client sends the data of the input 
+arguments to the invoked remote executable and receives 
+the results upon return of the remote function once a 
+remote executable is invoked the client attempts to use the 
+invoked remote executable for subsequent rpc calls in order 
+to eliminate the cost of invoking the same remote executable 
+again 
+when the agent and the remote executables are invoked 
+the remote programs obtain the client address and port from 
+the argument list and connect back to the client by direct 
+tcp ip or globus-io for data transmission because the 
+omnirpc system does not use any fixed service ports the 
+client program allocates unused ports dynamically to wait 
+for connection from the remote executables this avoids 
+possible security problems and allows the user to install the 
+omnirpc system without requiring a privileged account 
+herein a typical grid resource is regarded as a cluster of 
+geographically distributed pc clusters for pc clusters on 
+a private network an omnirpc agent process on the server 
+host functions as a proxy to relay communications between 
+the client and the remote executables by multiplexing the 
+communications using a single connection 
+this feature called multiplex io mxio allows a single 
+client to use up to remote computing hosts when the 
+pc cluster is inside a firewall the port forwarding of ssh 
+enables the node to communicate to the outside with mxio 
+figure shows the overview of the omnirpc system for a 
+remote cluster with a private ip address 
+for parallel programming the programmer can use 
+asynchronous remote procedure calls allowing the client to issue 
+several requests while continuing with other computations 
+the requests are dispatched to different remote hosts to be 
+executed in parallel and the client waits or polls the 
+completed request in such a programming model with 
+asynchronous remote procedure calls the programmer should 
+handle outstanding requests explicitly because omnirpc 
+is a thread-safe system a number of remote procedure calls 
+may be outstanding at any time for multi-threaded programs 
+written in openmp 
+ omnirpc persistence model automatic 
+initializable module 
+omnirpc efficiently supports typical master worker 
+parallel applications such as parametric execution programs 
+for parametric search applications which often require large 
+amount of identical data for each call omnirpc supports a 
+limited persistence model which is implemented by the 
+automatic initializable module the user can define an 
+initialization procedure in the remote executable in order to send 
+and store data automatically in advance of actual remote 
+procedure calls since the remote executable may accept 
+requests for subsequent calls the data set which has been set 
+by the initialization procedure can be re-used as a result 
+the worker program can execute efficiently and reduce the 
+amount of data transmitted for initialization 
+once a remote executable is invoked the client attempts 
+to use the invoked remote executable for subsequent rpc 
+calls however omnirpc does not guarantee persistence 
+of the remote executable so that the data set by the 
+previous call cannot be used by subsequent calls this is because 
+a remote call by omnirpccall may be scheduled to any 
+remote host dynamically and remote executables may be 
+terminated accidentally due to dynamic re-scheduling or host 
+faults however persistence of the remote executable can 
+be exploited in certain applications an example is a 
+parametric search application in such an application it would 
+be efficient if a large set of data could be pre-loaded by the 
+first call and subsequent calls could be performed on the 
+same data but with different parameters this is the case 
+for conflex 
+omnirpc provides a restricted persistence model through 
+the automatic initializable module aim in order to support 
+this type of application if the initialization procedure is 
+defined in the module the module is automatically initialized 
+at invocation by calling the initialization procedure when 
+the remote executable is re-scheduled in different hosts the 
+initialization is called to initialize the newly allocated 
+remote module this can eliminate unnecessary 
+communications when rpc calls use the same data 
+to reveal more about the difference in progress between 
+the cases with omnirpc aim and without omnirpc aim 
+we present two figures figure illustrates the time chart 
+of the progress of a typical omnirpc application using the 
+omnirpc aim facility and figure illustrates the time 
+chart of the same application without the omnirpc aim 
+facility in both figures the lines between diamonds 
+represent the processes of initialization and the lines between 
+points represent the calculation the bold line indicates the 
+time when the client program sends the data to a worker 
+program it is necessary for the application without the 
+omnirpc aim facility to initialize at each rpc the 
+application using the omnirpc aim facility can re-use the 
+initialized data once the data set is initialized this can 
+reduce the initialization at each rpc the workers of the 
+application with the aim can calculate efficiently compared 
+to the application without the omnirpc aim facility 
+ implementation of conflex-g using 
+omnirpc 
+figure shows an overview of the process used in 
+conflexg using rpcs conflex-g allocates the processes of 
+trial structure optimization which are performed by the 
+computation nodes of a pc cluster in the mpi version of 
+conflex to the computational nodes of each cluster in 
+a grid environment there are two computations which are 
+performed by the worker programs in conflex-g one is 
+the initialization of a worker program and another is the 
+calculation of trial structure optimization 
+first the omnirpc facility of the aim is adapted for 
+initialization of a worker program this facility automatically 
+calls the initialization function which is contained in the 
+worker program once the client program invokes the worker 
+program in a remote node it is necessary for the common 
+rpc system including gridrpc to initialize a program for 
+every rpc call since data persistence of worker programs 
+ 
+time 
+client program 
+worker program 
+worker program 
+initialization 
+initialization 
+calculation calculation 
+calculation calculation 
+calculation 
+parallelized using asynchronous rpcs 
+figure time chart of applications using the omnirpc facility of the automatic initializable module 
+time 
+client program 
+worker program 
+worker program 
+initialization initializationcalculation 
+calculation calculation 
+calculation 
+initialization initialization 
+initialization 
+parallelized using asynchronous rpcs 
+calculation 
+figure time chart of applications without the omnirpc facility of the automatic initializable module 
+table machine configurations in the grid testbed 
+site cluster name machine network authentication of nodes of cpus 
+univ of tsukuba dennis dual xeon ghz gb ethernet globus ssh 
+alice dual athlon mb ethernet globus ssh 
+tut toyo dual athlon mb ethernet ssh 
+aist ume dual pentium ghz gb ethernet globus ssh 
+is not supported in omnirpc however when the 
+initialize remote function is defined in the worker program and 
+a new worker program corresponding to the other rpc 
+is assigned to execute an initialize function is called 
+automatically therefore after the initialize function call to set 
+up common initialization data a worker program can re-use 
+this data and increase the efficiency of it s processes thus 
+the higher the set-up cost the greater the potential benefit 
+we implemented the worker program of conflex-g to 
+receive data such as evaluation parameters of energy from 
+a client program and to be initialized by the initialize 
+function we arranged the client program of conflex-g 
+to transfer the parameter file at the time of worker 
+initialization this enables execution to be performed by modify 
+only the client setting if the user wants to run conflex-g 
+with a different data set 
+second in order to calculate trial structure optimization 
+in a worker program the worker program must receive the 
+data such as the atom arrangement of the trial structure 
+and the internal energy state the result is returned to 
+the client program after the worker has optimized the trial 
+structure 
+since the calculation portion of the structure optimization 
+in this worker program can be calculated independently 
+using different parameters we parallelized this portion using 
+asynchronous rpcs on the client side to call the structure 
+optimization function in a worker program from the client 
+program we use the omnirpccallasync api which is 
+intended for asynchronous rpc in addition omnirpccallwaitall 
+api which waits until all asynchronous rpcs are used in 
+order to perform synchronization with all of the asynchronous 
+rpcs completed so as to optimize the trial structure the 
+client program which assigns trial structure optimization to 
+the calculation node of a pc cluster using rpc is outlined 
+as follows 
+omnirpcinit 
+omnirpcmoduleinit conflex search 
+ 
+while new conformers 
+foreach trial structures 
+omnirpccallasync conflex search worker 
+omnirpcwaitall 
+ 
+note that omnirpcmoduleinit api returns only the 
+arguments needed for initialization and will not actually execute 
+the initialization function as described above the 
+actual initialization is performed at the first remote call 
+since the omnirpc system has an easy round-robin 
+scheduler we do not have to explicitly write the code for load 
+balance therefore rpcs are allocated automatically to idle 
+workers 
+ 
+table network performance between the master 
+node of the dennis cluster and the master node of 
+each pc cluster 
+round-trip throughput 
+cluster time ms mbps 
+dennis 
+alice 
+toyo 
+ume 
+ preliminary results 
+ grid testbed 
+the grid testbed was constructed by computing resources 
+at the university of tsukuba the toyohashi university of 
+technology tut and the national institute of advanced 
+industrial science and technology aist table shows 
+the computing resources used for the grid of the present 
+study 
+the university of tsukuba and aist are connected by a 
+ -gbps tsukuba wan and the other pc clusters are 
+connected by sinet which is wide-area network dedicated to 
+academic research in japan table shows the performance 
+of the measured network between the master node of the 
+dennis cluster and the master node of each pc cluster in 
+the grid testbed the communication throughput was 
+measured using netperf and the round-trip time was measured 
+by ping 
+ performance of conflex-g 
+in all of the conflex-g experiments the client 
+program was executed on the master node of the dennis 
+cluster at the university of tsukuba the built-in round-robin 
+scheduler of omnirpc was used as a job scheduler 
+ssh was used for an authentication system the 
+ominrpc s mxio which relays the i o communication between 
+client program and worker programs by port forwarding of 
+ssh was not used note that one worker program is 
+assigned and performed on one cpu of the calculation node 
+in a pc cluster that is the number of workers is equal to 
+the number of cpus 
+these programs were compiled by the intel fortran 
+compiler and gcc mpich version was used 
+to compare the performance between conflex mpi and 
+conflex-g in order to demonstrate the usability of the 
+omnirpc facility of the aim we implemented another 
+version of conflex-g which did not utilize the omnirpc 
+facility the worker program in this version of 
+conflexg must be initialized at each rpc because the worker does 
+not hold the previous data set 
+in order to examine the performance of conflex-g we 
+selected two peptides and two small protein as test molecules 
+ n-acetyl tetra-alanine methylester alax 
+ n-acetyl hexdeca-alanine methylester alax 
+ trp-cage miniprotein construct tc b l y 
+ pth receptor n-terminus fragment bl 
+table lists the characteristics of these sample molecules 
+the column trial structure loops in this table shows the 
+figure performances of conflex-g 
+conflex mpi and original conflex in the dennis 
+cluster 
+figure speedup ratio which is based on the 
+elapsed time of conflex-g using one worker in 
+the dennis cluster 
+figure performance of conflex-g with and 
+without the omnirpc facility of automatic 
+initializable module for alax 
+ 
+table characteristics of molecules and data transmission for optimizing trial molecular structures in each 
+molecular code 
+molecular of of total trial trial structure data transfer to data transfer 
+code atoms structures loop initialize a worker trial structure 
+alax kb kb 
+alax kb kb 
+ l y kb kb 
+ bl kb kb 
+table elapsed search time for the molecular conformation of alax 
+total total optimization 
+cluster of structures optimization time elapsed speed 
+ of workers workers worker time s structure s time s up 
+dennis sequential 
+toyo 
+dennis 
+alice 
+ume 
+dennis toyo 
+alice toyo 
+dennis alice 
+dennis ume 
+alice ume 
+table elapsed search time for the molecular conformation of alax 
+total total optimization 
+cluster of structures optimization time elapsed speed 
+ of workers workers worker time s structure s time s up 
+dennis 
+toyo 
+dennis 
+alice 
+ume 
+dennis toyo 
+alice toyo 
+dennis alice 
+toyo ume 
+dennis ume 
+dennis ume toyo 
+table elapsed time of the search for the trial structure of l y 
+cluster total of structures optimization time elapsed elapsed speed 
+ of workers workers worker structure s time s time h up 
+toyo mpi 
+toyo mpi 
+dennis 
+dennis ume 
+table elapsed time of the search for the trial structure of bl 
+cluster total of structures optimization time elapsed elapsed speed 
+ of workers workers worker structure s time s time h up 
+toyo mpi 
+toyo mpi 
+dennis 
+dennis ume 
+ 
+number of trial structures generated in each iteration 
+indicating the degree of parallelism figure also summarizes 
+the amount of data transmission required for initialization 
+of a worker program and for optimization of each trial 
+structure note that the amount of data transmission which is 
+required in order to initialize a worker program and optimize 
+a trial structure in the mpi version of conflex is equal 
+to that of conflex-g we used an improvement version 
+of mm force field to assign a potential energy function to 
+various geometric properties of a group of atoms 
+ performance in a local cluster 
+we first compared the performance of conflex-g the 
+mpi version of conflex and the original sequential 
+version of conflex-g using a local cluster we investigated 
+performance by varying the number of workers using the 
+dennis cluster we chose alax as a test molecule for this 
+experiment figure compares the results for the 
+conflex mpi and conflex-g in a local pc cluster 
+the result of this experiment shows that conflex-g 
+can reduce the execution time as the number of workers 
+increases as in the mpi version of conflex we found 
+that conflex-g achieved efficiencies comparable to the 
+mpi version with workers conflex-g achieved an 
+ times speedup compared to the conflex 
+sequential version the performance of conflex-g without the 
+omnirpc aim facility is worse than that of 
+conflexg using the facility based on the increase in the number 
+of workers this indicates that the omnirpc aim enables 
+the worker to calculate efficiently without other calculations 
+such initialization or invocation of worker programs 
+as the number of workers is increased the performance of 
+conflex-g is a slightly lower than that of the mpi 
+version this performance degradation is caused by differences 
+in the worker initialization processes of conflex-g and 
+conflex mpi in the case of conflex mpi all workers 
+are initialized in advance of the optimization phase in the 
+case of ominrpc the worker is invoked on-demand when 
+the rpc call is actually issued therefore the initialization 
+incurs this overhead 
+since the objective of conflex-g is to explore the 
+conformations of large bio-molecules the number of trial 
+structures and the time to optimize the trial structure might be 
+large in such cases the overhead to invoke and initialize 
+the worker program can be small compared to the entire 
+elapsed time 
+ performance for peptides in the grid testbed 
+first the sample molecules alax and alax were 
+used to examine the conflex-g performance in a grid 
+environment figure shows the speedup achieved by using 
+multiple clusters compared to using one worker in the dennis 
+cluster detailed results are shown in table and table 
+in both cases the best performance was obtained using 
+ workers of the combination of the dennis and alice 
+clusters conflex-g achieved a maximum speedup of 
+times for alax and a maximum speedup of times 
+for alax 
+in the case of alax the performance is improved only 
+when the network performance between clusters is high 
+however even if two or more clusters are used in a wide 
+area network environment the performance improvement 
+was slight because the optimization time of one trial 
+structure generated from alax a small molecule is short in 
+addition the overhead required for invocation of a worker 
+program and network data transmission consume a large 
+portion of the remaining processing time in particular 
+the data transmission required for the initialization of a 
+worker program is mb in the case of toyo cluster where 
+the network performance between the client program and 
+the worker programs is poor the time of data transmission 
+to the worker program required approximately seconds 
+since this transmission time was longer than the processing 
+time of one structure optimization in conflex-g most 
+of the time was spent for this data transmission 
+therefore even if conflex-g uses a large number of 
+calculation nodes in a wide area network environment the benefit 
+of using a grid resource is not obtained 
+in the case of alax conflex-g achieved a speedup 
+by using two or more pc clusters in our grid testbed this 
+was because the calculation time on the worker program 
+was long and the overhead such as network latency and the 
+invoking of worker programs became relatively small and 
+could be hidden the best performance was obtained using 
+ workers in the dennis and alice clusters in the case of 
+aax the achieved performance was a speedup of 
+times 
+figure reveals the effect of using the facility of the 
+omnirpc aim on conflex-g performance in most cases 
+conflex-g with the omnirpc aim facility archived 
+better performance than conflex-g without the facility in 
+particular the omnirpc aim facility was advantageous 
+when using two clusters connected by a low-performance 
+network the results indicate that the omnirpc aim 
+facility can improve performance in the grid environment 
+ performanceforsmallproteininthegridtestbed 
+finally we explored the molecular conformation using 
+conflex-g for large molecules in a grid environment 
+this experiment was conducted using the dennis and ume 
+clusters in this experiment we used two proteins l y 
+and bl table and table show the performance of 
+conflex-g in the grid environment and that of 
+conflex mpi in the toyo cluster respectively the speedups 
+in these tables were computed respectively based on the 
+performance of one worker and workers of the toyo cluster 
+using conflex mpi 
+conflex-g with workers in dennis and ume clusters 
+obtained maximum speedups of times for l y and 
+times for l y since the calculation time for structure 
+optimization required a great deal of time the ratio of overhead 
+including tasks such as the invocation of a worker program 
+and data transmission for initialization became very small 
+so that the performance of conflex-g was improved 
+we found that the load imbalance in the processing time 
+of optimization for each trial structure caused performance 
+degradation when we obtained the best performance for 
+ l y using the dennis and ume clusters the time for each 
+structure optimization varied from to seconds 
+and the ratio between the longest and shortest times was 
+ for bl the ratio of minimum time over maximum 
+time was in addition in order that the worker 
+program wait until the completion of optimization of all trial 
+structures all worker programs were found to wait in an 
+idle state for approximately hours this has caused the 
+performance degradation of conflex-g 
+ 
+ discussion 
+in this subsection we discuss the improvement of the 
+performance reflected in our experiments 
+exploiting parallelism - in order to exploit more 
+computational resources it is necessary to increase the degree 
+of parallelism in this experiment the degree of parallelism 
+was not so large in the case of the sample molecules when 
+using a set of over computing nodes for bl the 
+number of one trial structures assigned to each worker will be 
+only one or two if over trial structures are assigned 
+to each worker program calculation can be performed more 
+efficiently due to the reduction of the overhead for worker 
+invocation and initialization via the facility of the omnirpc 
+aim 
+one idea for increasing parallelism is to overlap the 
+execution of two or more sets of trial structures in the current 
+algorithm a set of trial structures is generated from one 
+initial structure and computed until optimizations for all 
+structures in this set are calculated furthermore this will 
+help to improve load imbalance by having other sets of 
+trial structures overlap even if some optimizations require 
+a long time the optimization for the structures in other sets 
+can be executed to compensate for the idle workers for other 
+optimizations it is however unclear how such modification 
+of the algorithm might affect the quality of the final results 
+in terms of a conformation search 
+improvement in load imbalance when optimizing each trial 
+structure - table lists the statistics for optimization times 
+of trial structures generated for each sample molecule 
+measured using workers in the dennis cluster when two or 
+more sets of pc clusters are used the speedup in 
+performance is hampered by the load imbalance of the 
+optimization of the trial structures the longest time for 
+optimizing a trial structure was nearly times longer than the 
+shortest time furthermore other workers must wait until 
+the longest job has finished so that the entire execution 
+time cannot be reduced when conflex-g searched the 
+conformers of bl by the dennis cluster the longest 
+calculation time of the trial structure optimization made up 
+approximately of the elapsed time 
+therefore there are two possible solutions for the load 
+imbalance 
+ it is necessary to refine the algorithm used to generate 
+the trial structure which suppresses the time variation 
+for optimizing a trial structure in conflex this 
+enables conflex-g to achieve high-throughput by 
+using many computer resources 
+ one of the solutions is to overlap the executions for 
+two or more sets of trial structures in the current 
+algorithms a set of trial structures is generated from 
+one initial structure and calculation continues until all 
+structures in this set are calculated by having other 
+sets of trial structures even if a structure search takes 
+a long time a job can be executed in order to 
+compensate the load imbalance by other jobs however 
+how such modification of the algorithms might affect 
+the efficiency is not clear 
+ in this experiment we used a simple build-in 
+roundrobbin scheduler of omnirpc which is necessary in 
+order to apply the scheduler that allocates structures 
+with long optimization times to a high-performance 
+table statistics of elapsed time of trial structure 
+optimization using workers in the dennis cluster 
+molecular min max average variance 
+code s s s 
+alax 
+alax 
+ l y 
+ bl 
+node and structures with short optimization times to 
+low-performance nodes in general however it might 
+be difficult to predict the time required for trial 
+structure optimization 
+parallelization of the worker program for speedup to 
+optimize a trial structure - in the current implementation we 
+do not parallelize the worker program in order to speed up 
+trial structures hybrid programming using omnirpc and 
+openmp in an smp symmetric multiple processor 
+machine may be one of the alternative methods by which to 
+improve overall performance 
+ related work 
+recently an algorithm has been developed that solves 
+the problems of parallelization and communication in poorly 
+connected processors to be used for simulation the 
+folding home project simulates timescales thousands to 
+millions of times longer than previously achieved this has 
+allowed us to simulate folding for the first time and to directly 
+examine folding related diseases 
+seti home is a program to search for alien life by 
+analyzing radio telescope signals using fourier transform 
+radio telescope data from telescopes from different sites 
+seti home tackles immensely parallel problems in which 
+calculation can easily be divided among several computers 
+radio telescope data chunks can easily be assigned to 
+different computers 
+most of these efforts explicitly develop a docking 
+application as a parallel application using a special purpose parallel 
+programming language and middleware such as mpi which 
+requires development skills and effort however the skills 
+and effort required to develop a grid application may not be 
+required for omnirpc 
+nimrod g is a tool for distributed parametric 
+modeling and implements a parallel task farm for simulations that 
+require several varying input parameters nimrod 
+incorporates a distributed scheduling component that can manage 
+the scheduling of individual experiments to idle computers 
+in a local area network nimrod has been applied to 
+applications including bio-informatics operations research and 
+molecular modeling for drug design 
+netsolve is an rpc facility similar to omnirpc and 
+ninf providing a similar programming interface and 
+automatic load balancing mechanism ninf-g is a grid-enabled 
+implementation of ninf and provides a gridrpc system 
+that uses ldap to manage the database of remote 
+executables but does not support clusters involving private ip 
+addresses or addresses inside a firewall matsuoka et al 
+has also discussed several design issues related to grid rpc 
+systems 
+ 
+ conclusions and future work 
+we have designed and implemented conflex-g using 
+omnirpc we reported its performance in a grid testbed 
+of several geographically distributed pc clusters in order to 
+explore the conformation of large bio-molecules 
+conflexg was used to generate trial structures of the molecules and 
+allocate jobs to optimize them by molecular mechanics in the 
+grid omnirpc provides a restricted persistence model so 
+that the module is automatically initialized at invocation by 
+calling the initialization procedure this can eliminate 
+unnecessary communication and the initialization at each call 
+in conflex-g 
+conflex-g can achieves performance comparable to 
+conflex mpi and exploits more computing resources by 
+allowing the use of multiple pc clusters in the grid the 
+experimental result shows that conflex-g achieved a 
+speedup of times for the bl molecule where the 
+molecule consists of a large number of atoms and each trial 
+structure optimization requires a great deal of time the 
+load imbalance of the trial structure optimizations may cause 
+performance degradation we need to refine the algorithm 
+used to generate the trial structure in order to improve the 
+load balance optimization for trial structures in conflex 
+future studies will include development of deployment 
+tools and an examination of fault tolerance in the 
+current omnirpc the registration of an execution program to 
+remote hosts and deployments of worker programs are 
+manually set deployment tools will be required as the number 
+of remote hosts is increased in grid environments in which 
+the environment changes dynamically it is also necessary to 
+support fault tolerance this feature is especially important 
+in large-scale applications which require lengthy calculation 
+in a grid environment 
+we plan to refine the conformational optimization 
+algorithm in conflex to explore the conformation space search 
+of larger bio-molecules such hiv protease using up to 
+workers in a grid environment 
+ acknowledgments 
+this research was supported in part by a grant-in-aid 
+from the ministry of education culture sports science 
+and technology in japan no and as part 
+of the program of research and development for applying 
+advanced computational science and technology by the 
+japan science and technology corporation research on 
+the grid computing platform for drug design we would 
+like to thank grid technology research center aist japan 
+for providing computing resources for our experiment 
+ references 
+ h goto and e osawa an efficient algorithm for 
+searching low-energy conformers of cyclic and acyclic 
+molecules j chem soc perkin trans - 
+ 
+ m sato t boku and d takahashi omnirpc a 
+grid rpc system for parallel programming in 
+cluster and grid environment in proc of 
+ccgrid pages - 
+ m sato m hirano y tanaka and s sekiguchi 
+omnirpc a grid rpc facility for cluster and global 
+computing in openmp in proc of workshop on 
+openmp applications and tools lncs 
+pages - 
+ omnirpc project 
+http www omni hpcc jp omnirpc 
+ m sato h nakada s sekiguchi s matsuoka 
+u nagashima and h takagi ninf a network based 
+information library for global world-wide 
+computing infrastructure in hpcn europe pages 
+ - 
+ ninf project http ninf apgrid org 
+ y tanaka h nakada s sekiguchi t suzumura 
+and s matsuoka ninf-g a reference 
+implementation of rpc-based programming 
+middleware for grid computing journal of grid 
+computing - 
+ d arnold s agrawal s blackford j dongarra 
+m miller k seymour k sagi z shi and 
+s vadhiyar users guide to netsolve v 
+innovative computing dept technical report 
+icl-ut- - university of tennessee knoxville 
+tn june 
+ object management group http www omg org 
+ k seymour h nakada s matsuoka j dongarra 
+c lee and h casanova gridrpc a remote 
+procedure call api for grid computing 
+ h goto t takahashi y takata k ohta and u 
+nagashima conflex conformational behaviors of 
+polypeptides as predicted by a conformational space 
+search in nanotech volume pages - 
+ i foster and c kesselman globus a metacomputing 
+infrastructure toolkit the international journal of 
+supercomputer applications and high performanc e 
+computing - summer 
+ stefan m larson christopher d snow michael 
+shirts and vijay s pande folding home and 
+genome home using distributed computing to tackle 
+prev iously intractable problems in computational 
+biology computational genomics 
+ seti home project 
+http setiathome ssl berkeley edu 
+ r buyya k branson j giddy and d abramson 
+the virtual laboratory a toolset to enable distributed 
+molecular modelling for drug design on the world-wide 
+grid concurrency and computation practice and 
+experience - january 
+ s matsuoka h nakada m sato and s sekiguchi 
+design issues of network enabled server systems for 
+the grid in proc of grid lncs pages 
+ - 
+ 

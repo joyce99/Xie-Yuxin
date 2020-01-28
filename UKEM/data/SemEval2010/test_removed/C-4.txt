@@ -1,0 +1,1045 @@
+intra-flow loss recovery and control for volp 
+henning sanneck 
+gmd fokus 
+nguyen tuong long le 
+gmd fokus 
+kaiserin-augusta-allee kaiserin-augusta-allee 
+d-l berlin germany d-l berlin germany 
+sanneck fokus gmd de le fokus gmd de 
+adam wolisz 
+technical university berlin 
+telecommunication networks 
+group sekr ft - 
+einsteinufer 
+d-l berlin germany 
+wolisz ee tu-berlin de 
+abstract 
+best effort packet-switched networks like the internet do 
+not offer a reliable transmission of packets to applications 
+with real-time constraints such as voice thus the loss of 
+packets impairs the application-level utility for voice this 
+utility impairment is twofold on one hand even short bursts 
+of lost packets may decrease significantly the ability of the 
+receiver to conceal the packet loss and the speech signal 
+playout is interrupted on the other hand some packets may 
+be particular sensitive to loss as they carry more important 
+information in terms of user perception than other packets 
+we first develop an end-to-end model based on loss 
+runlengths with which we can describe the loss distribution 
+within a flow these packet-level metrics are then linked to 
+user-level objective speech quality metrics using this 
+framework we find that for low-compressing sample-based codecs 
+ pcm with loss concealment isolated packet losses can be 
+concealed well whereas burst losses have a higher perceptual 
+impact for high-compressing frame-based codecs g 
+on one hand the impact of loss is amplified through error 
+propagation caused by the decoder filter memories though 
+on the other hand such coding schemes help to perform loss 
+concealment by extrapolation of decoder state contrary to 
+sample-based codecs we show that the concealment 
+performance may break at transitions within the speech signal 
+however 
+we then propose mechanisms which differentiate between 
+packets within a voice data flow to minimize the impact of 
+packet loss we designate these methods as intra-flow loss 
+recovery and control at the end-to-end level identification 
+of packets sensitive to loss sender as well as loss 
+concealment receiver takes place hop-by-hop support schemes 
+then allow to statistically trade the loss of one packet 
+which is considered more important against another one of 
+the same flow which is of lower importance as both 
+packets require the same cost in terms of network transmission 
+a gain in user perception is obtainable we show that 
+significant speech quality improvements can be achieved and 
+additional data and delay overhead can be avoided while 
+still maintaining a network service which is virtually 
+identical to best effort in the long term 
+categories and subject descriptors 
+c computer communication networks 
+distributed systems-distributed applications computer 
+communication networks internetworking-routers 
+c computer systems organization performance of 
+systems-itjeasun nent techniques c computer 
+systems organization performance of systems--modeling 
+techniques 
+general terms 
+design measurement performance reliability 
+ introduction 
+considering that a real-time flow may experience some packet 
+loss the impact of loss may vary significantly dependent on 
+which packets are lost within a flow in the following we 
+distinguish two reasons for such a variable loss sensitivity 
+temporal sensitivity loss of adus which is 
+correlated in time may lead to disruptions in the service 
+note that this effect is further aggravated by some 
+interdependence between adus i e that one adu can 
+only be decoded when a previous adu before has 
+successfully been received and decoded for voice as 
+a single packet contains typically several adus voice 
+frames this effect is thus more significant than e g for 
+video it translates basically to isolated packet losses 
+versus losses that occur in bursts 
+sensitivity due to adu heterogeneity certain adus 
+might contain parts of the encoded signal which are 
+ application data unit the unit of data emitted by a source 
+coder such as a video or voice frame 
+ 
+figure schematic utility functions dependent on 
+the loss of more l and less - important packets 
+more important with regard to user perception than 
+others of the same flow let us consider a flow with 
+two frame types of largely different perceptual 
+importance we assume same size frequency and no 
+interdependence between the frames under the loss of 
+ of the packets the perceptual quality varies hugely 
+between the case where the of the frames with 
+high perceptual importance are received and the tax 
+where the less important frames are received 
+network support for real-time multimedia flows can on one 
+hand aim at offering a lossless service which however to 
+be implemented within a pa et-switched network will be 
+costly for the network provider and thus for the user on 
+the other hand within a lossy service the above sensitivity 
+constraints must be taken into account it is our strong 
+belief that this needs to be done in a generic way i e 
+no application-specific knowledge about particular coding 
+schemes e g should be necessary within the network and 
+vice versa no knowledge about network specifics should be 
+necessary within an application let us now consider the 
+case that of packets of a flow are identified as more 
+important designated by l or less important - 
+due to any of the above sensitivity constraints figure a 
+shows a generic utility function describing the 
+applicationlevel quality of service qos dependent on the percentage 
+of packets lost for real-time multimedia traffic such 
+utility should correspond to perceived video voice quality if 
+the relative importance of the packets is not known by the 
+transmission system the loss rates for the l and - 
+packets are equal due to the over-proportional sensitivity of the 
+ l packets to loss as well as the dependence of the end-t 
+end loss recovery performance on the fl packets the utility 
+function is decreasing significantly in a non-linear way 
+ approximated in the figure by piece-wise linear functions with 
+an increasing loss rate figure b presents the cbs  where 
+all l packets are protected at the expense of - pa 
+the decay of the utility function for loss rates is 
+reduced because the l packets are protected and the 
+endto-end loss recovery can thus operate properly over a wider 
+range of loss rates indicated by the shaded area this results 
+in a graceful degradation of the application s utility note 
+that the higher the non-linearity of the utility contribution 
+of the fl packets is deviation from the dotted curve in 
+fig a the higher is the potential gain in utility when the 
+protection for l packets is enabled results for actual 
+perceived quality as utility for multimedia applications exhibit 
+such a non-linear behavior 
+to describe this effect and provide a taxonomy for 
+different qos enhancement approaches we introduce a novel 
+terminology we designate mechanisms which influence qos 
+parameters between bows thus decrease the loss rate of 
+one flow at the expense of other flows as inter-flow qos 
+schemes which in the presence of loss differentiate between 
+pa within a flow as demonstrated in figure above 
+provide intra-flow qos enhancement as qos mechanisms 
+have to be implemented within the network hopby-hop 
+and or in the end systems end-to-end we have another 
+axis of classification 
+the adaptation of the sender s bitrate to the current 
+network congestion state as an intraflow qos scheme loss 
+avoidance is is difficult to apply to voice considering 
+that voice flows have a very low bitrate the relative cost of 
+transmitting the feedback information is high when 
+compared e g to a video flow to reduce this cost the feedback 
+interval would need to be increased then leading to a higher 
+probability of wrong adaptation decisions the major 
+di culty however is the lack of a codec which is truly scalable 
+in terms of its output bitrate and corresponding perceptual 
+quality currently standardized voice codecs usually 
+only have a xed output bitrate while it has been proposed 
+to switch between voice codeca the mos subjective 
+quality values for the codecs employed do not differ much 
+e g theitu codecs g g g g and g 
+cover a bitrate range from kbitjs to kbitjs while the 
+subjective quality differs by less than on a l-to- mos 
+scale bad excellent quality so when the 
+availability of sutticient computing power is assumed the lowest 
+bitrate codec can be chosen permanently without actually 
+decreasing the perceptual quality 
+for loss recovery on an end-to-end basis due to the 
+realtime delay constraints open-loop schemes like forward 
+error correction fec have been proposed while such 
+schemes are attractive because they can be used on the 
+internet today they also have several drawbacks the amount 
+of redundant information needs to be adaptive to avoid 
+taking bandwidth away from other flows this adaptation is 
+crucial especially when the fraction of traflic using 
+redundancy schemes is large if the redundancy is a source 
+coding itself like it has often been proposed the 
+comments from above on adaptation also apply using 
+redundancy has also implications to the playout delay adaptation 
+ lo employed to de-jitter the packets at the receiver note 
+that the presented types of loss sensitivity also apply to 
+ap while we have obtained results which confirm the shape of 
+the overall utility curve shown in fig clearly the utility 
+functions of the -l sub flows and their relationship are 
+more complex and only approximately additive 
+ 
+table state and transition probabilities computed 
+for an end-to-end internet trace using a general 
+markov model third order by yajnik et al 
+state 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+probability of probability probability 
+being in the state of i s of l s 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+plications which are enhanced by end-to-end loss recovery 
+mechanisms end-to-end mechanisms can reduce and shift 
+such sensitivities but cannot come close to eliminate them 
+therefore in this work we assume that the lowest possible 
+bitrate which provides the desired quality is chosen neither 
+feedback adaptation nor redundancy is used however at 
+the end-to-end level identification marking of packets 
+sensitive to loss sender as well as loss concealment receiver 
+takes place hop-by-hop support schemes then allow trading 
+the loss of one packet which is considered more important 
+against another one of the same flow which is of lower 
+importance we employ actual codecs and measure their utility 
+in the presence of packet loss using objective speech quality 
+measurement 
+the paper is structured as follows section introduces 
+packet- and user-level metrics we employ these metrics 
+to describe the sensitivity of voip traffic to packet loss in 
+section section briefly introduces a queue management 
+algorithm which can be used for intra-flow loss control in 
+section we present results documenting the performance 
+of the proposed mechanisms at both the end-to-end and 
+hopby-hop level section concludes the paper 
+ metrics 
+ packet-level metrics 
+a general markov model s which describes the loss 
+process is defined as follows 
+let p z s z s - m z s - z s - be the state 
+transition probability of a general markov model of order m 
+where z s is the loss indicator function for the packet with 
+the sequence number s all combinations for the values 
+and of the sequence z s-m z s- z s- appear in 
+the state space as an example p z s z s - 
+ z s gives the state transition probability when the 
+current packet s is lost the previous packet s - has also 
+been lost and packet s - has not been lost the number 
+of states of the model is two state transitions can 
+take place from any of the states thus the number of 
+parameters which have to be computed is m even for 
+relatively small m this amount of parameters is difficult to 
+be evaluated and compared table shows some values for 
+the state and transition probabilities for a general markov 
+model of third order measured end-to-end in the internet by 
+yajnik et al it is interesting to note that for all 
+states with z s - the probability for the next packet 
+not to be lost z s is generally very high in 
+bold typeface whereas when z s- the state transition 
+probabilities to that event cover the range of to 
+that means that past no loss events do not affect the loss 
+process as much as past loss events intuitively this seems 
+to make sense because a successfully arriving packet can 
+be seen as a indicator for congestion relief andren et al 
+ l as well as yajnik et al both confirmed this by 
+measuring the cross correlation of the loss- and 
+no-loss-runlengths they came to the result that such correlation is 
+very weak this implies that patterns of short loss bursts 
+interspersed with short periods of successful packet arrivals 
+occur rarely note in this context that in  able the pattern 
+ has by far the lowest state probability 
+thus in the following we employ a model which only 
+considers the past loss events for the state transition 
+probability the number of states of the model can be reduced 
+from m to m this means that we only consider the 
+state transition probability p z s z s - k z s - 
+with z s - ic i v i e ic - where ic k m 
+is a variable parameter we define a loss run length lc 
+for a sequence of ic consecutively lost packets detected at 
+sj sj ic with z sj - k - o z sj and 
+z sj - k i v i e ic - j being the j-th   burst 
+loss event note that the parameters of the model become 
+independent of the sequence number s and can now rather 
+be described by the occurence ok of a loss run length k 
+we define the random variable x as follows x no 
+packet lost x k lc m ezactly lc consecutive 
+packets lost and x k k m at least k 
+consecutive packets lost with this definition we establish a 
+loss run-length model with a finite number of states m 
+which gives loss probabilities dependent on the burst length 
+in the model for every additional lost packet which adds to 
+the length of a loss burst a state transition takes place if a 
+packet is successfully received the state returns to x 
+thus the state probability of the system for ic m is 
+p x zc due to the limited memory of the system the 
+last state x m is just defined as crm consecutive packets 
+lost with p x m being the state probability given 
+the case of a finite number of packets a for a flow which 
+experiences d cpc cok packet drops we have the 
+relative frequency pl k p x k for a for the 
+occurence of a loss burst of length lc an approximation for 
+the expectation of the random variable x can be computed 
+as pi cr l k and identified with the mean loss 
+rate we can also approximate the state probabilities of the 
+model by the cumulative loss rate p      k crskp  
+ k m and p    cr p n--mzl ot k m the 
+transition probabilities for lc m can be computed 
+easily as 
+p k--l k p x klx k-l 
+p x knx k- 
+p x k- 
+zz 
+p x k 
+p x k- 
+these conditional loss probabilities again can be 
+approxpzl cum k cnm k on 
+i m a t e d by pl cond  pl cum k-l - c ek--l for 
+ 
+figure loss run-length model with m states 
+p x m x m we have 
+pl d rn lf p 
+fig shows the markov chain for the model 
+ 
+additionally we also define a random variable y which de 
+scribes the distribution of burst loss lengths with respect 
+to the bunt loss events j and not to packet events like in 
+the definition of x we have the burst loss length rate 
+ga as an estimate for p y k thus the mean 
+burst loss length is g h e ct kgb 
+corresponding to e y average loss gap 
+the run-length model implies a geometric distribution for 
+residing in state x m for the probability of a burst loss 
+length of k packets we thus can compute estimates for 
+performance parameters in a higher order model representation 
+ note that here y represent the random variable used in the 
+higher-order models for a three state model we have e g 
+for p y k 
+p y k 
+p y k l-pm k l 
+pn p -pm k c- 
+for the special case of a system with a memory of only the 
+previous packet m l we can use the runlength 
+distribution for a simple computation of the parameters of the 
+commonly-used gilbert model fig to characterize the 
+loss process x being the associated random variable with 
+x no packet lost x a packet lost then the 
+probability of being in state m can be seen bs the uncow 
+ditional loss probability ulp and approximated by the mean 
+loss pr pi only one conditional loss probability clp 
+for the transition --t exists 
+p  e-d cfl   - 
+lbd 
+if losses of one flow are correlated i e the loss 
+probability of an arriving packet is itiuenced by the contribution 
+to the state of the queue by a previous packet of the same 
+flow and or both the previous and the current packet see 
+busty arrivals of other traffic we have pal clp and 
+thus ulp clp for pal elp the gilbert model is 
+equivalent to a l-state bernotilli model with zllp elp no loss 
+correlation 
+as in equation we can compute an estimate for the 
+probability of a burst loss length of k packets for a higher order 
+model representation 
+b y k clpk-  - clp 
+figure loss run-length 
+ gilbert model 
+model with two states 
+figure components of the end-to-end loss 
+recovery control measurement setup 
+ objective speech quality metrics 
+unlike the conventional methods like the signal-t-noise 
+ratio snr novel objective quality measures attempt to 
+estimate the subjective quality as closely as possible by 
+modeling the human auditory system in our evaluation we 
+use two objective quality measures the enhanced mod d 
+bark spectral distortion embsd and the measw 
+ing normalizing blocks mnb described in the appendix 
+ii of the itu-t recommendation p these two 
+objective quality measure   are reported to have a very high 
+correlation with subjective tests their relation to the range 
+of subjective test result values mos is close to being linear 
+and they are recommended as being suitable for the 
+evaluation of speech degraded by transmission errors in real 
+network environments such as bit errors and frame erasures 
+ both metrics are distance measures i e a ib 
+suit value of implies perfect quality the larger the value 
+the worse the speech quality is in fig we show an axis 
+with approximate corresponding mos values for all 
+simulations in this paper we employed both schemes as they 
+yielded very similar results though mnb results generally 
+exhibited less variability we only present embsd results 
+ voip loss sensitivity 
+figure shows the components of the measurement setup 
+which we will use to evaluate our approach to combined 
+end-t-end and hopby-hop loss recovery and control the 
+ 
+shaded boxes show the components in the data path where 
+mechanisms of loss recovery are located together with the 
+parameters of the network model section and the 
+perceptual model we obtain a measurement setup which allows 
+us to map a specific pcm signal input to a speech quality 
+measure while using a simple end-to-end loss 
+characterization we generate a large number of loss patterns by using 
+different seeds for the pseudcerandom number generator for 
+the results presented here we used patterns for each 
+simulated condition for a single speech sample this procedure 
+takes thus into account that the impact of loss on an input 
+signal may not be homogenous i e a loss burst within one 
+segment of that signal can have a different perceptual impact 
+than a loss burst of the same size within another segment 
+by averaging the result of the objective quality measure for 
+several loss patterns we have a reliable indication for the 
+performance of the codec operating under a certain network 
+loss condition we employed a gilbert model fig as the 
+network model for the simulations as we have found that 
+here higher order models do not provide much additional 
+information 
+ temporal sensitivity 
+ pa 
+we first analyze the behaviour for  -law pcm flows 
+kbit s with and without loss concealment where the loss 
+concealment repairs isolated losses only speech stationarity 
+can only be assumed for small time intervals results are 
+shown for the ap c concealment algorithm ll similar 
+results were obtained with other concealment algorithms 
+figure shows the case without loss concealment enabled 
+where gilbert model parameters are varied the resulting 
+speech quality is insensitive to the loss distribution 
+parameter elp the results are even slightly decressing for an 
+increasing clp pointing to a significant variability of 
+theresuits in figure the results with loss concealment are 
+depicted when the loss correlation dp is low loss 
+concealment provides a significant performance improvement the 
+relative improvement increases with increasing loss pulp 
+for higher clp values the cases with and without 
+concealment become increasingly similar and show the same 
+performance at clp x figures and respectively also 
+contain a curve showing the performance under the assumption 
+of random losses bernouilli model ulp elp thus 
+considering a given ulp a worst case loss pattern of alternating 
+losses i s mod l l s l mod would enable a 
+considerable performance improvement with ok ovk 
+p  cond eq 
+as we found by visual inspection that the distributions of the 
+perceptual distortion values for one loss condition seem to 
+approximately follow a normal distribution we employ mean 
+and standard deviation to describe the statistical variability 
+of the measured values figure presents the perceptual 
+distortion as in the previous figure but also give the standard 
+deviation as error bars for the respective loss condition it 
+shows the increasing variability of the results with increasing 
+loss correlation clp while the variability does not seem to 
+change much with an increasing amount of loss alp on 
+one hand this points to some though weak sensitivity with 
+regard to heterogeneity i e it matters which area of the 
+speech signal voiced unvoiced experiences a burst loss 
+on the other hand it shows that a large number of different 
+figure utility curve for pcm without loss 
+conc e a l m e n t embsd 
+figure utility curve for pcm with loss 
+concealment embsd 
+figure variability of the perceptual distortion 
+with s  concealment embsd 
+ 
+figure utility curve for the g codec 
+ embsd 
+loss patterns is necessary for a certain speech sample when 
+using objective speech quality measurement to assess the 
+impact of loss corwlation on user perception 
+ g 
+g uses the conjugate structure algebraic code 
+excited linear prediction cs-acelp coding scheme and 
+ooerates at kbit s in g a speech fmme is ms in 
+d ion for each frame the g i encoder analyzes the 
+input data and extracts the parameters of the code excited 
+linear prediction celp model such as linear prediction 
+filter coefficients and excitation vectors when a frame is 
+lost or corrupted the g decoder uses the parameters of 
+the previous frame to interpolate those of the lost frame 
+the line spectral pair coefficients lsp of the last good 
+frame are repeated and the gain coefficients are taken from 
+the previous frame but they are damped to gradually reduce 
+their impact when a frame loss occurs the decoder cannot 
+update its state resulting in a divergence of encoder and 
+decoder state thus errors are not only introduced 
+during the time period represented by the current frame but 
+also in the following ones in addition to the impact of the 
+missing codewords distortion is increased by the missing 
+update of the predictor filter memories for the line speo 
+tral pairs and the linear prediction synthesis filter memo 
+ries figure shows that for similar network conditions the 
+output quality of the g is worse than pcm with loss 
+concealment demonstrating the compression versus quality 
+tradeoff under packet loss interestingly the loss correlation 
+ dp parameter has some impact on the speech quality 
+however the effect is weak pointing to a certain robustness of 
+the g codec with regard to the resiliency to consecutive 
+packet losses due to the internal loss concealment 
+rosenberg has done a similar experiment showing that the 
+difference between the original and the concealed signal with 
+increasing loss burstiness in terms of a mean-squared error 
+is significant however this demonstrates the importance 
+of perceptual metrics which are able to include concealment 
+ lsps are another representation of the linear prediction 
+coefficients 
+ two g frames are contained in a packet 
+figure resynchronization time in frames of the 
+g decoder after the loss of k consecutive frames 
+ k e as a function of frame position 
+ and not only reconstruction operations in the quality 
+assessment 
+ sensitivity due to adu heterogeneity 
+pcm is a memoryless encoding therefore the adu content 
+is only weakly heterogeneous figure thus in this 
+section we concentrate on the g coda the experiment we 
+carry out is to meawre the resynchronization time of the d 
+coder after k consecutive frames are lost the g decoder 
+is said to have resynchronized with the encoder when the 
+energy of the error signal falls below one percent of the energy 
+of the decoded signal without frame loss this is equivalent 
+to a signal-t-noise ratio snr threshold of odb the 
+error signal energy and thus the snr is computed on a 
+per-frame basis figure shows the resynchronization time 
+ expressed in the number of frames needed until the 
+threshold is exceeded plotted against the position of the loss i e 
+the index of the first lost frame for d rent values of k 
+the speech sample is produced by a male speaker where an 
+unvoiced voiced au transition occurs in the eighth frame 
+we can see from figure that the position of a frame loss has 
+a signilicant inlluence cm the resulting signal degradation 
+while the degradation is not that sensitive to the length of 
+the frame loss burst k the loss of unvoiced frames seems 
+to have a rather small impact on the signal degradation 
+and the decoder recovers the state information fast 
+thereafter the loss of voiced frames causes a larger degradation 
+of the speech signal and the decoder needs more time to 
+resyncbronize with the sender however the loss of voiced 
+frames at an unvoiced voiced transition leads to a significant 
+degradation of the signal we have repeated the experiment 
+for different male and female speakers and obtained similar 
+results lsking into account the wed coding scheme the 
+above phenomenon could be explained as follows because 
+voiced sounds have a higher energy than unvoiced sounds 
+the loss of voiced frames causes a larger signal degradation 
+than the loss of unvoiced frames however due to the 
+periodic property of voiced sounds the decoder can conceal 
+ while on one hand we see that snr n easu es often do 
+not correlate well with subjective speech quality on the 
+other hand the large differences in the snr-threshold-based 
+resynchronization time clearly point to a significant impact 
+on subjective speech quality 
+ 
+figure differential red drop probabilities as 
+a function of average queue sizes 
+the loss of voiced frames well once it has obtained suflicient 
+information on them the decoder fails to conceal the loss 
+of voiced frames at an unvoiced voiced transition because 
+it attempts to conceal the loss of voiced frames using the 
+filter coefficients and the excitation for an unvoiced sound 
+moreover because the g encoder uses a moving average 
+filter to predict the values of the line spectral pairs and only 
+transmits the difference between the real and predicted 
+vaues it takes a lot of time for the decoder to resynchronize 
+with the encoder once it has failed to build the appropriate 
+linear prediction filter 
+ queue management for 
+intraflow loss control 
+while we have highlighted the sensitivity of voip traffic to 
+the distribution of loss in the last sections we now want 
+to briefly introduce a queue management mechanism 
+which is able to enforce the relative preferences of the ap 
+plication with regard to loss 
+we consider flows with packets marked with l and 
+ i as described in the introduction bs foreground traffic 
+ ft and other best effort flows as backaound traffic 
+ bt packet marking in addition to keeping the desirable 
+property of state aggregration within the network core as 
+proposed by the ietf differentiated services architecture 
+is exploited here to convey the intrbflow requirements of a 
+llow as it should be avoided to introduce reordering of the 
+packets of a flow in the network we consider mechanisms 
+for the management of a single queue with different priority 
+levels one approach to realize inter-flow service 
+differentiation using a single queue is rio  red with in and out 
+ with rio two average queue sizes as congestion 
+indicators are computed one just for the in high priority 
+packets and another for both in and out low priority 
+packets packets marked as out are dropped earlier in 
+terms of the average queue size than in packets rio has 
+been designed to decrease the clip seen by particular bows at 
+the expense of other flows in this work however we want 
+to keep the ulp as given by other parameters while 
+modifying the loss distribution for the foreground traffic ft 
+this amounts to trading the loss of a l packet against a 
+- packet of the same flow in a statistical sense fig 
+shows the conventional red drop probability curve po as a 
+function of the average queue size for all arrivals avg which 
+is applied to all unmarked traffic background traffic 
+bt 
+the necessary relationship between the drop probabilities 
+for packets marked as - and l can be derived 
+follows note that this relationship is valid both at the 
+end-tend level and every individual hop let a a a a-  
+be the overall number of emitted packets by an ft flow and 
+a e -l o l be the number of packets belonging to a 
+certain class where the class corresponds to unmarked 
+best effort traflic then with a a- a   and 
+considering that the resulting service has to be best effort in 
+the long term we have 
+aopo a lp l lip- a ape 
+qlll l fp- a--oo m 
+p - l zpo-p 
+due to this relationship between the drop probability for 
+ l and - packets we designate this queue 
+management algorithm as differential red diered figure 
+shows the corresponding drop probability curves due to 
+the condition of a i-l all in addition to the 
+conventional red behaviour the diffred implementation should 
+also monitor the l and - arrival processes if the ratio of 
+ l to - packets at a gateway is not either due to 
+misbehaving flows or a significant number of flows which have 
+already experienced loss at earlier hops the - loss prob 
+ability is decreased and the l probability is increased at 
+the same time thus degrading the service for all users the 
+shaded areas above and below the po avg curve fig 
+show the operating area when this correction is added 
+in it has been shown that using only the conventional 
+red average queue size avg for dsred operation is not 
+sufficient this is due to the potentially missing 
+correlation of the computed aug value between consecutive l and 
+- arrivals especially when the share of the ft traftic is 
+low as this might result in a unfair distribution of losses 
+between the ft and bt fractions a specific avgl value is 
+computed by sampling the queue size only at ft arrival 
+instants thus a service differentiation for foreground 
+traffic is possible which does not differ from conventional red 
+behaviour in the long term average i e in the ulp 
+ intra-flow loss recovery and 
+control 
+ temporal sensitivity 
+considering a flow with temporal loss sensitivity paragraph 
+ has shown that a simple periodic loss pattern enhances 
+the performance of the end-to-end loss recovery the pattern 
+is not tied to particular packets therefore a per-flow 
+characterization with the introduced metrics is applicable in this 
+paragraph we assume that a flow expressed its temporal 
+se sitivity by marking its flow with an alternating pattern of 
+ c l  c l 
+ 
+figure comparison of actual and estimated figure comparison of actual and estimated 
+burst loss length rates as a function of burst length burst loss length rates as a function of burst length 
+k three state run-length-based model k two state run-length-based model gilbert 
+figures and show the rates for the actual and the 
+estimated burst loss lengths for a three-state m and a 
+two state m gilbert model respectively we can 
+observe that diffred shapes the burst probability curve in 
+the desired way most of the probability mass is 
+concentrated at isolated losses the ideal behaviour would be the 
+occurence of only isolated losses ic which can be 
+expressed with clp in terms of gilbert model parameters 
+with drop tail an approximately geometrically decreasing 
+burst loss probability with increasing burst length eq 
+is obtainable where the clp parameter is relatively large 
+though thus considering voice with temporal loss 
+sensitivity as the foreground traffic of interest with diffred a 
+large number of short annoying bursts can be traded against 
+a larger number of isolated losses and few long loss bursts 
+ which occur when the queue is under temporary overload 
+i e awg maxth fig 
+we can see that the three-state model estimation eq 
+reflects the two areas of the diffred operation the sharp drop 
+of the burst loss length rate for k and the decrease along 
+a geometrically decreasing asymptote for k this effect 
+cannot be captured by the two state model eq which 
+thus overestimates the burst loss length rate for ic and 
+then hugely underestimates it for k interestingly for 
+drop tail while both models capture the shape of the 
+actual curve the lower order model is more accurate in the 
+estimation this can be explained as follows if the burst 
+loss length probabilities are in fact close to a geometrical 
+distribution the estimate is more robust if all data is included 
+ note that the run-length based approximation of the 
+conditional loss probability p x mlx m only includes loss 
+run-length occurences larger or equal to m eq 
+swe only discuss the results qualitatively here to give an 
+example how an intra-flow loss control algorithm performs 
+and to show how loss models can capture this performance 
+details on the simulation scenario and parameters can be 
+found in 
+ sensitivity due to adu heterogeneity 
+in paragraph we have seen that sensitivity to adu 
+heterogeneity results in a certain non-periodic loss pattern 
+thus a mechanism at or near the sender is necessary 
+which derives that pattern from the voice data 
+furthermore an explicit cooperation between end-to-end and hop 
+by-hop mechanisms is necessary fig 
+we use the result of paragraph to develop a new packet 
+marking scheme called speech property-based selective 
+differential packet marking spb-diffmark the 
+diffmark scheme concentrates the higher priority packets on 
+the frames essential to the speech signal and relies on the 
+decoder s concealment for other frames 
+figure shows the simple algorithm written in a 
+pseudocode that is used to detect an unvoiced voiced uw 
+transition and protect the voiced frames at the beginning of a 
+voiced signal the procedure analysis is used to classify 
+a block of ic frames as voiced unvoiced or uv transition 
+send is used to send a block of ic frames as a single packet 
+with the appropriate priority either fl or - 
+as the core algorithm gives only a binary marking decision 
+ protect the packet or not we employ a simple algorithm 
+to send the necessary - packets for compensation eq 
+after a burst of l packets has been sent a corresponding 
+number of - packets is sent immediately state about the 
+necessary number of to-be-sent - packets is kept in the 
+event that the spb algorithm triggers the next l burst 
+before all - packets necessary for compensation are sent 
+thus seen over time intervals which are long compared to 
+the -l burst times the mean loss for the flow will be 
+equal to the best effort case eq n is a pre-defined 
+value and defines how many frames at the beginning of a 
+voiced signal are to be protected our simulations fig 
+have shown that the range from to are appropriate 
+values for n depending on the network loss condition in 
+the simulations presented below we choose ic a typical 
+ 
+protect 
+fcm ach k frames 
+classify analysis k frames 
+if protect 
+if classify unvoiced 
+protect 
+if compensation 
+compensation compensation-k 
+send k frames - 
+else 
+send k frames 
+endif 
+else 
+send k frames l 
+protect protect-k 
+compensation compensation k 
+endif 
+else 
+if classify uvfransition 
+send k frames l 
+protect n - k 
+compensation compensation k 
+else 
+if compensation 
+compensation compensation-k 
+send k frames - 
+else 
+send k frames 
+endif 
+endif 
+endif 
+endfor 
+figure spb-diffmark pseudo code 
+value for interactive speech transmissions over the internet 
+ ms of audio data per packet a larger number of ic would 
+help to reduce the relative overhead of the protocol header 
+but also increases the packetization delay and makes sender 
+classification and receiver concealment in case of packet loss 
+ due to a larger loss gap more difficult 
+ en d-to-end simulation description 
+due to the non-periodic loss pattern we need to explicitly 
+associate a drop probability with a single packet within an 
+end-to-end model therefore we use a separate one-state 
+markov model bernouilli model to describe the network 
+behaviour as seen by each class of packets best effort 
+packets designated by in fig are dropped with the 
+probability pc whereas packets marked with l and - 
+are dropped with probabilities of p i and p- respectively 
+this is a reasonable assumption with regard to the 
+interdependence of the different classes in fact as it has been shown 
+that diffred figs and achieves a fair amount of 
+decorrelation of l and - packet losses nevertheless to 
+include some correlation between the classes we have set 
+p i m pc for the subsequent simulations this should 
+ the appropriateness of the simple end-to-end modeling 
+used has been investigated in with discrete event 
+simulation using a multi-hop topology and detailed modeling of 
+foreground and background traffic sources 
+marking scheme network model 
+n o m a r k lolo       
+f u l l m a r k i i i i l i 
+spb mark i j i i i 
+alt mark o ol ll o 
+ i pcl 
+ po 
+s p b d i f f m a r k ij l i l i - j- i 
+alt diffmark i- i - i -i i 
+figure marking schemes and corresponding 
+network models 
+also allow a reasonable evaluation of how losses in the fl 
+class affect the performance of the spb-algorithms 
+for a direct comparison with spb-diffmark we evaluate 
+a scheme where packets are alternatingly marked as being 
+either - or l alt-diffmark figure we 
+furthermore include related inter-flow loss protection schemes 
+the first scheme uses full protection full mark all 
+packets are marked as l the spb-mark scheme 
+operates similarly to spb-diffmark but no - packets 
+are sent for compensation those packets are also marked as 
+ for comparison we again use a scheme where 
+packets are alternatingly marked as being either or l 
+ alt-mark finally packets of pure best effort flows 
+are dropped with the probability po no mark case in 
+fig for the spb marking schemes the percentage of 
+ l- and -l-marked packets respectively is for the 
+speech material used we obtained similar marking 
+percentages for other speech samples the alt marking schemes 
+mark exactly of their packets as being fl 
+ results 
+figure shows the perceptual distortion for the marking 
+schemes dependent on the drop probability pc the 
+unprotected case no mark has the highest perceptual 
+distortion and thus the worst speech quality the differential 
+marking scheme spb-diffmark offers a significantly 
+better speech quality even when only using a network 
+service which amounts to best effort in the long term note 
+that the alt-diffmark marking strategy does not 
+differ from the best effort case which confirms the result of 
+paragraph spb-diffmark is also even better than 
+the inter-flow qos alt-mark scheme especially for higher 
+values of pe these results validate the strategy of our spb 
+marking schemes that do not equally mark all packets with a 
+higher priority but rather protect a subset of frames that are 
+essential to the speech quality the spb-fec scheme 
+ we have also perfo rmed informal listening tests which 
+confirmed the results using the objective metrics 
+ 
+figure perceptual distortion embsd for the 
+marking schemes and spb-fec 
+which uses redundancy piggybacked on the main payload 
+packets rfc to protect a subset of the packets 
+enables a very good output speech quality for low loss rates 
+however it should be noted that the amount of data sent 
+over the network is increased by note that the 
+simulation presumes that this additionally consumed bandwidth 
+itself does not contribute significantly to congestion this 
+assumption is only valid if a small fraction of trafhc is voice 
+ s the spb-fec curve is convex with increasing po as 
+due to the increasing loss correlation an increasing number 
+of consecutive packets carrying redundancy are lost leading 
+to unrecoverable losses the curve for spb-diffmark is 
+concave however yielding better performance for pe 
+the inter-flow qos alt-mark scheme of the 
+packets are marked enhances the perceptual quality however 
+the auditory distance and the perceptual distortion of the 
+spb-mark scheme with of all packets marked is 
+significantly lower and very close to the quality of the 
+decoded signal when all packets are marked full mark 
+this also shows that by protecting the entire flow only a 
+minor improvement in the perceptual quality is obtained 
+the results for the full mark scheme also show that 
+while the loss of some of the l packets has some 
+measurable impact the impact on perceptual quality can still be 
+considered to be very low 
+ conclusions 
+in this paper we have characterized the behaviour of a 
+samplebased codec pcm and a frame-based codec g in the 
+presence of packet loss we have then developed intraflow 
+loss recovery and control mechanisms to increase the 
+perceptual quality while we have tested other codecs only 
+informally we think that our results reflect the fundamental 
+difference between codecs which either encode the speech 
+wave we also used the g encoder for the redundant source 
+coding 
+form directly or which are based on linear prediction for 
+pcm without loss concealment we have found that it 
+neither exhibits significant temporal sensitivity nor sensitivity 
+to payload heterogeneity with loss concealment however 
+the speech quality is increased but the amount of increase 
+exhibits strong temporal sensitivity frame-based codecs 
+amplify on one hand the impact of loss by error 
+propagation though on the other hand such coding schemes help to 
+perform loss concealment by extrapolation of decoder state 
+contrary to sample-based codecs we have shown that the 
+concealment performance of the g decoder may break 
+at transitions within the speech signal however thus 
+showing strong sensitivity to payload heterogeneity 
+we have briefly introduced a queue management algorithm 
+which is able to control loss patterns without changing the 
+amount of loss and characterized its performance for the 
+loss control of a flow exhibiting temporal sensitivity then 
+we developed a new packet marking scheme called speech 
+property-based selective differential packet marking for 
+an efficient protection of frame-based codecs the 
+spbdiffmark scheme concentrates the higher priority 
+packets on the frames essential to the speech signal and relies on 
+the decoder s concealment for other frames we have also 
+evaluated the mapping of an end-to-end algorithm to 
+interflow protection we have found that the selective marking 
+scheme performs almost as good as the protection of the 
+entire flow at a significantly lower number of necessary 
+highpriority packets 
+thus combined intra-flow end-to-end hopby-hop schemes 
+seem to be well-suited for heavily-loaded networks with a 
+relatively large fraction of voice traffic this is the case because 
+they neither need the addition of redundancy nor feedback 
+ which would incur additional data and delay overhead and 
+thus yield stable voice quality also for higher loss rates due 
+to absence of fec and feedback loss such schemes can 
+better accomodate codecs with fixed output bitrates which are 
+difficult to integrate into fec schemes requiring adaptivity 
+of both the codec and the redundancy generator also it 
+is useful for adaptive codecs running at the lowest possible 
+bitrate avoiding redundancy and feedback is also 
+interesting in multicast conferencing scenarios where the end-to-end 
+loss characteristics of the different paths leading to members 
+of the session are largely different our work has clearly 
+focused on linking simple end-to-end models which can be 
+easily parametrized with the known characteristic of 
+hopby-hop loss control to user-level metrics an analysis of a 
+large scale deployment of non-adaptive or adaptive fec as 
+compared to a deployment of our combined scheme requires 
+clearly further study 
+ acknowledgments 
+we would like to thank wonho yang and robert yantorno 
+temple university for providing the embsd software for 
+the objective speech quality measurements michael 
+zander gmd fokus helped with the simulations of the queue 
+management schemes 
+ additional authors 
+additional author georg carle gmd fokus 
+email carle fokus gmd de 
+ 
+ 
+pi 
+pi 
+ 
+pi 
+ 
+pi 
+ 
+pi 
+pi 
+wi 
+wi 
+w 
+references 
+j andren m hilding and d veitch understanding 
+end-to-end internet traffic dynamics in proceedings 
+ieee globecom sydney australia november 
+ 
+j -c bolot s fosse-parisis and d towsley 
+adaptive fec-based error control for interactive 
+audio in the internet in proceedings ieee 
+infocom new york ny march 
+d clark and w fang explicit allocation of best 
+effort packet delivery service technical report mit 
+lcs 
+http diffserv lcs mit edu papers expallot-ddc-wf pdf 
+r cox and p kroon low bit-rate speech coders for 
+multimedia communication ieee communications 
+magazine pages - december 
+j ferrandiz and a lazar consecutive packet loss in 
+real-time packet traffic in proceedings of the fourth 
+international conference on data communications 
+systems ifip tc pages - barcelona june 
+ 
+w jiang and h schulzrinne qos measurement of 
+internet real-time multimedia services in proceedings 
+nossdav chapel hill nc june 
+c perkins i kouvelas hodson m handley and 
+j bolot rtp payload for redundant audio data rfc 
+ ietf september 
+ftp ftp ietf org rfc rfc txt 
+m podolsky c romer and s mccanne simulation 
+of fec-based error control for packet audio on the 
+internet in proceedings ieee infocom pages 
+ - san francisco ca march 
+j rosenberg g error recovery for internet 
+telephony project report columbia university 
+j rosenberg l qiu and h schulzrinne integrating 
+packet fec into adaptive voice playout buffer 
+algorithms on the internet in proceedings ieee 
+infocom tel aviv israel march 
+h sanneck concealment of lost speech packets using 
+adaptive packetization in proceedings ieee 
+multimedia systems pages - austin tx june 
+ 
+ftp ftp fokus gmd de pub glone papers sann 
+adaptive ps gz 
+h sanneck packet loss recovery and control for 
+voice tinsmission over the internet phd thesis 
+gmd fokus telecommunication networks group 
+technical university of berlin october 
+p 
+pi 
+p 
+wi 
+p 
+p 
+w 
+pi 
+pi 
+http sanneck net research publications thesis 
+sannoololoss pdf 
+h sanneck and g carle a queue management 
+algorithm for intracflow service differentiation in the 
+best effort internet in proceedings of the eighth 
+conference on computer communications and 
+networks icccn pages natick ma 
+october 
+ftp ftp fokus gmd de pub glone papers sann 
+intra-flow ps gz 
+h sanneck n le and a wolisz efficient qos 
+support for voice-over-ip applications using selective 
+packet marking in special session on error control 
+techniques for real-time delivery of multimedia data 
+first intenzational workshop on intelligent 
+multimedia computing immcn pages - 
+atlantic city nj february 
+ftp ftp fokus gmd de pub glone papers sann 
+voip-marking ps gz 
+h schulzrinne j kurose and d towsley loss 
+correlation for queues with bursty input streams in 
+proceedings icc pages - chicago il 
+d sisalem and a wolisz ldaf tcp-friendly 
+adaptation a measurement and comparison study in 
+proceedings nossdav chapel hill nc june 
+international telecommunication union coding of 
+speech at kbit s using conjugate-structure 
+algebraic-code-excited linear-prediction cs-acelp 
+recommendation g itu-t march 
+international telecommunication union objective 
+oualitv measurement of telephone-band - hz 
+speech codecs recommendation p itu-t 
+february 
+m yajnik j kurose and d towsley packet loss 
+correlation in the mbone multicast network 
+experimental measurements and markov chain 
+models technical report - department of 
+computer science university of massachusetts 
+amherst 
+m yajnik s moon j kurose and d towsley 
+measurement and modelling of the temporal 
+dependence in packet loss technical report - 
+department of computer science university of 
+massachusetts amherst 
+w yang and r yantorno improvement of mbsd 
+scaling noise masking threshold and correlation 
+analysis with mos difference instead of mos in 
+proceedings icassp pages - phoenix az 
+march 
+by 
+ 

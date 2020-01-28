@@ -1,0 +1,1852 @@
+bullet high bandwidth data dissemination 
+using an overlay mesh 
+dejan kosti´c adolfo rodriguez jeannie albrecht and amin vahdat 
+department of computer science 
+duke university 
+ dkostic razor albrecht vahdat  cs duke edu 
+abstract 
+in recent years overlay networks have become an effective 
+alternative to ip multicast for efficient point to multipoint 
+communication across the internet typically nodes self-organize with the 
+goal of forming an efficient overlay tree one that meets 
+performance targets without placing undue burden on the underlying 
+network in this paper we target high-bandwidth data 
+distribution from a single source to a large number of receivers 
+applications include large-file transfers and real-time multimedia 
+streaming for these applications we argue that an overlay mesh rather 
+than a tree can deliver fundamentally higher bandwidth and 
+reliability relative to typical tree structures this paper presents 
+bullet a scalable and distributed algorithm that enables nodes 
+spread across the internet to self-organize into a high bandwidth 
+overlay mesh we construct bullet around the insight that data 
+should be distributed in a disjoint manner to strategic points in 
+the network individual bullet receivers are then responsible for 
+locating and retrieving the data from multiple points in parallel 
+key contributions of this work include i an algorithm that 
+sends data to different points in the overlay such that any data 
+object is equally likely to appear at any node ii a scalable and 
+decentralized algorithm that allows nodes to locate and recover 
+missing data items and iii a complete implementation and 
+evaluation of bullet running across the internet and in a large-scale 
+emulation environment reveals up to a factor two bandwidth 
+improvements under a variety of circumstances in addition we find 
+that relative to tree-based solutions bullet reduces the need to 
+perform expensive bandwidth probing in a tree it is critical that 
+a node s parent delivers a high rate of application data to each 
+child in bullet however nodes simultaneously receive data from 
+multiple sources in parallel making it less important to locate 
+any single source capable of sustaining a high transmission rate 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems h information systems applications 
+communications applications 
+general terms 
+experimentation management performance 
+ introduction 
+in this paper we consider the following general problem 
+given a sender and a large set of interested receivers spread 
+across the internet how can we maximize the amount of 
+bandwidth delivered to receivers our problem domain 
+includes software or video distribution and real-time 
+multimedia streaming traditionally native ip multicast has been 
+the preferred method for delivering content to a set of 
+receivers in a scalable fashion however a number of 
+considerations including scale reliability and congestion 
+control have limited the wide-scale deployment of ip 
+multicast even if all these problems were to be addressed ip 
+multicast does not consider bandwidth when constructing 
+its distribution tree more recently overlays have emerged 
+as a promising alternative to multicast for network-efficient 
+point to multipoint data delivery 
+typical overlay structures attempt to mimic the structure 
+of multicast routing trees in network-layer multicast 
+however interior nodes consist of high speed routers with limited 
+processing power and extensibility overlays on the other 
+hand use programmable and hence extensible end hosts as 
+interior nodes in the overlay tree with these hosts acting as 
+repeaters to multiple children down the tree overlays have 
+shown tremendous promise for multicast-style applications 
+however we argue that a tree structure has fundamental 
+limitations both for high bandwidth multicast and for high 
+reliability one difficulty with trees is that bandwidth is 
+guaranteed to be monotonically decreasing moving down 
+the tree any loss high up the tree will reduce the 
+bandwidth available to receivers lower down the tree a number 
+of techniques have been proposed to recover from losses and 
+hence improve the available bandwidth in an overlay tree 
+ however fundamentally the bandwidth available to any 
+host is limited by the bandwidth available from that node s 
+single parent in the tree 
+thus our work operates on the premise that the model 
+for high-bandwidth multicast data dissemination should be 
+re-examined rather than sending identical copies of the 
+same data stream to all nodes in a tree and designing a 
+scalable mechanism for recovering from loss we propose that 
+participants in a multicast overlay cooperate to strategically 
+ 
+transmit disjoint data sets to various points in the network 
+here the sender splits data into sequential blocks blocks 
+are further subdivided into individual objects which are in 
+turn transmitted to different points in the network nodes 
+still receive a set of objects from their parents but they are 
+then responsible for locating peers that hold missing data 
+objects we use a distributed algorithm that aims to make 
+the availability of data items uniformly spread across all 
+overlay participants in this way we avoid the problem of 
+locating the last object which may only be available at a 
+few nodes one hypothesis of this work is that relative to a 
+tree this model will result in higher bandwidth-leveraging 
+the bandwidth from simultaneous parallel downloads from 
+multiple sources rather than a single parent-and higher 
+reliability-retrieving data from multiple peers reduces the 
+potential damage from a single node failure 
+to illustrate bullet s behavior consider a simple three 
+node overlay with a root r and two children a and b r has 
+ mbps of available tcp-friendly bandwidth to each of a 
+and b however there is also mbps of available bandwidth 
+between a and b in this example bullet would transmit a 
+disjoint set of data at mbps to each of a and b a and b 
+would then each independently discover the availability of 
+disjoint data at the remote peer and begin streaming data 
+to one another effectively achieving a retrieval rate of 
+mbps on the other hand any overlay tree is restricted to 
+delivering at most mbps even with a scalable technique 
+for recovering lost data 
+any solution for achieving the above model must maintain 
+a number of properties first it must be tcp friendly 
+no flow should consume more than its fair share of the 
+bottleneck bandwidth and each flow must respond to congestion 
+signals losses by reducing its transmission rate second it 
+must impose low control overhead there are many 
+possible sources of such overhead including probing for 
+available bandwidth between nodes locating appropriate nodes 
+to peer with for data retrieval and redundantly receiving 
+the same data objects from multiple sources third the 
+algorithm should be decentralized and scalable to thousands 
+of participants no node should be required to learn or 
+maintain global knowledge for instance global group 
+membership or the set of data objects currently available at all 
+nodes finally the approach must be robust to individual 
+failures for example the failure of a single node should 
+result only in a temporary reduction in the bandwidth 
+delivered to a small subset of participants no single failure 
+should result in the complete loss of data for any significant 
+fraction of nodes as might be the case for a single node 
+failure high up in a multicast overlay tree 
+in this context this paper presents the design and 
+evaluation of bullet an algorithm for constructing an overlay 
+mesh that attempts to maintain the above properties 
+bullet nodes begin by self-organizing into an overlay tree which 
+can be constructed by any of a number of existing 
+techniques each bullet node starting with the 
+root of the underlying tree then transmits a disjoint set of 
+data to each of its children with the goal of maintaining 
+uniform representativeness of each data item across all 
+participants the level of disjointness is determined by the 
+bandwidth available to each of its children bullet then employs 
+a scalable and efficient algorithm to enable nodes to quickly 
+locate multiple peers capable of transmitting missing data 
+items to the node thus bullet layers a high-bandwidth 
+mesh on top of an arbitrary overlay tree depending on the 
+type of data being transmitted bullet can optionally employ 
+a variety of encoding schemes for instance erasure codes 
+ or multiple description coding mdc to 
+efficiently disseminate data adapt to variable bandwidth and 
+recover from losses finally we use tfrc to transfer 
+data both down the overlay tree and among peers this 
+ensures that the entire overlay behaves in a congestion-friendly 
+manner adjusting its transmission rate on a per-connection 
+basis based on prevailing network conditions 
+one important benefit of our approach is that the 
+bandwidth delivered by the bullet mesh is somewhat independent 
+of the bandwidth available through the underlying overlay 
+tree one significant limitation to building high bandwidth 
+overlay trees is the overhead associated with the tree 
+construction protocol in these trees it is critical that each 
+participant locates a parent via probing with a high level 
+of available bandwidth because it receives data from only 
+a single source its parent thus even once the tree is 
+constructed nodes must continue their probing to adapt to 
+dynamically changing network conditions while bandwidth 
+probing is an active area of research accurate 
+results generally require the transfer of a large amount of data 
+to gain confidence in the results our approach with bullet 
+allows receivers to obtain high bandwidth in aggregate 
+using individual transfers from peers spread across the system 
+thus in bullet the bandwidth available from any 
+individual peer is much less important than in any 
+bandwidthoptimized tree further all the bandwidth that would 
+normally be consumed probing for bandwidth can be 
+reallocated to streaming data across the bullet mesh 
+we have completed a prototype of bullet running on top 
+of a number of overlay trees our evaluation of a -node 
+overlay running across a wide variety of emulated 
+node network topologies shows that bullet can deliver up to 
+twice the bandwidth of a bandwidth-optimized tree using 
+an oﬄine algorithm and global network topology 
+information all while remaining tcp friendly we also deployed 
+our prototype across the planetlab wide-area testbed 
+for these live internet runs we find that bullet can deliver 
+comparable bandwidth performance improvements in both 
+cases the overhead of maintaining the bullet mesh and 
+locating the appropriate disjoint data is limited to kbps per 
+node acceptable for our target high-bandwidth large-scale 
+scenarios 
+the remainder of this paper is organized as follows 
+section presents bullet s system components including 
+ransub informed content delivery and tfrc section then 
+details bullet an efficient data distribution system for 
+bandwidth intensive applications section evaluates bullet s 
+performance for a variety of network topologies and 
+compares it to existing multicast techniques section places 
+our work in the context of related efforts and section 
+presents our conclusions 
+ system components 
+our approach to high bandwidth data dissemination 
+centers around the techniques depicted in figure first we 
+split the target data stream into blocks which are further 
+subdivided into individual typically packet-sized objects 
+depending on the requirements of the target applications 
+objects may be encoded to make data recovery more 
+efficient next we purposefully disseminate disjoint objects 
+ 
+s 
+a c 
+original data stream 
+ 
+b 
+ 
+tfrc to determine 
+available bw 
+d e 
+ 
+figure high-level view of bullet s operation 
+to different clients at a rate determined by the available 
+bandwidth to each client we use the equation-based tfrc 
+protocol to communicate among all nodes in the overlay in 
+a congestion responsive and tcp friendly manner 
+given the above techniques data is spread across the 
+overlay tree at a rate commensurate with the available 
+bandwidth in the overlay tree our overall goal however is to 
+deliver more bandwidth than would otherwise be available 
+through any tree thus at this point nodes require a 
+scalable technique for locating and retrieving disjoint data from 
+their peers in essence these perpendicular links across the 
+overlay form a mesh to augment the bandwidth available 
+through the tree in figure node d only has sufficient 
+bandwidth to receive objects per time unit from its 
+parent however it is able to locate two peers c and e who 
+are able to transmit missing data objects in this 
+example increasing delivered bandwidth from objects per time 
+unit to data objects per time unit locating appropriate 
+remote peers cannot require global state or global 
+communication thus we propose the periodic dissemination of 
+changing uniformly random subsets of global state to each 
+overlay node once per configurable time period this 
+random subset contains summary tickets of the objects available 
+at a subset of the nodes in the system each node uses this 
+information to request data objects from remote nodes that 
+have significant divergence in object membership it then 
+attempts to establish a number of these peering relationships 
+with the goals of minimizing overlap in the objects received 
+from each peer and maximizing the total useful bandwidth 
+delivered to it 
+in the remainder of this section we provide brief 
+background on each of the techniques that we employ as 
+fundamental building blocks for our work section then presents 
+the details of the entire bullet architecture 
+ data encoding 
+depending on the type of data being distributed through 
+the system a number of data encoding schemes can improve 
+system efficiency for instance if multimedia data is being 
+distributed to a set of heterogeneous receivers with variable 
+bandwidth mdc allows receivers obtaining different 
+subsets of the data to still maintain a usable multimedia 
+stream for dissemination of a large file among a set of 
+receivers erasure codes enable receivers not to focus on 
+retrieving every transmitted data packet rather after 
+obtaining a threshold minimum number of packets receivers 
+are able to decode the original data stream of course 
+bullet is amenable to a variety of other encoding schemes or 
+even the null encoding scheme where the original data 
+stream is transmitted best-effort through the system 
+in this paper we focus on the benefits of a special class 
+of erasure-correcting codes used to implement the digital 
+fountain approach redundant tornado codes are 
+created by performing xor operations on a selected 
+number of original data packets and then transmitted along 
+with the original data packets tornado codes require any 
+ k correctly received packets to reconstruct the original 
+k data packets with the typically low reception overhead 
+of − in return they provide significantly faster 
+encoding and decoding times additionally the decoding 
+algorithm can run in real-time and the reconstruction 
+process can start as soon as sufficiently many packets have 
+arrived tornado codes require a predetermined stretch factor 
+ n k where n is the total number of encoded packets and 
+their encoding time is proportional to n lt codes 
+remove these two limitations while maintaining a low 
+reception overhead of 
+ ransub 
+to address the challenge of locating disjoint content within 
+the system we use ransub a scalable approach to 
+distributing changing uniform random subsets of global state 
+to all nodes of an overlay tree ransub assumes the 
+presence of some scalable mechanism for efficiently building and 
+maintaining the underlying tree a number of such 
+techniques are described in 
+ransub distributes random subsets of participating nodes 
+throughout the tree using collect and distribute messages 
+collect messages start at the leaves and propagate up the 
+tree leaving state at each node along the path to the root 
+distribute messages start at the root and travel down the 
+tree using the information left at the nodes during the 
+previous collect round to distribute uniformly random subsets to 
+all participants using the collect and distribute messages 
+ransub distributes a random subset of participants to each 
+node once per epoch the lower bound on the length of an 
+epoch is determined by the time it takes to propagate data 
+up then back down the tree or roughly twice the height of 
+the tree for appropriately constructed trees the minimum 
+epoch length will grow with the logarithm of the number of 
+participants though this is not required for correctness 
+as part of the distribute message each participant sends 
+a uniformly random subset of remote nodes called a 
+distribute set down to its children the contents of the 
+distribute set are constructed using the collect set gathered 
+during the previous collect phase during this phase each 
+participant sends a collect set consisting of a random subset 
+of its descendant nodes up the tree to the root along with 
+an estimate of its total number of descendants after the 
+root receives all collect sets and the collect phase completes 
+the distribute phase begins again in a new epoch 
+one of the key features of ransub is the compact 
+operation this is the process used to ensure that membership 
+in a collect set propagated by a node to its parent is both 
+random and uniformly representative of all members of the 
+sub-tree rooted at that node compact takes multiple 
+fixedsize subsets and the total population represented by each 
+subset as input and generates a new fixed-size subset the 
+ 
+a 
+csc cs 
+csd ds 
+csf fs 
+csg gs 
+csb bs cs ds 
+cse es fs gs 
+b 
+c 
+e 
+d gf 
+b 
+c 
+a 
+e 
+d gf 
+dse as bs cs 
+ds 
+dsb as es fs gs 
+dsg as bs cs 
+ds es fs 
+dsd as bs 
+cs es fs gs 
+dsf as bs cs 
+ds es gs 
+dsc as bs 
+ds es fs gs 
+figure this example shows the two phases of the ransub protocol that occur in one epoch the collect 
+phase is shown on the left where the collect sets are traveling up the overlay to the root the distribute 
+phase on the right shows the distribute sets traveling down the overlay to the leaf nodes 
+members of the resulting set are uniformly random 
+representatives of the input subset members 
+ransub offers several ways of constructing distribute sets 
+for our system we choose the ransub-nondescendants 
+option in this case each node receives a random subset 
+consisting of all nodes excluding its descendants this is 
+appropriate for our download structure where descendants are 
+expected to have less content than an ancestor node in most 
+cases 
+a parent creates ransub-nondescendants distribute sets 
+for each child by compacting collect sets from that child s 
+siblings and its own distribute set the result is a distribute 
+set that contains a random subset representing all nodes in 
+the tree except for those rooted at that particular child we 
+depict an example of ransub s collect-distribute process in 
+figure in the figure as stands for node a s state 
+ informed content delivery techniques 
+assuming we can enable a node to locate a peer with 
+disjoint content using ransub we need a method for 
+reconciling the differences in the data additionally we require 
+a bandwidth-efficient method with low computational 
+overhead we chose to implement the approximate reconciliation 
+techniques proposed in for these tasks in bullet 
+to describe the content nodes maintain working sets the 
+working set contains sequence numbers of packets that have 
+been successfully received by each node over some period of 
+time we need the ability to quickly discern the resemblance 
+between working sets from two nodes and decide whether a 
+fine-grained reconciliation is beneficial summary tickets 
+or min-wise sketches serve this purpose the main idea 
+is to create a summary ticket that is an unbiased random 
+sample of the working set a summary ticket is a small 
+fixed-size array each entry in this array is maintained by 
+a specific permutation function the goal is to have each 
+entry populated by the element with the smallest permuted 
+value to insert a new element into the summary ticket we 
+apply the permutation functions in order and update array 
+values as appropriate 
+the permutation function can be thought of as a 
+specialized hash function the choice of permutation functions 
+is important as the quality of the summary ticket depends 
+directly on the randomness properties of the permutation 
+functions since we require them to have a low 
+computational overhead we use simple permutation functions such 
+as pj x ax b mod u where u is the universe size 
+ dependant on the data encoding scheme to compute the 
+resemblance between two working sets we compute the 
+number of summary ticket entries that have the same value and 
+divide it by the total number of entries in the summary 
+tickets figure shows the way the permutation functions are 
+used to populate the summary ticket 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+workingset 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+p 
+ 
+ 
+ 
+ 
+ 
+ 
+p 
+ 
+ 
+ 
+ 
+ 
+ 
+pn  
+  
+summary ticket 
+minminmin 
+ 
+ 
+figure example showing a sample summary 
+ticket being constructed from the working set 
+to perform approximate fine-grain reconciliation a peer 
+a sends its digest to peer b and expects to receive 
+packets not described in the digest for this purpose we use a 
+bloom filter a bit array of size m with k independent 
+associated hash functions an element s from the set of 
+received keys s so s sn− is inserted into the 
+filter by computing the hash values h h hk− of s and 
+setting the bits in the array that correspond to the hashed 
+ 
+values to check whether an element x is in the bloom filter 
+we hash it using the hash functions and check whether all 
+positions in the bit array are set if at least one is not set 
+we know that the bloom filter does not contain x 
+when using bloom filters the insertion of different 
+elements might cause all the positions in the bit array 
+corresponding to an element that is not in the set to be nonzero 
+in this case we have a false positive therefore it is possible 
+that peer b will not send a packet to peer a even though 
+a is missing it on the other hand a node will never send 
+a packet that is described in the bloom filter i e there 
+are no false negatives the probability of getting a false 
+positive pf on the membership query can be expressed as a 
+function of the ratio m 
+n 
+and the number of hash functions 
+k pf − e−kn m 
+ k 
+ we can therefore choose the size of 
+the bloom filter and the number of hash functions that will 
+yield a desired false positive ratio 
+ tcp friendly rate control 
+although most traffic in the internet today is best served 
+by tcp applications that require a smooth sending rate 
+and that have a higher tolerance for loss often find tcp s 
+reaction to a single dropped packet to be unnecessarily 
+severe tcp friendly rate control or tfrc targets unicast 
+streaming multimedia applications with a need for less 
+drastic responses to single packet losses tcp halves the 
+sending rate as soon as one packet loss is detected 
+alternatively tfrc is an equation-based congestion control 
+protocol that is based on loss events which consist of multiple 
+packets being dropped within one round-trip time unlike 
+tcp the goal of tfrc is not to find and use all 
+available bandwidth but instead to maintain a relatively steady 
+sending rate while still being responsive to congestion 
+to guarantee fairness with tcp tfrc uses the response 
+function that describes the steady-state sending rate of tcp 
+to determine the transmission rate in tfrc the formula 
+of the tcp response function used in tfrc to describe 
+the sending rate is 
+t s 
+r 
+õ p 
+ 
+ trt o 
+õ p 
+ 
+ p p 
+this is the expression for the sending rate t in bytes second 
+as a function of the round-trip time r in seconds loss event 
+rate p packet size s in bytes and tcp retransmit value 
+trt o in seconds 
+tfrc senders and receivers must cooperate to achieve 
+a smooth transmission rate the sender is responsible for 
+computing the weighted round-trip time estimate r between 
+sender and receiver as well as determining a reasonable 
+retransmit timeout value trt o in most cases using the 
+simple formula trt o r provides the necessary fairness with 
+tcp the sender is also responsible for adjusting the 
+sending rate t in response to new values of the loss event rate 
+p reported by the receiver the sender obtains a new 
+measure for the loss event rate each time a feedback packet is 
+received from the receiver until the first loss is reported 
+the sender doubles its transmission rate each time it receives 
+feedback just as tcp does during slow-start 
+the main role of the receiver is to send feedback to the 
+sender once per round-trip time and to calculate the loss 
+event rate included in the feedback packets to obtain the 
+loss event rate the receiver maintains a loss interval array 
+that contains values for the last eight loss intervals a loss 
+interval is defined as the number of packets received 
+correctly between two loss events the array is continually 
+updated as losses are detected a weighted average is 
+computed based on the sum of the loss interval values and the 
+inverse of the sum is the reported loss event rate p 
+when implementing bullet we used an unreliable version 
+of tfrc we wanted a transport protocol that was 
+congestion aware and tcp friendly lost packets were more 
+easily recovered from other sources rather than waiting for 
+a retransmission from the initial sender hence we 
+eliminate retransmissions from tfrc further tfrc does not 
+aggressively seek newly available bandwidth like tcp a 
+desirable trait in an overlay tree where there might be multiple 
+competing flows sharing the same links for example if a 
+leaf node in the tree tried to aggressively seek out new 
+bandwidth it could create congestion all the way up to the root 
+of the tree by using tfrc we were able to avoid these 
+scenarios 
+ bullet 
+bullet is an efficient data distribution system for 
+bandwidth intensive applications while many current overlay 
+network distribution algorithms use a distribution tree to 
+deliver data from the tree s root to all other nodes 
+bullet layers a mesh on top of an original overlay tree to 
+increase overall bandwidth to all nodes in the tree hence 
+each node receives a parent stream from its parent in the 
+tree and some number of perpendicular streams from chosen 
+peers in the overlay this has significant bandwidth impact 
+when a single node in the overlay is unable to deliver 
+adequate bandwidth to a receiving node 
+bullet requires an underlying overlay tree for ransub to 
+deliver random subsets of participants s state to nodes in 
+the overlay informing them of a set of nodes that may be 
+good candidates for retrieving data not available from any 
+of the node s current peers and parent while we also use 
+the underlying tree for baseline streaming this is not critical 
+to bullet s ability to efficiently deliver data to nodes in the 
+overlay as a result bullet is capable of functioning on 
+top of essentially any overlay tree in our experiments we 
+have run bullet over random and bandwidth-optimized trees 
+created oﬄine with global topological knowledge bullet 
+registers itself with the underlying overlay tree so that it is 
+informed when the overlay changes as nodes come and go or 
+make performance transformations in the overlay 
+as with streaming overlays trees bullet can use standard 
+transports such as tcp and udp as well as our 
+implementation of tfrc for the remainder of this paper we assume 
+the use of tfrc since we primarily target streaming 
+highbandwidth content and we do not require reliable or in-order 
+delivery for simplicity we assume that packets originate at 
+the root of the tree and are tagged with increasing sequence 
+numbers each node receiving a packet will optionally 
+forward it to each of its children depending on a number of 
+factors relating to the child s bandwidth and its relative 
+position in the tree 
+ finding overlay peers 
+ransub periodically delivers subsets of uniformly random 
+selected nodes to each participant in the overlay bullet 
+receivers use these lists to locate remote peers able to transmit 
+missing data items with good bandwidth ransub messages 
+contain a set of summary tickets that include a small 
+ 
+bytes summary of the data that each node contains 
+ransub delivers subsets of these summary tickets to nodes every 
+configurable epoch seconds by default each node in the 
+tree maintains a working set of the packets it has received 
+thus far indexed by sequence numbers nodes associate 
+each working set with a bloom filter that maintains a 
+summary of the packets received thus far since the bloom filter 
+does not exceed a specific size m and we would like to limit 
+the rate of false positives bullet periodically cleans up the 
+bloom filter by removing lower sequence numbers from it 
+this allows us to keep the bloom filter population n from 
+growing at an unbounded rate the net effect is that a 
+node will attempt to recover packets for a finite amount of 
+time depending on the packet arrival rate similarly bullet 
+removes older items that are not needed for data 
+reconstruction from its working set and summary ticket 
+we use the collect and distribute phases of ransub to 
+carry bullet summary tickets up and down the tree in our 
+current implementation we use a set size of summary 
+tickets allowing each collect and distribute to fit well within 
+the size of a non-fragmented ip packet though bullet 
+supports larger set sizes we expect this parameter to be tunable 
+to specific applications needs in practice our default size 
+of yields favorable results for a variety of overlays and 
+network topologies in essence during an epoch a node 
+receives a summarized partial view of the system s state at 
+that time upon receiving a random subset each epoch a 
+bullet node may choose to peer with the node having the 
+lowest similarity ratio when compared to its own summary 
+ticket this is done only when the node has sufficient space 
+in its sender list to accept another sender senders with 
+lackluster performance are removed from the current sender list 
+as described in section once a node has chosen the 
+best node it sends it a peering request containing the 
+requesting node s bloom filter such a request is accepted by 
+the potential sender if it has sufficient space in its receiver 
+list for the incoming receiver otherwise the send request 
+is rejected space is periodically created in the receiver lists 
+as further described in section 
+ recovering data from peers 
+assuming it has space for the new peer a recipient of the 
+peering request installs the received bloom filter and will 
+periodically transmit keys not present in the bloom filter 
+to the requesting node the requesting node will refresh its 
+installed bloom filters at each of its sending peers 
+periodically along with the fresh filter a receiving node will also 
+assign a portion of the sequence space to each of its senders 
+in this way a node is able the reduce the likelihood that two 
+peers simultaneously transmit the same key to it wasting 
+network resources a node divides the sequence space in its 
+current working set among each of its senders uniformly 
+as illustrated in figure a bullet receiver views the data 
+space as a matrix of packet sequences containing s rows 
+where s is its current number of sending peers a receiver 
+periodically every seconds by default updates each sender 
+with its current bloom filter and the range of sequences 
+covered in its bloom filter this identifies the range of packets 
+that the receiver is currently interested in recovering over 
+time this range shifts as depicted in figure -b in 
+addition the receiving node assigns to each sender a row from 
+the matrix labeled mod a sender will forward packets to 
+b 
+mod 
+ 
+ 
+ 
+ 
+a 
+senders mod 
+low 
+high 
+time 
+ 
+figure a bullet receiver views data as a matrix 
+of sequenced packets with rows equal to the number 
+of peer senders it currently has it requests data 
+within the range low high of sequence numbers 
+based on what it has received a the receiver 
+requests a specific row in the sequence matrix from 
+each sender b as it receives more data the range 
+of sequences advances and the receiver requests 
+different rows from senders 
+the receiver that have a sequence number x such that x 
+modulo s equals the mod number in this fashion receivers 
+register to receive disjoint data from their sending peers 
+by specifying ranges and matrix rows a receiver is 
+unlikely to receive duplicate data items which would result in 
+wasted bandwidth a duplicate packet however may be 
+received when a parent recovers a packet from one of its peers 
+and relays the packet to its children and descendants in 
+this case a descendant would receive the packet out of order 
+and may have already recovered it from one of its peers in 
+practice this wasteful reception of duplicate packets is 
+tolerable less than of all received packets are duplicates 
+in our experiments 
+ making data disjoint 
+we now provide details of bullet s mechanisms to increase 
+the ease by which nodes can find disjoint data not provided 
+by parents we operate on the premise that the main 
+challenge in recovering lost data packets transmitted over an 
+overlay distribution tree lies in finding the peer node 
+housing the data to recover many systems take a 
+hierarchical approach to this problem propagating repair requests 
+up the distribution tree until the request can be satisfied 
+this ultimately leads to scalability issues at higher levels in 
+the hierarchy particularly when overlay links are 
+bandwidthconstrained 
+on the other hand bullet attempts to recover lost data 
+from any non-descendant node not just ancestors thereby 
+increasing overall system scalability in traditional overlay 
+distribution trees packets are lost by the transmission 
+transport and or the network nodes attempt to stream data as 
+fast as possible to each child and have essentially no control 
+over which portions of the data stream are dropped by the 
+transport or network as a result the streaming 
+subsystem has no control over how many nodes in the system will 
+ultimately receive a particular portion of the data if few 
+nodes receive a particular range of packets recovering these 
+pieces of data becomes more difficult requiring increased 
+communication costs and leading to scalability problems 
+in contrast bullet nodes are aware of the bandwidth 
+achievable to each of its children using the underlying transport if 
+ 
+a child is unable to receive the streaming rate that the 
+parent receives the parent consciously decides which portion of 
+the data stream to forward to the constrained child in 
+addition because nodes recover data from participants chosen 
+uniformly at random from the set of non-descendants it is 
+advantageous to make each transmitted packet recoverable 
+from approximately the same number of participant nodes 
+that is given a randomly chosen subset of peer nodes it is 
+with the same probability that each node has a particular 
+data packet while not explicitly proven here we believe 
+that this approach maximizes the probability that a lost 
+data packet can be recovered regardless of which packet is 
+lost to this end bullet distributes incoming packets among 
+one or more children in hopes that the expected number of 
+nodes receiving each packet is approximately the same 
+a node p maintains for each child i a limiting and sending 
+factor lfi and sfi these factors determine the proportion 
+of p s received data rate that it will forward to each child 
+the sending factor sfi is the portion of the parent stream 
+ rate that each child should own based on the number 
+of descendants the child has the more descendants a child 
+has the larger the portion of received data it should own 
+the limiting factor lfi represents the proportion of the 
+parent rate beyond the sending factor that each child can 
+handle for example a child with one descendant but high 
+bandwidth would have a low sending factor but a very high 
+limiting factor though the child is responsible for owning 
+a small portion of the received data it actually can receive 
+a large portion of it 
+because ransub collects descendant counts di for each 
+child i bullet simply makes a call into ransub when sending 
+data to determine the current sending factors of its children 
+for each child i out of k total we set the sending factor to 
+be 
+sfi dièk 
+j dj 
+ 
+in addition a node tracks the data successfully 
+transmitted via the transport that is bullet data transport 
+sockets are non-blocking successful transmissions are send 
+attempts that are accepted by the non-blocking transport if 
+the transport would block on a send i e transmission of the 
+packet would exceed the tcp-friendly fair share of network 
+resources the send fails and is counted as an unsuccessful 
+send attempt when a data packet is received by a parent 
+it calculates the proportion of the total data stream that 
+has been sent to each child thus far in this epoch it then 
+assigns ownership of the current packet to the child with 
+sending proportion farthest away from its sfi as illustrated 
+in figure 
+having chosen the target of a particular packet the parent 
+attempts to forward the packet to the child if the send is 
+not successful the node must find an alternate child to own 
+the packet this occurs when a child s bandwidth is not 
+adequate to fulfill its responsibilities based on its descendants 
+ sfi to compensate the node attempts to 
+deterministically find a child that can own the packet as evidenced by 
+its transport accepting the packet the net result is that 
+children with more than adequate bandwidth will own more 
+of their share of packets than those with inadequate 
+bandwidth in the event that no child can accept a packet it 
+must be dropped corresponding to the case where the sum 
+of all children bandwidths is inadequate to serve the received 
+foreach child in children 
+if child- sent total sent 
+ child- sending factor 
+target child child 
+ 
+if senddata target child- addr 
+msg size key 
+ send succeeded 
+target child- sent 
+target child- child filter insert got key 
+sent packet 
+ 
+foreach child in children 
+should send 
+if sent packet transfer ownership 
+should send 
+else test for available bandwidth 
+if key child- limiting factor 
+should send 
+if should send 
+if senddata child- addr 
+msg size key 
+if sent packet i received ownership 
+child- sent 
+else 
+increase child- limiting factor 
+child- child filter insert got key 
+sent packet 
+ 
+else send failed 
+if sent packet was for extra bw 
+decrease child- limiting factor 
+ 
+ 
+figure pseudo code for bullet s disjoint data send 
+routine 
+stream while making data more difficult to recover bullet 
+still allows for recovery of such data to its children the 
+sending node will cache the data packet and serve it to its 
+requesting peers this process allows its children to 
+potentially recover the packet from one of their own peers to 
+whom additional bandwidth may be available 
+once a packet has been successfully sent to the owning 
+child the node attempts to send the packet to all other 
+children depending on the limiting factors lfi for each child 
+i a node attempts to forward the packet deterministically if 
+the packet s sequence modulo lfi is zero essentially this 
+identifies which lfi fraction of packets of the received data 
+stream should be forwarded to each child to make use of the 
+available bandwidth to each if the packet transmission is 
+successful lfi is increased such that one more packet is to 
+be sent per epoch if the transmission fails lfi is decreased 
+by the same amount this allows children limiting factors 
+to be continuously adjusted in response to changing network 
+conditions 
+it is important to realize that by maintaining limiting 
+factors we are essentially using feedback from children by 
+observing transport behavior to determine the best data to 
+stop sending during times when a child cannot handle the 
+entire parent stream in one extreme if the sum of 
+children bandwidths is not enough to receive the entire parent 
+stream each child will receive a completely disjoint data 
+stream of packets it owns in the other extreme if each 
+ 
+child has ample bandwidth it will receive the entire parent 
+stream as each lfi would settle on in the general case 
+our owning strategy attempts to make data disjoint among 
+children subtrees with the guiding premise that as much as 
+possible the expected number of nodes receiving a packet is 
+the same across all packets 
+ improving the bullet mesh 
+bullet allows a maximum number of peering relationships 
+that is a node can have up to a certain number of receivers 
+and a certain number of senders each defaults to in our 
+implementation a number of considerations can make the 
+current peering relationships sub-optimal at any given time 
+i the probabilistic nature of ransub means that a node may 
+not have been exposed to a sufficiently appropriate peer ii 
+receivers greedily choose peers and iii network conditions 
+are constantly changing for example a sender node may 
+wind up being unable to provide a node with very much 
+useful non-duplicate data in such a case it would be 
+advantageous to remove that sender as a peer and find some 
+other peer that offers better utility 
+each node periodically every few ransub epochs 
+evaluates the bandwidth performance it is receiving from its 
+sending peers a node will drop a peer if it is sending too 
+many duplicate packets when compared to the total number 
+of packets received this threshold is set to by default 
+if no such wasteful sender is found a node will drop the 
+sender that is delivering the least amount of useful data to 
+it it will replace this sender with some other sending peer 
+candidate essentially reserving a trial slot in its sender list 
+in this way we are assured of keeping the best senders seen 
+so far and will eliminate senders whose performance 
+deteriorates with changing network conditions 
+likewise a bullet sender will periodically evaluate its 
+receivers each receiver updates senders of the total received 
+bandwidth the sender knowing the amount of data it has 
+sent to each receiver can determine which receiver is 
+benefiting the least by peering with this sender this corresponds 
+to the one receiver acquiring the least portion of its 
+bandwidth through this sender the sender drops this receiver 
+creating an empty slot for some other trial receiver this is 
+similar to the concept of weans presented in 
+ evaluation 
+we have evaluated bullet s performance in real internet 
+environments as well as the modelnet ip emulation 
+framework while the bulk of our experiments use 
+modelnet we also report on our experience with bullet on the 
+planetlab internet testbed in addition we have 
+implemented a number of underlying overlay network trees 
+upon which bullet can execute because bullet performs 
+well over a randomly created overlay tree we present 
+results with bullet running over such a tree compared against 
+an oﬄine greedy bottleneck bandwidth tree algorithm using 
+global topological information described in section 
+all of our implementations leverage a common 
+development infrastructure called macedon that allows for 
+the specification of overlay algorithms in a simple 
+domainspecific language it enables the reuse of the majority of 
+common functionality in these distributed systems 
+including probing infrastructures thread management message 
+passing and debugging environment as a result we 
+believe that our comparisons qualitatively show algorithmic 
+differences rather than implementation intricacies our 
+implementation of the core bullet logic is under lines of 
+code in this infrastructure 
+our modelnet experiments make use of ghz 
+pentium s running linux and interconnected with mbps 
+and gbps ethernet switches for the majority of these 
+experiments we multiplex one thousand instances overlay 
+participants of our overlay applications across the linux 
+nodes per machine in modelnet packet transmissions 
+are routed through emulators responsible for accurately 
+emulating the hop-by-hop delay bandwidth and congestion of 
+a network topology in our evaluations we used four ghz 
+pentium iii s running freebsd- as emulators this 
+platform supports approximately - gbps of aggregate 
+simultaneous communication among end hosts for most of our 
+modelnet experiments we use -node inet-generated 
+topologies we randomly assign our participant nodes 
+to act as clients connected to one-degree stub nodes in the 
+topology we randomly select one of these participants to 
+act as the source of the data stream 
+propagation delays in the network topology are calculated 
+based on the relative placement of the network nodes in the 
+plane by inet based on the classification in we 
+classify network links as being client-stub stub-stub 
+transitstub and transit-transit depending on their location in 
+the network we restrict topological bandwidth by setting 
+the bandwidth for each link depending on its type each 
+type of link has an associated bandwidth range from which 
+the bandwidth is chosen uniformly at random by changing 
+these ranges we vary bandwidth constraints in our 
+topologies for our experiments we created three different ranges 
+corresponding to low medium and high bandwidths relative 
+to our typical streaming rates of - kbps as 
+specified in table while the presented modelnet results are 
+restricted to two topologies with varying bandwidth 
+constraints the results of experiments with additional 
+topologies all show qualitatively similar behavior 
+we do not implement any particular coding scheme for 
+our experiments rather we assume that either each 
+sequence number directly specifies a particular data block and 
+the block offset for each packet or we are distributing data 
+within the same block for lt codes e g when distributing 
+a file 
+ offline bottleneck bandwidth tree 
+one of our goals is to determine bullet s performance 
+relative to the best possible bandwidth-optimized tree for a 
+given network topology this allows us to quantify the 
+possible improvements of an overlay mesh constructed using 
+bullet relative to the best possible tree while we have not 
+yet proven this we believe that this problem is np-hard 
+thus in this section we present a simple greedy oﬄine 
+algorithm to determine the connectivity of a tree likely to deliver 
+a high level of bandwidth in practice we are not aware of 
+any scalable online algorithms that are able to deliver the 
+bandwidth of an oﬄine algorithm at the same time trees 
+constructed by our algorithm tend to be long and skinny 
+making them less resilient to failures and inappropriate for 
+delay sensitive applications such as multimedia streaming 
+in addition to any performance comparisons a bullet mesh 
+has much lower depth than the bottleneck tree and is more 
+resilient to failure as discussed in section 
+ 
+topology 
+classification 
+client-stub stub-stub transit-stub transit-transit 
+low bandwidth - - - - 
+medium bandwidth - - - - 
+high bandwidth - - - - 
+table bandwidth ranges for link types used in our topologies expressed in kbps 
+specifically we consider the following problem given 
+complete knowledge of the topology individual link latencies 
+bandwidth and packet loss rates what is the overlay tree 
+that will deliver the highest bandwidth to a set of 
+predetermined overlay nodes we assume that the throughput of 
+the slowest overlay link the bottleneck link determines the 
+throughput of the entire tree we are therefore trying to 
+find the directed overlay tree with the maximum bottleneck 
+link accordingly we refer to this problem as the overlay 
+maximum bottleneck tree ombt in a simplified case 
+assuming that congestion only exists on access links and there 
+are no lossy links there exists an optimal algorithm 
+in the more general case of contention on any physical link 
+and when the system is allowed to choose the routing path 
+between the two endpoints this problem is known to be 
+np-hard even in the absence of link losses for the 
+purposes of this paper our goal is to determine a good 
+overlay streaming tree that provides each overlay 
+participant with substantial bandwidth while avoiding overlay 
+links with high end-to-end loss rates 
+we make the following assumptions 
+ the routing path between any two overlay participants 
+is fixed this closely models the existing overlay 
+network model with ip for unicast routing 
+ the overlay tree will use tcp-friendly unicast 
+connections to transfer data point-to-point 
+ in the absence of other flows we can estimate the 
+throughput of a tcp-friendly flow using a steady-state 
+formula 
+ when several n flows share the same bottleneck link 
+each flow can achieve throughput of at most c 
+n 
+ where 
+c is the physical capacity of the link 
+given these assumptions we concentrate on estimating 
+the throughput available between two participants in the 
+overlay we start by calculating the throughput using the 
+steady-state formula we then route the flow in the 
+network and consider the physical links one at a time on 
+each physical link we compute the fair-share for each of the 
+competing flows the throughput of an overlay link is then 
+approximated by the minimum of the fair-shares along the 
+routing path and the formula rate if some flow does not 
+require the same share of the bottleneck link as other 
+competing flows i e its throughput might be limited by losses 
+elsewhere in the network then the other flows might end 
+up with a greater share than the one we compute we do 
+not account for this as the major goal of this estimate is 
+simply to avoid lossy and highly congested physical links 
+more formally we define the problem as follows 
+overlay maximum bottleneck tree ombt 
+given a physical network represented as a graph g v e 
+set of overlay participants p ⊂ v source node s ∈ p 
+bandwidth b e → r 
+ loss rate l e → 
+propagation delay d e → r 
+of each link set of possible 
+overlay links o v w v w ∈ p v w routing table 
+rt o × e → find the overlay tree t o o ∈ o 
+ t p − ∀v ∈ p there exists a path ov 
+ s ❀ v that 
+maximizes 
+min 
+o o∈t 
+ min f o min 
+e e∈o 
+b e 
+ p p ∈ t e ∈ p 
+ 
+where f o is the tcp steady-state sending rate 
+computed from round-trip time d o 
+èe∈o d e 
+èe∈o d e 
+ given overlay link o v w o w v and loss rate 
+l o − 
+ée∈o − l e we write e ∈ o to express that 
+link e is included in the o s routing path rt o e 
+assuming that we can estimate the throughput of a flow 
+we proceed to formulate a greedy ombt algorithm this 
+algorithm is non-optimal but a similar approach was found 
+to perform well 
+our algorithm is similar to the widest path heuristic 
+ wph and more generally to prim s mst algorithm 
+during its execution we maintain the set of nodes already in 
+the tree and the set of remaining nodes to grow the tree 
+we consider all the overlay links leading from the nodes in 
+the tree to the remaining nodes we greedily pick the node 
+with the highest throughput overlay link using this overlay 
+link might cause us to route traffic over physical links 
+traversed by some other tree flows since we do not re-examine 
+the throughput of nodes that are already in the tree they 
+might end up being connected to the tree with slower 
+overlay links than initially estimated however by attaching the 
+node with the highest residual bandwidth at every step we 
+hope to lessen the effects of after-the-fact physical link 
+sharing with the synthetic topologies we use for our emulation 
+environment we have not found this inaccuracy to severely 
+impact the quality of the tree 
+ bullet vs streaming 
+we have implemented a simple streaming application that 
+is capable of streaming data over any specified tree in our 
+implementation we are able to stream data through 
+overlay trees using udp tfrc or tcp figure shows 
+average bandwidth that each of nodes receives via this 
+streaming as time progresses on the x-axis in this 
+example we use tfrc to stream kbps over our oﬄine 
+bottleneck bandwidth tree and a random tree other random 
+trees exhibit qualitatively similar behavior in these 
+experiments streaming begins seconds into each run while 
+the random tree delivers an achieved bandwidth of under 
+kbps our oﬄine algorithm overlay delivers approximately 
+ kbps of data for this experiment bandwidths were 
+set to the medium range from table we believe that any 
+degree-constrained online bandwidth overlay tree algorithm 
+would exhibit similar or lower behavior to our 
+bandwidth 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bottleneck bandwidth tree 
+random tree 
+figure achieved bandwidth over time for tfrc 
+streaming over the bottleneck bandwidth tree and 
+a random tree 
+optimized overlay hence bullet s goal is to overcome this 
+bandwidth limit by allowing for the perpendicular reception 
+of data and by utilizing disjoint data flows in an attempt to 
+match or exceed the performance of our oﬄine algorithm 
+to evaluate bullet s ability to exceed the bandwidth 
+achievable via tree distribution overlays we compare bullet 
+running over a random overlay tree to the streaming behavior 
+shown in figure figure shows the average bandwidth 
+received by each node labeled useful total with standard 
+deviation the graph also plots the total amount of data 
+received and the amount of data a node receives from its 
+parent for this topology and bandwidth setting bullet 
+was able to achieve an average bandwidth of kbps 
+fives times that achieved by the random tree and more than 
+ higher than the oﬄine bottleneck bandwidth algorithm 
+further the total bandwidth including redundant data 
+received by each node is only slightly higher than the useful 
+content meaning that bullet is able to achieve high 
+bandwidth while wasting little network resources bullet s use 
+of tfrc in this example ensures that the overlay is tcp 
+friendly throughout the average per-node control overhead 
+is approximately kbps by tracing certain packets as 
+they move through the system we are able to acquire link 
+stress estimates of our system though the link stress can 
+be different for each packet since each can take a different 
+path through the overlay mesh we average link stress due 
+to each traced packet for this experiment bullet has an 
+average link stress of approximately with an absolute 
+maximum link stress of 
+the standard deviation in most of our runs is fairly high 
+because of the limited bandwidth randomly assigned to some 
+client-stub and stub-stub links we feel that this is 
+consistent with real internet behavior where clients have widely 
+varying network connectivity a time slice is shown in 
+figure that plots the cdf of instantaneous bandwidths that 
+each node receives the graph shows that few client nodes 
+receive inadequate bandwidth even though they are 
+bandwidth constrained the distribution rises sharply starting at 
+approximately kbps the vast majority of nodes receive 
+a stream of - kbps 
+we have evaluated bullet under a number of bandwidth 
+constraints to determine how bullet performs relative to the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+raw total 
+useful total 
+from parent 
+figure achieved bandwidth over time for bullet 
+over a random tree 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+percentageofnodes 
+bandwidth kbps 
+figure cdf of instantaneous achieved bandwidth 
+at time seconds 
+available bandwidth of the underlying topology table 
+describes representative bandwidth settings for our streaming 
+rate of kbps the intent of these settings is to show a 
+scenario where more than enough bandwidth is available to 
+achieve a target rate even with traditional tree streaming 
+an example of where it is slightly not sufficient and one in 
+which the available bandwidth is quite restricted figure 
+shows achieved bandwidths for bullet and the bottleneck 
+bandwidth tree over time generated from topologies with 
+bandwidths in each range 
+in all of our experiments bullet outperforms the 
+bottleneck bandwidth tree by a factor of up to depending on 
+how much bandwidth is constrained in the underlying 
+topology in one extreme having more than ample bandwidth 
+bullet and the bottleneck bandwidth tree are both able to 
+stream at the requested rate kbps in our example in 
+the other extreme heavily constrained topologies allow 
+bullet to achieve twice the bandwidth achievable via the 
+bottleneck bandwidth tree for all other topologies bullet s 
+benefits are somewhere in between in our example bullet 
+running over our medium-constrained bandwidth topology 
+is able to outperform the bottleneck bandwidth tree by a 
+factor of further we stress that we believe it would 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bullet - high bandwidth 
+bottleneck tree - high bandwidth 
+bullet - medium bandwidth 
+bottleneck tree - medium bandwidth 
+bullet - low bandwidth 
+bottleneck tree - low bandwidth 
+figure achieved bandwidth for bullet and 
+bottleneck tree over time for high medium and low 
+bandwidth topologies 
+be extremely difficult for any online tree-based algorithm to 
+exceed the bandwidth achievable by our oﬄine bottleneck 
+algorithm that makes use of global topological information 
+for instance we built a simple bandwidth optimizing overlay 
+tree construction based on overcast the resulting 
+dynamically constructed trees never achieved more than 
+of the bandwidth of our own oﬄine algorithm 
+ creating disjoint data 
+bullet s ability to deliver high bandwidth levels to nodes 
+depends on its disjoint transmission strategy that is when 
+bandwidth to a child is limited bullet attempts to send 
+the correct portions of data so that recovery of the lost 
+data is facilitated a bullet parent sends different data to 
+its children in hopes that each data item will be readily 
+available to nodes spread throughout its subtree it does 
+so by assigning ownership of data objects to children in a 
+manner that makes the expected number of nodes holding 
+a particular data object equal for all data objects it 
+transmits figure shows the resulting bandwidth over time 
+for the non-disjoint strategy in which a node and more 
+importantly the root of the tree attempts to send all data to 
+each of its children subject to independent losses at 
+individual child links because the children transports throttle the 
+sending rate at each parent some data is inherently sent 
+disjointly by chance by not explicitly choosing which data 
+to send its child this approach deprives bullet of of its 
+bandwidth capability when compared to the case when our 
+disjoint strategy is enabled in figure 
+ epidemic approaches 
+in this section we explore how bullet compares to data 
+dissemination approaches that use some form of epidemic 
+routing we implemented a form of gossiping where a 
+node forwards non-duplicate packets to a randomly chosen 
+number of nodes in its local view this technique does not 
+use a tree for dissemination and is similar to lpbcast 
+ recently improved to incorporate retrieval of data objects 
+we do not disseminate packets every t seconds instead we 
+forward them as soon as they arrive 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+raw total 
+useful total 
+from parent 
+figure achieved bandwidth over time using 
+nondisjoint data transmission 
+we also implemented a pbcast-like approach for 
+retrieving data missing from a data distribution tree the 
+idea here is that nodes are expected to obtain most of their 
+data from their parent nodes then attempt to retrieve any 
+missing data items through gossiping with random peers 
+instead of using gossiping with a fixed number of rounds for 
+each packet we use anti-entropy with a fifo bloom filter 
+to attempt to locate peers that hold any locally missing data 
+items 
+to make our evaluation conservative we assume that nodes 
+employing gossip and anti-entropy recovery are able to 
+maintain full group membership while this might be difficult in 
+practice we assume that ransub could also be applied 
+to these ideas specifically in the case of anti-entropy 
+recovery that employs an underlying tree further we also 
+allow both techniques to reuse other aspects of our 
+implementation bloom filters tfrc transport etc to reduce 
+the number of duplicate packets we use less peers in each 
+round than bullet for our configuration we 
+experimentally found that peers results in the best performance 
+with the lowest overhead in our experiments increasing 
+the number of peers did not improve the average bandwidth 
+achieved throughout the system to allow tfrc enough 
+time to ramp up to the appropriate tcp-friendly sending 
+rate we set the epoch length for anti-entropy recovery to 
+seconds 
+for these experiments we use a -node inet topology 
+with no explicit physical link losses we set link bandwidths 
+according to the medium range from table and randomly 
+assign overlay participants the randomly chosen root 
+either streams at kbps over a random tree for 
+bullet and greedy bottleneck tree for anti-entropy recovery or 
+sends packets at that rate to randomly chosen nodes for 
+gossiping figure shows the resulting bandwidth over time 
+achieved by bullet and the two epidemic approaches as 
+expected bullet comes close to providing the target bandwidth 
+to all participants achieving approximately percent more 
+then gossiping and streaming with anti-entropy the two 
+epidemic techniques send an excessive number of duplicates 
+effectively reducing the useful bandwidth provided to each 
+node more importantly both approaches assign equal 
+significance to other peers regardless of the available 
+band 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+push gossiping raw 
+streaming w ae raw 
+bullet raw 
+bullet useful 
+push gossiping useful 
+streaming w ae useful 
+figure achieved bandwidth over time for bullet 
+and epidemic approaches 
+width and the similarity ratio bullet on the other hand 
+establishes long-term connections with peers that provide 
+good bandwidth and disjoint content and avoids most of 
+the duplicates by requesting disjoint data from each node s 
+peers 
+ bullet on a lossy network 
+to evaluate bullet s performance under more lossy 
+network conditions we have modified our -node 
+topologies used in our previous experiments to include random 
+packet losses modelnet allows the specification of a packet 
+loss rate in the description of a network link our goal by 
+modifying these loss rates is to simulate queuing behavior 
+when the network is under load due to background network 
+traffic 
+to effect this behavior we first modify all non-transit links 
+in each topology to have a packet loss rate chosen uniformly 
+random from resulting in a maximum loss rate of 
+ transit links are likewise modified but with a 
+maximum loss rate of similar to the approach in 
+we randomly designated of the links in the topologies as 
+overloaded and set their loss rates uniformly random from 
+ resulting in a maximum packet loss rate of 
+figure shows achieved bandwidths for streaming over 
+bullet and using our greedy oﬄine bottleneck bandwidth 
+tree because losses adversely affect the bandwidth 
+achievable over tcp-friendly transport and since bandwidths are 
+strictly monotonically decreasing over a streaming tree 
+treebased algorithms perform considerably worse than bullet 
+when used on a lossy network in all cases bullet delivers 
+at least twice as much bandwidth than the bottleneck 
+bandwidth tree additionally losses in the low bandwidth 
+topology essentially keep the bottleneck bandwidth tree from 
+delivering any data an artifact that is avoided by bullet 
+ performance under failure 
+in this section we discuss bullet s behavior in the face 
+of node failure in contrast to streaming distribution trees 
+that must quickly detect and make tree transformations to 
+overcome failure bullet s failure resilience rests on its ability 
+to maintain a higher level of achieved bandwidth by virtue 
+of perpendicular peer streaming while all nodes under a 
+failed node in a distribution tree will experience a temporary 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bullet - high bandwidth 
+bullet - medium bandwidth 
+bottleneck tree - high bandwidth 
+bottleneck tree - medium bandwidth 
+bullet - low bandwidth 
+bottleneck tree - low bandwidth 
+figure achieved bandwidths for bullet and 
+bottleneck bandwidth tree over a lossy network 
+topology 
+disruption in service bullet nodes are able compensate for 
+this by receiving data from peers throughout the outage 
+because bullet and more importantly ransub makes 
+use of an underlying tree overlay part of bullet s failure 
+recovery properties will depend on the failure recovery 
+behavior of the underlying tree for the purposes of this 
+discussion we simply assume the worst-case scenario where an 
+underlying tree has no failure recovery in our failure 
+experiments we fail one of root s children with of the total 
+ nodes as descendants seconds after data 
+streaming is started by failing one of root s children we are able 
+to show bullet s worst-case performance under a single node 
+failure 
+in our first scenario we disable failure detection in 
+ransub so that after a failure occurs bullet nodes request data 
+only from their current peers that is at this point 
+ransub stops functioning and no new peer relationships are 
+created for the remainder of the run figure shows bullet s 
+achieved bandwidth over time for this case while the 
+average achieved rate drops from kbps to kbps most 
+nodes including the descendants of the failed root child are 
+able to recover a large portion of the data rate 
+next we enable ransub failure detection that recognizes 
+a node s failure when a ransub epoch has lasted longer 
+than the predetermined maximum seconds for this test 
+in this case the root simply initiates the next distribute 
+phase upon ransub timeout the net result is that nodes 
+that are not descendants of the failed node will continue to 
+receive updated random subsets allowing them to peer with 
+appropriate nodes reflecting the new network conditions as 
+shown in figure the failure causes a negligible disruption 
+in performance with ransub failure detection enabled 
+nodes quickly learn of other nodes from which to receive 
+data once such recovery completes the descendants of the 
+failed node use their already established peer relationships 
+to compensate for their ancestor s failure hence because 
+bullet is an overlay mesh its reliability characteristics far 
+exceed that of typical overlay distribution trees 
+ planetlab 
+this section contains results from the deployment of 
+bullet over the planetlab wide-area network testbed for 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bandwidth received 
+useful total 
+from parent 
+figure bandwidth over time with a worst-case 
+node failure and no ransub recovery 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bandwidth received 
+useful total 
+from parent 
+figure bandwidth over time with a worst-case 
+node failure and ransub recovery enabled 
+our first experiment we chose nodes for our deployment 
+with no two machines being deployed at the same site since 
+there is currently ample bandwidth available throughout the 
+planetlab overlay a characteristic not necessarily 
+representative of the internet at large we designed this experiment 
+to show that bullet can achieve higher bandwidth than an 
+overlay tree when the source is constrained for instance in 
+cases of congestion on its outbound access link or of 
+overload by a flash-crowd 
+we did this by choosing a root in europe connected to 
+planetlab with fairly low bandwidth the node we selected 
+was in italy cs unibo it and we had other overlay 
+nodes in europe without global knowledge of the topology 
+in planetlab and the internet we are of course unable 
+to produce our greedy bottleneck bandwidth tree for 
+comparison we ran bullet over a random overlay tree for 
+seconds while attempting to stream at a rate of mbps 
+we waited seconds before starting to stream data to 
+allow nodes to successfully join the tree we compare the 
+performance of bullet to data streaming over multiple 
+handcrafted trees figure shows our results for two such trees 
+the good tree has all nodes in europe located high in the 
+tree close to the root we used pathload to measure the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+bandwidth kbps 
+time s 
+bullet 
+good tree 
+worst tree 
+figure achieved bandwidth over time for bullet 
+and tfrc streaming over different trees on 
+planetlab with a root in europe 
+available bandwidth between the root and all other nodes 
+nodes with high bandwidth measurements were placed close 
+to the root in this case we are able to achieve a bandwidth 
+of approximately kbps the worst tree was created 
+by setting the root s children to be the three nodes with the 
+worst bandwidth characteristics from the root as measured 
+by pathload all subsequent levels in the tree were set in 
+this fashion 
+for comparison we replaced all nodes in europe from 
+our topology with nodes in the us creating a topology that 
+only included us nodes with high bandwidth characteristics 
+as expected bullet was able to achieve the full mbps 
+rate in this case a well constructed tree over this 
+highbandwidth topology yielded slightly lower than mbps 
+verifying that our approach does not sacrifice performance 
+under high bandwidth conditions and improves performance 
+under constrained bandwidth scenarios 
+ related work 
+snoeren et al use an overlay mesh to achieve 
+reliable and timely delivery of mission-critical data in this 
+system every node chooses n parents from which to 
+receive duplicate packet streams since its foremost emphasis 
+is reliability the system does not attempt to improve the 
+bandwidth delivered to the overlay participants by sending 
+disjoint data at each level further during recovery from 
+parent failure it limits an overlay router s choice of parents 
+to nodes with a level number that is less than its own level 
+number 
+the power of perpendicular downloads is perhaps best 
+illustrated by kazaa the popular peer-to-peer file 
+swapping network kazaa nodes are organized into a scalable 
+hierarchical structure individual users search for desired 
+content in the structure and proceed to simultaneously 
+download potentially disjoint pieces from nodes that already have 
+it since kazaa does not address the multicast 
+communication model a large fraction of users downloading the same 
+file would consume more bandwidth than nodes organized 
+into the bullet overlay structure kazaa does not use 
+erasure coding therefore it may take considerable time to locate 
+the last few bytes 
+ 
+bittorrent is another example of a file distribution 
+system currently deployed on the internet it utilizes trackers 
+that direct downloaders to random subsets of machines that 
+already have portions of the file the tracker poses a 
+scalability limit as it continuously updates the systemwide 
+distribution of the file lowering the tracker communication rate 
+could hurt the overall system performance as information 
+might be out of date further bittorrent does not employ 
+any strategy to disseminate data to different regions of the 
+network potentially making it more difficult to recover data 
+depending on client access patterns similar to bullet 
+bittorrent incorporates the notion of choking at each node 
+with the goal of identifying receivers that benefit the most 
+by downloading from that particular source 
+fastreplica addresses the problem of reliable and 
+efficient file distribution in content distribution networks 
+ cdns in the basic algorithm nodes are organized into 
+groups of fixed size n with full group membership 
+information at each node to distribute the file a node splits 
+it into n equal-sized portions sends the portions to other 
+group members and instructs them to download the 
+missing pieces in parallel from other group members since only 
+a fixed portion of the file is transmitted along each of the 
+overlay links the impact of congestion is smaller than in the 
+case of tree distribution however since it treats all paths 
+equally fastreplica does not take full advantage of 
+highbandwidth overlay links in the system since it requires file 
+store-and-forward logic at each level of the hierarchy 
+necessary for scaling the system it may not be applicable to 
+high-bandwidth streaming 
+there are numerous protocols that aim to add reliability 
+to ip multicast in scalable reliable multicast srm 
+nodes multicast retransmission requests for missed packets 
+two techniques attempt to improve the scalability of this 
+approach probabilistic choice of retransmission timeouts 
+and organization of receivers into hierarchical local recovery 
+groups however it is difficult to find appropriate timer 
+values and local scoping settings via the ttl field for a wide 
+range of topologies number of receivers etc even when 
+adaptive techniques are used one recent study shows 
+that srm may have significant overhead due to 
+retransmission requests 
+bullet is closely related to efforts that use epidemic data 
+propagation techniques to recover from losses in the 
+nonreliable ip-multicast tree in pbcast a node has global 
+group membership and periodically chooses a random 
+subset of peers to send a digest of its received packets a node 
+that receives the digest responds to the sender with the 
+missing packets in a last-in first-out fashion lbpcast 
+addresses pbcast s scalability issues associated with global 
+knowledge by constructing in a decentralized fashion a 
+partial group membership view at each node the average 
+size of the views is engineered to allow a message to reach all 
+participants with high probability since lbpcast does not 
+require an underlying tree for data distribution and relies 
+on the push-gossiping model its network overhead can be 
+quite high 
+compared to the reliable multicast efforts bullet behaves 
+favorably in terms of the network overhead because nodes 
+do not blindly request retransmissions from their peers 
+instead bullet uses the summary views it obtains through 
+ransub to guide its actions toward nodes with disjoint 
+content further a bullet node splits the retransmission load 
+between all of its peers we note that pbcast nodes contain 
+a mechanism to rate-limit retransmitted packets and to send 
+different packets in response to the same digest however 
+this does not guarantee that packets received in parallel from 
+multiple peers will not be duplicates more importantly the 
+multicast recovery methods are limited by the bandwidth 
+through the tree while bullet strives to provide more 
+bandwidth to all receivers by making data deliberately disjoint 
+throughout the tree 
+narada builds a delay-optimized mesh 
+interconnecting all participating nodes and actively measures the 
+available bandwidth on overlay links it then runs a standard 
+routing protocol on top of the overlay mesh to construct 
+forwarding trees using each node as a possible source narada 
+nodes maintain global knowledge about all group 
+participants limiting system scalability to several tens of nodes 
+further the bandwidth available through a narada tree is 
+still limited to the bandwidth available from each parent 
+on the other hand the fundamental goal of bullet is to 
+increase bandwidth through download of disjoint data from 
+multiple peers 
+overcast is an example of a bandwidth-efficient 
+overlay tree construction algorithm in this system all nodes 
+join at the root and migrate down to the point in the tree 
+where they are still able to maintain some minimum level of 
+bandwidth bullet is expected to be more resilient to node 
+departures than any tree including overcast instead of a 
+node waiting to get the data it missed from a new parent 
+a node can start getting data from its perpendicular peers 
+this transition is seamless as the node that is disconnected 
+from its parent will start demanding more missing packets 
+from its peers during the standard round of refreshing its 
+filters overcast convergence time is limited by probes to 
+immediate siblings and ancestors bullet is able to provide 
+approximately a target bandwidth without having a fully 
+converged tree 
+in parallel to our own work splitstream also has the 
+goal of achieving high bandwidth data dissemination it 
+operates by splitting the multicast stream into k stripes 
+transmitting each stripe along a separate multicast tree built 
+using scribe the key design goal of the tree construction 
+mechanism is to have each node be an intermediate node 
+in at most one tree while observing both inbound and 
+outbound node bandwidth constraints thereby reducing the 
+impact of a single node s sudden departure on the rest of 
+the system the join procedure can potentially sacrifice the 
+interior-node-disjointness achieved by scribe perhaps more 
+importantly splitstream assumes that there is enough 
+available bandwidth to carry each stripe on every link of the tree 
+including the links between the data source and the roots 
+of individual stripe trees independently chosen by scribe 
+to some extent bullet and splitstream are complementary 
+for instance bullet could run on each of the stripes to 
+maximize the bandwidth delivered to each node along each stripe 
+coopnet considers live content streaming in a 
+peerto-peer environment subject to high node churn 
+consequently the system favors resilience over network efficiency 
+it uses a centralized approach for constructing either 
+random or deterministic node-disjoint similar to splitstream 
+trees and it includes an mdc adaptation framework 
+based on scalable receiver feedback that attempts to 
+maximize the signal-to-noise ratio perceived by receivers in 
+the case of on-demand streaming coopnet addresses 
+ 
+the flash-crowd problem at the central server by redirecting 
+incoming clients to a fixed number of nodes that have 
+previously retrieved portions of the same content compared to 
+coopnet bullet provides nodes with a uniformly random 
+subset of the system-wide distribution of the file 
+ conclusions 
+typically high bandwidth overlay data streaming takes 
+place over a distribution tree in this paper we argue that 
+in fact an overlay mesh is able to deliver fundamentally 
+higher bandwidth of course a number of difficult 
+challenges must be overcome to ensure that nodes in the mesh do 
+not repeatedly receive the same data from peers this paper 
+presents the design and implementation of bullet a scalable 
+and efficient overlay construction algorithm that overcomes 
+this challenge to deliver significant bandwidth improvements 
+relative to traditional tree structures specifically this 
+paper makes the following contributions 
+ we present the design and analysis of bullet an 
+overlay construction algorithm that creates a mesh over 
+any distribution tree and allows overlay participants 
+to achieve a higher bandwidth throughput than 
+traditional data streaming as a related benefit we 
+eliminate the overhead required to probe for available 
+bandwidth in traditional distributed tree construction 
+techniques 
+ we provide a technique for recovering missing data 
+from peers in a scalable and efficient manner 
+ransub periodically disseminates summaries of data sets 
+received by a changing uniformly random subset of 
+global participants 
+ we propose a mechanism for making data disjoint and 
+then distributing it in a uniform way that makes the 
+probability of finding a peer containing missing data 
+equal for all nodes 
+ a large-scale evaluation of overlay participants 
+running in an emulated node network 
+topology as well as experimentation on top of the 
+planetlab internet testbed shows that bullet running over 
+a random tree can achieve twice the throughput of 
+streaming over a traditional bandwidth tree 
+acknowledgments 
+we would like to thank david becker for his invaluable help 
+with our modelnet experiments and ken yocum for his help 
+with modelnet emulation optimizations in addition we 
+thank our shepherd barbara liskov and our anonymous 
+reviewers who provided excellent feedback 
+ references 
+ suman banerjee bobby bhattacharjee and christopher 
+kommareddy scalable application layer multicast in 
+proceedings of acm sigcomm august 
+ kenneth birman mark hayden oznur ozkasap zhen 
+xiao mihai budiu and yaron minsky bimodal multicast 
+acm transaction on computer systems may 
+ bittorrent http bitconjurer org bittorrent 
+ burton bloom space time trade-offs in hash coding 
+with allowable errors communication of acm 
+ - july 
+ andrei broder on the resemblance and containment of 
+documents in proceedings of compression and complexity 
+of sequences sequences 
+ john w byers jeffrey considine michael mitzenmacher 
+and stanislav rost informed content delivery across 
+adaptive overlay networks in proceedings of acm 
+sigcomm august 
+ john w byers michael luby michael mitzenmacher and 
+ashutosh rege a digital fountain approach to reliable 
+distribution of bulk data in sigcomm pages - 
+ 
+ ken calvert matt doar and ellen w zegura modeling 
+internet topology ieee communications magazine june 
+ 
+ miguel castro peter druschel anne-marie kermarrec 
+animesh nandi antony rowstron and atul singh 
+splitstream high-bandwidth content distribution in 
+cooperative environments in proceedings of the th acm 
+symposium on operating system principles october 
+ hyunseok chang ramesh govindan sugih jamin scott 
+shenker and walter willinger towards capturing 
+representative as-level internet topologies in 
+proceedings of acm sigmetrics june 
+ ludmila cherkasova and jangwon lee fastreplica 
+efficient large file distribution within content delivery 
+networks in th usenix symposium on internet 
+technologies and systems march 
+ reuven cohen and gideon kaempfer a unicast-based 
+approach for streaming multicast in infocom pages 
+ - 
+ patrick eugster sidath handurukande rachid guerraoui 
+anne-marie kermarrec and petr kouznetsov lightweight 
+probabilistic broadcast to appear in acm transactions 
+on computer systems 
+ patrick eugster sidath handurukande rachid guerraoui 
+anne-marie kermarrec and petr kouznetsov lightweight 
+probabilistic broadcast in proceedings of the 
+international conference on dependable systems and 
+networks dsn 
+ sally floyd mark handley jitendra padhye and jorg 
+widmer equation-based congestion control for unicast 
+applications in sigcomm pages - stockholm 
+sweden august 
+ sally floyd van jacobson ching-gung liu steven 
+mccanne and lixia zhang a reliable multicast 
+framework for light-weight sessions and application level 
+framing ieee acm transactions on networking 
+ - 
+ vivek k goyal multiple description coding compression 
+meets the network ieee signal processing mag pages 
+ - may 
+ yang hua chu sanjay rao and hui zhang a case for 
+end system multicast in proceedings of the acm 
+sigmetrics international conference on measurement 
+and modeling of computer systems june 
+ yang hua chu sanjay g rao srinivasan seshan and hui 
+zhang enabling conferencing applications on the internet 
+using an overlay multicast architecture in proceedings of 
+acm sigcomm august 
+ manish jain and constantinos dovrolis end-to-end 
+available bandwidth measurement methodology 
+dynamics and relation with tcp throughput in 
+proceedings of sigcomm new york august - 
+ 
+ john jannotti david k gifford kirk l johnson 
+m frans kaashoek and jr james w o toole overcast 
+reliable multicasting with an overlay network in 
+proceedings of operating systems design and 
+implementation osdi october 
+ kazaa media desktop http www kazaa com 
+ min sik kim simon s lam and dong-young lee 
+ 
+optimal distribution tree for internet streaming media 
+technical report tr- - department of computer 
+sciences university of texas at austin september 
+ dejan kosti´c adolfo rodriguez jeannie albrecht 
+abhijeet bhirud and amin vahdat using random 
+subsets to build scalable network services in proceedings 
+of the usenix symposium on internet technologies and 
+systems march 
+ michael luby lt codes in in the rd annual ieee 
+symposium on foundations of computer science 
+ michael g luby michael mitzenmacher m amin 
+shokrollahi daniel a spielman and volker stemann 
+practical loss-resilient codes in proceedings of the th 
+annual acm symposium on the theory of computing 
+ stoc pages - new york may 
+association for computing machinery 
+ jitedra padhye victor firoiu don towsley and jim 
+krusoe modeling tcp throughput a simple model and 
+its empirical validation in acm sigcomm 
+conference on applications technologies architectures and 
+protocols for computer communication pages - 
+vancouver ca 
+ venkata n padmanabhan lili qiu and helen j wang 
+server-based inference of internet link lossiness in 
+proceedings of the ieee infocom san francisco ca usa 
+ 
+ venkata n padmanabhan helen j wang and philip a 
+chou resilient peer-to-peer streaming in proceedings of 
+the th icnp atlanta georgia usa 
+ venkata n padmanabhan helen j wang philip a chou 
+and kunwadee sripanidkulchai distributing streaming 
+media content using cooperative networking in 
+acm ieee nossdav 
+ larry peterson tom anderson david culler and timothy 
+roscoe a blueprint for introducing disruptive technology 
+into the internet in proceedings of acm hotnets-i 
+october 
+ r c prim shortest connection networks and some 
+generalizations in bell systems technical journal pages 
+ - november 
+ adolfo rodriguez sooraj bhat charles killian dejan 
+kosti´c and amin vahdat macedon methodology for 
+automatically creating evaluating and designing overlay 
+networks technical report cs- - duke university 
+july 
+ antony rowstron anne-marie kermarrec miguel castro 
+and peter druschel scribe the design of a large-scale 
+event notification infrastructure in third international 
+workshop on networked group communication november 
+ 
+ stefan savage sting a tcp-based network measurement 
+tool in proceedings of the nd usenix symposium on 
+internet technologies and systems usits- pages 
+ - berkeley ca october - usenix 
+association 
+ alex c snoeren kenneth conley and david k gifford 
+mesh-based content routing using xml in proceedings 
+of the th acm symposium on operating systems 
+principles sosp october 
+ amin vahdat ken yocum kevin walsh priya 
+mahadevan dejan kosti´c jeff chase and david becker 
+scalability and accuracy in a large-scale network 
+emulator in proceedings of the th symposium on 
+operating systems design and implementation osdi 
+december 
+ 

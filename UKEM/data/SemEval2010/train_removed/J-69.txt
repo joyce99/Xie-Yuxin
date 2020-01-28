@@ -1,0 +1,1164 @@
+robust incentive techniques for peer-to-peer networks 
+michal feldman 
+mfeldman sims berkeley edu 
+kevin lai 
+klai hp com 
+ion stoica 
+istoica cs berkeley edu 
+john chuang 
+chuang sims berkeley edu 
+ 
+school of information 
+management and systems 
+u c berkeley 
+ 
+hp labs 
+computer science division 
+u c berkeley 
+abstract 
+lack of cooperation free riding is one of the key problems that 
+confronts today s p p systems what makes this problem 
+particularly difficult is the unique set of challenges that p p systems 
+pose large populations high turnover asymmetry of interest 
+collusion zero-cost identities and traitors to tackle these challenges we 
+model the p p system using the generalized prisoner s dilemma 
+ gpd and propose the reciprocative decision function as the 
+basis of a family of incentives techniques these techniques are fully 
+distributed and include discriminating server selection 
+maxflowbased subjective reputation and adaptive stranger policies through 
+simulation we show that these techniques can drive a system of 
+strategic users to nearly optimal levels of cooperation 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems j social and behavioral sciences economics 
+general terms 
+design economics 
+ introduction 
+many peer-to-peer p p systems rely on cooperation among 
+selfinterested users for example in a file-sharing system overall 
+download latency and failure rate increase when users do not share 
+their resources in a wireless ad-hoc network overall packet 
+latency and loss rate increase when nodes refuse to forward packets 
+on behalf of others further examples are file preservation 
+discussion boards online auctions and overlay routing 
+ in many of these systems users have natural disincentives to 
+cooperate because cooperation consumes their own resources and 
+may degrade their own performance as a result each user s 
+attempt to maximize her own utility effectively lowers the overall 
+a 
+bc 
+figure example of asymmetry of interest a wants service from b 
+b wants service form c and c wants service from a 
+utility of the system avoiding this tragedy of the commons 
+requires incentives for cooperation 
+we adopt a game-theoretic approach in addressing this problem in 
+particular we use a prisoners dilemma model to capture the 
+essential tension between individual and social utility asymmetric 
+payoff matrices to allow asymmetric transactions between peers 
+and a learning-based population dynamic model to specify the 
+behavior of individual peers which can be changed continuously 
+while social dilemmas have been studied extensively p p 
+applications impose a unique set of challenges including 
+ large populations and high turnover a file sharing 
+system such as gnutella and kazaa can exceed 
+simultaneous users and nodes can have an average life-time of the 
+order of minutes 
+ asymmetry of interest asymmetric transactions of p p 
+systems create the possibility for asymmetry of interest in 
+the example in figure a wants service from b b wants 
+service from c and c wants service from a 
+ zero-cost identity many p p systems allow peers to 
+continuously switch identities i e whitewash 
+strategies that work well in traditional prisoners dilemma games 
+such as tit-for-tat will not fare well in the p p context 
+therefore we propose a family of scalable and robust incentive 
+techniques based upon a novel reciprocative decision function to 
+address these challenges and provide different tradeoffs 
+ discriminating server selection cooperation requires 
+familiarity between entities either directly or indirectly 
+however the large populations and high turnover of p p systems 
+makes it less likely that repeat interactions will occur with 
+a familiar entity we show that by having each peer keep a 
+ 
+private history of the actions of other peers toward her and 
+using discriminating server selection the reciprocative 
+decision function can scale to large populations and moderate 
+levels of turnover 
+ shared history scaling to higher turnover and mitigating 
+asymmetry of interest requires shared history consider the 
+example in figure if everyone provides service then the 
+system operates optimally however if everyone keeps only 
+private history no one will provide service because b does 
+not know that a has served c etc we show that with shared 
+history b knows that a served c and consequently will serve 
+a this results in a higher level of cooperation than with 
+private history the cost of shared history is a distributed 
+infrastructure e g distributed hash table-based storage to store 
+the history 
+ maxflow-based subjective reputation shared history 
+creates the possibility for collusion in the example in figure 
+c can falsely claim that a served him thus deceiving b into 
+providing service we show that a maxflow-based algorithm 
+that computes reputation subjectively promotes cooperation 
+despite collusion among of the population the basic idea 
+is that b would only believe c if c had already provided 
+service to b the cost of the maxflow algorithm is its o v 
+ 
+running time where v is the number of nodes in the system 
+to eliminate this cost we have developed a constant mean 
+running time variation which trades effectiveness for 
+complexity of computation we show that the maxflow-based 
+algorithm scales better than private history in the presence of 
+colluders without the centralized trust required in previous 
+work 
+ adaptive stranger policy zero-cost identities allows 
+noncooperating peers to escape the consequences of not 
+cooperating and eventually destroy cooperation in the system if not 
+stopped we show that if reciprocative peers treat strangers 
+ peers with no history using a policy that adapts to the 
+behavior of previous strangers peers have little incentive to 
+whitewash and whitewashing can be nearly eliminated from 
+the system the adaptive stranger policy does this without 
+requiring centralized allocation of identities an entry fee for 
+newcomers or rate-limiting 
+ short-term history history also creates the possibility that 
+a previously well-behaved peer with a good reputation will 
+turn traitor and use his good reputation to exploit other peers 
+the peer could be making a strategic decision or someone 
+may have hijacked her identity e g by compromising her 
+host long-term history exacerbates this problem by 
+allowing peers with many previous transactions to exploit that 
+history for many new transactions we show that short-term 
+history prevents traitors from disrupting cooperation 
+the rest of the paper is organized as follows we describe the model 
+in section and the reciprocative decision function in section we 
+then proceed to the incentive techniques in section in section 
+we describe the challenges of large populations and high turnover 
+and show the effectiveness of discriminating server selection and 
+shared history in section we describe collusion and 
+demonstrate how subjective reputation mitigates it in section we 
+present the problem of zero-cost identities and show how an 
+adaptive stranger policy promotes persistent identities in section 
+we show how traitors disrupt cooperation and how short-term 
+history deals with them we discuss related work in section and 
+conclude in section 
+ model and assumptions 
+in this section we present our assumptions about p p systems and 
+their users and introduce a model that aims to capture the behavior 
+of users in a p p system 
+ assumptions 
+we assume a p p system in which users are strategic i e they 
+act rationally to maximize their benefit however to capture some 
+of the real-life unpredictability in the behavior of users we allow 
+users to randomly change their behavior with a low probability see 
+section 
+for simplicity we assume a homogeneous system in which all peers 
+issue and satisfy requests at the same rate a peer can satisfy any 
+request and unless otherwise specified peers request service 
+uniformly at random from the population 
+ finally we assume that all 
+transactions incur the same cost to all servers and provide the same 
+benefit to all clients 
+we assume that users can pollute shared history with false 
+recommendations section switch identities at zero-cost 
+ section and spoof other users section we do not assume 
+any centralized trust or centralized infrastructure 
+ model 
+to aid the development and study of the incentive schemes in this 
+section we present a model of the users behaviors in particular 
+we model the benefits and costs of p p interactions the game and 
+population dynamics caused by mutation learning and turnover 
+our model is designed to have the following properties that 
+characterize a large set of p p systems 
+ social dilemma universal cooperation should result in 
+optimal overall utility but individuals who exploit the 
+cooperation of others while not cooperating themselves i e 
+defecting should benefit more than users who do cooperate 
+ asymmetric transactions a peer may want service from 
+another peer while not currently being able to provide the 
+service that the second peer wants transactions should be 
+able to have asymmetric payoffs 
+ untraceable defections a peer should not be able to 
+determine the identity of peers who have defected on her this 
+models the difficulty or expense of determining that a peer 
+could have provided a service but didn t for example in the 
+gnutella file sharing system a peer may simply ignore 
+queries despite possessing the desired file thus preventing 
+the querying peer from identifying the defecting peer 
+ dynamic population peers should be able to change their 
+behavior and enter or leave the system independently and 
+continuously 
+ the exception is discussed in section 
+ 
+cooperate 
+defect 
+cooperate defectclient 
+server 
+sc rr 
+sc st sc pp 
+sc ts 
+figure payoff matrix for the generalized prisoner s dilemma t r 
+p and s stand for temptation reward punishment and sucker 
+respectively 
+ generalized prisoner s dilemma 
+the prisoner s dilemma developed by flood dresher and tucker 
+in is a non-cooperative repeated game satisfying the 
+social dilemma requirement each game consists of two players who 
+can defect or cooperate depending how each acts the players 
+receive a payoff the players use a strategy to decide how to act 
+unfortunately existing work either uses a specific asymmetric payoff 
+matrix or only gives the general form for a symmetric one 
+instead we use the generalized prisoner s dilemma gpd which 
+specifies the general form for an asymmetric payoff matrix that 
+preserves the social dilemma in the gpd one player is the client and 
+one player is the server in each game and it is only the decision 
+of the server that is meaningful for determining the outome of the 
+transaction a player can be a client in one game and a server in 
+another the client and server receive the payoff from a generalized 
+payoff matrix figure rc sc tc and pc are the client s payoff 
+and rs ss ts and ps are the server s payoff a gpd payoff 
+matrix must have the following properties to create a social dilemma 
+ mutual cooperation leads to higher payoffs than mutual 
+defection rs rc ps pc 
+ mutual cooperation leads to higher payoffs than one player 
+suckering the other rs rc sc ts and rs rc 
+ss tc 
+ defection dominates cooperation at least weakly at the 
+individual level for the entity who decides whether to 
+cooperate or defect ts ≥ rs and ps ≥ ss and ts rs or 
+ps ss 
+the last set of inequalities assume that clients do not incur a cost 
+regardless of whether they cooperate or defect and therefore clients 
+always cooperate these properties correspond to similar properties 
+of the classic prisoner s dilemma and allow any form of 
+asymmetric transaction while still creating a social dilemma 
+furthermore one or more of the four possible actions client 
+cooperate and defect and server cooperate and defect can be 
+untraceable if one player makes an untraceable action the other player 
+does not know the identity of the first player 
+for example to model a p p application like file sharing or 
+overlay routing we use the specific payoff matrix values shown in 
+figure this satisfies the inequalities specified above where only the 
+server can choose between cooperating and defecting in addition 
+for this particular payoff matrix clients are unable to trace server 
+defections this is the payoff matrix that we use in our simulation 
+results 
+request 
+service 
+don t request 
+ - 
+ 
+ 
+ 
+provide 
+service 
+ignore 
+request 
+client 
+server 
+figure the payoff matrix for an application like p p file sharing or 
+overlay routing 
+ population dynamics 
+a characteristic of p p systems is that peers change their 
+behavior and enter or leave the system independently and continuously 
+several studies of repeated prisoner s dilemma games use 
+an evolutionary model of population dynamics an 
+evolutionary model is not suitable for p p systems because it only 
+specifies the global behavior and all changes occur at discrete times 
+for example it may specify that a population of 
+cooperate players and defect players evolves into a population 
+with and players respectively it does not specify which specific 
+players switched furthermore all the switching occurs at the end 
+of a generation instead of continuously like in a real p p system as 
+a result evolutionary population dynamics do not accurately model 
+turnover traitors and strangers 
+in our model entities take independent and continuous actions that 
+change the composition of the population time consists of rounds 
+in each round every player plays one game as a client and one game 
+as a server at the end of a round a player may mutate learn 
+ turnover or stay the same if a player mutates she switches to 
+a randomly picked strategy if she learns she switches to a strategy 
+that she believes will produce a higher score described in more 
+detail below if she maintains her identity after switching strategies 
+then she is referred to as a traitor if a player suffers turnover she 
+leaves the system and is replaced with a newcomer who uses the 
+same strategy as the exiting player 
+to learn a player collects local information about the performance 
+of different strategies this information consists of both her 
+personal observations of strategy performance and the observations of 
+those players she interacts with this models users communicating 
+out-of-band about how strategies perform let s be the running 
+average of the performance of a player s current strategy per round 
+and age be the number of rounds she has been using the strategy a 
+strategy s rating is 
+runningaverage s age 
+runningaverage age 
+ 
+we use the age and compute the running average before the ratio to 
+prevent young samples which are more likely to be outliers from 
+skewing the rating at the end of a round a player switches to 
+highest rated strategy with a probability proportional to the difference 
+in score between her current strategy and the highest rated strategy 
+ 
+ reciprocative decision 
+function 
+in this section we present the new decision function reciprocative 
+that is the basis for our incentive techniques a decision function 
+maps from a history of a player s actions to a decision whether to 
+cooperate with or defect on that player a strategy consists of a 
+decision function private or shared history a server selection 
+mechanism and a stranger policy our approach to incentives is to 
+design strategies which maximize both individual and social benefit 
+strategic users will choose to use such strategies and thereby drive 
+the system to high levels of cooperation two examples of 
+simple decision functions are cooperate and defect 
+ cooperate models a naive user who does not yet realize 
+that she is being exploited defect models a greedy user 
+who is intent on exploiting the system in the absence of incentive 
+techniques defect users will quickly dominate the 
+cooperate users and destroy cooperation in the system 
+our requirements for a decision function are that it can use 
+shared and subjective history it can deal with untraceable 
+defections and it is robust against different patterns of defection 
+previous decision functions such as tit-for-tat and image 
+ see section do not satisfy these criteria for example tit-for-tat 
+and image base their decisions on both cooperations and defections 
+therefore cannot deal with untraceable defections in this section 
+and the remaining sections we demonstrate how the 
+reciprocativebased strategies satisfy all of the requirements stated above 
+the probability that a reciprocative player cooperates with a peer 
+is a function of its normalized generosity generosity measures the 
+benefit an entity has provided relative to the benefit it has 
+consumed this is important because entities which consume more 
+services than they provide even if they provide many services will 
+cause cooperation to collapse for some entity i let pi and ci be the 
+services i has provided and consumed respectively entity i s 
+generosity is simply the ratio of the service it provides to the service it 
+consumes 
+g i pi ci 
+one possibility is to cooperate with a probability equal to the 
+generosity although this is effective in some cases in other cases a 
+reciprocative player may consume more than she provides e g 
+when initially using the stranger defect policy in this will 
+cause reciprocative players to defect on each other to prevent this 
+situation a reciprocative player uses its own generosity as a 
+measuring stick to judge its peer s generosity normalized generosity 
+measures entity i s generosity relative to entity j s generosity more 
+concretely entity i s normalized generosity as perceived by entity 
+j is 
+gj i g i g j 
+in the remainder of this section we describe our simulation 
+framework and use it to demonstrate the benefits of the baseline 
+reciprocative decision function 
+parameter nominal value section 
+population size 
+run time rounds 
+payoff matrix file sharing 
+ratio using cooperate 
+ratio using defect 
+ratio using reciprocative 
+mutation probability 
+learning probability 
+turnover probability 
+hit rate 
+table default simulation parameters 
+ simulation framework 
+our simulator implements the model described in section we use 
+the asymmetric file sharing payoff matrix figure with 
+untraceable defections because it models transactions in many p p 
+systems like file-sharing and packet forwarding in ad-hoc and overlay 
+networks our simulation study is composed of different scenarios 
+reflecting the challenges of various non-cooperative behaviors 
+table presents the nominal parameter values used in our simulation 
+the ratio using rows refer to the initial ratio of the total 
+population using a particular strategy in each scenario we vary the value 
+range of a specific parameter to reflect a particular situation or 
+attack we then vary the exact properties of the reciprocative strategy 
+to defend against that situation or attack 
+ baseline results 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+population 
+time 
+ a total population 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+time 
+ b total population 
+defector 
+cooperator 
+recip private 
+figure the evolution of strategy populations over time time the 
+number of elapsed rounds population is the number of players using 
+a strategy 
+in this section we present the dynamics of the game for the 
+basic scenario presented in table to familiarize the reader and set 
+a baseline for more complicated scenarios figures a 
+players and b players show players switching to higher 
+scoring strategies over time in two separate runs of the simulator each 
+point in the graph represents the number of players using a 
+particular strategy at one point in time figures a and b show the 
+corresponding mean overall score per round this measures the degree 
+of cooperation in the system is the maximum possible achieved 
+when everybody cooperates and is the minimum achieved when 
+everybody defects from the file sharing payoff matrix a net of 
+means everyone is able to download a file and a means that no one 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+time 
+ a total population 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+time 
+ b total population 
+figure the mean overall per round score over time 
+is able to do so we use this metric in all later results to evaluate our 
+incentive techniques 
+figure a shows that the reciprocative strategy using private 
+history causes a system of players to converge to a cooperation 
+level of but drops to for players one would expect the 
+ player system to reach the optimal level of cooperation 
+because all the defectors are eliminated from the system it does not 
+because of asymmetry of interest for example suppose player b 
+is using reciprocative with private history player a may happen to 
+ask for service from player b twice in succession without 
+providing service to player b in the interim player b does not know of the 
+service player a has provided to others so player b will reject 
+service to player a even though player a is cooperative we discuss 
+solutions to asymmetry of interest and the failure of reciprocative 
+in the player system in section 
+ reciprocative-based incentive 
+techniques 
+in this section we present our incentives techniques and evaluate 
+their behavior by simulation to make the exposition clear we group 
+our techniques by the challenges they address large populations 
+and high turnover section collusions section zero-cost 
+identities section and traitors section 
+ large populations and high turnover 
+the large populations and high turnover of p p systems makes it 
+less likely that repeat interactions will occur with a familiar entity 
+under these conditions basing decisions only on private history 
+ records about interactions the peer has been directly involved in 
+is not effective in addition private history does not deal well with 
+asymmetry of interest for example if player b has cooperated with 
+others but not with player a himself in the past player a has no 
+indication of player b s generosity thus may unduly defect on him 
+we propose two mechanisms to alleviate the problem of few repeat 
+transactions server-selection and shared history 
+ server selection 
+a natural way to increase the probability of interacting with familiar 
+peers is by discriminating server selection however the 
+asymmetry of transactions challenges selection mechanisms unlike in the 
+prisoner s dilemma payoff matrix where players can benefit one 
+another within a single transaction transactions in gpd are 
+asymmetric as a result a player who selects her donor for the second 
+time without contributing to her in the interim may face a defection 
+in addition due to untraceability of defections it is impossible to 
+maintain blacklists to avoid interactions with known defectors 
+in order to deal with asymmetric transactions every player holds 
+ fixed size lists of both past donors and past recipients and selects 
+a server from one of these lists at random with equal 
+probabilities this way users approach their past recipients and give them a 
+chance to reciprocate 
+in scenarios with selective users we omit the complete availability 
+assumption to prevent players from being clustered into a lot of 
+very small groups thus we assume that every player can perform 
+the requested service with probability p for the results presented in 
+this section p in addition in order to avoid bias in favor of 
+the selective players all players including the non-discriminative 
+ones select servers for games 
+figure demonstrates the effectiveness of the proposed selection 
+mechanism in scenarios with large population sizes we fix the 
+initial ratio of reciprocative in the population while varying 
+the population size between to notice that while in 
+figures a and b the data points demonstrates the evolution of the 
+system over time each data point in this figure is the result of an 
+entire simulation for a specific scenario the figure shows that the 
+reciprocative decision function using private history in conjunction 
+with selective behavior can scale to large populations 
+in figure we fix the population size and vary the turnover rate 
+it demonstrates that while selective behavior is effective for low 
+turnover rates as turnover gets higher selective behavior does not 
+scale this occurs because selection is only effective as long as 
+players from the past stay alive for long enough such that they can 
+be selected for future games 
+ shared history 
+in order to mitigate asymmetry of interest and scale to higher 
+turnover rate there is a need in shared history shared history means 
+that every peer keeps records about all of the interactions that 
+occur in the system regardless of whether he was directly involved 
+in them or not it allows players to leverage off of the experiences 
+of others in cases of few repeat transactions it only requires that 
+someone has interacted with a particular player for the entire 
+population to observe it thus scales better to large populations and high 
+turnovers and also tolerates asymmetry of interest some examples 
+of shared history schemes are 
+figure shows the effectiveness of shared history under high 
+turnover rates in this figure we fix the population size and vary the 
+turnover rate while selective players with private history can only 
+tolerate a moderate turnover shared history scales to turnovers of 
+up to approximately this means that of the players leave 
+the system at the end of each round in figure we fix the turnover 
+and vary the population size it shows that shared history causes 
+the system to converge to optimal cooperation and performance 
+regardless of the size of the population 
+these results show that shared history addresses all three 
+challenges of large populations high turnover and asymmetry of 
+transactions nevertheless shared history has two disadvantages first 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+numplayers 
+shared non-sel 
+private non-sel 
+private selective 
+figure private vs shared history as a function of population size 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+turnover 
+shared non-sel 
+private non-sel 
+private selective 
+figure performance of selection mechanism under turnover the 
+x-axis is the turnover rate the y-axis is the mean overall per round 
+score 
+while a decentralized implementation of private history is 
+straightforward implementation of shared-history requires communication 
+overhead or centralization a decentralized shared history can be 
+implemented for example on top of a dht using a peer-to-peer 
+storage system or by disseminating information to other 
+entities in a similar way to routing protocols second and more 
+fundamental shared history is vulnerable to collusion in the next section 
+we propose a mechanism that addresses this problem 
+ collusion and other shared history 
+attacks 
+ collusion 
+while shared history is scalable it is vulnerable to collusion 
+collusion can be either positive e g defecting entities claim that other 
+defecting entities cooperated with them or negative e g entities 
+claim that other cooperative entities defected on them collusion 
+subverts any strategy in which everyone in the system agrees on the 
+reputation of a player objective reputation an example of 
+objective reputation is to use the reciprocative decision function with 
+shared history to count the total number of cooperations a player 
+has given to and received from all entities in the system another 
+example is the image strategy the effect of collusion is 
+magnified in systems with zero-cost identities where users can create 
+fake identities that report false statements 
+instead to deal with collusion entities can compute reputation 
+subjectively where player a weighs player b s opinions based on how 
+much player a trusts player b our subjective algorithm is based 
+on maxflow maxflow is a graph theoretic problem which 
+given a directed graph with weighted edges asks what is the greatest 
+rate at which material can be shipped from the source to the target 
+without violating any capacity constraints for example in figure 
+each edge is labeled with the amount of traffic that can travel on it 
+the maxflow algorithm computes the maximum amount of traffic 
+that can go from the source s to the target t without violating the 
+constraints in this example even though there is a loop of high 
+capacity edges the maxflow between the source and the target is only 
+ the numbers in brackets represent the actual flow on each edge 
+in the solution 
+ 
+ 
+ 
+s t 
+ 
+ 
+ 
+ 
+ 
+figure each edge in the graph is labeled with its capacity and the 
+actual flow it carries in brackets the maxflow between the source and 
+the target in the graph is 
+c 
+c 
+cccc 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+a 
+b 
+figure this graph illustrates the robustness of maxflow in the 
+presence of colluders who report bogus high reputation values 
+we apply the maxflow algorithm by constructing a graph whose 
+vertices are entities and the edges are the services that entities have 
+received from each other this information can be stored using the 
+same methods as the shared history a maxflow is the greatest level 
+of reputation the source can give to the sink without violating 
+reputation capacity constraints as a result nodes who dishonestly 
+report high reputation values will not be able to subvert the 
+reputation system 
+figure illustrates a scenario in which all the colluders labeled 
+with c report high reputation values for each other when node a 
+computes the subjective reputation of b using the maxflow 
+algorithm it will not be affected by the local false reputation values 
+rather the maxflow in this case will be this is because no service 
+has been received from any of the colluders 
+ 
+in our algorithm the benefit that entity i has received indirectly 
+from entity j is the maxflow from j to i conversely the benefit that 
+entity i has provided indirectly to j is the maxflow from i to j the 
+subjective reputation of entity j as perceived by i is 
+min 
+maxflow j to i 
+maxflow i to j 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+population 
+shared 
+private 
+subjective 
+figure subjective shared history compared to objective shared 
+history and private history in the presence of colluders 
+algorithm constanttimemaxflow bound the mean running time 
+of maxflow to a constant 
+method ctmaxflow self src dst 
+ self surplus ← self surplus self increment 
+ use the running mean as a prediction 
+ if random self surplus self mean iterations then 
+ return none not enough surplus to run 
+ end if 
+ get the flow and number of iterations used from the maxflow alg 
+ flow iterations ← maxflow self g src dst 
+ self surplus ← self surplus − iterations 
+ keep a running mean of the number of iterations used 
+ self mean iterations ← self α self mean iterations − 
+self α iterations 
+ return flow 
+the cost of maxflow is its long running time the standard 
+preflowpush maxflow algorithm has a worst case running time of o v 
+ 
+instead we use algorithm which has a constant mean running 
+time but sometimes returns no flow even though one exists the 
+essential idea is to bound the mean number of nodes examined 
+during the maxflow computation this bounds the overhead but also 
+bounds the effectiveness despite this the results below show that 
+a maxflow-based reciprocative decision function scales to higher 
+populations than one using private history 
+figure compares the effectiveness of subjective reputation to 
+objective reputation in the presence of colluders in these 
+scenarios defectors collude by claiming that other colluders that they 
+encounter gave them cooperations for that encounter also the 
+parameters for algorithm are set as follows increment 
+α 
+as in previous sections reciprocative with private history results 
+in cooperation up to a point beyond which it fails the difference 
+here is that objective shared history fails for all population sizes 
+this is because the reciprocative players cooperate with the 
+colluders because of their high reputations however subjective 
+history can reach high levels of cooperation regardless of colluders 
+this is because there are no high weight paths in the cooperation 
+graph from colluders to any non-colluders so the maxflow from 
+a colluder to any non-colluder is therefore a subjective 
+reciprocative player will conclude that that colluder has not provided 
+any service to her and will reject service to the colluder thus the 
+maxflow algorithm enables reciprocative to maintain the 
+scalability of shared history without being vulnerable to collusion or 
+requiring centralized trust e g trusted peers since we bound the 
+running time of the maxflow algorithm cooperation decreases as 
+the population size increases but the key point is that the subjective 
+reciprocative decision function scales to higher populations than 
+one using private history this advantage only increases over time 
+as cpu power increases and more cycles can be devoted to running 
+the maxflow algorithm by increasing the increment parameter 
+despite the robustness of the maxflow algorithm to the simple form 
+of collusion described previously it still has vulnerabilities to more 
+sophisticated attacks one is for an entity the mole to provide 
+service and then lie positively about other colluders the other 
+colluders can then exploit their reputation to receive service however 
+the effectiveness of this attack relies on the amount of service that 
+the mole provides since the mole is paying all of the cost of 
+providing service and receiving none of the benefit she has a strong 
+incentive to stop colluding and try another strategy this forces the 
+colluders to use mechanisms to maintain cooperation within their 
+group which may drive the cost of collusion to exceed the benefit 
+ false reports 
+another attack is for a defector to lie about receiving or providing 
+service to another entity there are four possibile actions that can be 
+lied about providing service not providing service receiving 
+service and not receiving service falsely claiming to receive service 
+is the simple collusion attack described above falsely claiming not 
+to have provided service provides no benefit to the attacker 
+falsely claiming to have provided service or not to have received 
+it allows an attacker to boost her own reputation and or lower the 
+reputation of another entity an entity may want to lower another 
+entity s reputation in order to discourage others from selecting it 
+and exclusively use its service these false claims are clearly 
+identifiable in the shared history as inconsistencies where one entity 
+claims a transaction occurred and another claims it did not to limit 
+this attack we modify the maxflow algorithm so that an entity 
+always believes the entity that is closer to him in the flow graph if 
+both entities are equally distant then the disputed edge in the flow is 
+not critical to the evaluation and is ignored this modification 
+prevents those cases where the attacker is making false claims about an 
+entity that is closer than her to the evaluating entity which prevents 
+her from boosting her own reputation the remaining possibilities 
+are for the attacker to falsely claim to have provided service to or 
+not to have received it from a victim entity that is farther from the 
+evalulator than her in these cases an attacker can only lower the 
+reputation of the victim the effectiveness of doing this is limited 
+by the number of services provided and received by the attacker 
+which makes executing this attack expensive 
+ 
+ zero-cost identities 
+history assumes that entities maintain persistent identities 
+however in most p p systems identities are zero-cost this is desirable 
+for network growth as it encourages newcomers to join the system 
+however this also allows misbehaving users to escape the 
+consequences of their actions by switching to new identities i e 
+whitewashing whitewashers can cause the system to collapse if they 
+are not punished appropriately unfortunately a player cannot tell 
+if a stranger is a whitewasher or a legitimate newcomer always 
+cooperating with strangers encourages newcomers to join but at the 
+same time encourages whitewashing behavior always defecting on 
+strangers prevents whitewashing but discourages newcomers from 
+joining and may also initiate unfavorable cycles of defection 
+this tension suggests that any stranger policy that has a fixed 
+probability of cooperating with strangers will fail by either being too 
+stingy when most strangers are newcomers or too generous when 
+most strangers are whitewashers our solution is the stranger 
+adaptive stranger policy the idea is to be generous to strangers 
+when they are being generous and stingy when they are stingy 
+let ps and cs be the number of services that strangers have 
+provided and consumed respectively the probability that a player 
+using stranger adaptive helps a stranger is ps cs however we do 
+not wish to keep these counts permanently for reasons described in 
+section also players may not know when strangers defect 
+because defections are untraceable as described in section 
+consequently instead of keeping ps and cs we assume that k ps cs 
+where k is a constant and we keep the running ratio r ps cs 
+when we need to increment ps or cs we generate the current 
+values of ps and cs from k and r 
+cs k r 
+ps cs r 
+we then compute the new r as follows 
+r ps cs if the stranger provided service 
+r ps cs if the stranger consumed service 
+this method allows us to keep a running ratio that reflects the 
+recent generosity of strangers without knowing when strangers have 
+defected 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+turnover 
+stranger cooperate 
+stranger defect 
+stranger adaptive 
+figure different stranger policies for reciprocative with shared 
+history the x-axis is the turnover rate on a log scale the y-axis is the 
+mean overall per round score 
+figures and compare the effectiveness of the 
+reciprocative strategy using different policies toward strangers figure 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+meanoverallscore round 
+turnover 
+stranger cooperate 
+stranger defect 
+stranger adaptive 
+figure different stranger policies for reciprocative with private 
+history the x-axis is the turnover rate on a log scale the y-axis is the 
+mean overall per round score 
+compares different stranger policies for reciprocative with shared 
+history while figure is with private history in both figures 
+the players using the defect strategy change their 
+identity whitewash after every transaction and are indistinguishable 
+from legitimate newcomers the reciprocative players using the 
+stranger cooperate policy completely fail to achieve cooperation 
+this stranger policy allows whitewashers to maximize their payoff 
+and consequently provides a high incentive for users to switch to 
+whitewashing 
+in contrast figure shows that the stranger defect policy is 
+effective with shared history this is because whitewashers always 
+appear to be strangers and therefore the reciprocative players will 
+always defect on them this is consistent with previous work 
+showing that punishing strangers deals with whitewashers 
+however figure shows that stranger defect is not effective with 
+private history this is because reciprocative requires some initial 
+cooperation to bootstrap in the shared history case a reciprocative 
+player can observe that another player has already cooperated with 
+others with private history the reciprocative player only knows 
+about the other players actions toward her therefore the initial 
+defection dictated by the stranger defect policy will lead to later 
+defections which will prevent reciprocative players from ever 
+cooperating with each other in other simulations not shown here 
+the stranger defect stranger policy fails even with shared history 
+when there are no initial cooperate players 
+figure shows that with shared history the stranger 
+adaptive policy performs as well as stranger defect policy until the 
+turnover rate is very high of the population turning over after 
+every transaction in these scenarios stranger adaptive is using 
+k and each player keeps a private r more importantly it is 
+significantly better than stranger defect policy with private 
+history because it can bootstrap cooperation although the stranger 
+defect policy is marginally more effective than stranger 
+adaptive at very high rates of turnover p p systems are unlikely to 
+operate there because other services e g routing also cannot tolerate 
+very high turnover 
+we conclude that of the stranger policies that we have explored 
+stranger adaptive is the most effective by using stranger 
+adaptive p p systems with zero-cost identities and a sufficiently 
+low turnover can sustain cooperation without a centralized 
+allocation of identities 
+ 
+ traitors 
+traitors are players who acquire high reputation scores by 
+cooperating for a while and then traitorously turn into defectors before 
+leaving the system they model both users who turn deliberately 
+to gain a higher score and cooperators whose identities have been 
+stolen and exploited by defectors a strategy that maintains 
+longterm history without discriminating between old and recent actions 
+becomes highly vulnerable to exploitation by these traitors 
+the top two graphs in figure demonstrate the effect of traitors 
+on cooperation in a system where players keep long-term history 
+ never clear history in these simulations we run for rounds 
+and allow cooperative players to keep their identities when 
+switching to the defector strategy we use the default values for the 
+other parameters without traitors the cooperative strategies thrive 
+with traitors the cooperative strategies thrive until a cooperator 
+turns traitor after rounds as this cooperator exploits her 
+reputation to achieve a high score other cooperative players notice this 
+and follow suit via learning cooperation eventually collapses on 
+the other hand if we maintain short-term history and or 
+discounting ancient history vis-a-vis recent history traitors can be quickly 
+detected and the overall cooperation level stays high as shown in 
+the bottom two graphs in figure 
+ 
+ 
+ 
+ 
+ 
+ 
+ k k 
+long-termhistory 
+no traitors 
+population 
+ 
+ 
+ 
+ 
+ 
+ 
+ k k 
+traitors 
+defector 
+cooperator 
+recip shared 
+ 
+ 
+ 
+ 
+ 
+ 
+ k k 
+short-termhistory 
+time 
+population 
+ 
+ 
+ 
+ 
+ 
+ 
+ k k 
+time 
+figure keeping long-term vs short-term history both with and 
+without traitors 
+ related work 
+previous work has examined the incentive problem as applied to 
+societies in general and more recently to internet applications and 
+peer-to-peer systems in particular a well-known phenomenon in 
+this context is the tragedy of the commons where resources 
+are under-provisioned due to selfish users who free-ride on the 
+system s resources and is especially common in large networks 
+ 
+the problem has been extensively studied adopting a game 
+theoretic approach the prisoners dilemma model provides a 
+natural framework to study the effectiveness of different strategies in 
+establishing cooperation among players in a simulation 
+environment with many repeated games persistent identities and no 
+collusion axelrod shows that the tit-for-tat strategy dominates 
+our model assumes growth follows local learning rather than 
+evolutionary dynamics and also allows for more kinds of attacks 
+nowak and sigmund introduce the image strategy and 
+demonstrate its ability to establish cooperation among players despite few 
+repeat transactions by the employment of shared history players 
+using image cooperate with players whose global count of 
+cooperations minus defections exceeds some threshold as a result an 
+image player is either vulnerable to partial defectors if the 
+threshold is set too low or does not cooperate with other image players 
+ if the threshold is set too high 
+in recent years researchers have used economic mechanism 
+design theory to tackle the cooperation problem in internet 
+applications mechanism design is the inverse of game theory it asks how 
+to design a game in which the behavior of strategic players results 
+in the socially desired outcome distributed algorithmic 
+mechanism design seeks solutions within this framework that are both 
+fully distributed and computationally tractable and 
+are examples of applying damd to bgp routing and multicast cost 
+sharing more recently damd has been also studied in dynamic 
+environments in this context demonstrating the superiority of 
+a cooperative strategy as in the case of our work is consistent with 
+the objective of incentivizing the desired behavior among selfish 
+players 
+the unique challenges imposed by peer-to-peer systems inspired 
+additional body of work mainly in the context of packet 
+forwarding in wireless ad-hoc routing and file 
+sharing friedman and resnick consider the 
+problem of zero-cost identities in online environments and find that in 
+such systems punishing all newcomers is inevitable using a 
+theoretical model they demonstrate that such a system can converge to 
+cooperation only for sufficiently low turnover rates which our 
+results confirm and show that whitewashing and collusion can 
+have dire consequences for peer-to-peer systems and are difficult to 
+prevent in a fully decentralized system 
+some commercial file sharing clients provide incentive 
+mechanisms which are enforced by making it difficult for the user 
+to modify the source code these mechanisms can be circumvented 
+by a skilled user or by a competing company releasing a compatible 
+client without the incentive restrictions also these mechanisms are 
+still vulnerable to zero-cost identities and collusion bittorrent 
+uses tit-for-tat as a method for resource allocation where a user s 
+upload rate dictates his download rate 
+ conclusions 
+in this paper we take a game theoretic approach to the 
+problem of cooperation in peer-to-peer networks addressing the 
+challenges imposed by p p systems including large populations high 
+turnover asymmetry of interest and zero-cost identities we propose 
+a family of scalable and robust incentive techniques based upon 
+the reciprocative decision function to support cooperative 
+behavior and improve overall system performance 
+we find that the adoption of shared history and discriminating 
+server selection techniques can mitigate the challenge of few repeat 
+transactions that arises due to large population size high turnover 
+and asymmetry of interest furthermore cooperation can be 
+established even in the presence of zero-cost identities through the use of 
+an adaptive policy towards strangers finally colluders and traitors 
+can be kept in check via subjective reputations and short-term 
+history respectively 
+ 
+ acknowledgments 
+we thank mary baker t j giuli petros maniatis the 
+anonymous reviewer and our shepherd margo seltzer for their useful 
+comments that helped improve the paper this work is supported 
+in part by the national science foundation under itr awards 
+ani- and ani- and career award ani- 
+views and conclusions contained in this document are those of the 
+authors and should not be interpreted as representing the official 
+policies either expressed or implied of nsf or the u s 
+government 
+ references 
+ kazaa http www kazaa com 
+ limewire http www limewire com 
+ adar e and huberman b a free riding on gnutella first 
+monday october 
+ axelrod r the evolution of cooperation basic books 
+ buragohain c agrawal d and suri s a 
+game-theoretic framework for incentives in p p systems in 
+international conference on peer-to-peer computing sep 
+ castro m druschel p ganesh a rowstron a and 
+wallach d s security for structured peer-to-peer overlay 
+networks in proceedings of multimedia computing and networking 
+ mmcn 
+ cohen b incentives build robustness in bittorrent in st workshop 
+on economics of peer-to-peer systems 
+ crowcroft j gibbens r kelly f and ˘ ostring s 
+modeling incentives for collaboration in mobile ad-hoc networks 
+in modeling and optimization in mobile ad-hoc and wireless 
+networks 
+ douceur j r the sybil attack in electronic proceedings of the 
+international workshop on peer-to-peer systems 
+ feigenbaum j papadimitriou c sami r and shenker 
+s a bgp-based mechanism for lowest-cost routing in 
+proceedings of the acm symposium on principles of distributed 
+computing 
+ feigenbaum j papadimitriou c and shenker s sharing 
+the cost of multicast transmissions in journal of computer and 
+system sciences vol pp - 
+ feigenbaum j and shenker s distributed algorithmic 
+mechanism design recent results and future directions in 
+proceedings of the international workshop on discrete algorithms 
+and methods for mobile computing and communications 
+ friedman e and resnick p the social cost of cheap 
+pseudonyms journal of economics and management strategy 
+ - 
+ fudenberg d and levine d k the theory of learning in 
+games the mit press 
+ golle p leyton-brown k mironov i and 
+lillibridge m incentives for sharing in peer-to-peer networks 
+in proceedings of the rd acm conference on electronic commerce 
+october 
+ gross b and acquisti a balances of power on ebay peers 
+or unquals in workshop on economics of peer-to-peer networks 
+ 
+ gu b and jarvenpaa s are contributions to p p technical 
+forums private or public goods - an empirical investigation in st 
+workshop on economics of peer-to-peer systems 
+ hardin g the tragedy of the commons science 
+ - 
+ josef hofbauer and karl sigmund evolutionary games and 
+population dynamics cambridge university press 
+ kamvar s d schlosser m t and garcia-molina h 
+the eigentrust algorithm for reputation management in p p 
+networks in proceedings of the twelfth international world wide 
+web conference may 
+ kan g peer-to-peer harnessing the power of disruptive 
+technologies st ed o reilly associates inc march 
+ch gnutella pp - 
+ kuhn s prisoner s dilemma in the stanford encyclopedia of 
+philosophy edward n zalta ed summer ed 
+ lee s sherwood r and bhattacharjee b cooperative 
+peer groups in nice in proceedings of the ieee infocom 
+ levien r and aiken a attack-resistant trust metrics for 
+public key certification in proceedings of the usenix security 
+symposium pp - 
+ maniatis p roussopoulos m giuli t j rosenthal 
+d s h baker m and muliadi y preserving peer replicas 
+by rate-limited sampled voting in acm symposium on operating 
+systems principles 
+ marti s giuli t j lai k and baker m mitigating 
+routing misbehavior in mobile ad-hoc networks in proceedings of 
+mobicom pp - 
+ michiardi p and molva r a game theoretical approach to 
+evaluate cooperation enforcement mechanisms in mobile ad-hoc 
+networks in modeling and optimization in mobile ad-hoc and 
+wireless networks 
+ nowak m a and sigmund k evolution of indirect 
+reciprocity by image scoring nature - 
+ olson m the logic of collective action public goods and the 
+theory of groups harvard university press 
+ raghavan b and snoeren a priority forwarding in ad-hoc 
+networks with self-ineterested parties in workshop on economics of 
+peer-to-peer systems june 
+ ranganathan k ripeanu m sarin a and foster i 
+to share or not to share an analysis of incentives to contribute in 
+collaborative file sharing environments in workshop on economics 
+of peer-to-peer systems june 
+ reiter m k and stubblebine s g authentication metric 
+analysis and design acm transactions on information and system 
+security - 
+ saroiu s gummadi p k and gribble s d a 
+measurement study of peer-to-peer file sharing systems in 
+proceedings of multimedia computing and networking 
+ mmcn 
+ smith j m evolution and the theory of games cambridge 
+university press 
+ urpi a bonuccelli m and giordano s modeling 
+cooperation in mobile ad-hoc networks a formal description of 
+selfishness in modeling and optimization in mobile ad-hoc and 
+wireless networks 
+ vishnumurthy v chandrakumar s and sirer e g 
+karma a secure economic framework for p p resource 
+sharing in workshop on economics of peer-to-peer networks 
+ wang w and li b to play or to control a game-based 
+control-theoretic approach to peer-to-peer incentive engineering 
+in international workshop on quality of service june 
+ woodard c j and parkes d c strategyproof mechanisms 
+for ad-hoc network formation in workshop on economics of 
+peer-to-peer systems june 
+ 

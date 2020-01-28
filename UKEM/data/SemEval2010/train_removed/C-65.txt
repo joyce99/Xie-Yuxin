@@ -1,0 +1,1734 @@
+shooter localization and weapon classification with 
+soldier-wearable networked sensors 
+peter volgyesi gyorgy balogh andras nadas christopher b nash akos ledeczi 
+institute for software integrated systems vanderbilt university 
+nashville tn usa 
+akos ledeczi vanderbilt edu 
+abstract 
+the paper presents a wireless sensor network-based mobile 
+countersniper system a sensor node consists of a 
+helmetmounted microphone array a cots micaz mote for 
+internode communication and a custom sensorboard that 
+implements the acoustic detection and time of arrival toa 
+estimation algorithms on an fpga a -axis compass provides 
+self orientation and bluetooth is used for communication 
+with the soldier s pda running the data fusion and the user 
+interface the heterogeneous sensor fusion algorithm can 
+work with data from a single sensor or it can fuse toa or 
+angle of arrival aoa observations of muzzle blasts and 
+ballistic shockwaves from multiple sensors the system 
+estimates the trajectory the range the caliber and the weapon 
+type the paper presents the system design and the results 
+from an independent evaluation at the us army aberdeen 
+test center the system performance is characterized by 
+ degree trajectory precision and over caliber estimation 
+accuracy for all shots and close to weapon estimation 
+accuracy for out of guns tested 
+categories and subject descriptors 
+c computer-communications networks 
+distributed systems j computers in other systems 
+military 
+general terms design measurement performance 
+ introduction 
+the importance of countersniper systems is underscored 
+by the constant stream of news reports coming from the 
+middle east in october cnn reported on a new 
+tactic employed by insurgents a mobile sniper team moves 
+around busy city streets in a car positions itself at a good 
+standoff distance from dismounted us military personnel 
+takes a single well-aimed shot and immediately melts in the 
+city traffic by the time the soldiers can react they are 
+gone a countersniper system that provides almost 
+immediate shooter location to every soldier in the vicinity would 
+provide clear benefits to the warfigthers 
+our team introduced pinptr the first sensor 
+networkbased countersniper system in the system is 
+based on potentially hundreds of inexpensive sensor nodes 
+deployed in the area of interest forming an ad-hoc multihop 
+network the acoustic sensors measure the time of arrival 
+ toa of muzzle blasts and ballistic shockwaves pressure 
+waves induced by the supersonic projectile send the data to 
+a base station where a sensor fusion algorithm determines 
+the origin of the shot pinptr is characterized by high 
+precision m average d accuracy for shots originating within 
+or near the sensor network and degree bearing precision 
+for both azimuth and elevation and accuracy in range 
+estimation for longer range shots the truly unique 
+characteristic of the system is that it works in such reverberant 
+environments as cluttered urban terrain and that it can 
+resolve multiple simultaneous shots at the same time this 
+capability is due to the widely distributed sensing and the 
+unique sensor fusion approach the system has been 
+tested several times in us army mout military 
+operations in urban terrain facilities 
+the obvious disadvantage of such a system is its static 
+nature once the sensors are distributed they cover a 
+certain area depending on the operation the deployment may 
+be needed for an hour or a month but eventually the area 
+looses its importance it is not practical to gather and reuse 
+the sensors especially under combat conditions even if the 
+sensors are cheap it is still a waste and a logistical problem 
+to provide a continuous stream of sensors as the operations 
+move from place to place as it is primarily the soldiers that 
+the system protects a natural extension is to mount the 
+sensors on the soldiers themselves while there are 
+vehiclemounted countersniper systems available commercially 
+we are not aware of a deployed system that protects 
+dismounted soldiers a helmet-mounted system was developed 
+in the mid s by bbn but it was not continued beyond 
+the darpa program that funded it 
+ 
+to move from a static sensor network-based solution to a 
+highly mobile one presents significant challenges the sensor 
+positions and orientation need to be constantly monitored 
+as soldiers may work in groups of as little as four people 
+the number of sensors measuring the acoustic phenomena 
+may be an order of magnitude smaller than before 
+moreover the system should be useful to even a single soldier 
+finally additional requirements called for caliber estimation 
+and weapon classification in addition to source localization 
+the paper presents the design and evaluation of our 
+soldierwearable mobile countersniper system it describes the 
+hardware and software architecture including the custom sensor 
+board equipped with a small microphone array and 
+connected to a cots micaz mote special emphasis is 
+paid to the sensor fusion technique that estimates the 
+trajectory range caliber and weapon type simultaneously the 
+results and analysis of an independent evaluation of the 
+system at the us army aberdeen test center are also 
+presented 
+ approach 
+the firing of a typical military rifle such as the ak 
+or m produces two distinct acoustic phenomena the 
+muzzle blast is generated at the muzzle of the gun and 
+travels at the speed sound the supersonic projectile generates 
+an acoustic shockwave a kind of sonic boom the 
+wavefront has a conical shape the angle of which depends on the 
+mach number the speed of the bullet relative to the speed 
+of sound 
+the shockwave has a characteristic shape resembling a 
+capital n the rise time at both the start and end of the 
+signal is very fast under μsec the length is determined by 
+the caliber and the miss distance the distance between the 
+trajectory and the sensor it is typically a few hundred μsec 
+once a trajectory estimate is available the shockwave length 
+can be used for caliber estimation 
+our system is based on four microphones connected to 
+a sensorboard the board detects shockwaves and muzzle 
+blasts and measures their toa if at least three acoustic 
+channels detect the same event its aoa is also computed 
+if both the shockwave and muzzle blast aoa are available 
+a simple analytical solution gives the shooter location as 
+shown in section as the microphones are close to each 
+other typically - we cannot expect very high precision 
+also this method does not estimate a trajectory in fact an 
+infinite number of trajectory-bullet speed pairs satisfy the 
+observations however the sensorboards are also connected 
+to cots micaz motes and they share their aoa and toa 
+measurements as well as their own location and orientation 
+with each other using a multihop routing service a 
+hybrid sensor fusion algorithm then estimates the trajectory 
+the range the caliber and the weapon type based on all 
+available observations 
+the sensorboard is also bluetooth capable for 
+communication with the soldier s pda or laptop computer a wired 
+usb connection is also available the sensorfusion 
+algorithm and the user interface get their data through one of 
+these channels 
+the orientation of the microphone array at the time of 
+detection is provided by a -axis digital compass currently 
+the system assumes that the soldier s pda is gps-capable 
+and it does not provide self localization service itself 
+however the accuracy of gps is a few meters degrading the 
+figure acoustic sensorboard mote assembly 
+ 
+overall accuracy of the system refer to section for an 
+analysis the latest generation sensorboard features a texas 
+instruments cc- radio enabling the high-precision radio 
+interferometric self localization approach we have developed 
+separately however we leave the integration of the two 
+technologies for future work 
+ hardware 
+since the first static version of our system in the 
+sensor nodes have been built upon the uc berkeley crossbow 
+mica product line although rudimentary acoustic 
+signal processing can be done on these microcontroller-based 
+boards they do not provide the required computational 
+performance for shockwave detection and angle of arrival 
+measurements where multiple signals from different 
+microphones need to be processed in parallel at a high sampling 
+rate our rd generation sensorboard is designed to be used 
+with micaz motes-in fact it has almost the same size as 
+the mote itself see figure 
+the board utilizes a powerful xilinx xc s fpga 
+chip with various standard peripheral ip cores multiple soft 
+processor cores and custom logic for the acoustic detectors 
+ figure the onboard flash mb and psram mb 
+modules allow storing raw samples of several acoustic events 
+which can be used to build libraries of various acoustic 
+signatures and for refining the detection cores off-line also the 
+external memory blocks can store program code and data 
+used by the soft processor cores on the fpga 
+the board supports four independent analog channels 
+sampled at up to ms s million samples per seconds these 
+channels featuring an electret microphone panasonic 
+wm pnt amplifiers with controllable gain - db and 
+a -bit serial adc analog devices ad reside on 
+separate tiny boards which are connected to the main 
+sensorboard with ribbon cables this partitioning enables the 
+use of truly different audio channels eg slower sampling 
+frequency different gain or dynamic range and also results 
+in less noisy measurements by avoiding long analog signal 
+paths 
+the sensor platform offers a rich set of interfaces and can 
+be integrated with existing systems in diverse ways an 
+rs port and a bluetooth bluegiga wt wireless link 
+with virtual uart emulation are directly available on the 
+board and provide simple means to connect the sensor to 
+pcs and pdas the mote interface consists of an i 
+c bus 
+along with an interrupt and gpio line the latter one is used 
+ 
+figure block diagram of the sensorboard 
+for precise time synchronization between the board and the 
+mote the motes are equipped with ieee 
+compliant radio transceivers and support ad-hoc wireless 
+networking among the nodes and to from the base station the 
+sensorboard also supports full-speed usb transfers with 
+custom usb dongles for uploading recorded audio samples 
+to the pc the on-board jtag chain-directly accessible 
+through a dedicated connector-contains the fpga part 
+and configuration memory and provides in-system 
+programming and debugging facilities 
+the integrated honeywell hmr digital compass 
+module provides heading pitch and roll information with ◦ 
+accuracy which is essential for calculating and combining 
+directional estimates of the detected events 
+due to the complex voltage requirements of the fpga 
+the power supply circuitry is implemented on the 
+sensorboard and provides power both locally and to the mote we 
+used a quad pack of rechargeable aa batteries as the power 
+source although any other configuration is viable that meets 
+the voltage requirements the fpga core v and i o 
+ v voltages are generated by a highly efficient buck 
+switching regulator the fpga configuration v and a 
+separate v power net are fed by low current ldos the 
+latter one is used to provide independent power to the mote 
+and to the bluetooth radio the regulators-except the last 
+one-can be turned on off from the mote or through the 
+bluetooth radio via gpio lines to save power 
+the first prototype of our system employed sensor 
+nodes some of these nodes were mounted on military kevlar 
+helmets with the microphones directly attached to the 
+surface at about cm separation as shown in figure a the 
+rest of the nodes were mounted in plastic enclosures 
+ figure b with the microphones placed near the corners of 
+the boxes to form approximately cm× cm rectangles 
+ software architecture 
+the sensor application relies on three subsystems 
+exploiting three different computing paradigms as they are shown 
+in figure although each of these execution models suit 
+their domain specific tasks extremely well this diversity 
+ a b 
+figure sensor prototypes mounted on a kevlar 
+helmet a and in a plastic box on a tripod b 
+presents a challenge for software development and system 
+integration the sensor fusion and user interface 
+subsystem is running on pdas and were implemented in java 
+the sensing and signal processing tasks are executed by an 
+fpga which also acts as a bridge between various wired 
+and wireless communication channels the ad-hoc internode 
+communication time synchronization and data sharing are 
+the responsibilities of a microcontroller based radio module 
+similarly the application employs a wide variety of 
+communication protocols such as bluetooth and ieee 
+wireless links as well as optional uarts i 
+c and or usb 
+buses 
+soldier 
+operated device 
+ pda laptop 
+fpga 
+sensor board 
+mica radio 
+module 
+ ghz wireless link 
+radio control 
+message routing 
+acoustic event encoder 
+sensor time synch 
+network time synch remote control 
+time 
+stamping 
+interrupts 
+virtual 
+register 
+interface 
+c 
+o 
+o 
+r 
+d 
+i 
+n 
+a 
+t 
+o 
+r 
+a 
+n 
+a 
+l 
+o 
+g 
+c 
+h 
+a 
+n 
+n 
+e 
+l 
+s compass 
+picoblaze 
+comm 
+interface 
+picoblaze 
+wt bluetooth radio 
+mote if i c interrupts 
+usb psram 
+u 
+a 
+r 
+t 
+u 
+a 
+r 
+t 
+mb 
+det 
+sw 
+det 
+rec 
+bluetooth link 
+user 
+interface 
+sensor 
+fusion 
+location 
+engine gps 
+message dis- assemblersensor 
+control 
+figure software architecture diagram 
+the sensor fusion module receives and unpacks raw 
+measurements time stamps and feature vectors from the 
+sensorboard through the bluetooth link also it fine tunes 
+the execution of the signal processing cores by setting 
+parameters through the same link note that measurements 
+from other nodes along with their location and orientation 
+information also arrive from the sensorboard which acts as 
+a gateway between the pda and the sensor network the 
+handheld device obtains its own gps location data and 
+di 
+rectly receives orientation information through the 
+sensorboard the results of the sensor fusion are displayed on the 
+pda screen with low latency since the application is 
+implemented in pure java it is portable across different pda 
+platforms 
+the border between software and hardware is 
+considerably blurred on the sensor board the ip 
+cores-implemented in hardware description languages hdl on the 
+reconfigurable fpga fabric-closely resemble hardware 
+building blocks however some of them-most notably the soft 
+processor cores-execute true software programs the 
+primary tasks of the sensor board software are acquiring 
+data samples from the analog channels processing 
+acoustic data detection and providing access to the results 
+and run-time parameters through different interfaces 
+as it is shown in figure a centralized virtual register 
+file contains the address decoding logic the registers for 
+storing parameter values and results and the point to point 
+data buses to and from the peripherals thus it effectively 
+integrates the building blocks within the sensorboard and 
+decouples the various communication interfaces this 
+architecture enabled us to deploy the same set of sensors in a 
+centralized scenario where the ad-hoc mote network using 
+the i 
+c interface collected and forwarded the results to a 
+base station or to build a decentralized system where the 
+local pdas execute the sensor fusion on the data obtained 
+through the bluetooth interface and optionally from other 
+sensors through the mote interface the same set of 
+registers are also accessible through a uart link with a terminal 
+emulation program also because the low-level interfaces 
+are hidden by the register file one can easily add replace 
+these with new ones eg the first generation of motes 
+supported a standard μp interface bus on the sensor connector 
+which was dropped in later designs 
+the most important results are the time stamps of the 
+detected events these time stamps and all other timing 
+information parameters acoustic event features are based 
+on a mhz clock and an internal timer on the fpga the 
+time conversion and synchronization between the sensor 
+network and the board is done by the mote by periodically 
+requesting the capture of the current timer value through a 
+dedicated gpio line and reading the captured value from 
+the register file through the i 
+c interface based on the the 
+current and previous readings and the corresponding mote 
+local time stamps the mote can calculate and maintain the 
+scaling factor and offset between the two time domains 
+the mote interface is implemented by the i 
+c slave ip 
+core and a thin adaptation layer which provides a data and 
+address bus abstraction on top of it the maximum 
+effective bandwidth is kbps through this interface the 
+fpga contains several uart cores as well for 
+communicating with the on-board bluetooth module for 
+controlling the digital compass and for providing a wired rs 
+link through a dedicated connector the control status and 
+data registers of the uart modules are available through 
+the register file the higher level protocols on these lines are 
+implemented by xilinx picoblaze microcontroller cores 
+and corresponding software programs one of them provides 
+a command line interface for test and debug purposes while 
+the other is responsible for parsing compass readings by 
+default they are connected to the rs port and to the 
+on-board digital compass line respectively however they 
+can be rewired to any communication interface by changing 
+the register file base address in the programs e g the 
+command line interface can be provided through the bluetooth 
+channel 
+two of the external interfaces are not accessible through 
+the register file a high speed usb link and the sram 
+interface are tied to the recorder block the usb module 
+implements a simple fifo with parallel data lines connected to an 
+external ft r usb device controller the ram driver 
+implements data read write cycles with correct timing and 
+is connected to the on-board pseudo sram these 
+interfaces provide mb s effective bandwidth for downloading 
+recorded audio samples for example 
+the data acquisition and signal processing paths exhibit 
+clear symmetry the same set of ip cores are instantiated 
+four times i e the number of acoustic channels and run 
+independently the signal paths meet only just before 
+the register file each of the analog channels is driven by 
+a serial a d core for providing a mhz serial clock and 
+shifting in -bit data samples at ms s and a digital 
+potentiometer driver for setting the required gain each channel 
+has its own shockwave and muzzle blast detector which are 
+described in section the detectors fetch run-time 
+parameter values from the register file and store their results there 
+as well the coordinator core constantly monitors the 
+detection results and generates a mote interrupt promptly upon 
+full detection or after a reasonable timeout after partial 
+detection 
+the recorder component is not used in the final 
+deployment however it is essential for development purposes for 
+refining parameter values for new types of weapons or for 
+other acoustic sources this component receives the 
+samples from all channels and stores them in circular buffers in 
+the psram device if the signal amplitude on one of the 
+channels crosses a predefined threshold the recorder 
+component suspends the sample collection with a predefined delay 
+and dumps the contents of the buffers through the usb link 
+the length of these buffers and delays the sampling rate 
+the threshold level and the set of recorded channels can be 
+ re configured run-time through the register file note that 
+the core operates independently from the other signal 
+processing modules therefore it can be used to validate the 
+detection results off-line 
+the fpga cores are implemented in vhdl the picoblaze 
+programs are written in assembly the complete 
+configuration occupies of the resources slices of the fpga and 
+the maximum clock speed is mhz which is safely higher 
+than the speed used with the actual device mhz 
+the micaz motes are responsible for distributing 
+measurement data across the network which drastically 
+improves the localization and classification results at each node 
+besides a robust radio mac layer the motes require two 
+essential middleware services to achieve this goal the 
+messages need to be propagated in the ad-hoc multihop network 
+using a routing service we successfully integrated the 
+directed flood-routing framework dfrf in our 
+application apart from automatic message aggregation and 
+efficient buffer management the most unique feature of dfrf 
+is its plug-in architecture which accepts custom routing 
+policies routing policies are state machines that govern 
+how received messages are stored resent or discarded 
+example policies include spanning tree routing broadcast 
+geographic routing etc different policies can be used for 
+different messages concurrently and the application is able to 
+ 
+change the underlying policies at run-time eg because of 
+the changing rf environment or power budget in fact we 
+switched several times between a simple but lavish broadcast 
+policy and a more efficient gradient routing on the field 
+correlating toa measurements requires a common time 
+base and precise time synchronization in the sensor network 
+the routing integrated time synchronization rits 
+protocol relies on very accurate mac-layer time-stamping 
+to embed the cumulative delay that a data message accrued 
+since the time of the detection in the message itself that 
+is at every node it measures the time the message spent 
+there and adds this to the number in the time delay slot of 
+the message right before it leaves the current node every 
+receiving node can subtract the delay from its current time 
+to obtain the detection time in its local time reference the 
+service provides very accurate time conversion few μs per 
+hop error which is more than adequate for this application 
+note that the motes also need to convert the sensorboard 
+time stamps to mote time as it is described earlier 
+the mote application is implemented in nesc and is 
+running on top of tinyos with its kb ram and 
+ kb program space rom requirement it easily fits on 
+the micaz motes 
+ detection algorithm 
+there are several characteristics of acoustic shockwaves 
+and muzzle blasts which distinguish their detection and 
+signal processing algorithms from regular audio applications 
+both events are transient by their nature and present very 
+intense stimuli to the microphones this is increasingly 
+problematic with low cost electret microphones-designed 
+for picking up regular speech or music although 
+mechanical damping of the microphone membranes can mitigate 
+the problem this approach is not without side effects the 
+detection algorithms have to be robust enough to handle 
+severe nonlinear distortion and transitory oscillations since 
+the muzzle blast signature closely follows the shockwave 
+signal and because of potential automatic weapon bursts it is 
+extremely important to settle the audio channels and the 
+detection logic as soon as possible after an event also 
+precise angle of arrival estimation necessitates high sampling 
+frequency in the mhz range and accurate event detection 
+moreover the detection logic needs to process multiple 
+channels in parallel channels on our existing hardware 
+these requirements dictated simple and robust algorithms 
+both for muzzle blast and shockwave detections instead of 
+using mundane energy detectors-which might not be able 
+to distinguish the two different events-the applied 
+detectors strive to find the most important characteristics of the 
+two signals in the time-domain using simple state machine 
+logic the detectors are implemented as independent ip 
+cores within the fpga-one pair for each channel the 
+cores are run-time configurable and provide detection event 
+signals with high precision time stamps and event specific 
+feature vectors although the cores are running 
+independently and in parallel a crude local fusion module integrates 
+them by shutting down those cores which missed their events 
+after a reasonable timeout and by generating a single 
+detection message towards the mote at this point the mote can 
+read and forward the detection times and features and is 
+responsible to restart the cores afterwards 
+the most conspicuous characteristics of an acoustic 
+shockwave see figure a are the steep rising edges at the 
+be 
+- 
+- 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+shockwave m 
+time µs 
+amplitude 
+ 
+ 
+ 
+ 
+ 
+len 
+ a 
+s t - s t-d e 
+tstart 
+ t 
+s t - s t-d e 
+s t - s t-d e 
+t - t start lmin 
+s t - s t-d e 
+len t - tstart 
+idle 
+ 
+first edge done 
+ 
+second edge 
+ 
+first edge 
+ 
+found 
+ 
+t - tstart 
+≥ lmax 
+t - tstart 
+≥ lmax 
+ b 
+figure shockwave signal generated by a × 
+ mm nato projectile a and the state machine 
+of the detection algorithm b 
+ginning and end of the signal also the length of the n-wave 
+is fairly predictable-as it is described in section -and is 
+relatively short - μs the shockwave detection core 
+is continuously looking for two rising edges within a given 
+interval the state machine of the algorithm is shown in 
+figure b the input parameters are the minimum 
+steepness of the edges d e and the bounds on the length of 
+the wave lmin lmax the only feature calculated by the 
+core is the length of the observed shockwave signal 
+in contrast to shockwaves the muzzle blast signatures are 
+characterized by a long initial period - ms where the first 
+half period is significantly shorter than the second half 
+due to the physical limitations of the analog circuitry 
+described at the beginning of this section irregular oscillations 
+and glitches might show up within this longer time window 
+as they can be clearly seen in figure a therefore the real 
+challenge for the matching detection core is to identify the 
+first and second half periods properly the state machine 
+ figure b does not work on the raw samples directly 
+but is fed by a zero crossing zc encoder after the initial 
+triggering the detector attempts to collect those zc 
+segments which belong to the first period positive amplitude 
+while discarding too short in our terminology garbage 
+segments-effectively implementing a rudimentary low-pass 
+filter in the zc domain after it encounters a sufficiently 
+long negative segment it runs the same collection logic for 
+the second half period if too much garbage is discarded 
+in the collection phases the core resets itself to prevent the 
+ false detection of the halves from completely different 
+periods separated by rapid oscillation or noise finally if the 
+constraints on the total length and on the length ratio hold 
+the core generates a detection event along with the actual 
+length amplitude and energy of the period calculated 
+concurrently the initial triggering mechanism is based on two 
+amplitude thresholds one static but configurable 
+amplitude level and a dynamically computed one the latter one 
+is essential to adapt the sensor to different ambient noise 
+environments and to temporarily suspend the muzzle blast 
+detector after a shock wave event oscillations in the analog 
+section or reverberations in the sensor enclosure might 
+otherwise trigger false muzzle blast detections the dynamic 
+noise level is estimated by a single pole recursive low-pass 
+filter cutoff   khz on the fpga 
+ 
+ 
+- 
+- 
+- 
+- 
+- 
+ 
+ 
+ 
+ 
+ 
+ 
+time µs 
+amplitude 
+muzzle blast m 
+ 
+ 
+ 
+ 
+len 
+ 
+len 
+ a 
+idle 
+ 
+second zc 
+ 
+pending zc 
+ 
+first zc 
+ 
+found 
+ 
+amplitude 
+threshold 
+long 
+positive zc 
+long 
+negative zc 
+valid 
+full period 
+max 
+garbage 
+wrong sign 
+garbage 
+collect 
+first period 
+garbage 
+collect 
+first period 
+garbage 
+ b 
+figure muzzle blast signature a produced by an 
+m assault rifle and the corresponding detection 
+logic b 
+the detection cores were originally implemented in java 
+and evaluated on pre-recorded signals because of much faster 
+test runs and more convenient debugging facilities later 
+on they were ported to vhdl and synthesized using the 
+xilinx ise tool suite the functional equivalence between 
+the two implementations were tested by vhdl test benches 
+and python scripts which provided an automated way to 
+exercise the detection cores on the same set of pre-recorded 
+signals and to compare the results 
+ sensor fusion 
+the sensor fusion algorithm receives detection messages 
+from the sensor network and estimates the bullet trajectory 
+the shooter position the caliber of the projectile and the 
+type of the weapon the algorithm consists of well separated 
+computational tasks outlined below 
+ compute muzzle blast and shockwave directions of 
+arrivals for each individual sensor see 
+ compute range estimates this algorithm can 
+analytically fuse a pair of shockwave and muzzle blast aoa 
+estimates see 
+ compute a single trajectory from all shockwave 
+measurements see 
+ if trajectory available compute range see 
+else compute shooter position first and then trajectory 
+based on it see 
+ if trajectory available compute caliber see 
+ if caliber available compute weapon type see 
+we describe each step in the following sections in detail 
+ direction of arrival 
+the first step of the sensor fusion is to calculate the 
+muzzle blast and shockwave aoa-s for each sensorboard each 
+sensorboard has four microphones that measure the toa-s 
+since the microphone spacing is orders of magnitude smaller 
+than the distance to the sound source we can approximate 
+the approaching sound wave front with a plane far field 
+assumption 
+let us formalize the problem for microphones first let 
+p p and p be the position of the microphones ordered by 
+time of arrival t t t first we apply a simple 
+geometry validation step the measured time difference between 
+two microphones cannot be larger than the sound 
+propagation time between the two microphones 
+ ti − tj pi − pj c ε 
+where c is the speed of sound and ε is the maximum 
+measurement error if this condition does not hold the 
+corresponding detections are discarded let v x y z be the 
+normal vector of the unknown direction of arrival we also 
+use r x y z the vector from p to p and r x y z 
+the vector from p to p let s consider the projection of 
+the direction of the motion of the wave front v to r 
+divided by the speed of sound c this gives us how long it 
+takes the wave front to propagate form p to p 
+vr c t − t 
+the same relationship holds for r and v 
+vr c t − t 
+we also know that v is a normal vector 
+vv 
+moving from vectors to coordinates using the dot product 
+definition leads to a quadratic system 
+xx yy zz c t − t 
+xx yy zz c t − t 
+x 
+ y 
+ z 
+ 
+we omit the solution steps here as they are 
+straightforward but long there are two solutions if the source is on 
+the p p p plane the two solutions coincide we use the 
+fourth microphone s measurement-if there is one-to 
+eliminate one of them otherwise both solutions are considered 
+for further processing 
+ muzzle-shock fusion 
+u 
+v 
+ tp 
+ tp 
+tp 
+ p′ 
+bullet trajectory 
+figure section plane of a shot at p and two 
+sensors at p and at p one sensor detects the 
+muzzle blast s the other the shockwave s time and 
+direction of arrivals 
+consider the situation in figure a shot was fired from 
+p at time t both p and t are unknown we have one muzzle 
+blast and one shockwave detections by two different sensors 
+ 
+with aoa and hence toa information available the 
+muzzle blast detection is at position p with time t and aoa 
+u the shockwave detection is at p with time t and aoa 
+v u and v are normal vectors it is shown below that these 
+measurements are sufficient to compute the position of the 
+shooter p 
+let p be the point on the extended shockwave cone 
+surface where pp is perpendicular to the surface note that 
+pp is parallel with v since p is on the cone surface which 
+hits p a sensor at p would detect the same shockwave 
+time of arrival t the cone surface travels at the speed of 
+sound c so we can express p using p 
+p p cv t − t 
+p can also be expressed from p 
+p p cu t − t 
+yielding 
+p cu t − t p cv t − t 
+p p is perpendicular to v 
+ p − p v 
+yielding 
+ p cu t − t − cv t − t − p v 
+containing only one unknown t one obtains 
+t 
+ p −p v 
+c 
+ uvt −t 
+uv− 
+ 
+from here we can calculate the shoter position p 
+let s consider the special single sensor case where p p 
+ one sensor detects both shockwave and muzzle blast aoa 
+in this case 
+t uvt −t 
+uv− 
+ 
+since u and v are not used separately only uv the absolute 
+orientation of the sensor can be arbitrary we still get t which 
+gives us the range 
+here we assumed that the shockwave is a cone which is 
+only true for constant projectile speeds in reality the angle 
+of the cone slowly grows the surface resembles one half of 
+an american football the decelerating bullet results in a 
+smaller time difference between the shockwave and the 
+muzzle blast detections because the shockwave generation slows 
+down with the bullet a smaller time difference results in a 
+smaller range so the above formula underestimates the true 
+range however it can still be used with a proper 
+deceleration correction function we leave this for future work 
+ trajectory estimation 
+danicki showed that the bullet trajectory and speed can 
+be computed analytically from two independent shockwave 
+measurements where both toa and aoa are measured 
+the method gets more sensitive to measurement errors as 
+the two shockwave directions get closer to each other in 
+the special case when both directions are the same the 
+trajectory cannot be computed in a real world application 
+the sensors are typically deployed on a plane approximately 
+in this case all sensors located on one side of the 
+trajectory measure almost the same shockwave aoa to avoid 
+this error sensitivity problem we consider shockwave 
+measurement pairs only if the direction of arrival difference is 
+larger than a certain threshold 
+we have multiple sensors and one sensor can report two 
+different directions when only three microphones detect the 
+shockwave hence we typically have several trajectory 
+candidates i e one for each aoa pair over the threshold we 
+applied an outlier filtering and averaging method to fuse 
+together the shockwave direction and time information and 
+come up with a single trajectory assume that we have 
+n individual shockwave aoa measurements let s take all 
+possible unordered pairs where the direction difference is 
+above the mentioned threshold and compute the trajectory 
+for each this gives us at most n n− 
+ 
+trajectories a 
+trajectory is represented by one point pi and the normal vector 
+vi where i is the trajectory index we define the distance 
+of two trajectories as the dot product of their normal 
+vectors 
+d i j vivj 
+for each trajectory a neighbor set is defined 
+n i j d i j r 
+where r is a radius parameter the largest neighbor set is 
+considered to be the core set c all other trajectories are 
+outliers the core set can be found in o n 
+ time the 
+trajectories in the core set are then averaged to get the final 
+trajectory 
+it can happen that we cannot form any sensor pairs 
+because of the direction difference threshold it means all 
+sensors are on the same side of the trajectory in this case 
+we first compute the shooter position described in the next 
+section that fixes p making v the only unknown to find 
+v in this case we use a simple high resolution grid search 
+and minimize an error function based on the shockwave 
+directions 
+we have made experiments to utilize the measured 
+shockwave length in the trajectory estimation there are some 
+promising results but it needs further research 
+ shooter position estimation 
+the shooter position estimation algorithm aggregates the 
+following heterogenous information generated by earlier 
+computational steps 
+ trajectory 
+ muzzle blast toa at a sensor 
+ muzzle blast aoa at a sensor which is effectively a 
+bearing estimate to the shooter and 
+ range estimate at a sensor when both shockwave and 
+muzzle blast aoa are available 
+some sensors report only toa some has bearing 
+estimate s also and some has range estimate s as well 
+depending on the number of successful muzzle blast and shockwave 
+detections by the sensor for an example refer to figure 
+note that a sensor may have two different bearing and range 
+estimates detections gives two possible aoa-s for 
+muzzle blast i e bearing and or shockwave furthermore the 
+combination of two different muzzle blast and shockwave 
+aoa-s may result in two different ranges 
+ 
+ rrvvt ′′ 
+ vt 
+ vvt ′ 
+ t 
+ t 
+ t 
+bullet trajectory 
+shooter position 
+figure example of heterogenous input data for 
+the shooter position estimation algorithm all 
+sensors have toa measurements t t t t t one 
+sensor has a single bearing estimate v one sensor has 
+two possible bearings v v and one sensor has two 
+bearing and two range estimates v v r r 
+in a multipath environment these detections will not only 
+contain gaussian noise but also possibly large errors due to 
+echoes it has been showed in our earlier work that a similar 
+problem can be solved efficiently with an interval arithmetic 
+based bisection search algorithm the basic idea is to 
+define a discrete consistency function over the area of 
+interest and subdivide the space into d boxes for any given 
+ d box this function gives the number of measurements 
+supporting the hypothesis that the shooter was within that 
+box the search starts with a box large enough to contain 
+the whole area of interest then zooms in by dividing and 
+evaluating boxes the box with the maximum consistency 
+is divided until the desired precision is reached 
+backtracking is possible to avoid getting stuck in a local maximum 
+this approach has been shown to be fast enough for 
+online processing note however that when the trajectory 
+has already been calculated in previous steps the search 
+needs to be done only on the trajectory making it orders of 
+magnitude faster 
+next let us describe how the consistency function is 
+calculated in detail consider b a three dimensional box we 
+would like to compute the consistency value of first we 
+consider only the toa information if one sensor has 
+multiple toa detections we use the average of those times so 
+one sensor supplies at most one toa estimate for each 
+toa we can calculate the corresponding time of the shot 
+since the origin is assumed to be in box b since it is a box 
+and not a single point this gives us an interval for the shot 
+time the maximum number of overlapping time intervals 
+gives us the value of the consistency function for b for a 
+detailed description of the consistency function and search 
+algorithm refer to 
+here we extend the approach the following way we 
+modify the consistency function based on the bearing and range 
+data from individual sensors a bearing estimate supports 
+b if the line segment starting from the sensor with the 
+measured direction intersects the b box a range supports b 
+if the sphere with the radius of the range and origin of the 
+sensor intersects b instead of simply checking whether the 
+position specified by the corresponding bearing-range pairs 
+falls within b this eliminates the sensor s possible 
+orientation error the value of the consistency function is 
+incremented by one for each bearing and range estimate that is 
+consistent with b 
+ caliber estimation 
+the shockwave signal characteristics has been studied 
+before by whitham he showed that the shockwave period 
+t is related to the projectile diameter d the length l the 
+perpendicular miss distance b from the bullet trajectory to 
+the sensor the mach number m and the speed of sound c 
+t mb 
+c m − 
+d 
+l ≈ d 
+c 
+ mb 
+l 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+miss distance m shockwavelength microseconds 
+ cal 
+ mm 
+ mm 
+figure shockwave length and miss distance 
+relationship each data point represents one 
+sensorboard after an aggregation of the individual 
+measurements of the four acoustic channels three 
+different caliber projectiles have been tested 
+shots sensors 
+to illustrate the relationship between miss distance and 
+shockwave length here we use all shots with three 
+different caliber projectiles fired during the evaluation during 
+the evaluation we used data obtained previously using a few 
+practice shots per weapon sensors microphones by 
+sensor measured the shockwave length for each sensor 
+we considered the shockwave length estimation valid if at 
+least three out of four microphones agreed on a value with 
+at most microsecond variance this filtering leads to a 
+ report rate per sensor and gets rid of large 
+measurement errors the experimental data is shown in figure 
+whitham s formula suggests that the shockwave length for a 
+given caliber can be approximated with a power function of 
+the miss distance with a exponent best fit functions 
+on our data are 
+ cal t b 
+ mm t b 
+ mm t b 
+to evaluate a shot we take the caliber whose 
+approximation function results in the smallest rms error of the 
+filtered sensor readings this method has less than 
+caliber estimation error when an accurate trajectory estimate 
+is available in other words caliber estimation only works 
+if enough shockwave detections are made by the system to 
+compute a trajectory 
+ 
+ weapon estimation 
+we analyzed all measured signal characteristics to find 
+weapon specific information unfortunately we concluded 
+that the observed muzzle blast signature is not characteristic 
+enough of the weapon for classification purposes the 
+reflections of the high energy muzzle blast from the environment 
+have much higher impact on the muzzle blast signal shape 
+than the weapon itself shooting the same weapon from 
+different places caused larger differences on the recorded signal 
+than shooting different weapons from the same place 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+range m 
+speed m s 
+ak- 
+m 
+figure ak and m bullet deceleration 
+measurements both weapons have the same caliber 
+data is approximated using simple linear regression 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+range m 
+speed m s 
+m 
+m 
+m 
+figure m m and m bullet deceleration 
+measurements all weapons have the same caliber 
+data is approximated using simple linear regression 
+however the measured speed of the projectile and its 
+caliber showed good correlation with the weapon type this 
+is because for a given weapon type and ammunition pair 
+the muzzle velocity is nearly constant in figures and 
+ we can see the relationship between the range and the 
+measured bullet speed for different calibers and weapons 
+in the supersonic speed range the bullet deceleration can 
+be approximated with a linear function in case of the 
+ mm caliber the two tested weapons ak m can 
+be clearly separated figure unfortunately this is not 
+necessarily true for the mm caliber the m with its 
+higher muzzle speed can still be well classified but the m 
+and m weapons seem practically undistinguishable 
+ figure however this may be partially due to the limited 
+number of practice shots we were able to take before the 
+actual testing began more training data may reveal better 
+separation between the two weapons since their published 
+muzzle velocities do differ somewhat 
+the system carries out weapon classification in the 
+following manner once the trajectory is known the speed can be 
+calculated for each sensor based on the shockwave geometry 
+to evaluate a shot we choose the weapon type whose 
+deceleration function results in the smallest rms error of the 
+estimated range-speed pairs for the estimated caliber class 
+ results 
+an independent evaluation of the system was carried out 
+by a team from nist at the us army aberdeen test center 
+in april the experiment was setup on a shooting 
+range with mock-up wooden buildings and walls for 
+supporting elevated shooter positions and generating multipath 
+effects figure shows the user interface with an aerial 
+photograph of the site sensor nodes were deployed on 
+surveyed points in an approximately × m area there 
+were five fixed targets behind the sensor network several 
+firing positions were located at each of the firing lines at 
+ and meters these positions were known 
+to the evaluators but not to the operators of the system 
+six different weapons were utilized ak and m 
+firing mm projectiles m m and m with mm 
+ammunition and the caliber m 
+note that the sensors remained static during the test the 
+primary reason for this is that nobody is allowed downrange 
+during live fire tests utilizing some kind of remote 
+control platform would have been too involved for the limited 
+time the range was available for the test the experiment 
+therefore did not test the mobility aspect of the system 
+during the one day test there were shots fired the 
+results are summarized in table the system detected all 
+shots successfully since a ballistic shockwave is a unique 
+acoustic phenomenon it makes the detection very robust 
+there were no false positives for shockwaves but there were 
+a handful of false muzzle blast detections due to parallel 
+tests of artillery at a nearby range 
+shooter local- caliber trajectory trajectory distance no 
+range ization accu- azimuth distance error of 
+ m rate racy error deg error m m shots 
+ 
+ 
+ 
+ 
+all 
+table summary of results fusing all available 
+sensor observations all shots were successfully 
+detected so the detection rate is omitted localization 
+rate means the percentage of shots that the sensor 
+fusion was able to estimate the trajectory of the 
+caliber accuracy rate is relative to the shots localized 
+and not all the shots because caliber estimation 
+requires the trajectory the trajectory error is broken 
+down to azimuth in degrees and the actual distance 
+of the shooter from the trajectory the distance 
+error shows the distance between the real shooter 
+position and the estimated shooter position as such 
+it includes the error caused by both the trajectory 
+and that of the range estimation note that the 
+traditional bearing and range measures are not good 
+ones for a distributed system such as ours because 
+of the lack of a single reference point 
+ 
+figure the user interface of the system 
+showing the experimental setup the sensor nodes 
+are labeled by their id and marked by dark circles 
+the targets are black squares marked t- through 
+t- the long white arrows point to the shooter 
+position estimated by each sensor where it is 
+missing the corresponding sensor did not have enough 
+detections to measure the aoa of either the 
+muzzle blast the shockwave or both the thick black 
+line and large circle indicate the estimated 
+trajectory and the shooter position as estimated by fusing 
+all available detections from the network this shot 
+from the -meter line at target t- was localized 
+almost perfectly by the sensor network the caliber 
+and weapon were also identified correctly out of 
+ nodes were able to estimate the location alone 
+their bearing accuracy is within a degree while the 
+range is off by less than in the worst case 
+the localization rate characterizes the system s ability to 
+successfully estimate the trajectory of shots since caliber 
+estimation and weapon classification relies on the trajectory 
+non-localized shots are not classified either there were 
+shots out of that were not localized the reason for 
+missed shots is the trajectory ambiguity problem that occurs 
+when the projectile passes on one side of all the sensors in 
+this case two significantly different trajectories can generate 
+the same set of observations see and also section 
+instead of estimating which one is more likely or displaying 
+both possibilities we decided not to provide a trajectory at 
+all it is better not to give an answer other than a shot 
+alarm than misleading the soldier 
+localization accuracy is broken down to trajectory 
+accuracy and range estimation precision the angle of the 
+estimated trajectory was better than degree except for the 
+ m range since the range should not affect trajectory 
+estimation as long as the projectile passes over the network 
+we suspect that the slightly worse angle precision for m 
+is due to the hurried shots we witnessed the soldiers took 
+near the end of the day this is also indicated by another 
+datapoint the estimated trajectory distance from the 
+actual targets has an average error of m for m shots 
+ m for m shots and m for all but m shots 
+as the distance between the targets and the sensor network 
+was fixed this number should not show a × improvement 
+just because the shooter is closer 
+since the angle of the trajectory itself does not 
+characterize the overall error-there can be a translation 
+alsotable also gives the distance of the shooter from the 
+estimated trajectory these indicate an error which is about 
+ - of the range to put this into perspective a 
+trajectory estimate for a m shot will very likely go through or 
+very near the window the shooter is located at again we 
+believe that the disproportionally larger errors at m are 
+due to human errors in aiming as the ground truth was 
+obtained by knowing the precise location of the shooter and 
+the target any inaccuracy in the actual trajectory directly 
+adds to the perceived error of the system 
+we call the estimation of the shooter s position on the 
+calculated trajectory range estimation due to the lack of a 
+better term the range estimates are better than 
+accurate from m and for m however this goes 
+to or worse for longer distances we did not have a 
+facility to test system before the evaluation for ranges 
+beyond m during the evaluation we ran into the 
+problem of mistaking shockwave echoes for muzzle blasts these 
+echoes reached the sensors before the real muzzle blast for 
+long range shots only since the projectile travels - × faster 
+than the speed of sound so the time between the shockwave 
+ and its possible echo from nearby objects and the muzzle 
+blast increases with increasing ranges this resulted in 
+underestimating the range since the system measured shorter 
+times than the real ones since the evaluation we finetuned 
+the muzzle blast detection algorithm to avoid this problem 
+distance m ak m m m m m -m 
+ m 
+ m 
+ m 
+ m 
+all 
+table weapon classification results the 
+percentages are relative to the number of shots localized and 
+not all shots as the classification algorithm needs to 
+know the trajectory and the range note that the 
+difference is small there were shots localized 
+out of the total 
+the caliber and weapon estimation accuracy rates are 
+based on the shots that were successfully localized note 
+that there was a single shot that was falsely classified by the 
+caliber estimator the overall weapon classification 
+accuracy does not seem impressive but if we break it down 
+to the six different weapons tested the picture changes 
+dramatically as shown in table for four of the weapons 
+ ak m m and m the classification rate is 
+almost there were only two shots out of approximately 
+ that were missed the m and m proved to be too 
+similar and they were mistaken for each other most of the 
+time one possible explanation is that we had only a limited 
+number of test shots taken with these weapons right before 
+the evaluation and used the wrong deceleration 
+approximation function either this or a similar mistake was made 
+ 
+since if we simply used the opposite of the system s answer 
+where one of these weapons were indicated the accuracy 
+would have improved x if we consider these two weapons 
+a single weapon class then the classification accuracy for it 
+becomes 
+note that the ak and m have the same caliber 
+ mm just as the m m and m do mm 
+that is the system is able to differentiate between weapons 
+of the same caliber we are not aware of any system that 
+classifies weapons this accurately 
+ single sensor performance 
+as was shown previously a single sensor alone is able 
+to localize the shooter if it can determine both the muzzle 
+blast and the shockwave aoa that is it needs to measure 
+the toa of both on at least three acoustic channels while 
+shockwave detection is independent of the range-unless the 
+projectile becomes subsonic- the likelihood of muzzle blast 
+detection beyond meters is not enough for consistently 
+getting at least three per sensor node for aoa estimation 
+hence we only evaluate the single sensor performance for 
+the shots that were taken from and m note that 
+we use the same test data as in the previous section but we 
+evaluate individually for each sensor 
+table summarizes the results broken down by the ten 
+sensors utilized since this is now not a distributed system 
+the results are given relative to the position of the given 
+sensor that is a bearing and range estimate is provided note 
+that many of the common error sources of the networked 
+system do not play a role here time synchronization is 
+not applicable the sensor s absolute location is irrelevant 
+ just as the relative location of multiple sensors the 
+sensor s orientation is still important though there are several 
+disadvantages of the single sensor case compared to the 
+networked system there is no redundancy to compensate for 
+other errors and to perform outlier rejection the 
+localization rate is markedly lower and a single sensor alone is not 
+able to estimate the caliber or classify the weapon 
+sensor id 
+loc rate 
+bearing deg 
+range m 
+table single sensor accuracy for shots fired 
+from and meters localization rate refers to 
+the percentage of shots the given sensor alone was 
+able to localize the bearing and range values are 
+average errors they characterize the accuracy of 
+localization from the given sensor s perspective 
+the data indicates that the performance of the sensors 
+varied significantly especially considering the localization 
+rate one factor has to be the location of the given 
+sensor including how far it was from the firing lines and how 
+obstructed its view was also the sensors were hand-built 
+prototypes utilizing nowhere near production quality 
+packaging mounting in light of these factors the overall 
+average bearing error of degrees and range error of m 
+with a microphone spacing of less than cm are excellent 
+we believe that professional manufacturing and better 
+microphones could easily achieve better performance than the 
+best sensor in our experiment localization rate and 
+ m range error 
+interestingly the largest error in range was a huge m 
+clearly due to some erroneous detection yet the largest 
+bearing error was less than degrees which is still a good 
+indication for the soldier where to look 
+the overall localization rate over all single sensors was 
+ while for m shots only this jumped to note 
+that the firing range was prepared to simulate an urban 
+area to some extent there were a few single- and two-storey 
+wooden structures built both in and around the sensor 
+deployment area and the firing lines hence not all sensors had 
+line-of-sight to all shooting positions we estimate that 
+of the sensors had obstructed view to the shooter on 
+average hence we can claim that a given sensor had about 
+chance of localizing a shot within m since the sensor 
+deployment area was m deep m shots correspond to 
+actual distances between and m again we 
+emphasize that localization needs at least three muzzle blast and 
+three shockwave detections out of a possible four for each per 
+sensor the detection rate for single sensors-corresponding 
+to at least one shockwave detection per sensor-was 
+practically 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+number of sensors 
+percentageofshots 
+figure histogram showing what fraction of the 
+ shots taken from and meters were 
+localized by at most how many individual sensors alone 
+ of the shots were missed by every single 
+sensor i e none of them had both muzzle blast and 
+shockwave aoa detections note that almost all 
+of these shots were still accurately localized by the 
+networked system i e the sensor fusion using all 
+available observations in the sensor network 
+it would be misleading to interpret these results as the 
+system missing half the shots as soldiers never work alone 
+and the sensor node is relatively cheap to afford having 
+every soldier equipped with one we also need to look at the 
+overall detection rates for every shot figure shows the 
+histogram of the percentage of shots vs the number of 
+individual sensors that localized it of shots were not 
+localized by any sensor alone but was localized by at 
+least one sensor out of ten 
+ error sources 
+in this section we analyze the most significant sources of 
+error that affect the performance of the networked shooter 
+localization and weapon classification system in order to 
+correlate the distributed observations of the acoustic events 
+the nodes need to have a common time and space reference 
+hence errors in the time synchronization node localization 
+and node orientation all degrade the overall accuracy of the 
+system 
+ 
+our time synchronization approach yields errors 
+significantly less than microseconds as the sound travels 
+about cm in that time time synchronization errors have a 
+negligible effect on the system 
+on the other hand node location and orientation can have 
+a direct effect on the overall system performance notice 
+that to analyze this we do not have to resort to 
+simulation instead we can utilize the real test data gathered at 
+aberdeen but instead of using the real sensor locations 
+known very accurately and the measured and calibrated 
+almost perfect node orientations we can add error terms to 
+them and run the sensor fusion this exactly replicates how 
+the system would have performed during the test using the 
+imprecisely known locations and orientations 
+another aspect of the system performance that can be 
+evaluated this way is the effect of the number of available 
+sensors instead of using all ten sensors in the data fusion 
+we can pick any subset of the nodes to see how the accuracy 
+degrades as we decrease the number of nodes 
+the following experiment was carried out the number 
+of sensors were varied from to in increments of each 
+run picked the sensors randomly using a uniform 
+distribution at each run each node was randomly moved to a 
+new location within a circle around its true position with 
+a radius determined by a zero-mean gaussian distribution 
+finally the node orientations were perturbed using a 
+zeromean gaussian distribution each combination of 
+parameters were generated times and utilized for all shots 
+the results are summarized in figure there is one d 
+barchart for each of the experiment sets with the given fixed 
+number of sensors the x-axis shows the node location error 
+that is the standard deviation of the corresponding 
+gaussian distribution that was varied between and meters 
+the y-axis shows the standard deviation of the node 
+orientation error that was varied between and degrees the 
+z-axis is the resulting trajectory azimuth error note that 
+the elevation angles showed somewhat larger errors than the 
+azimuth since all the sensors were in approximately a 
+horizontal plane and only a few shooter positions were out of the 
+same plane and only by m or so the test was not sufficient 
+to evaluate this aspect of the system 
+there are many interesting observation one can make by 
+analyzing these charts node location errors in this range 
+have a small effect on accuracy node orientation errors on 
+the other hand noticeably degrade the performance still 
+the largest errors in this experiment of degrees for 
+sensors and degrees for sensors are still very good 
+note that as the location and orientation errors increase 
+and the number of sensors decrease the most significantly 
+affected performance metric is the localization rate see 
+table for a summary successful localization goes down 
+from almost to when we go from sensors to 
+ even without additional errors this is primarily caused 
+by geometry for a successful localization the bullet needs 
+to pass over the sensor network that is at least one sensor 
+should be on the side of the trajectory other than the rest 
+of the nodes this is a simplification for illustrative 
+purposes if all the sensors and the trajectory are not coplanar 
+localization may be successful even if the projectile passes 
+on one side of the network see section as the 
+numbers of sensors decreased in the experiment by randomly 
+selecting a subset the probability of trajectories abiding by 
+this rule decreased this also means that even if there are 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+azimutherror degree 
+position error m 
+orientation error 
+ degree 
+ sensors 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+azimutherror degree 
+position error m 
+orientation error 
+ degree 
+ sensors 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+azimutherror degree 
+position error m 
+orientation error 
+ degree 
+ sensors 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+azimutherror degree 
+position error m 
+orientation error 
+ degree 
+ sensors 
+figure the effect of node localization and 
+orientation errors on azimuth accuracy with and 
+ nodes note that the chart for nodes is almost 
+identical for the -node case hence it is omitted 
+ 
+many sensors i e soldiers but all of them are right next to 
+each other the localization rate will suffer however when 
+the sensor fusion does provide a result it is still accurate 
+even with few available sensors and relatively large 
+individual errors a very few consistent observation lead to good 
+accuracy as the inconsistent ones are discarded by the 
+algorithm this is also supported by the observation that for 
+the cases with the higher number of sensors or the 
+localization rate is hardly affected by even large errors 
+errors sensors 
+ m deg 
+ m deg 
+ m deg 
+ m deg 
+ m deg 
+table localization rate as a function of the 
+number of sensors used the sensor node location and 
+orientation errors 
+one of the most significant observations on figure and 
+table is that there is hardly any difference in the data for 
+ and sensors this means that there is little advantage 
+of adding more nodes beyond sensors as far as the accuracy 
+is concerned 
+the speed of sound depends on the ambient temperature 
+the current prototype considers it constant that is typically 
+set before a test it would be straightforward to employ 
+a temperature sensor to update the value of the speed of 
+sound periodically during operation note also that wind 
+may adversely affect the accuracy of the system the sensor 
+fusion however could incorporate wind speed into its 
+calculations it would be more complicated than temperature 
+compensation but could be done 
+other practical issues also need to be looked at before a 
+real world deployment silencers reduce the muzzle blast 
+energy and hence the effective range the system can 
+detect it at however silencers do not effect the shockwave 
+and the system would still detect the trajectory and caliber 
+accurately the range and weapon type could not be 
+estimated without muzzle blast detections subsonic weapons 
+do not produce a shockwave however this is not of great 
+significance since they have shorter range lower accuracy 
+and much less lethality hence their use is not widespread 
+and they pose less danger in any case 
+another issue is the type of ammunition used irregular 
+armies may use substandard even hand manufactured 
+bullets this effects the muzzle velocity of the weapon for 
+weapon classification to work accurately the system would 
+need to be calibrated with the typical ammunition used by 
+the given adversary 
+ related work 
+acoustic detection and recognition has been under 
+research since the early fifties the area has a close 
+relevance to the topic of supersonic flow mechanics fansler 
+analyzed the complex near-field pressure waves that occur 
+within a foot of the muzzle blast fansler s work gives a 
+good idea of the ideal muzzle blast pressure wave without 
+contamination from echoes or propagation effects 
+experiments with greater distances from the muzzle were 
+conducted by stoughton the measurements of the ballistic 
+shockwaves using calibrated pressure transducers at known 
+locations measured bullet speeds and miss distances of 
+ meters for mm and mm projectiles were made 
+results indicate that ground interaction becomes a problem 
+for miss distances of meters or larger 
+another area of research is the signal processing of gunfire 
+acoustics the focus is on the robust detection and length 
+estimation of small caliber acoustic shockwaves and 
+muzzle blasts possible techniques for classifying signals as 
+either shockwaves or muzzle blasts includes short-time fourier 
+transform stft the smoothed pseudo wigner-ville 
+distribution spwvd and a discrete wavelet transformation 
+ dwt joint time-frequency jtf spectrograms are used 
+to analyze the typical separation of the shockwave and 
+muzzle blast transients in both time and frequency mays 
+concludes that the dwt is the best method for classifying 
+signals as either shockwaves or muzzle blasts because it works 
+well and is less expensive to compute than the spwvd 
+the edges of the shockwave are typically well defined and 
+the shockwave length is directly related to the bullet 
+characteristics a paper by sadler compares two shockwave 
+edge detection methods a simple gradient-based detector 
+and a multi-scale wavelet detector it also demonstrates how 
+the length of the shockwave as determined by the edge 
+detectors can be used along with whithams equations to 
+estimate the caliber of a projectile note that the available 
+computational performance on the sensor nodes the limited 
+wireless bandwidth and real-time requirements render these 
+approaches infeasible on our platform 
+a related topic is the research and development of 
+experimental and prototype shooter location systems researchers 
+at bbn have developed the bullet ears system which has 
+the capability to be installed in a fixed position or worn by 
+soldiers the fixed system has tetrahedron shaped 
+microphone arrays with meter spacing the overall system 
+consists of two to three of these arrays spaced to 
+meters from each other the soldier-worn system has 
+microphones as well as a gps antenna and orientation 
+sensors mounted on a helmet there is a low speed rf 
+connection from the helmet to the processing body an extensive 
+test has been conducted to measure the performance of both 
+type of systems the fixed systems performance was one 
+order of magnitude better in the angle calculations while their 
+range performance where matched the angle accuracy of 
+the fixed system was dominantly less than one degree while 
+it was around five degrees for the helmet mounted one the 
+range accuracy was around percent for both of the 
+systems the problem with this and similar centralized 
+systems is the need of the one or handful of microphone arrays 
+to be in line-of-sight of the shooter a sensor networked 
+based solution has the advantage of widely distributed 
+sensing for better coverage multipath effect compensation and 
+multiple simultaneous shot resolution this is especially 
+important for operation in acoustically reverberant urban 
+areas note that bbn s current vehicle-mounted system 
+called boomerang a modified version of bullet ears 
+is currently used in iraq 
+the company shotspotter specializes in law enforcement 
+systems that report the location of gunfire to police within 
+seconds the goal of the system is significantly different 
+than that of military systems shotspotter reports m 
+typical accuracy which is more than enough for police to 
+ 
+respond they are also manufacturing experimental soldier 
+wearable and uav mounted systems for military use 
+but no specifications or evaluation results are publicly 
+available 
+ conclusions 
+the main contribution of this work is twofold first the 
+performance of the overall distributed networked system is 
+excellent most noteworthy are the trajectory accuracy of 
+one degree the correct caliber estimation rate of well over 
+ and the close to weapon classification rate for of 
+the weapons tested the system proved to be very robust 
+when increasing the node location and orientation errors and 
+decreasing the number of available sensors all the way down 
+to a couple the key factor behind this is the sensor fusion 
+algorithm s ability to reject erroneous measurements it is 
+also worth mentioning that the results presented here 
+correspond to the first and only test of the system beyond m 
+and with six different weapons we believe that with the 
+lessons learned in the test a consecutive field experiment 
+could have showed significantly improved results especially 
+in range estimation beyond m and weapon classification 
+for the remaining two weapons that were mistaken for each 
+other the majority of the times during the test 
+second the performance of the system when used in 
+standalone mode that is when single sensors alone provided 
+localization was also very good while the overall 
+localization rate of per sensor for shots up to m could be 
+improved the bearing accuracy of less than a degree and 
+the average range error are remarkable using the 
+handmade prototypes of the low-cost nodes note that of 
+the shots were successfully localized by at least one of the 
+ten sensors utilized in standalone mode 
+we believe that the technology is mature enough that 
+a next revision of the system could be a commercial one 
+however important aspects of the system would still need 
+to be worked on we have not addresses power 
+management yet a current node runs on aa batteries for about 
+ hours of continuous operation a deployable version of 
+the sensor node would need to be asleep during normal 
+operation and only wake up when an interesting event occurs 
+an analog trigger circuit could solve this problem however 
+the system would miss the first shot instead the acoustic 
+channels would need to be sampled and stored in a circular 
+buffer the rest of the board could be turned off when 
+a trigger wakes up the board the acoustic data would be 
+immediately available experiments with a previous 
+generation sensor board indicated that this could provide a x 
+increase in battery life other outstanding issues include 
+weatherproof packaging and ruggedization as well as 
+integration with current military infrastructure 
+ references 
+ bbn technologies website http www bbn com 
+ e danicki acoustic sniper localization archives of 
+acoustics - 
+ g l duckworth et al fixed and wearable acoustic 
+counter-sniper systems for law enforcement in e m 
+carapezza and d b law editors proc spie vol 
+ p - pages - jan 
+ k fansler description of muzzle blast by modified 
+scaling models shock and vibration - 
+ d gay p levis r von behren m welsh 
+e brewer and d culler the nesc language a 
+holistic approach to networked embedded systems 
+proceedings of programming language design and 
+implementation pldi june 
+ j hill r szewczyk a woo s hollar d culler and 
+k pister system architecture directions for networked 
+sensors in proc of asplos nov 
+ b kus´y g balogh p v¨olgyesi j sallai a n´adas 
+a l´edeczi m mar´oti and l meertens node-density 
+independent localization information processing in 
+sensor networks ipsn spots track apr 
+ a l´edeczi a n´adas p v¨olgyesi g balogh 
+b kus´y j sallai g pap s d´ora k moln´ar 
+m mar´oti and g simon countersniper system for 
+urban warfare acm transactions on sensor 
+networks - nov 
+ m mar´oti directed flood-routing framework for 
+wireless sensor networks in proceedings of the th 
+acm ifip usenix international conference on 
+middleware pages - new york ny usa 
+springer-verlag new york inc 
+ b mays shockwave and muzzle blast classification 
+via joint time frequency and wavelet analysis 
+technical report army research lab adelphi md 
+ - sept 
+ tinyos hardware platforms 
+http tinyos net scoop special hardware 
+ crossbow micaz mpr radio module 
+http www xbow com products productsdetails 
+aspx sid 
+ picoblaze user resources 
+http www xilinx com ipcenter processor 
+central picoblaze picoblaze user resources htm 
+ b m sadler t pham and l c sadler optimal 
+and wavelet-based shock wave detection and 
+estimation acoustical society of america journal 
+ - aug 
+ j sallai b kus´y a l´edeczi and p dutta on the 
+scalability of routing-integrated time synchronization 
+ rd european workshop on wireless sensor networks 
+ ewsn feb 
+ shotspotter website http 
+ www shotspotter com products military html 
+ g simon m mar´oti a l´edeczi g balogh b kus´y 
+a n´adas g pap j sallai and k frampton sensor 
+network-based countersniper system in sensys 
+proceedings of the nd international conference on 
+embedded networked sensor systems pages - new 
+york ny usa acm press 
+ r stoughton measurements of small-caliber ballistic 
+shock waves in air acoustical society of america 
+journal - aug 
+ b a weiss c schlenoff m shneier and a virts 
+technology evaluations and performance metrics for 
+soldier-worn sensors for assist in performance metrics 
+for intelligent systems workshop aug 
+ g whitham flow pattern of a supersonic projectile 
+communications on pure and applied mathematics 
+ 
+ 

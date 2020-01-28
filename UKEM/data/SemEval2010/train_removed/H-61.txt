@@ -1,0 +1,921 @@
+impedance coupling in content-targeted advertising 
+berthier ribeiro-neto 
+computer science department 
+federal university of minas gerais 
+belo horizonte brazil 
+berthier dcc ufmg br 
+marco cristo 
+computer science department 
+federal university of minas gerais 
+belo horizonte brazil 
+marco dcc ufmg br 
+paulo b golgher 
+akwan information technologies 
+av abra˜ao caram - pampulha 
+belo horizonte brazil 
+golgher akwan com br 
+edleno silva de moura 
+computer science department 
+federal university of amazonas 
+manaus brazil 
+edleno dcc ufam edu br 
+abstract 
+the current boom of the web is associated with the revenues 
+originated from on-line advertising while search-based 
+advertising is dominant the association of ads with a web 
+page during user navigation is becoming increasingly 
+important in this work we study the problem of associating 
+ads with a web page referred to as content-targeted 
+advertising from a computer science perspective we assume that 
+we have access to the text of the web page the keywords 
+declared by an advertiser and a text associated with the 
+advertiser s business using no other information and 
+operating in fully automatic fashion we propose ten strategies 
+for solving the problem and evaluate their effectiveness our 
+methods indicate that a matching strategy that takes into 
+account the semantics of the problem referred to as aak 
+for ads and keywords can yield gains in average precision 
+figures of compared to a trivial vector-based strategy 
+further a more sophisticated impedance coupling strategy 
+which expands the text of the web page to reduce 
+vocabulary impedance with regard to an advertisement can yield 
+extra gains in average precision of these are first 
+results they suggest that great accuracy in content-targeted 
+advertising can be attained with appropriate algorithms 
+categories and subject descriptors 
+h information storage and retrieval 
+information search and retrieval i pattern recognition 
+applications-text processing 
+general terms 
+algorithms experimentation 
+ introduction 
+the emergence of the internet has opened up new 
+marketing opportunities in fact a company has now the possibility 
+of showing its advertisements ads to millions of people at a 
+low cost during the s many companies invested heavily 
+on advertising in the internet with apparently no concerns 
+about their investment return this situation radically 
+changed in the following decade when the failure of many 
+web companies led to a dropping in supply of cheap venture 
+capital and a considerable reduction in on-line advertising 
+investments 
+it was clear then that more effective strategies for on-line 
+advertising were required for that it was necessary to take 
+into account short-term and long-term interests of the users 
+related to their information needs as a consequence 
+many companies intensified the adoption of intrusive 
+techniques for gathering information of users mostly without 
+their consent this raised privacy issues which 
+stimulated the research for less invasive measures 
+more recently internet information gatekeepers as for 
+example search engines recommender systems and 
+comparison shopping services have employed what is called paid 
+placement strategies in such methods an advertiser 
+company is given prominent positioning in advertisement 
+lists in return for a placement fee amongst these methods 
+the most popular one is a non-intrusive technique called 
+keyword targeted marketing in this technique keywords 
+extracted from the user s search query are matched against 
+keywords associated with ads provided by advertisers a 
+ranking of the ads which also takes into consideration the 
+amount that each advertiser is willing to pay is computed 
+the top ranked ads are displayed in the search result page 
+together with the answers for the user query 
+the success of keyword targeted marketing has motivated 
+information gatekeepers to offer their advertisement services 
+in different contexts for example as shown in figure 
+relevant ads could be shown to users directly in the pages of 
+information portals the motivation is to take advantage of 
+ 
+the users immediate information interests at browsing time 
+the problem of matching ads to a web page that is browsed 
+which we also refer to as content-targeted advertising 
+is different from that of keyword marketing in this case 
+instead of dealing with users keywords we have to use the 
+contents of a web page to decide which ads to display 
+figure example of content-based advertising in 
+the page of a newspaper the middle slice of the 
+page shows the beginning of an article about the 
+launch of a dvd movie at the bottom slice we can 
+see advertisements picked for this page by google s 
+content-based advertising system adsense 
+it is important to notice that paid placement 
+advertising strategies imply some risks to information gatekeepers 
+for instance there is the possibility of a negative impact 
+on their credibility which at long term can demise their 
+market share this makes investments in the quality of 
+ad recommendation systems even more important to 
+minimize the possibility of exhibiting ads unrelated to the user s 
+interests by investing in their ad systems information 
+gatekeepers are investing in the maintenance of their credibility 
+and in the reinforcement of a positive user attitude towards 
+the advertisers and their ads further that can 
+translate into higher clickthrough rates that lead to an increase in 
+revenues for information gatekeepers and advertisers with 
+gains to all parts 
+in this work we focus on the problem of content-targeted 
+advertising we propose new strategies for associating ads 
+with a web page five of these strategies are referred to as 
+matching strategies they are based on the idea of matching 
+the text of the web page directly to the text of the ads and 
+its associated keywords five other strategies which we here 
+introduce are referred to as impedance coupling strategies 
+they are based on the idea of expanding the web page with 
+new terms to facilitate the task of matching ads and web 
+pages this is motivated by the observation that there is 
+frequently a mismatch between the vocabulary of a web page 
+and the vocabulary of an advertisement we say that there 
+is a vocabulary impedance problem and that our technique 
+provides a positive effect of impedance coupling by reducing 
+the vocabulary impedance further all our strategies rely 
+on information that is already available to information 
+gatekeepers that operate keyword targeted advertising systems 
+thus no other data from the advertiser is required 
+using a sample of a real case database with over 
+ads and web pages selected for testing we evaluate our 
+ad recommendation strategies first we evaluate the five 
+matching strategies they match ads to a web page 
+using a standard vector model and provide what we may call 
+trivial solutions our results indicate that a strategy that 
+matches the ad plus its keywords to a web page requiring 
+the keywords to appear in the web page provides 
+improvements in average precision figures of roughly relative 
+to a strategy that simply matches the ads to the web page 
+such strategy which we call aak for ads and keywords 
+is then taken as our baseline 
+following we evaluate the five impedance coupling 
+strategies they are based on the idea of expanding the ad and 
+the web page with new terms to reduce the vocabulary 
+impedance between their texts our results indicate that it 
+is possible to generate extra improvements in average 
+precision figures of roughly relative to the aak strategy 
+the paper is organized as follows in section we 
+introduce five matching strategies to solve content-targeted 
+advertising in section we present our impedance 
+coupling strategies in section we describe our experimental 
+methodology and datasets and discuss our results in 
+section we discuss related work in section we present our 
+conclusions 
+ matching strategies 
+keyword advertising relies on matching search queries to 
+ads and its associated keywords context-based 
+advertising which we address here relies on matching ads and its 
+associated keywords to the text of a web page 
+given a certain web page p which we call triggering page 
+our task is to select advertisements related to the contents 
+of p without loss of generality we consider that an 
+advertisement ai is composed of a title a textual description 
+and a hyperlink to illustrate for the first ad by google 
+shown in figure the title is star wars trilogy full 
+the description is get this popular dvd free free w free 
+shopping sign up now and the hyperlink points to the site 
+www freegiftworld com advertisements can be grouped 
+by advertisers in groups called campaigns such that a 
+campaign can have one or more advertisements 
+given our triggering page p and a set a of ads a simple 
+way of ranking ai ∈ a with regard to p is by matching the 
+contents of p to the contents of ai for this we use the vector 
+space model as discussed in the immediately following 
+in the vector space model queries and documents are 
+represented as weighted vectors in an n-dimensional space let 
+wiq be the weight associated with term ti in the query q 
+and wij be the weight associated with term ti in the 
+document dj then q w q w q wiq wnq and dj 
+ w j w j wij wnj are the weighted vectors used to 
+represent the query q and the document dj these weights 
+can be computed using classic tf-idf schemes in such schemes 
+weights are taken as the product between factors that 
+quantify the importance of a term in a document given by the 
+term frequency or tf factor and its rarity in the whole 
+collection given by the inverse document factor or idf factor 
+see for details the ranking of the query q with regard 
+to the document dj is computed by the cosine similarity 
+ 
+formula that is the cosine of the angle between the two 
+corresponding vectors 
+sim q dj 
+q dj 
+ q × dj 
+ 
+pn 
+i wiq · wij 
+qpn 
+i w 
+iq 
+qpn 
+i w 
+ij 
+ 
+by considering p as the query and ai as the document we 
+can rank the ads with regard to the web page p this is our 
+first matching strategy it is represented by the function ad 
+given by 
+ad p ai sim p ai 
+where ad stands for direct match of the ad composed by 
+title and description and sim p ai is computed according 
+to eq 
+in our second method we use other source of evidence 
+provided by the advertisers the keywords with each 
+advertisement ai an advertiser associates a keyword ki which 
+may be composed of one or more terms we denote the 
+association between an advertisement ai and a keyword ki 
+as the pair ai ki ∈ k where k is the set of associations 
+made by the advertisers in the case of keyword targeted 
+advertising such keywords are used to match the ads to the 
+user queries in here we use them to match ads to the web 
+page p this provides our second method for ad matching 
+given by 
+kw p ai sim p ki 
+where ai ki ∈ k and kw stands for match the ad 
+keywords 
+we notice that most of the keywords selected by 
+advertisers are also present in the ads associated with those 
+keywords for instance in our advertisement test collection 
+this is true for of the ads thus instead of using the 
+keywords as matching devices we can use them to emphasize 
+the main concepts in an ad in an attempt to improve our 
+ad strategy this leads to our third method of ad matching 
+given by 
+ad kw p ai sim p ai ∪ ki 
+where ai ki ∈ k and ad kw stands for match the ad and 
+its keywords 
+finally it is important to notice that the keyword ki 
+associated with ai could not appear at all in the triggering page 
+p even when ai is highly ranked however if we assume that 
+ki summarizes the main topic of ai according to an 
+advertiser viewpoint it can be interesting to assure its presence 
+in p this reasoning suggests that requiring the occurrence 
+of the keyword ki in the triggering page p as a condition 
+to associate ai with p might lead to improved results this 
+leads to two extra matching strategies as follows 
+andkw p ai 
+ 
+sim p ai if ki p 
+ if otherwise 
+ad andkw p ai aak p ai 
+ 
+sim p ai ∪ ki if ki p 
+ if otherwise 
+where ai ki ∈ k andkw stands for match the ad keywords 
+and force their appearance and ad andkw or aak for ads 
+and keywords stands for match the ad its keywords and 
+force their appearance 
+as we will see in our results the best among these simple 
+methods is aak thus it will be used as baseline for our 
+impedance coupling strategies which we now discuss 
+ impedance coupling strategies 
+two key issues become clear as one plays with the 
+contenttargeted advertising problem first the triggering page 
+normally belongs to a broader contextual scope than that of the 
+advertisements second the association between a good 
+advertisement and the triggering page might depend on a topic 
+that is not mentioned explicitly in the triggering page 
+the first issue is due to the fact that web pages can be 
+about any subject and that advertisements are concise in 
+nature that is ads tend to be more topic restricted than 
+web pages the second issue is related to the fact that as 
+we later discuss most advertisers place a small number of 
+advertisements as a result we have few terms describing 
+their interest areas consequently these terms tend to be 
+of a more general nature for instance a car shop probably 
+would prefer to use car instead of super sport to describe 
+its core business topic as a consequence many specific 
+terms that appear in the triggering page find no match in 
+the advertisements to make matters worst a page might 
+refer to an entity or subject of the world through a label 
+that is distinct from the label selected by an advertiser to 
+refer to the same entity 
+a consequence of these two issues is that vocabularies of 
+pages and ads have low intersection even when an ad is 
+related to a page we cite this problem from now on as 
+the vocabulary impedance problem in our experiments we 
+realized that this problem limits the final quality of direct 
+matching strategies therefore we studied alternatives to 
+reduce the referred vocabulary impedance 
+for this we propose to expand the triggering pages with 
+new terms figure illustrates our intuition we already 
+know that the addition of keywords selected by the 
+advertiser to the ads leads to improved results we say that a 
+keyword reduces the vocabulary impedance by providing an 
+alternative matching path our idea is to add new terms 
+ words to the web page p to also reduce the vocabulary 
+impedance by providing a second alternative matching path 
+we refer to our expansion technique as impedance coupling 
+for this we proceed as follows 
+expansion 
+terms keyword 
+vocabulary impedance 
+triggering 
+page p ad 
+figure addition of new terms to a web page to 
+reduce the vocabulary impedance 
+an advertiser trying to describe a certain topic in a concise 
+way probably will choose general terms to characterize that 
+topic to facilitate the matching between this ad and our 
+triggering page p we need to associate new general terms 
+with p for this we assume that web documents similar 
+to the triggering page p share common topics therefore 
+ 
+by inspecting the vocabulary of these similar documents we 
+might find good terms for better characterizing the main 
+topics in the page p we now describe this idea using a 
+bayesian network model depicted in figure 
+r 
+d d dj dk 
+t t t ti tm 
+ 
+ 
+figure bayesian network model for our 
+impedance coupling technique 
+in our model which is based on the belief network in 
+the nodes represent pieces of information in the domain 
+with each node is associated a binary random variable 
+which takes the value to mean that the corresponding 
+entity a page or terms is observed and thus relevant in our 
+computations in this case we say that the information was 
+observed node r represents the page r a new 
+representation for the triggering page p let n be the set of the k 
+most similar documents to the triggering page including the 
+triggering page p itself in a large enough web collection c 
+root nodes d through dk represent the documents in n 
+that is the triggering page d and its k nearest neighbors 
+d through dk among all pages in c there is an edge 
+from node dj to node r if document dj is in n nodes 
+t through tm represent the terms in the vocabulary of c 
+there is an edge from node dj to a node ti if term ti occurs 
+in document dj in our model the observation of the pages 
+in n leads to the observation of a new representation of the 
+triggering page p and to a set of terms describing the main 
+topics associated with p and its neighbors 
+given these definitions we can now use the network to 
+determine the probability that a term ti is a good term for 
+representing a topic of the triggering page p in other words 
+we are interested in the probability of observing the final 
+evidence regarding a term ti given that the new 
+representation of the page p has been observed p ti r 
+this translates into the following equation 
+ 
+p ti r 
+ 
+p r 
+x 
+d 
+p ti d p r d p d 
+where d represents the set of states of the document nodes 
+since we are interested just in the states in which only a 
+single document dj is observed and p d can be regarded as 
+a constant we can rewrite eq as 
+p ti r 
+ν 
+p r 
+kx 
+j 
+p ti dj p r dj 
+where dj represents the state of the document nodes in 
+which only document dj is observed and ν is a constant 
+ 
+to simplify our notation we represent the probabilities 
+p x as p x and p x as p x 
+associated with p dj eq is the general equation to 
+compute the probability that a term ti is related to the 
+triggering page we now define the probabilities p ti dj and 
+p r dj as follows 
+p ti dj η wij 
+p r dj 
+ 
+ − α j 
+α sim r dj ≤ j ≤ k 
+ 
+where η is a normalizing constant wij is the weight 
+associated with term ti in the document dj and sim p dj is 
+given by eq i e is the cosine similarity between p and 
+dj the weight wij is computed using a classic tf-idf scheme 
+and is zero if term ti does not occur in document dj notice 
+that p ti dj − p ti dj and p r dj − p r dj 
+by defining the constant α it is possible to determine how 
+important should be the influence of the triggering page p 
+to its new representation r by substituting eq and 
+eq into eq we obtain 
+p ti r ρ − α wi α 
+kx 
+j 
+wij sim r dj 
+where ρ η ν is a normalizing constant 
+we use eq to determine the set of terms that will 
+compose r as illustrated in figure let ttop be the top 
+ranked term according to eq the set r is composed 
+of the terms ti such that p ti r 
+p ttop r 
+≥ β where β is a given 
+threshold in our experiments we have used β 
+notice that the set r might contain terms that already occur 
+in p that is while we will refer to the set r as expansion 
+terms it should be clear that p ∩ r ∅ 
+by using α we simply consider the terms originally 
+in page p by increasing α we relax the context of the page 
+p adding terms from neighbor pages turning page p into its 
+new representation r this is important because sometimes 
+a topic apparently not important in the triggering page offers 
+a good opportunity for advertising for example consider 
+a triggering page that describes a congress in london about 
+digital photography although london is probably not an 
+important topic in this page advertisements about hotels 
+in london would be appropriate thus adding hotels to 
+page p is important this suggests using α that is 
+preserving the contents of p and using the terms in r to 
+expand p 
+in this paper we examine both approaches thus in our 
+sixth method we match r the set of new expansion terms 
+directly to the ads as follows 
+aak t p ai aak r ai 
+where aak t stands for match the ad and keywords to the 
+set r of expansion terms 
+in our seventh method we match an expanded page p to 
+the ads as follows 
+aak exp p ai aak p ∪ r ai 
+where aak exp stands for match the ad and keywords to 
+the expanded triggering page 
+ 
+to improve our ad placement methods other external 
+source that we can use is the content of the page h pointed to 
+by the advertisement s hyperlink that is its landing page 
+after all this page comprises the real target of the ad and 
+perhaps could present a more detailed description of the 
+product or service being advertised given that the 
+advertisement ai points to the landing page hi we denote this 
+association as the pair ai hi ∈ h where h is the set of 
+associations between the ads and the pages they point to 
+our eighth method consists of matching the triggering page 
+p to the landing pages pointed to by the advertisements as 
+follows 
+h p ai sim p hi 
+where ai hi ∈ h and h stands for match the hyperlink 
+pointed to by the ad 
+we can also combine this information with the more 
+promising methods previously described aak and aak exp as 
+follows given that ai hi ∈ h and ai ki ∈ k we have our 
+last two methods 
+aak h p ai 
+ 
+sim p ai ∪ hi ∪ ki if ki p 
+ if otherwise 
+aak exp h p ai 
+ 
+sim p ∪ r ai ∪ hi ∪ ki if ki p ∪ r 
+ if otherwise 
+where aak h stands for match ads and keywords also 
+considering the page pointed by the ad and aah exp h stands 
+for match ads and keywords with expanded triggering page 
+also considering the page pointed by the ad 
+notice that other combinations were not considered in this 
+study due to space restrictions these other combinations 
+led to poor results in our experimentation and for this reason 
+were discarded 
+ experiments 
+ methodology 
+to evaluate our ad placement strategies we performed 
+a series of experiments using a sample of a real case ad 
+collection with advertisements advertisers and 
+ keywords 
+ the advertisements are grouped in 
+campaigns with an average of campaigns per advertiser 
+for the strategies aak t and aak exp we had to 
+generate a set of expansion terms for that we used a database 
+of web pages crawled by the todobr search engine 
+ http www todobr com br this database is composed 
+of pages of the brazilian web under the domain 
+ br for the strategies h aak h and aak exp h we also 
+crawled the pages pointed to by the advertisers no other 
+filtering method was applied to these pages besides the 
+removal of html tags 
+since we are initially interested in the placement of 
+advertisements in the pages of information portals our test 
+collection was composed of pages extracted from a 
+brazilian newspaper these are our triggering pages they were 
+crawled in such a way that only the contents of their 
+articles was preserved as we have no preferences for particular 
+ 
+data in portuguese provided by an on-line advertisement 
+company that operates in brazil 
+topics the crawled pages cover topics as diverse as politics 
+economy sports and culture 
+for each of our triggering pages we selected the top 
+three ranked ads provided by each of our ad placement 
+strategies thus for each triggering page we select no more 
+than ads these top ads were then inserted in a pool 
+for that triggering page each pool contained an average of 
+ advertisements all advertisements in each pool were 
+submitted to a manual evaluation by a group of users 
+the average number of relevant advertisements per page 
+pool was notice that we adopted the same pooling 
+method used to evaluate the trec web-based collection 
+to quantify the precision of our results we used -point 
+average figures since we are not able to evaluate the 
+entire ad collection recall values are relative to the set of 
+evaluated advertisements 
+ tuning idf factors 
+we start by analyzing the impact of different idf factors 
+in our advertisement collection idf factors are important 
+because they quantify how discriminative is a term in the 
+collection in our ad collection idf factors can be computed 
+by taking ads advertisers or campaigns as documents to 
+exemplify consider the computation of ad idf for a term 
+ti that occurs times in a collection of ads then the 
+inverse document frequency of ti is given by 
+idfi log 
+ 
+ 
+hence we can compute ad advertiser or campaign idf 
+factors as we observe in figure for the ad strategy the best 
+ranking is obtained by the use of campaign idf that is by 
+calculating our idf factor so that it discriminates campaigns 
+similar results were obtained for all the other methods 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision 
+recall 
+campaign idf 
+advertiser idf 
+ad idf 
+figure precision-recall curves obtained for the 
+ad strategy using ad advertiser and campaign idf 
+factors 
+this reflects the fact that terms might be better 
+discriminators for a business topic than for an specific ad this 
+effect can be accomplished by calculating the factor relative 
+to idf advertisers or campaigns instead of ads in fact 
+campaign idf factors yielded the best results thus they will be 
+used in all the experiments reported from now on 
+ 
+ results 
+matching strategies 
+figure displays the results for the matching strategies 
+presented in section as shown directly matching the 
+contents of the ad to the triggering page ad strategy is not so 
+effective the reason is that the ad contents are very noisy 
+it may contain messages that do not properly describe the 
+ad topics such as requisitions for user actions e g visit our 
+site and general sentences that could be applied to any 
+product or service e g we delivery for the whole 
+country on the other hand an advertiser provided keyword 
+summarizes well the topic of the ad as a consequence the 
+kw strategy is superior to the ad and ad kw strategies this 
+situation changes when we require the keywords to appear 
+in the target web page by filtering out ads whose keywords 
+do not occur in the triggering page much noise is discarded 
+this makes andkw a better alternative than kw further in 
+this new situation the contents of the ad becomes useful 
+to rank the most relevant ads making ad andkw or aak for 
+ads and keywords the best among all described methods 
+for this reason we adopt aak as our baseline in the next set 
+of experiments 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision 
+recall 
+aak 
+andkw 
+kw 
+ad kw 
+ad 
+figure comparison among our five matching 
+strategies aak ads and keywords is superior 
+table illustrates average precision figures for figure 
+we also present actual hits per advertisement slot we call 
+hit an assignment of an ad to the triggering page that 
+was considered relevant by the evaluators we notice that 
+our aak strategy provides a gain in average precision of 
+relative to the trivial ad strategy this shows that careful 
+consideration of the evidence related to the problem does 
+pay off 
+impedance coupling strategies 
+table shows top ranked terms that occur in a page 
+covering argentinean wines produced using grapes derived from 
+the bordeaux region of france the p column includes the 
+top terms for this page ranked according to our tf-idf 
+weighting scheme the r column includes the top ranked 
+expansion terms generated according to eq notice that the 
+expansion terms not only emphasize important terms of the 
+target page by increasing their weights such as wines and 
+methods hits -pt average 
+ total score gain 
+ad 
+ad kw 
+kw 
+andkw 
+ad andkw aak 
+table average precision figures corresponding to 
+figure for our five matching strategies columns 
+labelled and indicate total of hits in 
+first second and third advertisement slots 
+respectively the aak strategy provides improvements of 
+ relative to the ad strategy 
+rank p r 
+term score term score 
+ argentina wines 
+ obtained wine 
+ class whites 
+ whites red 
+ french grape 
+ origin bordeaux 
+ france acideness 
+ grape argentina 
+ sweet aroma 
+ country blanc 
+ 
+ wines 
+- 
+table top ranked terms for the triggering page 
+p according to our tf-idf weighting scheme and top 
+ranked terms for r the expansion terms for p 
+generated according to eq ranking scores were 
+normalized in order to sum up to terms marked 
+with   are not shared by the sets p and r 
+whites but also reveal new terms related to the main topic 
+of the page such as aroma and red further they avoid 
+some uninteresting terms such as obtained and country 
+figure illustrates our results when the set r of 
+expansion terms is used they show that matching the ads to 
+the terms in the set r instead of to the triggering page p 
+ aak t strategy leads to a considerable improvement over 
+our baseline aak the gain is even larger when we use the 
+terms in r to expand the triggering page aak exp method 
+this confirms our hypothesis that the triggering page could 
+have some interesting terms that should not be completely 
+discarded 
+finally we analyze the impact on the ranking of using the 
+contents of pages pointed by the ads figure displays our 
+results it is clear that using only the contents of the pages 
+pointed by the ads h strategy yields very poor results 
+however combining evidence from the pages pointed by the 
+ads with our baseline yields improved results most 
+important combining our best strategy so far aak exp with 
+pages pointed by ads aak exp h strategy leads to superior 
+results this happens because the two additional sources 
+of evidence expansion terms and pages pointed by the ads 
+are distinct and complementary providing extra and 
+valuable information for matching ads to a web page 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision 
+recall 
+aak exp 
+aak t 
+aak 
+figure impact of using a new representation for 
+the triggering page one that includes expansion 
+terms 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision 
+recall 
+aak exp h 
+aak h 
+aak 
+h 
+figure impact of using the contents of the page 
+pointed by the ad the hyperlink 
+figure and table summarize all results described in 
+this section in figure we show precision-recall curves 
+and in table we show -point average figures we also 
+present actual hits per advertisement slot and gains in 
+average precision relative to our baseline aak we notice that 
+the highest number of hits in the first slot was generated by 
+the method aak exp however the method with best 
+overall retrieval performance was aak exp h yielding a gain in 
+average precision figures of roughly over the baseline 
+ aak 
+ performance issues 
+in a keyword targeted advertising system ads are assigned 
+at query time thus the performance of the system is a very 
+important issue in content-targeted advertising systems 
+we can associate ads with a page at publishing or 
+updating time also if a new ad comes in we might consider 
+assigning this ad to already published pages in oﬄine mode 
+that is we might design the system such that its 
+performance depends fundamentally on the rate that new pages 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+precision 
+recall 
+aak exp h 
+aak exp 
+aak t 
+aak h 
+aak 
+h 
+figure comparison among our ad placement 
+strategies 
+methods hits -pt average 
+ total score gain 
+h - 
+aak 
+aak h 
+aak t 
+aak exp 
+aak exp h 
+table results for our impedance coupling 
+strategies 
+are published and the rate that ads are added or modified 
+further the data needed by our strategies page crawling 
+page expansion and ad link crawling can be gathered and 
+processed oﬄine not affecting the user experience thus 
+from this point of view the performance is not critical and 
+will not be addressed in this work 
+ related work 
+several works have stressed the importance of relevance 
+in advertising for example in it was shown that 
+advertisements that are presented to users when they are not 
+interested on them are viewed just as annoyance thus 
+in order to be effective the authors conclude that 
+advertisements should be relevant to consumer concerns at the 
+time of exposure the results in enforce this conclusion 
+by pointing out that the more targeted the advertising the 
+more effective it is 
+therefore it is not surprising that other works have 
+addressed the relevance issue for instance in it is proposed 
+a system called adwiz that is able to adapt online 
+advertisement to a user s short-term interests in a non-intrusive 
+way contrary to our work adwiz does not directly use 
+the content of the page viewed by the user it relies on search 
+keywords supplied by the user to search engines and on the 
+url of the page requested by the user on the other hand 
+in the authors presented an intrusive approach in which 
+an agent sits between advertisers and the user s browser 
+allowing a banner to be placed into the currently viewed page 
+in spite of having the opportunity to use the page s content 
+ 
+the agent infers relevance based on category information and 
+user s private information collected along the time 
+in the authors provide a comparison between the 
+ranking strategies used by google and overture for their keyword 
+advertising systems both systems select advertisements by 
+matching them to the keywords provided by the user in a 
+search query and rank the resulting advertisement list 
+according to the advertisers willingness to pay in 
+particular google approach also considers the clickthrough rate 
+of each advertisement as an additional evidence for its 
+relevance the authors conclude that google s strategy is better 
+than that used by overture as mentioned before the 
+ranking problem in keyword advertising is different from that of 
+content-targeted advertising instead of dealing with 
+keywords provided by users in search queries we have to deal 
+with the contents of a page which can be very diffuse 
+finally the work in focuses on improving search 
+engine results in a trec collection by means of an automatic 
+query expansion method based on knn such method 
+resembles our expansion approach presented in section 
+our method is different from that presented by they 
+expand user queries applied to a document collection with 
+terms extracted from the top k documents returned as 
+answer to the query in the same collection in our case we 
+use two collections an advertisement and a web collection 
+we expand triggering pages with terms extracted from the 
+web collection and then we match these expanded pages to 
+the ads from the advertisement collection by doing this we 
+emphasize the main topics of the triggering pages increasing 
+the possibility of associating relevant ads with them 
+ conclusions 
+in this work we investigated ten distinct strategies for 
+associating ads with a web page that is browsed 
+ contenttargeted advertising five of our strategies attempt to 
+match the ads directly to the web page because of that 
+they are called matching strategies the other five 
+strategies recognize that there is a vocabulary impedance problem 
+among ads and web pages and attempt to solve the problem 
+by expanding the web pages and the ads with new terms 
+because of that they are called impedance coupling 
+strategies 
+using a sample of a real case database with over 
+thousand ads we evaluated our strategies for the five matching 
+strategies our results indicated that planned consideration 
+of additional evidence such as the keywords provided by the 
+advertisers yielded gains in average precision figures for 
+our test collection of this was obtained by a 
+strategy called aak for ads and keywords which is taken as 
+the baseline for evaluating our more advanced impedance 
+coupling strategies 
+for our five impedance coupling strategies the results 
+indicate that additional gains in average precision of now 
+relative to the aak strategy are possible these were 
+generated by expanding the web page with new terms obtained 
+using a sample web collection containing over five million 
+pages and the ads with the contents of the page they point 
+to a hyperlink provided by the advertisers 
+these are first time results that indicate that high quality 
+content-targeted advertising is feasible and practical 
+ acknowledgements 
+this work was supported in part by the gerindo 
+project grant mct cnpq ct-info - by cnpq 
+grant - berthier ribeiro-neto and by cnpq 
+grant - edleno silva de moura marco cristo 
+is supported by fucapi manaus am brazil 
+ references 
+ the google adwords google content-targeted advertising 
+http adwords google com select ct faq html november 
+ 
+ r baeza-yates and b ribeiro-neto modern information 
+retrieval addison-wesley-longman st edition 
+ h k bhargava and j feng paid placement strategies for 
+internet search engines in proceedings of the eleventh 
+international conference on world wide web pages - 
+acm press 
+ e p chan s garcia and s roukos trec- ad-hoc retrieval 
+using k nearest-neighbors re-scoring in the fifth text 
+retrieval conference trec- national institute of 
+standards and technology nist november 
+ j feng h k bhargava and d pennock comparison of 
+allocation rules for paid placement advertising in search 
+engines in proceedings of the th international conference on 
+electronic commerce pages - acm press 
+ d hawking n craswell and p b thistlewaite overview of 
+trec- very large collection track in the seventh text 
+retrieval conference trec- pages - gaithersburg 
+maryland usa november 
+ y kohda and s endo ubiquitous advertising on the www 
+merging advertisement on the browser comput netw isdn 
+syst - - 
+ m langheinrich a nakamura n abe t kamba and 
+y koseki unintrusive customization techniques for web 
+advertising comput networks - - 
+ t p novak and d l hoffman new metrics for new media 
+toward the development of web measurement standards world 
+wide web j - 
+ j pearl probabilistic reasoning in intelligent systems 
+networks of plausible inference morgan kaufmann publishers 
+ nd edition 
+ b ribeiro-neto and r muntz a belief network model for ir 
+in proceedings of the th annual international acm sigir 
+conference on research and development in information 
+retrieval pages - zurich switzerland august 
+ a silva e veloso p golgher b ribeiro-neto a laender 
+and n ziviani cobweb - a crawler for the brazilian web in 
+proceedings of the string processing and information 
+retrieval symposium spire pages - cancun 
+mexico september 
+ h turtle and w b croft evaluation of an inference 
+network-based retrieval model acm transactions on 
+information systems - july 
+ c wang p zhang r choi and m daeredita understanding 
+consumers attitude toward advertising in eighth americas 
+conference on information systems pages - august 
+ 
+ m weideman ethical issues on content distribution to digital 
+consumers via paid placement as opposed to website visibility 
+in search engine results in the seventh ethicomp 
+international conference on the social and ethical impacts 
+of information and communication technologies pages 
+ - troubador publishing ltd april 
+ m weideman and t haig-smith an investigation into search 
+engines as a form of targeted advert delivery in proceedings of 
+the annual research conference of the south african 
+institute of computer scientists and information technologists 
+on enablement through technology pages - south 
+african institute for computer scientists and information 
+technologists 
+ y yang expert network effective and efficient learning from 
+human decisions in text categorization and retrieval in w b 
+croft and e c j van rijsbergen editors proceedings of the 
+ rd annual international acm sigir conference on 
+research and development in information retrieval pages 
+ - springer-verlag 
+ 

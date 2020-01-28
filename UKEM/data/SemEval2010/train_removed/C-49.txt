@@ -1,0 +1,894 @@
+evaluating opportunistic routing protocols 
+with large realistic contact traces 
+libo song and david f kotz 
+institute for security technology studies ists 
+department of computer science dartmouth college hanover nh usa 
+abstract 
+traditional mobile ad-hoc network manet routing protocols 
+assume that contemporaneous end-to-end communication paths exist 
+between data senders and receivers in some mobile ad-hoc 
+networks with a sparse node population an end-to-end 
+communication path may break frequently or may not exist at any time many 
+routing protocols have been proposed in the literature to address the 
+problem but few were evaluated in a realistic opportunistic 
+network setting we use simulation and contact traces derived from 
+logs in a production network to evaluate and compare five 
+existing protocols direct-delivery epidemic random prophet and 
+link-state as well as our own proposed routing protocol we show 
+that the direct delivery and epidemic routing protocols suffer either 
+low delivery ratio or high resource usage and other protocols make 
+tradeoffs between delivery ratio and resource usage 
+categories and subject descriptors 
+c computer systems organization computer 
+communication networks-distributed systems 
+general terms 
+performance design 
+ introduction 
+mobile opportunistic networks are one kind of delay-tolerant 
+network dtn delay-tolerant networks provide service 
+despite long link delays or frequent link breaks long link delays 
+happen in networks with communication between nodes at a great 
+distance such as interplanetary networks link breaks are caused 
+by nodes moving out of range environmental changes interference 
+from other moving objects radio power-offs or failed nodes for 
+us mobile opportunistic networks are those dtns with sparse node 
+population and frequent link breaks caused by power-offs and the 
+mobility of the nodes 
+mobile opportunistic networks have received increasing interest 
+from researchers in the literature these networks include mobile 
+sensor networks wild-animal tracking networks 
+pocketswitched networks and transportation networks we 
+expect to see more opportunistic networks when the 
+one-laptopper-child olpc project starts rolling out inexpensive 
+laptops with wireless networking capability for children in developing 
+countries where often no infrastructure exits opportunistic 
+networking is one promising approach for those children to exchange 
+information 
+one fundamental problem in opportunistic networks is how to 
+route messages from their source to their destination mobile 
+opportunistic networks differ from the internet in that disconnections 
+are the norm instead of the exception in mobile opportunistic 
+networks communication devices can be carried by people 
+vehicles or animals some devices can form a small mobile 
+ad-hoc network when the nodes move close to each other but a 
+node may frequently be isolated from other nodes note that 
+traditional internet routing protocols and ad-hoc routing protocols such 
+as aodv or dsdv assume that a contemporaneous 
+endto-end path exists and thus fail in mobile opportunistic networks 
+indeed there may never exist an end-to-end path between two given 
+devices 
+in this paper we study protocols for routing messages between 
+wireless networking devices carried by people we assume that 
+people send messages to other people occasionally using their 
+devices when no direct link exists between the source and the 
+destination of the message other nodes may relay the message to the 
+destination each device represents a unique person it is out of the 
+scope of this paper when a device maybe carried by multiple 
+people each message is destined for a specific person and thus for 
+a specific node carried by that person although one person may 
+carry multiple devices we assume that the sender knows which 
+device is the best to receive the message we do not consider 
+multicast or geocast in this paper 
+many routing protocols have been proposed in the literature 
+few of them were evaluated in realistic network settings or even in 
+realistic simulations due to the lack of any realistic people 
+mobility model random walk or random way-point mobility models are 
+often used to evaluate the performance of those routing protocols 
+although these synthetic mobility models have received extensive 
+interest by mobile ad-hoc network researchers they do not 
+reflect people s mobility patterns realising the limitations of 
+using random mobility models in simulations a few researchers have 
+studied routing protocols in mobile opportunistic networks with 
+realistic mobility traces chaintreau et al theoretically analyzed 
+the impact of routing algorithms over a model derived from a 
+realistic mobility data set su et al simulated a set of routing 
+ 
+protocols in a small experimental network those studies help 
+researchers better understand the theoretical limits of opportunistic 
+networks and the routing protocol performance in a small network 
+ - nodes 
+deploying and experimenting large-scale mobile opportunistic 
+networks is difficult we too resort to simulation instead of 
+using a complex mobility model to mimic people s mobility patterns 
+we used mobility traces collected in a production wireless 
+network at dartmouth college to drive our simulation our 
+messagegeneration model however was synthetic 
+to the best of our knowledge we are the first to simulate the 
+effect of routing protocols in a large-scale mobile opportunistic 
+network using realistic contact traces derived from real traces of 
+a production network with more than users 
+using realistic contact traces we evaluate the performance of 
+three naive routing protocols direct-delivery epidemic and 
+random and two prediction-based routing protocols prophet 
+and link-state we also propose a new prediction-based 
+routing protocol and compare it to the above in our evaluation 
+ routing protocol 
+a routing protocol is designed for forwarding messages from one 
+node source to another node destination any node may 
+generate messages for any other node and may carry messages destined 
+for other nodes in this paper we consider only messages that are 
+unicast single destination 
+dtn routing protocols could be described in part by their 
+transfer probability and replication probability that is when one node 
+meets another node what is the probability that a message should 
+be transfered and if so whether the sender should retain its copy 
+two extremes are the direct-delivery protocol and the epidemic 
+protocol the former transfers with probability when the node 
+meets the destination for others and no replication the latter 
+uses transfer probability for all nodes and unlimited replication 
+both these protocols have their advantages and disadvantages all 
+other protocols are between the two extremes 
+first we define the notion of contact between two nodes then 
+we describe five existing protocols before presenting our own 
+proposal 
+a contact is defined as a period of time during which two nodes 
+have the opportunity to communicate although we are aware that 
+wireless technologies differ we assume that a node can reliably 
+detect the beginning and end time of a contact with nearby nodes 
+a node may be in contact with several other nodes at the same time 
+the contact history of a node is a sequence of contacts with other 
+nodes node i has a contact history hi j for each other node j 
+which denotes the historical contacts between node i and node j 
+we record the start and end time for each contact however the last 
+contacts in the node s contact history may not have ended 
+ direct delivery protocol 
+in this simple protocol a message is transmitted only when the 
+source node can directly communicate with the destination node 
+of the message in mobile opportunistic networks however the 
+probability for the sender to meet the destination may be low or 
+even zero 
+ epidemic routing protocol 
+the epidemic routing protocol floods messages into the 
+network the source node sends a copy of the message to every node 
+that it meets the nodes that receive a copy of the message also 
+send a copy of the message to every node that they meet 
+eventually a copy of the message arrives at the destination of the message 
+this protocol is simple but may use significant resources 
+excessive communication may drain each node s battery quickly 
+moreover since each node keeps a copy of each message storage is not 
+used efficiently and the capacity of the network is limited 
+at a minimum each node must expire messages after some amount 
+of time or stop forwarding them after a certain number of hops 
+after a message expires the message will not be transmitted and will 
+be deleted from the storage of any node that holds the message 
+an optimization to reduce the communication cost is to 
+transfer index messages before transferring any data message the 
+index messages contain ids of messages that a node currently holds 
+thus by examining the index messages a node only transfers 
+messages that are not yet contained on the other nodes 
+ random routing 
+an obvious approach between the above two extremes is to 
+select a transfer probability between and to forward messages at 
+each contact we use a simple replication strategy that allows only 
+the source node to make replicas and limits the replication to a 
+specific number of copies the message has some chance of 
+being transferred to a highly mobile node and thus may have a better 
+chance to reach its destination before the message expires 
+ prophet protocol 
+prophet is a probabilistic routing protocol using history 
+of past encounters and transitivity to estimate each node s delivery 
+probability for each other node when node i meets node j the 
+delivery probability of node i for j is updated by 
+pij − pij p pij 
+where p is an initial probability a design parameter for a given 
+network lindgren et al chose as did we in our 
+evaluation when node i does not meet j for some time the delivery 
+probability decreases by 
+pij αk 
+pij 
+where α is the aging factor α and k is the number of time 
+units since the last update 
+the prophet protocol exchanges index messages as well as 
+delivery probabilities when node i receives node j s delivery 
+probabilities node i may compute the transitive delivery probability 
+through j to z with 
+piz piz − piz pijpjzβ 
+where β is a design parameter for the impact of transitivity we 
+used β as did lindgren 
+ link-state protocol 
+su et al use a link-state approach to estimate the weight of 
+each path from the source of a message to the destination they 
+use the median inter-contact duration or exponentially aged 
+intercontact duration as the weight on links the exponentially aged 
+inter-contact duration of node i and j is computed by 
+wij αwij − α i 
+where i is the new inter-contact duration and α is the aging factor 
+nodes share their link-state weights when they can communicate 
+with each other and messages are forwarded to the node that have 
+the path with the lowest link-state weight 
+ 
+ timely-contact probability 
+we also use historical contact information to estimate the 
+probability of meeting other nodes in the future but our method differs 
+in that we estimate the contact probability within a period of time 
+for example what is the contact probability in the next hour 
+neither prophet nor link-state considers time in this way 
+one way to estimate the timely-contact probability is to use the 
+ratio of the total contact duration to the total time however this 
+approach does not capture the frequency of contacts for example 
+one node may have a long contact with another node followed by 
+a long non-contact period a third node may have a short contact 
+with the first node followed by a short non-contact period using 
+the above estimation approach both examples would have similar 
+contact probability in the second example however the two nodes 
+have more frequent contacts 
+we design a method to capture the contact frequency of mobile 
+nodes for this purpose we assume that even short contacts are 
+sufficient to exchange messages 
+the probability for node i to meet node j is computed by the 
+following procedure we divide the contact history hi j into a 
+sequence of n periods of δt starting from the start time t of the 
+first contact in history hi j to the current time we number each 
+of the n periods from to n − then check each period if node 
+i had any contact with node j during a given period m which is 
+ t mδt t m δt we set the contact status im to be 
+ otherwise the contact status im is the probability p 
+ 
+ij that 
+node i meets node j in the next δt can be estimated as the average 
+of the contact status in prior intervals 
+p 
+ 
+ij 
+ 
+n 
+n− x 
+m 
+im 
+to adapt to the change of contact patterns and reduce the storage 
+space for contact histories a node may discard old history contacts 
+in this situation the estimate would be based on only the retained 
+history 
+the above probability is the direct contact probability of two 
+nodes we are also interested in the probability that we may be 
+able to pass a message through a sequence of k nodes we define 
+the k-order probability inductively 
+p 
+ k 
+ij p 
+ 
+ij 
+x 
+α 
+p 
+ 
+iα p 
+ k− 
+αj 
+where α is any node other than i or j 
+ our routing protocol 
+we first consider the case of a two-hop path that is with only 
+one relay node we consider two approaches either the receiving 
+neighbor decides whether to act as a relay or the source decides 
+which neighbors to use as relay 
+ receiver decision 
+whenever a node meets other nodes they exchange all their 
+messages or as above index messages if the destination of a 
+message is the receiver itself the message is delivered otherwise if 
+the probability of delivering the message to its destination through 
+this receiver node within δt is greater than or equal to a certain 
+threshold the message is stored in the receiver s storage to forward 
+ 
+in our simulation however we accurately model the 
+communication costs and some short contacts will not succeed in transfer of 
+all messages 
+to the destination if the probability is less than the threshold the 
+receiver discards the message notice that our protocol replicates 
+the message whenever a good-looking relay comes along 
+ sender decision 
+to make decisions a sender must have the information about its 
+neighbors contact probability with a message s destination 
+therefore meta-data exchange is necessary 
+when two nodes meet they exchange a meta-message 
+containing an unordered list of node ids for which the sender of the 
+metamessage has a contact probability greater than the threshold 
+after receiving a meta-message a node checks whether it has 
+any message that destined to its neighbor or to a node in the node 
+list of the neighbor s meta-message if it has it sends a copy of the 
+message 
+when a node receives a message if the destination of the 
+message is the receiver itself the message is delivered otherwise the 
+message is stored in the receiver s storage for forwarding to the 
+destination 
+ multi-node relay 
+when we use more than two hops to relay a message each node 
+needs to know the contact probabilities along all possible paths to 
+the message destination 
+every node keeps a contact probability matrix in which each cell 
+pij is a contact probability between to nodes i and j each node 
+i computes its own contact probabilities row i with other nodes 
+using equation whenever the node ends a contact with other 
+nodes each row of the contact probability matrix has a version 
+number the version number for row i is only increased when node i 
+updates the matrix entries in row i other matrix entries are updated 
+through exchange with other nodes when they meet 
+when two nodes i and j meet they first exchange their contact 
+probability matrices node i compares its own contact matrix with 
+node j s matrix if node j s matrix has a row l with a higher version 
+number then node i replaces its own row l with node j s row l 
+likewise node j updates its matrix after the exchange the two 
+nodes will have identical contact probability matrices 
+next if a node has a message to forward the node estimates 
+its neighboring node s order-k contact probability to contact the 
+destination of the message using equation if p 
+ k 
+ij is above a 
+threshold or if j is the destination of the message node i will send 
+a copy of the message to node j 
+all the above effort serves to determine the transfer probability 
+when two nodes meet the replication decision is orthogonal to 
+the transfer decision in our implementation we always replicate 
+although prophet and link-state do no replication as 
+described we added replication to those protocols for better 
+comparison to our protocol 
+ evaluation results 
+we evaluate and compare the results of direct delivery epidemic 
+random prophet link-state and timely-contact routing 
+protocols 
+ mobility traces 
+we use real mobility data collected at dartmouth college 
+dartmouth college has collected association and disassociation 
+messages from devices on its wireless network wireless users since 
+spring each message records the wireless card mac 
+address the time of association disassociation and the name of the 
+access point we treat each unique mac address as a node for 
+ 
+more information about dartmouth s network and the data 
+collection see previous studies 
+our data are not contacts in a mobile ad-hoc network we can 
+approximate contact traces by assuming that two users can 
+communicate with each other whenever they are associated with the same 
+access point chaintreau et al used dartmouth data traces and 
+made the same assumption to theoretically analyze the impact of 
+human mobility on opportunistic forwarding algorithms this 
+assumption may not be accurate 
+but it is a good first approximation 
+in our simulation we imagine the same clients and same mobility 
+in a network with no access points since our campus has full wifi 
+coverage we assume that the location of access points had little 
+impact on users mobility 
+we simulated one full month of trace data november 
+taken from crawdad with users although 
+predictionbased protocols require prior contact history to estimate each node s 
+delivery probability our preliminary results show that the 
+performance improvement of warming-up over one month of trace was 
+marginal therefore for simplicity we show the results of all 
+protocols without warming-up 
+ simulator 
+we developed a custom simulator 
+since we used contact traces 
+derived from real mobility data we did not need a mobility model 
+and omitted physical and link-layer details for node discovery we 
+were aware that the time for neighbor discovery in different 
+wireless technologies vary from less than one seconds to several 
+seconds furthermore connection establishment also takes time such 
+as dhcp in our simulation we assumed the nodes could discover 
+and connect each other instantly when they were associated with a 
+same ap to accurately model communication costs however we 
+simulated some mac-layer behaviors such as collision 
+the default settings of the network of our simulator are listed in 
+table using the values recommended by other papers 
+the message probability was the probability of generating 
+messages as described in section the default transmission 
+bandwidth was mb s when one node tried to transmit a message it 
+first checked whether any nearby node was transmitting if it was 
+the node backed off a random number of slots each slot was 
+millisecond and the maximum number of backoff slots was the 
+size of messages was uniformly distributed between bytes and 
+ bytes the hop count limit hcl was the maximum number 
+of hops before a message should stop forwarding the time to live 
+ ttl was the maximum duration that a message may exist before 
+expiring the storage capacity was the maximum space that a node 
+can use for storing messages for our routing method we used a 
+default prediction window δt of hours and a probability 
+threshold of the replication factor r was not limited by default so 
+the source of a message transferred the messages to any other node 
+that had a contact probability with the message destination higher 
+than the probability threshold 
+ message generation 
+after each contact event in the contact trace we generated a 
+message with a given probability we choose a source node and a 
+des 
+two nodes may not have been able to directly communicate while 
+they were at two far sides of an access point or two nodes may 
+have been able to directly communicate if they were between two 
+adjacent access points 
+ 
+we tried to use a general network simulator ns which was 
+extremely slow when simulating a large number of mobile nodes in 
+our case more than nodes and provided unnecessary detail 
+in modeling lower-level network protocols 
+table default settings of the simulation 
+parameter default value 
+message probability 
+bandwidth mb s 
+transmission slot millisecond 
+max backoff slots 
+message size - bytes 
+hop count limit hcl unlimited 
+time to live ttl unlimited 
+storage capacity unlimited 
+prediction window δt hours 
+probability threshold 
+contact history length 
+replication always 
+aging factor α prophet 
+initial probability p prophet 
+transitivity impact β prophet 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofoccurrence 
+hour 
+movements 
+contacts 
+figure movements and contacts duration each hour 
+tination node randomly using a uniform distribution across nodes 
+seen in the contact trace up to the current time when there were 
+more contacts during a certain period there was a higher likelihood 
+that a new message was generated in that period this correlation 
+is not unreasonable since there were more movements during the 
+day than during the night and so the number of contacts figure 
+shows the statistics of the numbers of movements and the numbers 
+of contacts during each hour of the day summed across all users 
+and all days the plot shows a clear diurnal activity pattern the 
+activities reached lowest around am and peaked between pm and 
+ pm we assume that in some applications network traffic exhibits 
+similar patterns that is people send more messages during the day 
+too 
+messages expire after a ttl we did not use proactive methods 
+to notify nodes the delivery of messages so that the messages can 
+be removed from storage 
+ metrics 
+we define a set of metrics that we use in evaluating routing 
+protocols in opportunistic networks 
+ delivery ratio the ratio of the number of messages delivered 
+to the number of total messages generated 
+ message transmissions the total number of messages 
+transmitted during the simulation across all nodes 
+ 
+ meta-data transmissions the total number of meta-data units 
+transmitted during the simulation across all nodes 
+ message duplications the number of times a message copy 
+occurred due to replication 
+ delay the duration between a message s generation time and 
+the message s delivery time 
+ storage usage the max and mean of maximum storage bytes 
+used across all nodes 
+ results 
+here we compare simulation results of the six routing protocols 
+ 
+ 
+ 
+ 
+unlimited 
+deliveryratio 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+figure delivery ratio log scale the direct and random 
+protocols for one-hour ttl had delivery ratios that were too 
+low to be visible in the plot 
+figure shows the delivery ratio of all the protocols with 
+different ttls in all the plots in the paper prediction stands for our 
+method state stands for the link-state protocol and prophet 
+represents prophet although we had users in the 
+network the direct-delivery and random protocols had low delivery 
+ratios note the log scale even for messages with an unlimited 
+lifetime only out of messages were delivered during this 
+one-month simulation the delivery ratio of epidemic routing was 
+the best the three prediction-based approaches had low delivery 
+ratio compared to epidemic routing although our method was 
+slightly better than the other two the advantage was marginal 
+the high delivery ratio of epidemic routing came with a price 
+excessive transmissions figure shows the number of message 
+data transmissions the number of message transmissions of 
+epidemic routing was more than times higher than for the 
+predictionbased routing protocols obviously the direct delivery protocol 
+had the lowest number of message transmissions - the number of 
+message delivered among the three prediction-based methods 
+the prophet transmitted fewer messages but had comparable 
+delivery-ratio as seen in figure 
+figure shows that epidemic and all prediction-based methods 
+had substantial meta-data transmissions though epidemic routing 
+had relatively more with shorter ttls because epidemic 
+protocol transmitted messages at every contact in turn more nodes had 
+messages that required meta-data transmission during contact the 
+direct-delivery and random protocols had no meta-data 
+transmissions 
+in addition to its message transmissions and meta-data 
+transmissions the epidemic routing protocol also had excessive message 
+ 
+ 
+ 
+ 
+ 
+ 
+ e 
+ e 
+ e 
+unlimited 
+numberofmessagetransmitted 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+figure message transmissions log scale 
+ 
+ 
+ 
+ 
+ 
+ 
+ e 
+ e 
+ e 
+unlimited 
+numberofmeta-datatransmissions 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+figure meta-data transmissions log scale direct and 
+random protocols had no meta-data transmissions 
+duplications spreading replicas of messages over the network 
+figure shows that epidemic routing had one or two orders more 
+duplication than the prediction-based protocols recall that the 
+directdelivery and random protocols did not replicate thus had no data 
+duplications 
+figure shows both the median and mean delivery delays all 
+protocols show similar delivery delays in both mean and median 
+measures for medium ttls but differ for long and short ttls 
+with a -hour ttl or unlimited ttl epidemic routing had the 
+shortest delays the direct-delivery had the longest delay for 
+unlimited ttl but it had the shortest delay for the one-hour ttl 
+the results seem contrary to our intuition the epidemic routing 
+protocol should be the fastest routing protocol since it spreads 
+messages all over the network indeed the figures show only the delay 
+time for delivered messages for direct delivery random and the 
+probability-based routing protocols relatively few messages were 
+delivered for short ttls so many messages expired before they 
+could reach their destination those messages had infinite delivery 
+delay and were not included in the median or mean measurements 
+for longer ttls more messages were delivered even for the 
+directdelivery protocol the statistics of longer ttls for comparison are 
+more meaningful than those of short ttls 
+since our message generation rate was low the storage usage 
+was also low in our simulation figure shows the maximum 
+and average of maximum volume in kbytes of messages stored 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e 
+ e 
+ e 
+unlimited 
+numberofmessageduplications 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+figure message duplications log scale direct and random 
+protocols had no message duplications 
+ 
+ 
+ 
+ 
+ 
+unlimited unlimited 
+delay minute 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+mean delaymedian delay 
+figure median and mean delays log scale 
+in each node the epidemic routing had the most storage usage 
+the message time-to-live parameter was the big factor affecting the 
+storage usage for epidemic and prediction-based routing protocols 
+we studied the impact of different parameters of our 
+predictionbased routing protocol our prediction-based protocol was 
+sensitive to several parameters such as the probability threshold and the 
+prediction window δt figure shows the delivery ratios when 
+we used different probability thresholds the leftmost value 
+is the value used for the other plots a higher probability threshold 
+limited the transfer probability so fewer messages were delivered 
+it also required fewer transmissions as shown in figure with 
+a larger prediction window we got a higher contact probability 
+thus for the same probability threshold we had a slightly higher 
+delivery ratio as shown in figure and a few more transmissions 
+as shown in figure 
+ related work 
+in addition to the protocols that we evaluated in our simulation 
+several other opportunistic network routing protocols have been 
+proposed in the literature we did not implement and evaluate these 
+routing protocols because either they require domain-specific 
+information location information assume certain mobility 
+patterns present orthogonal approaches to other 
+routing protocols 
+ 
+ 
+ 
+ 
+ 
+ 
+unlimited unlimited 
+storageusage kb 
+message time-to-live ttl hour 
+direct 
+random 
+prediction 
+state 
+prophet 
+epidemic 
+mean of maximummax of maximum 
+figure max and mean of maximum storage usage across all 
+nodes log scale 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+deliveryratio 
+probability threshold 
+figure probability threshold impact on delivery ratio of 
+timely-contact routing 
+lebrun et al propose a location-based delay-tolerant 
+network routing protocol their algorithm assumes that every node 
+knows its own position and the destination is stationary at a known 
+location a node forwards data to a neighbor only if the 
+neighbor is closer to the destination than its own position our protocol 
+does not require knowledge of the nodes locations and learns their 
+contact patterns 
+leguay et al use a high-dimensional space to represent a 
+mobility pattern then routes messages to nodes that are closer to 
+the destination node in the mobility pattern space location 
+information of nodes is required to construct mobility patterns 
+musolesi et al propose an adaptive routing protocol for 
+intermittently connected mobile ad-hoc networks they use a kalman 
+filter to compute the probability that a node delivers messages this 
+protocol assumes group mobility and cloud connectivity that is 
+nodes move as a group and among this group of nodes a 
+contemporaneous end-to-end connection exists for every pair of nodes when 
+two nodes are in the same connected cloud dsdv routing is 
+used 
+network coding also draws much interest from dtn research 
+erasure-coding explores coding algorithms to reduce 
+message replicas the source node replicates a message m times then 
+uses a coding scheme to encode them in one big message 
+after replicas are encoded the source divides the big message into k 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessagetransmitted million 
+probability threshold 
+figure probability threshold impact on message 
+transmission of timely-contact routing 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+deliveryratio 
+prediction window hour 
+figure prediction window impact on delivery ratio of 
+timely-contact routing semi-log scale 
+blocks of the same size and transmits a block to each of the first k 
+encountered nodes if m of the blocks are received at the 
+destination the message can be restored where m k in a uniformly 
+distributed mobility scenario the delivery probability increases 
+because the probability that the destination node meets m relays is 
+greater than it meets k relays given m k 
+ summary 
+we propose a prediction-based routing protocol for 
+opportunistic networks we evaluate the performance of our protocol using 
+realistic contact traces and compare to five existing routing 
+protocols 
+our simulation results show that direct delivery had the 
+lowest delivery ratio the fewest data transmissions and no meta-data 
+transmission or data duplication direct delivery is suitable for 
+devices that require an extremely low power consumption the 
+random protocol increased the chance of delivery for messages 
+otherwise stuck at some low mobility nodes epidemic routing delivered 
+the most messages the excessive transmissions and data 
+duplication however consume more resources than portable devices may 
+be able to provide 
+none of these protocols direct-delivery random and epidemic 
+routing are practical for real deployment of opportunistic networks 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofmessagetransmitted million 
+prediction window hour 
+figure prediction window impact on message transmission 
+of timely-contact routing semi-log scale 
+because they either had an extremely low delivery ratio or had an 
+extremely high resource consumption the prediction-based 
+routing protocols had a delivery ratio more than times better than 
+that for direct-delivery and random routing and fewer 
+transmissions and less storage usage than epidemic routing they also had 
+fewer data duplications than epidemic routing 
+all the prediction-based routing protocols that we have 
+evaluated had similar performance our method had a slightly higher 
+delivery ratio but more transmissions and higher storage usage 
+there are many parameters for prediction-based routing protocols 
+however and different parameters may produce different results 
+indeed there is an opportunity for some adaptation for example 
+high priority messages may be given higher transfer and 
+replication probabilities to increase the chance of delivery and reduce the 
+delay or a node with infrequent contact may choose to raise its 
+transfer probability 
+we only studied the impact of predicting peer-to-peer contact 
+probability for routing in unicast messages in some applications 
+context information such as location may be available for the 
+peers one may also consider other messaging models for 
+example where messages are sent to a location such that every node at 
+that location will receive a copy of the message location 
+prediction may be used to predict nodes mobility and to choose as 
+relays those nodes moving toward the destined location 
+research on routing in opportunistic networks is still in its early 
+stage many other issues of opportunistic networks such as 
+security and privacy are mainly left open we anticipate studying these 
+issues in future work 
+ acknowledgement 
+this research is a project of the center for mobile 
+computing and the institute for security technology studies at dartmouth 
+college it was supported by docomo labs usa the 
+crawdad archive at dartmouth college funded by nsf cri award 
+ nsf infrastructure award eia- and by grant 
+number -dd-bx- awarded by the bureau of justice 
+assistance points of view or opinions in this document are those of 
+the authors and do not represent the official position or policies of 
+any sponsor 
+ references 
+ john burgess brian gallagher david jensen and brian neil 
+levine maxprop routing for vehicle-based 
+ 
+disruption-tolerant networks in proceedings of the th 
+ieee international conference on computer 
+communications infocom april 
+ scott burleigh adrian hooke leigh torgerson kevin fall 
+vint cerf bob durst keith scott and howard weiss 
+delay-tolerant networking an approach to interplanetary 
+internet ieee communications magazine - 
+june 
+ tracy camp jeff boleng and vanessa davies a survey of 
+mobility models for ad-hoc network research wireless 
+communication mobile computing wcmc special 
+issue on mobile ad-hoc networking research trends and 
+applications - 
+ andrew campbell shane eisenman nicholas lane 
+emiliano miluzzo and ronald peterson people-centric 
+urban sensing in ieee wireless internet conference august 
+ 
+ augustin chaintreau pan hui jon crowcroft christophe 
+diot richard gass and james scott impact of human 
+mobility on the design of opportunistic forwarding 
+algorithms in proceedings of the th ieee international 
+conference on computer communications infocom 
+april 
+ kevin fall a delay-tolerant network architecture for 
+challenged internets in proceedings of the conference 
+on applications technologies architectures and protocols 
+for computer communications sigcomm august 
+ tristan henderson david kotz and ilya abyzov the 
+changing usage of a mature campus-wide wireless network 
+in proceedings of the th annual international conference 
+on mobile computing and networking mobicom pages 
+ - september 
+ pan hui augustin chaintreau james scott richard gass 
+jon crowcroft and christophe diot pocket switched 
+networks and human mobility in conference environments 
+in acm sigcomm workshop on delay tolerant 
+networking pages - august 
+ ravi jain dan lelescu and mahadevan balakrishnan 
+model t an empirical model for user registration patterns in 
+a campus wireless lan in proceedings of the th annual 
+international conference on mobile computing and 
+networking mobicom pages - 
+ sushant jain mike demmer rabin patra and kevin fall 
+using redundancy to cope with failures in a delay tolerant 
+network in proceedings of the conference on 
+applications technologies architectures and protocols for 
+computer communications sigcomm pages - 
+august 
+ philo juang hidekazu oki yong wang margaret 
+martonosi li-shiuan peh and daniel rubenstein 
+energy-efficient computing for wildlife tracking design 
+tradeoffs and early experiences with zebranet in the tenth 
+international conference on architectural support for 
+programming languages and operating systems october 
+ 
+ david kotz and kobby essien analysis of a campus-wide 
+wireless network wireless networks - 
+ david kotz tristan henderson and ilya abyzov 
+crawdad data set dartmouth campus 
+http crawdad cs dartmouth edu dartmouth campus 
+december 
+ jason lebrun chen-nee chuah dipak ghosal and michael 
+zhang knowledge-based opportunistic forwarding in 
+vehicular wireless ad-hoc networks in ieee vehicular 
+technology conference pages - may 
+ jeremie leguay timur friedman and vania conan 
+evaluating mobility pattern space routing for dtns in 
+proceedings of the th ieee international conference on 
+computer communications infocom april 
+ anders lindgren avri doria and olov schelen 
+probabilistic routing in intermittently connected networks in 
+workshop on service assurance with partial and intermittent 
+resources sapir pages - 
+ mirco musolesi stephen hailes and cecilia mascolo 
+adaptive routing for intermittently connected mobile ad-hoc 
+networks in ieee international symposium on a world of 
+wireless mobile and multimedia networks pages - 
+june extended version 
+ olpc one laptop per child project http laptop org 
+ c e perkins and p bhagwat highly dynamic 
+destination-sequenced distance-vector routing dsdv for 
+mobile computers computer communication review pages 
+ - october 
+ c e perkins and e m royer ad-hoc on-demand distance 
+vector routing in ieee workshop on mobile computing 
+systems and applications pages - february 
+ libo song david kotz ravi jain and xiaoning he 
+evaluating next-cell predictors with extensive wi-fi mobility 
+data ieee transactions on mobile computing 
+ - december 
+ jing su ashvin goel and eyal de lara an empirical 
+evaluation of the student-net delay tolerant network in 
+international conference on mobile and ubiquitous systems 
+ mobiquitous july 
+ amin vahdat and david becker epidemic routing for 
+partially-connected ad-hoc networks technical report 
+cs- - duke university july 
+ yong wang sushant jain margaret martonosia and kevin 
+fall erasure-coding based routing for opportunistic 
+networks in acm sigcomm workshop on delay tolerant 
+networking pages - august 
+ yu wang and hongyi wu dft-msn the delay fault tolerant 
+mobile sensor network for pervasive information gathering 
+in proceedings of the th ieee international conference on 
+computer communications infocom april 
+ 

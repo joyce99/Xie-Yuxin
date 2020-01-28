@@ -1,0 +1,936 @@
+fast generation of result snippets in web search 
+andrew turpin 
+yohannes tsegay 
+rmit university 
+melbourne australia 
+aht cs rmit edu au 
+ytsegay cs rmit edu au 
+david hawking 
+csiro ict centre 
+canberra australia 
+david hawking acm org 
+hugh e williams 
+microsoft corporation 
+one microsoft way 
+redmond wa 
+hughw microsoft com 
+abstract 
+the presentation of query biased document snippets as part 
+of results pages presented by search engines has become an 
+expectation of search engine users in this paper we 
+explore the algorithms and data structures required as part of 
+a search engine to allow efficient generation of query biased 
+snippets we begin by proposing and analysing a document 
+compression method that reduces snippet generation time 
+by over a baseline using the zlib compression library 
+these experiments reveal that finding documents on 
+secondary storage dominates the total cost of generating 
+snippets and so caching documents in ram is essential for a 
+fast snippet generation process using simulation we 
+examine snippet generation performance for different size ram 
+caches finally we propose and analyse document 
+reordering and compaction revealing a scheme that increases the 
+number of document cache hits with only a marginal 
+affect on snippet quality this scheme effectively doubles the 
+number of documents that can fit in a fixed size cache 
+categories and subject descriptors 
+h information storage and retrieval information 
+search and retrieval h information storage and 
+retrieval systems and software-performance evaluation 
+ efficiency and effectiveness 
+general terms 
+algorithms experimentation measurement performance 
+ introduction 
+each result in search results list delivered by current www 
+search engines such as search yahoo com google com and 
+search msn com typically contains the title and url of the 
+actual document links to live and cached versions of the 
+document and sometimes an indication of file size and type 
+in addition one or more snippets are usually presented 
+giving the searcher a sneak preview of the document contents 
+snippets are short fragments of text extracted from the 
+document content or its metadata they may be static 
+ for example always show the first words of the 
+document or the content of its description metadata or a 
+description taken from a directory site such as dmoz org or 
+query-biased a query-biased snippet is one selectively 
+extracted on the basis of its relation to the searcher s query 
+the addition of informative snippets to search results may 
+substantially increase their value to searchers accurate 
+snippets allow the searcher to make good decisions about 
+which results are worth accessing and which can be ignored 
+in the best case snippets may obviate the need to open any 
+documents by directly providing the answer to the searcher s 
+real information need such as the contact details of a person 
+or an organization 
+generation of query-biased snippets by web search 
+engines indexing of the order of ten billion web pages and 
+handling hundreds of millions of search queries per day imposes 
+a very significant computational load remembering that 
+each search typically generates ten snippets the 
+simpleminded approach of keeping a copy of each document in a 
+file and generating snippets by opening and scanning files 
+works when query rates are low and collections are small 
+but does not scale to the degree required the overhead of 
+opening and reading ten files per query on top of 
+accessing the index structure to locate them would be manifestly 
+excessive under heavy query load even storing ten billion 
+files and the corresponding hundreds of terabytes of data is 
+beyond the reach of traditional filesystems special-purpose 
+filesystems have been built to address these problems 
+note that the utility of snippets is by no means restricted 
+to whole-of-web search applications efficient generation of 
+snippets is also important at the scale of whole-of-government 
+search services such as www firstgov gov c million 
+pages and govsearch australia gov au c million pages 
+and within large enterprises such as ibm c million 
+pages snippets may be even more useful in database or 
+filesystem search applications in which no useful url or 
+title information is present 
+we present a new algorithm and compact single-file 
+structure designed for rapid generation of high quality snippets 
+and compare its space time performance against an obvious 
+baseline based on the zlib compressor on various data sets 
+we report the proportion of time spent for disk seeks disk 
+reads and cpu processing demonstrating that the time for 
+locating each document seek time dominates as expected 
+as the time to process a document in ram is small in 
+comparison to locating and reading the document into 
+memory it may seem that compression is not required however 
+this is only true if there is no caching of documents in ram 
+controlling the ram of physical systems for 
+experimentation is difficult hence we use simulation to show that caching 
+documents dramatically improves the performance of 
+snippet generation in turn the more documents can be 
+compressed the more can fit in cache and hence the more disk 
+seeks can be avoided the classic data compression tradeoff 
+that is exploited in inverted file structures and computing 
+ranked document lists 
+as hitting the document cache is important we examine 
+document compaction as opposed to compression schemes 
+by imposing an a priori ordering of sentences within a 
+document and then only allowing leading sentences into cache for 
+each document this leads to further time savings with only 
+marginal impact on the quality of the snippets returned 
+ related work 
+snippet generation is a special type of extractive 
+document summarization in which sentences or sentence 
+fragments are selected for inclusion in the summary on the basis 
+of the degree to which they match the search query this 
+process was given the name of query-biased summarization 
+by tombros and sanderson the reader is referred to 
+mani and to radev et al for overviews of the very 
+many different applications of summarization and for the 
+equally diverse methods for producing summaries 
+early web search engines presented query-independent 
+snippets consisting of the first k bytes of the result 
+document generating these is clearly much simpler and much 
+less computationally expensive than processing documents 
+to extract query biased summaries as there is no need to 
+search the document for text fragments containing query 
+terms to our knowledge google was the first 
+whole-ofweb search engine to provide query biased summaries but 
+summarization is listed by brin and page only under the 
+heading of future work 
+most of the experimental work using query-biased 
+summarization has focused on comparing their value to searchers 
+relative to other types of summary rather than 
+efficient generation of summaries despite the importance of 
+efficient summary generation in web search few algorithms 
+appear in the literature silber and mckoy describe a 
+linear-time lexical chaining algorithm for use in generic 
+summaries but offer no empirical data for the performance of 
+their algorithm white et al report some experimental 
+timings of their webdocsum system but the snippet 
+generation algorithms themselves are not isolated so it is difficult 
+to infer snippet generation time comparable to the times we 
+report in this paper 
+ search engine architectures 
+a search engine must perform a variety of activities and is 
+comprised of many sub-systems as depicted by the boxes in 
+figure note that there may be several other sub-systems 
+such as the advertising engine or the parsing engine 
+that could easily be added to the diagram but we have 
+concentrated on the sub-systems that are relevant to snippet 
+generation depending on the number of documents that 
+the search engine indexes the data and processes for each 
+ranking 
+engine 
+crawling engine 
+indexing engine 
+engine 
+lexicon meta data 
+engine 
+engine 
+snippet 
+term doc s 
+snippetperdoc 
+web 
+query engine 
+query results page 
+term s 
+doc s 
+invertedlists 
+docs 
+perdoc 
+title url etc 
+doc s 
+document meta data 
+terms 
+querystring 
+term s 
+figure an abstraction of some of the sub-systems 
+in a search engine depending on the number of 
+documents indexed each sub-system could reside on 
+a single machine be distributed across thousands of 
+machines or a combination of both 
+sub-system could be distributed over many machines or all 
+occupy a single server and filesystem competing with each 
+other for resources similarly it may be more efficient to 
+combine some sub-systems in an implementation of the 
+diagram for example the meta-data such as document title 
+and url requires minimal computation apart from 
+highlighting query words but we note that disk seeking is likely 
+to be minimized if title url and fixed summary 
+information is stored contiguously with the text from which query 
+biased summaries are extracted here we ignore the fixed 
+text and consider only the generation of query biased 
+summaries we concentrate on the snippet engine 
+in addition to data and programs operating on that data 
+each sub-system also has its own memory management scheme 
+the memory management system may simply be the 
+memory hierarchy provided by the operating system used on 
+machines in the sub-system or it may be explicitly coded to 
+optimise the processes in the sub-system 
+there are many papers on caching in search engines see 
+ and references therein for a current summary but it 
+seems reasonable that there is a query cache in the query 
+engine that stores precomputed final result pages for very 
+popular queries when one of the popular queries is issued 
+the result page is fetched straight from the query cache if 
+the issued query is not in the query cache then the query 
+engine uses the four sub-systems in turn to assemble a 
+results page 
+ the lexicon engine maps query terms to integers 
+ the ranking engine retrieves inverted lists for each 
+term using them to get a ranked list of documents 
+ the snippet engine uses those document numbers and 
+query term numbers to generate snippets 
+ the meta data engine fetches other information about 
+each document to construct the results page 
+in a document broken into one sentence per line 
+and a sequence of query terms 
+ for each line of the text l w w wm 
+ let h be if l is a heading otherwise 
+ let be if l is the first line of a document 
+ if it is the second line otherwise 
+ let c be the number of wi that are query 
+terms counting repetitions 
+ let d be the number of distinct query terms 
+that match some wi 
+ identify the longest contiguous run of query 
+terms in l say wj wj k 
+ use a weighted combination of c d k h 
+and to derive a score s 
+ insert l into a max-heap using s as the key 
+out remove the number of sentences required from 
+the heap to form the summary 
+figure simple sentence ranker that operates on 
+raw text with one sentence per line 
+ the snippet engine 
+for each document identifier passed to the snippet 
+engine the engine must generate text preferably containing 
+query terms that attempts to summarize that document 
+previous work on summarization identifies the sentence as 
+the minimal unit for extraction and presentation to the 
+user accordingly we also assume a web snippet 
+extraction process will extract sentences from documents in order 
+to construct a snippet all sentences in a document should be 
+ranked against the query and the top two or three returned 
+as the snippet the scoring of sentences against queries has 
+been explored in several papers with 
+different features of sentences deemed important 
+based on these observations figure shows the general 
+algorithm for scoring sentences in relevant documents with 
+the highest scoring sentences making the snippet for each 
+document the final score of a sentence assigned in step 
+can be derived in many different ways in order to avoid 
+bias towards any particular scoring mechanism we compare 
+sentence quality later in the paper using the individual 
+components of the score rather than an arbitrary combination 
+of the components 
+ parsing web documents 
+unlike well edited text collections that are often the target 
+for summarization systems web data is often poorly 
+structured poorly punctuated and contains a lot of data that do 
+not form part of valid sentences that would be candidates 
+for parts of snippets 
+we assume that the documents passed to the snippet 
+engine by the indexing engine have all html tags and 
+javascript removed and that each document is reduced to a 
+series of word tokens separated by non-word tokens we 
+define a word token as a sequence of alphanumeric characters 
+while a non-word is a sequence of non-alphanumeric 
+characters such as whitespace and the other punctuation symbols 
+both are limited to a maximum of characters adjacent 
+repeating characters are removed from the punctuation 
+included in the punctuation set is a special end of sentence 
+marker which replaces the usual three sentence terminators 
+ often these explicit punctuation characters are 
+missing and so html tags such as br and p are assumed to 
+terminate sentences in addition a sentence must contain at 
+least five words and no more than twenty words with longer 
+or shorter sentences being broken and joined as required to 
+meet these criteria 
+unterminated html tags-that is tags with an open 
+brace but no close brace-cause all text from the open brace 
+to the next open brace to be discarded 
+a major problem in summarizing web pages is the 
+presence of large amounts of promotional and navigational 
+material navbars visually above and to the left of the actual 
+page content for example the most wonderful company 
+on earth products service about us contact us try 
+before you buy similar but often not identical 
+navigational material is typically presented on every page within a 
+site this material tends to lower the quality of summaries 
+and slow down summary generation 
+in our experiments we did not use any particular 
+heuristics for removing navigational information as the test 
+collection in use wt g pre-dates the widespread take up of 
+the current style of web publishing in wt g the average 
+web page size is more than half the current web average 
+anecdotally the increase is due to inclusion of sophisticated 
+navigational and interface elements and the javascript 
+functions to support them 
+having defined the format of documents that are 
+presented to the snippet engine we now define our compressed 
+token system cts document storage scheme and the 
+baseline system used for comparison 
+ baseline snippet engine 
+an obvious document representation scheme is to simply 
+compress each document with a well known adaptive 
+compressor and then decompress the document as required 
+using a string matching algorithm to effect the algorithm in 
+figure accordingly we implemented such a system using 
+zlib with default parameters to compress every document 
+after it has been parsed as in section 
+each document is stored in a single file while 
+manageable for our small test collections or small enterprises with 
+millions of documents a full web search engine may require 
+multiple documents to inhabit single files or a special 
+purpose filesystem 
+for snippet generation the required documents are 
+decompressed one at a time and a linear search for provided 
+query terms is employed the search is optimized for our 
+specific task which is restricted to matching whole words 
+and the sentence terminating token rather than general 
+pattern matching 
+ the cts snippet engine 
+several optimizations over the baseline are possible the 
+first is to employ a semi-static compression method over the 
+entire document collection which will allow faster 
+decompression with minimal compression loss using a 
+semistatic approach involves mapping words and non-words 
+produced by the parser to single integer tokens with frequent 
+symbols receiving small integers and then choosing a coding 
+scheme that assigns small numbers a small number of bits 
+words and non-words strictly alternate in the compressed 
+file which always begins with a word 
+in this instance we simply assign each symbol its ordinal 
+number in a list of symbols sorted by frequency we use the 
+vbyte coding scheme to code the word tokens the set 
+of non-words is limited to the most common punctuation 
+sequences in the collection itself and are encoded with a flat 
+ -bit binary code the remaining bits of each punctuation 
+symbol are used to store capitalization information 
+the process of computing the semi-static model is 
+complicated by the fact that the number of words and non-words 
+appearing in large web collections is high if we stored all 
+words and non-words appearing in the collection and their 
+associated frequency many gigabytes of ram or a b-tree or 
+similar on-disk structure would be required moffat et 
+al have examined schemes for pruning models during 
+compression using large alphabets and conclude that rarely 
+occurring terms need not reside in the model rather rare 
+terms are spelt out in the final compressed file using a 
+special word token escape symbol to signal their occurrence 
+during the first pass of encoding two move-to-front queues 
+are kept one for words and one for non-words whenever 
+the available memory is consumed and a new symbol is 
+discovered in the collection an existing symbol is discarded 
+from the end of the queue in our implementation we 
+enforce the stricter condition on eviction that where possible 
+the evicted symbol should have a frequency of one if there is 
+no symbol with frequency one in the last half of the queue 
+then we evict symbols of frequency two and so on until 
+enough space is available in the model for the new symbol 
+the second pass of encoding replaces each word with its 
+vbyte encoded number or the escape symbol and an ascii 
+representation of the word if it is not in the model 
+similarly each non-word sequence is replaced with its codeword 
+or the codeword for a single space character if it is not in the 
+model we note that this lossless compression of non-words 
+is acceptable when the documents are used for snippet 
+generation but may not be acceptable for a document database 
+we assume that a separate sub-system would hold cached 
+documents for other purposes where exact punctuation is 
+important 
+while this semi-static scheme should allow faster 
+decompression than the baseline it also readily allows direct 
+matching of query terms as compressed integers in the compressed 
+file that is sentences can be scored without having to 
+decompress a document and only the sentences returned as 
+part of a snippet need to be decoded 
+the cts system stores all documents contiguously in one 
+file and an auxiliary table of bit integers indicating the 
+start offset of each document in the file further it must 
+have access to the reverse mapping of term numbers 
+allowing those words not spelt out in the document to be 
+recovered and returned to the query engine as strings the first 
+of these data structures can be readily partitioned and 
+distributed if the snippet engine occupies multiple machines 
+the second however is not so easily partitioned as any 
+document on a remote machine might require access to the 
+whole integer-to-string mapping this is the second reason 
+for employing the model pruning step during construction of 
+the semi-static code it limits the size of the reverse mapping 
+table that should be present on every machine implementing 
+the snippet engine 
+ experimental assessment of cts 
+all experiments reported in this paper were run on a sun 
+fire v server running solaris the machine consists 
+of dual ghz ultrasparc iiii processors and gb of 
+wt g wt g wt g 
+no docs × 
+ 
+raw text 
+baseline zlib 
+cts 
+table total storage space mb for documents 
+for the three test collections both compressed and 
+uncompressed 
+ 
+ queries grouped in s 
+time seconds 
+ queries grouped in s 
+time seconds 
+ queries grouped in s 
+time seconds 
+baseline 
+cts with caching 
+cts without caching 
+figure time to generate snippets for 
+documents per query averaged over buckets of 
+queries for the first excite queries on wt g 
+ram all source code was compiled using gcc with -o 
+optimisation timings were run on an otherwise 
+unoccupied machine and were averaged over runs with memory 
+flushed between runs to eliminate any caching of data files 
+in the absence of evidence to the contrary we assume that 
+it is important to model realistic query arrival sequences and 
+the distribution of query repetitions for our experiments 
+consequently test collections which lack real query logs 
+such as trec ad-hoc and gov were not considered 
+suitable obtaining extensive query logs and associated result 
+doc-ids for a corresponding large collection is not easy we 
+have used two collections wt g and wt g from the 
+trec web track coupled with queries from excite logs 
+from the same c period further we also made use 
+of a medium sized collection wt g obtained by randomly 
+sampling half of the documents from wt g the first two 
+rows of table give the number of documents and the size 
+in mb of these collections 
+the final two rows of table show the size of the resulting 
+document sets after compression with the baseline and cts 
+schemes as expected cts admits a small compression 
+loss over zlib but both substantially reduce the size of the 
+text to about of the original uncompressed size note 
+that the figures for cts do not include the reverse mapping 
+from integer token to string that is required to produce the 
+final snippets as that occupies ram it is mb in these 
+experiments 
+the zettair search engine was used to produce a list 
+of documents to summarize for each query for the majority 
+of the experiments the okapi bm scoring scheme was used 
+to determine document rankings for the static caching 
+experiments reported in section the score of each document 
+wt g wt g wt g 
+baseline 
+cts 
+reduction in time 
+table average time msec for the final 
+queries in the excite logs using the baseline and cts 
+systems on the test collections 
+is a weighted average of the bm score normalized 
+by the top scoring document for each query and a score for 
+each document independent of any query this is to 
+simulate effects of ranking algorithms like pagerank on the 
+distribution of document requests to the snippet engine in 
+our case we used the normalized access count computed 
+from the top documents returned to the first million 
+queries from the excite log to determine the query 
+independent score component 
+points on figure indicate the mean running time to 
+generate snippets for each query averaged in groups of 
+ queries for the first queries in the excite query 
+log only the data for wt g is shown but the other 
+collections showed similar patterns the x-axis indicates the 
+group of queries for example indicates the queries 
+ to clearly there is a caching effect with times 
+dropping substantially after the first or so queries are 
+processed all of this is due to the operating system caching 
+disk blocks and perhaps pre-fetching data ahead of specific 
+read requests this is evident because the baseline system 
+has no large internal data structures to take advantage of 
+non-disk based caching it simply opens and processes files 
+and the speed up is evident for the baseline system 
+part of this gain is due to the spatial locality of disk 
+references generated by the query stream repeated queries 
+will already have their document files cached in memory 
+and similarly different queries that return the same 
+documents will benefit from document caching but when the 
+log is processed after removing all but the first request for 
+each document the pronounced speed-up is still evident as 
+more queries are processed not shown in figure this 
+suggests that the operating system or the disk itself is reading 
+and buffering a larger amount of data than the amount 
+requested and that this brings benefit often enough to make 
+an appreciable difference in snippet generation times this 
+is confirmed by the curve labeled cts without caching 
+which was generated after mounting the filesystem with a 
+no-caching option directio in solaris with disk caching 
+turned off the average time to generate snippets varies little 
+the time to generate ten snippets for a query averaged 
+over the final queries in the excite log as caching effects 
+have dissipated are shown in table once the system has 
+stabilized cts is over faster than the baseline 
+system this is primarily due to cts matching single integers 
+for most query words rather than comparing strings in the 
+baseline system 
+table shows a break down of the average time to 
+generate ten snippets over the final queries of the 
+excite log on the wt g collection when entire documents are 
+processed and when only the first half of each document 
+is processed as can be seen the majority of time spent 
+generating a snippet is in locating the document on disk 
+ seek for whole documents and for half 
+documents even if the amount of processing a document must 
+ of doc processed seek read score decode 
+ 
+ 
+table time to generate snippets for a single 
+query msec for the wt g collection averaged over 
+the final excite queries when either all of each 
+document is processed or just the first half 
+of each document 
+undergo is halved as in the second row of the table there is 
+only a reduction in the total time required to generate 
+a snippet as locating documents in secondary storage 
+occupies such a large proportion of snippet generation time it 
+seems logical to try and reduce its impact through caching 
+ document caching 
+in section we observed that the snippet engine would 
+have its own ram in proportion to the size of the 
+document collection for example on a whole-of-web search 
+engine the snippet engine would be distributed over many 
+workstations each with at least gb of ram in a small 
+enterprise the snippet engine may be sharing ram with 
+all other sub-systems on a single workstation hence only 
+have mb available in this section we use simulation to 
+measure the number of cache hits in the snippet engine as 
+memory size varies 
+we compare two caching policies a static cache where 
+the cache is loaded with as many documents as it can hold 
+before the system begins answering queries and then never 
+changes and a least-recently-used cache which starts out as 
+for the static cache but whenever a document is accessed it 
+moves to the front of a queue and if a document is fetched 
+from disk the last item in the queue is evicted note that 
+documents are first loaded into the caches in order of 
+decreasing query independent score which is computed as 
+described in section 
+the simulations also assume a query cache exists for the 
+top q most frequent queries and that these queries are never 
+processed by the snippet engine 
+all queries passed into the simulations are from the second 
+half of the excite query log the first half being used to 
+compute query independent scores and are stemmed stopped 
+and have their terms sorted alphabetically this final 
+alteration simply allows queries such as red dog and dog 
+red to return the same documents as would be the case 
+in a search engine where explicit phrase operators would be 
+required in the query to enforce term order and proximity 
+figure shows the percentage of document access that 
+hit cache using the two caching schemes with q either 
+or on excite queries on wt g the 
+xaxis shows the percentage of documents that are held in the 
+cache so corresponds to about documents 
+from this figure it is clear that caching even a small 
+percentage of the documents has a large impact on reducing 
+seek time for snippet generation with of documents 
+cached about mb for the wt g collection around 
+ of disk seeks are avoided the static cache performs 
+surprisingly well squares in figure but is outperformed 
+by the lru cache circles in an actual implementation of 
+lru however there may be fragmentation of the cache as 
+documents are swapped in and out 
+the reason for the large impact of the document cache is 
+ 
+ 
+cache size of collection 
+ ofaccessesascachehits 
+lru q 
+lru q 
+static q 
+static q 
+figure percentage of the time that the snippet 
+engine does not have to go to disk in order to 
+generate a snippet plotted against the size of the 
+document cache as a percentage of all documents in the 
+collection results are from a simulation on wt g 
+with excite queries 
+that for a particular collection some documents are much 
+more likely to appear in results lists than others this effect 
+occurs partly because of the approximately zipfian query 
+frequency distribution and partly because most web search 
+engines employ ranking methods which combine query based 
+scores with static a priori scores determined from factors 
+such as link graph measures url features spam scores and 
+so on documents with high static scores are much more 
+likely to be retrieved than others 
+in addition to the document cache the ram of the 
+snippet engine must also hold the cts decoding table that 
+maps integers to strings which is capped by a parameter at 
+compression time gb in our experiments here this is 
+more than compensated for by the reduced size of each 
+document allowing more documents into the document cache 
+for example using cts reduces the average document size 
+from kb to kb as shown in table so a gb ram 
+could hold uncompressed documents of the 
+collection or documents plus a gb decompression 
+table of the collection 
+in fact further experimentation with the model size 
+reveals that the model can in fact be very small and still cts 
+gives good compression and fast scoring times this is 
+evidenced in figure where the compressed size of wt g is 
+shown in the solid symbols note that when no compression 
+is used model size is mb the collection is only gb as 
+html markup javascript and repeated punctuation has 
+been discarded as described in section with a mb 
+model the collection size drops by more than half to gb 
+and increasing the model size to mb only elicits a gb 
+drop in the collection size figure also shows the average 
+time to score and decode a a snippet excluding seek time 
+with the different model sizes open symbols again there 
+is a large speed up when a mb model is used but little 
+ 
+ 
+model size mb 
+collectionsize gb ortime msec 
+size gb 
+time msec 
+figure collection size of the wt g collection 
+when compressed with cts using different memory 
+limits on the model and the average time to 
+generate single snippet excluding seek time on 
+excite queries using those models 
+improvement with larger models similar results hold for 
+the wt g collection where a model of about mb 
+offers substantial space and time savings over no model at all 
+but returns diminish as the model size increases 
+apart from compression there is another approach to 
+reducing the size of each document in the cache do not store 
+the full document in cache rather store sentences that are 
+likely to be used in snippets in the cache and if during 
+snippet generation on a cached document the sentence scores do 
+not reach a certain threshold then retrieve the whole 
+document from disk this raises questions on how to choose 
+sentences from documents to put in cache and which to 
+leave on disk which we address in the next section 
+ sentence reordering 
+sentences within each document can be re-ordered so that 
+sentences that are very likely to appear in snippets are at the 
+front of the document hence processed first at query time 
+while less likely sentences are relegated to the rear of the 
+document then during query time if k sentences with a 
+score exceeding some threshold are found before the entire 
+document is processed the remainder of the document is 
+ignored further to improve caching only the head of each 
+document can be stored in the cache with the tail residing 
+on disk note that we assume that the search engine is to 
+provide cached copies of a document-that is the exact 
+text of the document as it was indexed-then this would be 
+serviced by another sub-system in figure and not from 
+the altered copy we store in the snippet engine 
+we now introduce four sentence reordering approaches 
+ natural order the first few sentences of a well authored 
+document usually best describe the document content 
+thus simply processing a document in order should yield a 
+quality snippet unfortunately however web documents are 
+often not well authored with little editorial or professional 
+writing skills brought to bear on the creation of a work of 
+literary merit more importantly perhaps is that we are 
+producing query-biased snippets and there is no guarantee 
+that query terms will appear in sentences towards the front 
+of a document 
+ significant terms st luhn introduced the concept 
+of a significant sentence as containing a cluster of 
+significant terms a concept found to work well by tombros 
+and sanderson let fd t be the frequency of term t in 
+document d then term t is determined to be significant if 
+fd t ≥ 
+ 
+ 
+ 
+ − × − sd if sd 
+ if ≤ sd ≤ 
+ × sd − otherwise 
+where sd is the number of sentences in document d a 
+bracketed section is defined as a group of terms where the leftmost 
+and rightmost terms are significant terms and no significant 
+terms in the bracketed section are divided by more than four 
+non-significant terms the score of a bracketed section is 
+the square of the number of significant words falling in the 
+section divided by the total number of words in the entire 
+sentence the a priori score for a sentence is computed as 
+the maximum of all scores for the bracketed sections of the 
+sentence we then sort the sentences by this score 
+ query log based qlt many web queries repeat 
+and a small number of queries make up a large volume of 
+total searches in order to take advantage of this bias 
+sentences that contain many past query terms should be 
+promoted to the front of a document while sentences that 
+contain few query terms should be demoted in this scheme 
+the sentences are sorted by the number of sentence terms 
+that occur in the query log to ensure that long sentences do 
+not dominate over shorter qualitative sentences the score 
+assigned to each sentence is divided by the number of terms in 
+that sentence giving each sentence a score between and 
+ query log based qlu this scheme is as for qlt 
+but repeated terms in the sentence are only counted once 
+by re-ordering sentences using schemes st qlt or qlu 
+we aim to terminate snippet generation earlier than if 
+natural order is used but still produce sentences with the same 
+number of unique query terms d in figure total number 
+of query terms c the same positional score h and the 
+same maximum span k accordingly we conducted 
+experiments comparing the methods the first of the excite 
+query log was used to reorder sentences when required and 
+the final for testing 
+figure shows the differences in snippet scoring 
+components using each of the three methods over the natural 
+order method it is clear that sorting sentences using the 
+significant terms st method leads to the smallest change 
+in the sentence scoring components the greatest change 
+over all methods is in the sentence position h 
+component of the score which is to be expected as their is no 
+guarantee that leading and heading sentences are processed 
+at all after sentences are re-ordered the second most 
+affected component is the number of distinct query terms in a 
+returned sentence but if only the first of the document 
+is processed with the st method there is a drop of only 
+in the number of distinct query terms found in snippets 
+depending how these various components are weighted to 
+compute an overall snippet score one can argue that there 
+is little overall affect on scores when processing only half the 
+document using the st method 
+span k 
+term count c 
+sentence position h l 
+distinct terms d 
+ 
+ 
+ 
+ 
+st 
+qlt 
+qlu 
+st 
+qlt 
+qlu 
+st 
+qlt 
+qlu 
+st 
+qlt 
+qlu 
+st 
+qlt 
+qlu 
+relativedifferencetonaturalorder 
+documents size used 
+ 
+ 
+ 
+ 
+ 
+figure relative difference in the snippet score 
+components compared to natural ordered 
+documents when the amount of documents processed is 
+reduced and the sentences in the document are 
+reordered using query logs qlt qlu or significant 
+terms st 
+ discussion 
+in this paper we have described the algorithms and 
+compression scheme that would make a good snippet engine 
+sub-system for generating text snippets of the type shown on 
+the results pages of well known web search engines our 
+experiments not only show that our scheme is over faster 
+than the obvious baseline but also reveal some very 
+important aspects of the snippet generation problem primarily 
+caching documents avoids seek costs to secondary memory 
+for each document that is to be summarized and is vital for 
+fast snippet generation our caching simulations show that 
+if as little as of the documents can be cached in ram as 
+part of the snippet engine possibly distributed over many 
+machines then around of seeks can be avoided our 
+second major result is that keeping only half of each 
+document in ram effectively doubling the cache size has little 
+affect on the quality of the final snippets generated from 
+those half-documents provided that the sentences that are 
+kept in memory are chosen using the significant term 
+algorithm of luhn both our document compression and 
+compaction schemes dramatically reduce the time taken to 
+generate snippets 
+note that these results are generated using a gb 
+subset of the web and the excite query log gathered from the 
+same period as that subset was created we are assuming as 
+there is no evidence to the contrary that this collection and 
+log is representative of search engine input in other domains 
+in particular we can scale our results to examine what 
+resources would be required using our scheme to provide a 
+snippet engine for the entire world wide web 
+we will assume that the snippet engine is distributed 
+across m machines and that there are n web pages in the 
+collection to be indexed and served by the search engine we 
+also assume a balanced load for each machine so each 
+machine serves about n m documents which is easily achieved 
+in practice each machine therefore requires ram to hold 
+the following 
+ the cts model which should be of the size 
+of the uncompressed collection using results in 
+figure and williams et al assuming an average 
+uncompressed document size of kb this would 
+require n m × bytes of memory 
+ a cache of of all n m documents each document 
+requires kb when compressed with cts table 
+and only half of each document is required using st 
+sentence reordering requiring a total of n m × × 
+ bytes 
+ the offset array that gives the start position of each 
+document in the single compressed file bytes per 
+n m documents 
+the total amount of ram required by a single machine 
+therefore would be n m bytes 
+assuming that each machine has gb of ram and that there are 
+ billion pages to index on the web a total of m 
+machines would be required for the snippet engine of course 
+in practice more machines may be required to manage the 
+distributed system to provide backup services for failed 
+machines and other networking services these machines 
+would also need access to tb of disk to store the 
+compressed document representations that were not in cache 
+in this work we have deliberately avoided committing to 
+one particular scoring method for sentences in documents 
+rather we have reported accuracy results in terms of the 
+four components that have been previously shown to be 
+important in determining useful snippets the cts 
+method can incorporate any new metrics that may arise in 
+the future that are calculated on whole words the 
+document compaction techniques using sentence re-ordering 
+however remove the spatial relationship between sentences 
+and so if a scoring technique relies on the position of a 
+sentence within a document the aggressive compaction 
+techniques reported here cannot be used 
+a variation on the semi-static compression approach we 
+have adopted in this work has been used successfully in 
+previous search engine design but there are alternate 
+compression schemes that allow direct matching in compressed 
+text see navarro and m¨akinen for a recent survey as 
+seek time dominates the snippet generation process we have 
+not focused on this portion of the snippet generation in 
+detail in this paper we will explore alternate compression 
+schemes in future work 
+acknowledgments 
+this work was supported in part by arc discovery project 
+dp at thanks to nick lester and justin zobel 
+for valuable discussions 
+ references 
+ s brin and l page the anatomy of a large-scale 
+hypertextual web search engine in www pages 
+ - 
+ r fagin ravi k k s mccurley j novak 
+d sivakumar j a tomlin and d p williamson 
+searching the workplace web in www 
+budapest hungary may 
+ t fagni r perego f silvestri and s orlando 
+boosting the performance of web search engines 
+caching and prefetching query results by exploiting 
+historical usage data acm trans inf syst 
+ - 
+ j-l gailly and m adler zlib compression library 
+www zlib net accessed january 
+ s garcia h e williams and a cannane 
+access-ordered indexes in v estivill-castro editor 
+proc australasian computer science conference 
+pages - dunedin new zealand 
+ s ghemawat h gobioff and s leung the google 
+file system in sosp proc of the th acm 
+symposium on operating systems principles pages 
+ - new york ny usa acm press 
+ j goldstein m kantrowitz v mittal and 
+j carbonell summarizing text documents sentence 
+selection and evaluation metrics in sigir pages 
+ - 
+ d hawking nick c and paul thistlewaite 
+overview of trec- very large collection track in 
+proc of trec- pages - november 
+ b j jansen a spink and j pedersen a temporal 
+comparison of altavista web searching j am soc 
+inf sci tech jasist - april 
+ j kupiec j pedersen and f chen a trainable 
+document summarizer in sigir pages - 
+ s lawrence and c l giles accessibility of 
+information on the web nature - july 
+ 
+ h p luhn the automatic creation of literature 
+abstracts ibm journal pages - april 
+ i mani automatic summarization volume of 
+natural language processing john benjamins 
+publishing company amsterdam philadelphia 
+ a moffat j zobel and n sharman text 
+compression for dynamic document databases 
+knowledge and data engineering - 
+ g navarro and v m¨akinen compressed full text 
+indexes acm computing surveys to appear 
+ d r radev e hovy and k mckeown introduction 
+to the special issue on summarization comput 
+linguist - 
+ m richardson a prakash and e brill beyond 
+pagerank machine learning for static ranking in 
+www pages - 
+ t sakai and k sparck-jones generic summaries for 
+indexing in information retrieval in sigir pages 
+ - 
+ h g silber and k f mccoy efficiently computed 
+lexical chains as an intermediate representation for 
+automatic text summarization comput linguist 
+ - 
+ a tombros and m sanderson advantages of query 
+biased summaries in information retrieval in 
+sigir pages - melbourne aust august 
+ r w white i ruthven and j m jose finding 
+relevant documents using top ranking sentences an 
+evaluation of two alternative schemes in sigir 
+pages - 
+ h e williams and j zobel compressing integers for 
+fast file access comp j - 
+ h e williams and j zobel searchable words on the 
+web international journal on digital libraries 
+ - april 
+ i h witten a moffat and t c bell managing 
+gigabytes compressing and indexing documents and 
+images morgan kaufmann publishing san francisco 
+second edition may 
+ the zettair search engine 
+www seg rmit edu au zettair accessed january 

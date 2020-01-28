@@ -1,0 +1,1033 @@
+a formal model for situated semantic alignment 
+manuel atencia marco schorlemmer 
+iiia artificial intelligence research institute 
+csic spanish national research council 
+bellaterra barcelona catalonia spain 
+ manu marco  iiia csic es 
+abstract 
+ontology matching is currently a key technology to achieve 
+the semantic alignment of ontological entities used by 
+knowledge-based applications and therefore to enable their 
+interoperability in distributed environments such as 
+multiagent systems most ontology matching mechanisms 
+however assume matching prior integration and rely on 
+semantics that has been coded a priori in concept hierarchies or 
+external sources in this paper we present a formal model for 
+a semantic alignment procedure that incrementally aligns 
+differing conceptualisations of two or more agents relative 
+to their respective perception of the environment or domain 
+they are acting in it hence makes the situation in which 
+the alignment occurs explicit in the model we resort to 
+channel theory to carry out the formalisation 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-coherence and coordination multiagent systems 
+d software engineering interoperability-data 
+mapping i artificial intelligence knowledge 
+representation formalisms and methods-semantic networks 
+relation systems 
+general terms 
+theory 
+ introduction 
+an ontology is commonly defined as a specification of the 
+conceptualisation of a particular domain it fixes the 
+vocabulary used by knowledge engineers to denote concepts and 
+their relations and it constrains the interpretation of this 
+vocabulary to the meaning originally intended by knowledge 
+engineers as such ontologies have been widely adopted as 
+a key technology that may favour knowledge sharing in 
+distributed environments such as multi-agent systems 
+federated databases or the semantic web but the proliferation 
+of many diverse ontologies caused by different 
+conceptualisations of even the same domain -and their subsequent 
+specification using varying terminology- has highlighted 
+the need of ontology matching techniques that are 
+capable of computing semantic relationships between entities of 
+separately engineered ontologies 
+until recently most ontology matching mechanisms 
+developed so far have taken a classical functional approach 
+to the semantic heterogeneity problem in which ontology 
+matching is seen as a process taking two or more 
+ontologies as input and producing a semantic alignment of 
+ontological entities as output furthermore matching 
+often has been carried out at design-time before 
+integrating knowledge-based systems or making them interoperate 
+this might have been successful for clearly delimited and 
+stable domains and for closed distributed systems but it is 
+untenable and even undesirable for the kind of applications 
+that are currently deployed in open systems multi-agent 
+communication peer-to-peer information sharing and 
+webservice composition are all of a decentralised dynamic and 
+open-ended nature and they require ontology matching to 
+be locally performed during run-time in addition in many 
+situations peer ontologies are not even open for inspection 
+ e g when they are based on commercially confidential 
+information 
+certainly there exist efforts to efficiently match 
+ontological entities at run-time taking only those ontology 
+fragment that are necessary for the task at hand 
+nevertheless the techniques used by these systems to 
+establish the semantic relationships between ontological entities 
+-even though applied at run-time- still exploit a priori 
+defined concept taxonomies as they are represented in the 
+graph-based structures of the ontologies to be matched use 
+previously existing external sources such as thesauri e g 
+wordnet and upper-level ontologies e g cyc or sumo 
+or resort to additional background knowledge repositories or 
+shared instances 
+we claim that semantic alignment of ontological 
+terminology is ultimately relative to the particular situation in which 
+the alignment is carried out and that this situation should 
+be made explicit and brought into the alignment 
+mechanism even two agents with identical conceptualisation 
+capabilities and using exactly the same vocabulary to specify 
+their respective conceptualisations may fail to interoperate 
+ 
+ - - - - rps c ifaamas 
+in a concrete situation because of their differing perception 
+of the domain imagine a situation in which two agents 
+are facing each other in front of a checker board agent 
+a may conceptualise a figure on the board as situated on 
+the left margin of the board while agent a may 
+conceptualise the same figure as situated on the right although 
+the conceptualisation of  left and  right is done in exactly 
+the same manner by both agents and even if both use the 
+terms left and right in their communication they still will 
+need to align their respective vocabularies if they want to 
+successfully communicate to each other actions that change 
+the position of figures on the checker board their semantic 
+alignment however will only be valid in the scope of their 
+interaction within this particular situation or environment 
+the same agents situated differently may produce a different 
+alignment 
+this scenario is reminiscent to those in which a group of 
+distributed agents adapt to form an ontology and a shared 
+lexicon in an emergent bottom-up manner with only local 
+interactions and no central control authority this sort 
+of self-organised emergence of shared meaning is namely 
+ultimately grounded on the physical interaction of agents with 
+the environment in this paper however we address the 
+case in which agents are already endowed with a top-down 
+engineered ontology it can even be the same one which 
+they do not adapt or refine but for which they want to 
+find the semantic relationships with separate ontologies of 
+other agents on the grounds of their communication within a 
+specific situation in particular we provide a formal model 
+that formalises situated semantic alignment as a sequence of 
+information-channel refinements in the sense of barwise and 
+seligman s theory of information flow this theory is 
+particularly useful for our endeavour because it models the flow 
+of information occurring in distributed systems due to the 
+particular situations -or tokens- that carry information 
+analogously the semantic alignment that will allow 
+information to flow ultimately will be carried by the particular 
+situation agents are acting in 
+we shall therefore consider a scenario with two or more 
+agents situated in an environment each agent will have its 
+own viewpoint of the environment so that if the 
+environment is in a concrete state both agents may have different 
+perceptions of this state because of these differences there 
+may be a mismatch in the meaning of the syntactic 
+entities by which agents describe their perceptions and which 
+constitute the agents respective ontologies we state that 
+these syntactic entities can be related according to the 
+intrinsic semantics provided by the existing relationship 
+between the agents viewpoint of the environment the 
+existence of this relationship is precisely justified by the fact that 
+the agents are situated and observe the same environment 
+in section we describe our formal model for situated 
+semantic alignment ssa first in section we associate 
+a channel to the scenario under consideration and show how 
+the distributed logic generated by this channel provides the 
+logical relationships between the agents viewpoints of the 
+environment second in section we present a method by 
+which agents obtain approximations of this distributed logic 
+these approximations gradually become more reliable as the 
+method is applied in section we report on an application 
+of our method conclusions and further work are analyzed 
+in section finally an appendix summarizes the terms and 
+theorems of channel theory used along the paper we do not 
+assume any knowledge of channel theory we restate basic 
+definitions and theorems in the appendix but any detailed 
+exposition of the theory is outside the scope of this paper 
+ a formal model for ssa 
+ the logic of ssa 
+consider a scenario with two agents a and a situated 
+in an environment e the generalization to any numerable 
+set of agents is straightforward we associate a numerable 
+set s of states to e and at any given instant we suppose 
+e to be in one of these states we further assume that 
+each agent is able to observe the environment and has its 
+own perception of it this ability is faithfully captured by 
+a surjective function seei s → pi where i ∈ and 
+typically see and see are different 
+according to channel theory information is only viable 
+where there is a systematic way of classifying some range 
+of things as being this way or that in other words where 
+there is a classification see appendix a so in order to be 
+within the framework of channel theory we must associate 
+classifications to the components of our system 
+for each i ∈ we consider a classification ai that 
+models ai s viewpoint of e first tok ai is composed of 
+ai s perceptions of e states that is tok ai pi second 
+typ ai contains the syntactic entities by which ai describes 
+its perceptions the ones constituting the ontology of ai 
+finally ai synthesizes how ai relates its perceptions with 
+these syntactic entities 
+now with the aim of associating environment e with a 
+classification e we choose the power classification of s as e 
+which is the classification whose set of types is equal to s 
+ 
+whose tokens are the elements of s and for which a token 
+e is of type ε if e ∈ ε the reason for taking the power 
+classification is because there are no syntactic entities that 
+may play the role of types for e since in general there is no 
+global conceptualisation of the environment however the 
+set of types of the power classification includes all possible 
+token configurations potentially described by types thus 
+tok e s typ e s 
+and e e ε if and only if e ∈ ε 
+the notion of channel see appendix a is fundamental in 
+barwise and seligman s theory the information flow among 
+the components of a distributed system is modelled in terms 
+of a channel and the relationships among these components 
+are expressed via infomorphisms see appendix a which 
+provide a way of moving information between them 
+the information flow of the scenario under consideration 
+is accurately described by channel e fi ai → e i∈ 
+defined as follows 
+ ˆfi α e ∈ tok e seei e ai α for each α ∈ 
+typ ai 
+ ˇfi e seei e for each e ∈ tok e 
+where i ∈ definition of ˇfi seems natural while ˆfi is 
+defined in such a way that the fundamental property of the 
+infomorphisms is fulfilled 
+ˇfi e ai α iff seei e ai α by definition of ˇfi 
+iff e ∈ ˆfi α by definition of ˆfi 
+iff e e 
+ˆfi α by definition of e 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+consequently e is the core of channel e and a state 
+e ∈ tok e connects agents perceptions ˇf e and ˇf e see 
+figure 
+typ e 
+typ a 
+ˆf 
+ ttttttttt 
+typ a 
+ˆf 
+eejjjjjjjjj 
+tok e 
+ e 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ˇf yyttttttttt 
+ˇf jjjjjjjjj 
+tok a 
+ a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+tok a 
+ a 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+figure channel e 
+e explains the information flow of our scenario by virtue 
+of agents a and a being situated and perceiving the same 
+environment e we want to obtain meaningful relations 
+among agents syntactic entities that is agents types we 
+state that meaningfulness must be in accord with e 
+the sum operation see appendix a gives us a way of 
+putting the two agents classifications of channel e together 
+into a single classification namely a a and also the two 
+infomorphisms together into a single infomorphism f f 
+a a → e 
+a a assembles agents classifications in a very coarse 
+way tok a a is the cartesian product of tok a and 
+tok a that is tok a a p p pi ∈ pi so a 
+token of a a is a pair of agents perceptions with no 
+restrictions typ a a is the disjoint union of typ a 
+and typ a and p p is of type i α if pi is of type 
+α we attach importance to take the disjoint union because 
+a and a could use identical types with the purpose of 
+describing their respective perceptions of e 
+classification a a seems to be the natural place in 
+which to search for relations among agents types now 
+channel theory provides a way to make all these relations 
+explicit in a logical fashion by means of theories and local 
+logics see appendix a the theory generated by the sum 
+classification th a a and hence its logic generated 
+log a a involve all those constraints among agents 
+types valid according to a a notice however that these 
+constraints are obvious as we stated above meaningfulness 
+must be in accord with channel e 
+classifications a a and e are connected via the sum 
+infomorphism f f f where 
+ ˆf i α ˆfi α e ∈ tok e seei e ai α for 
+each i α ∈ typ a a 
+ ˇf e ˇf e ˇf e see e see e for each e ∈ 
+tok e 
+meaningful constraints among agents types are in accord 
+with channel e because they are computed making use of f 
+as we expound below 
+as important as the notion of channel is the concept of 
+distributed logic see appendix a given a channel c and 
+a logic l on its core dlogc l represents the reasoning 
+about relations among the components of c justified by l 
+if l log c the distributed logic we denoted by log c 
+captures in a logical fashion the information flow inherent 
+in the channel 
+in our case log e explains the relationship between the 
+agents viewpoints of the environment in a logical fashion 
+on the one hand constraints of th log e are defined by 
+γ log e δ if ˆf γ log e 
+ˆf δ 
+where γ δ ⊆ typ a a on the other hand the set of 
+normal tokens nlog e is equal to the range of function ˇf 
+nlog e ˇf tok e 
+ see e see e e ∈ tok e 
+therefore a normal token is a pair of agents perceptions 
+that are restricted by coming from the same environment 
+state unlike a a tokens 
+all constraints of th log e are satisfied by all normal 
+tokens because of being a logic in this particular case this 
+condition is also sufficient the proof is straightforward as 
+alternative to we have 
+γ log e δ iff for all e ∈ tok e 
+if ∀ i γ ∈ γ seei e ai γ 
+then ∃ j δ ∈ δ seej e aj δ 
+where γ δ ⊆ typ a a 
+log e is the logic of ssa th log e comprises the 
+most meaningful constraints among agents types in accord 
+with channel e in other words the logic of ssa contains 
+and also justifies the most meaningful relations among those 
+syntactic entities that agents use in order to describe their 
+own environment perceptions 
+log e is complete since log e is complete but it is not 
+necessarily sound because although log e is sound ˇf is 
+not surjective in general see appendix b if log e is also 
+sound then log e log a a see appendix b that 
+means there is no significant relation between agents points 
+of view of the environment according to e it is just the fact 
+that log e is unsound what allows a significant relation 
+between the agents viewpoints this relation is expressed 
+at the type level in terms of constraints by th log e and 
+at the token level by nlog e 
+ approaching the logic of ssa 
+through communication 
+we have dubbed log e the logic of ssa th log e 
+comprehends the most meaningful constraints among agents 
+types according to e the problem is that neither agent 
+can make use of this theory because they do not know e 
+completely in this section we present a method by which 
+agents obtain approximations to th log e we also prove 
+these approximations gradually become more reliable as the 
+method is applied 
+agents can obtain approximations to th log e through 
+communication a and a communicate by exchanging 
+information about their perceptions of environment states 
+this information is expressed in terms of their own 
+classification relations specifically if e is in a concrete state e 
+we assume that agents can convey to each other which types 
+are satisfied by their respective perceptions of e and which 
+are not this exchange generates a channel c fi ai → 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+c i∈ and th log c contains the constraints among 
+agents types justified by the fact that agents have observed 
+e now if e turns to another state e and agents proceed 
+as before another channel c fi ai → c i∈ gives 
+account of the new situation considering also the previous 
+information th log c comprises the constraints among 
+agents types justified by the fact that agents have observed 
+e and e the significant point is that c is a refinement of 
+c see appendix a theorem below ensures that the 
+refined channel involves more reliable information 
+the communication supposedly ends when agents have 
+observed all the environment states again this situation can 
+be modeled by a channel call it c 
+ f 
+i ai → c 
+ i∈ 
+theorem states that th log c 
+ th log e 
+theorem and theorem assure that applying the 
+method agents can obtain approximations to th log e 
+gradually more reliable 
+theorem let c fi ai → c i∈ and c 
+ fi ai → c i∈ be two channels if c is a refinement 
+of c then 
+ th log c ⊆ th log c 
+ nlog c ⊇ nlog c 
+proof since c is a refinement of c then there exists a 
+refinement infomorphism r from c to c so fi r ◦ fi let 
+a def a a f def f f and f def f f 
+ let γ and δ be subsets of typ a and assume that 
+γ log c δ which means ˆf γ c 
+ˆf δ we have 
+to prove γ log c δ or equivalently ˆf γ c 
+ˆf δ 
+we proceed by reductio ad absurdum suppose c ∈ 
+tok c does not satisfy the sequent ˆf γ ˆf δ then 
+c c 
+ˆf γ for all γ ∈ γ and c c 
+ˆf δ for all δ ∈ δ 
+let us choose an arbitrary γ ∈ γ we have that 
+γ i α for some α ∈ typ ai and i ∈ thus 
+ˆf γ ˆf i α ˆfi α ˆr ◦ ˆfi α ˆr ˆfi α 
+therefore 
+c c 
+ˆf γ iff c c ˆr ˆfi α 
+iff ˇr c c 
+ˆfi α 
+iff ˇr c c 
+ˆf i α 
+iff ˇr c c 
+ˆf γ 
+consequently ˇr c c 
+ˆf γ for all γ ∈ γ since 
+ˆf γ c 
+ˆf δ then there exists δ 
+∈ δ such that 
+ˇr c c 
+ˆf δ 
+ a sequence of equivalences similar to 
+the above one justifies c c 
+ˆf δ 
+ contradicting that c 
+is a counterexample to ˆf γ ˆf δ hence γ log c δ 
+as we wanted to prove 
+ let a a ∈ tok a and assume a a ∈ nlog c 
+therefore there exists c token in c such that a a 
+ˇf c then we have ai ˇfi c ˇfi ◦ ˇr c ˇfi ˇr c 
+for i ∈ hence a a ˇf ˇr c and a a ∈ 
+nlog c consequently nlog c ⊇ nlog c which 
+concludes the proof 
+remark theorem asserts that the more refined 
+channel gives more reliable information even though its 
+theory has less constraints it has more normal tokens to 
+which they apply 
+in the remainder of the section we explicitly describe the 
+process of communication and we conclude with the proof 
+of theorem 
+let us assume that typ ai is finite for i ∈ and s 
+is infinite numerable though the finite case can be treated 
+in a similar form we also choose an infinite numerable set 
+of symbols cn 
+ n ∈ n 
+ 
+we omit informorphisms superscripts when no confusion 
+arises types are usually denoted by greek letters and tokens 
+by latin letters so if f is an infomorphism f α ≡ ˆf α and 
+f a ≡ ˇf a 
+agents communication starts from the observation of e 
+let us suppose that e is in state e 
+∈ s tok e a s 
+perception of e 
+is f e 
+ and a s perception of e 
+is f e 
+ 
+we take for granted that a can communicate a those 
+types that are and are not satisfied by f e 
+ according to 
+its classification a so can a do since both typ a and 
+typ a are finite this process eventually finishes after 
+this communication a channel c 
+ f 
+i ai → c 
+ i 
+arises see figure 
+c 
+a 
+f 
+ 
+ 
+a 
+f 
+ 
+aacccccccc 
+figure the first communication stage 
+on the one hand c 
+is defined by 
+ tok c 
+ c 
+ 
+ typ c 
+ typ a a 
+ c 
+ c i α if fi e 
+ ai α 
+ for every i α ∈ typ a a 
+on the other hand f 
+i with i ∈ is defined by 
+ f 
+i α i α 
+ for every α ∈ typ ai 
+ f 
+i c 
+ fi e 
+ 
+log c 
+ represents the reasoning about the first stage of 
+communication it is easy to prove that th log c 
+ 
+th c 
+ the significant point is that both agents know c 
+as the result of the communication hence they can compute 
+separately theory th c 
+ typ c 
+ c which contains 
+the constraints among agents types justified by the fact that 
+agents have observed e 
+ 
+now let us assume that e turns to a new state e 
+ agents 
+can proceed as before exchanging this time information 
+about their perceptions of e 
+ another channel c 
+ f 
+i 
+ai → c 
+ i∈ comes up we define c 
+so as to take also 
+into account the information provided by the previous stage 
+of communication 
+on the one hand c 
+is defined by 
+ tok c 
+ c 
+ c 
+ 
+ 
+we write these symbols with superindices because we limit 
+the use of subindices for what concerns to agents note this 
+set is chosen with the same cardinality of s 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ typ c 
+ typ a a 
+ ck 
+ c i α if fi ek 
+ ai α 
+ for every k ∈ and i α ∈ typ a a 
+on the other hand f 
+i with i ∈ is defined by 
+ f 
+i α i α 
+ for every α ∈ typ ai 
+ f 
+i ck 
+ fi ek 
+ 
+ for every k ∈ 
+log c 
+ represents the reasoning about the former and 
+the later communication stages th log c 
+ is equal to 
+th c 
+ typ c 
+ c then it contains the constraints 
+among agents types justified by the fact that agents have 
+observed e 
+and e 
+ a and a knows c 
+so they can use 
+these constraints the key point is that channel c 
+is a 
+refinement of c 
+ it is easy to check that f 
+defined as 
+the identity function on types and the inclusion function on 
+tokens is a refinement infomorphism see at the bottom of 
+figure by theorem c 
+constraints are more reliable 
+than c 
+constraints 
+in the general situation once the states e 
+ e 
+ en− 
+ n ≥ have been observed and a new state en 
+appears 
+channel cn 
+ fn 
+i ai → cn 
+ i∈ informs about agents 
+communication up to that moment cn 
+definition is 
+similar to the previous ones and analogous remarks can be 
+made see at the top of figure theory th log cn 
+ 
+th cn 
+ typ cn 
+ cn contains the constraints among 
+agents types justified by the fact that agents have observed 
+e 
+ e 
+ en 
+ 
+cn 
+fn− 
+ 
+a 
+fn− 
+ 
+ ppppppppppppp 
+fn 
+ 
+uunnnnnnnnnnnnn 
+f 
+ 
+ 
+f 
+ 
+ a 
+fn 
+ 
+ggppppppppppppp 
+fn− 
+ 
+wwnnnnnnnnnnnnn 
+f 
+ 
+õõ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+f 
+ 
+øø 
+cn− 
+ 
+ 
+ 
+ 
+ 
+c 
+f 
+ 
+c 
+figure agents communication 
+remember we have assumed that s is infinite numerable 
+it is therefore unpractical to let communication finish when 
+all environment states have been observed by a and a 
+at that point the family of channels cn 
+ n∈n would inform 
+of all the communication stages it is therefore up to the 
+agents to decide when to stop communicating should a good 
+enough approximation have been reached for the purposes of 
+their respective tasks but the study of possible termination 
+criteria is outside the scope of this paper and left for future 
+work from a theoretical point of view however we can 
+consider the channel c 
+ f 
+i ai → c 
+ i∈ which 
+informs of the end of the communication after observing all 
+environment states 
+on the one hand c 
+is defined by 
+ tok c 
+ cn 
+ n ∈ n 
+ typ c 
+ typ a a 
+ cn 
+ c i α if fi en 
+ ai α 
+ for n ∈ n and i α ∈ typ a a 
+on the other hand f 
+i with i ∈ is defined by 
+ f 
+i α i α 
+ for α ∈ typ ai 
+ f 
+i cn 
+ fi en 
+ 
+ for n ∈ n 
+theorem below constitutes the cornerstone of the model 
+exposed in this paper it ensures together with theorem 
+ that at each communication stage agents obtain a theory 
+that approximates more closely to the theory generated by 
+the logic of ssa 
+theorem the following statements hold 
+ for all n ∈ n c 
+is a refinement of cn 
+ 
+ th log e th c 
+ th log c 
+ 
+proof 
+ it is easy to prove that for each n ∈ n gn 
+defined as the 
+identity function on types and the inclusion function 
+on tokens is a refinement infomorphism from c 
+to cn 
+ 
+ the second equality is straightforward the first one 
+follows directly from 
+cn 
+ c i α iff ˇfi en 
+ ai α 
+ by definition of c 
+iff en 
+ e 
+ˆfi α 
+ because fi is infomorphim 
+iff en 
+ e 
+ˆf i α 
+ by definition of ˆf 
+e 
+c 
+gn 
+ 
+a 
+fn 
+ 
+ ooooooooooooo 
+f 
+ 
+uuooooooooooooo 
+f 
+cc 
+a 
+f 
+ 
+ggooooooooooooo 
+fn 
+ 
+wwooooooooooooo 
+f 
+ 
+cn 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ an example 
+in the previous section we have described in great detail 
+our formal model for ssa however we have not tackled 
+the practical aspect of the model yet in this section we 
+give a brushstroke of the pragmatic view of our approach 
+we study a very simple example and explain how agents 
+can use those approximations of the logic of ssa they can 
+obtain through communication 
+let us reflect on a system consisting of robots located in 
+a two-dimensional grid looking for packages with the aim of 
+moving them to a certain destination figure robots 
+can carry only one package at a time and they can not move 
+through a package 
+figure the scenario 
+robots have a partial view of the domain and there exist 
+two kinds of robots according to the visual field they have 
+some robots are capable of observing the eight adjoining 
+squares but others just observe the three squares they have 
+in front see figure we call them urdl shortened 
+form of up-right-down-left and lcr abbreviation for 
+left-center-right robots respectively 
+describing the environment states as well as the robots 
+perception functions is rather tedious and even unnecessary 
+we assume the reader has all those descriptions in mind 
+all robots in the system must be able to solve package 
+distribution problems cooperatively by communicating their 
+intentions to each other in order to communicate agents 
+send messages using some ontology in our scenario there 
+coexist two ontologies the udrl and lcr ontologies both 
+of them are very simple and are just confined to describe 
+what robots observe 
+figure robots field of vision 
+when a robot carrying a package finds another package 
+obstructing its way it can either go around it or if there is 
+another robot in its visual field ask it for assistance let 
+us suppose two urdl robots are in a situation like the one 
+depicted in figure robot the one carrying a package 
+decides to ask robot for assistance and sends a request 
+this request is written below as a kqml message and it 
+should be interpreted intuitively as robot pick up the 
+package located in my up square knowing that you are 
+located in my up-right square 
+ 
+request 
+ sender robot 
+ receiver robot 
+ language packages distribution-language 
+ ontology urdl-ontology 
+ content pick up u package because ur robot 
+´ 
+figure robot assistance 
+robot understands the content of the request and it can 
+use a rule represented by the following constraint 
+ ur robot ul robot u package 
+ u package 
+the above constraint should be interpreted intuitively as 
+if robot is situated in robot s up-right square robot 
+is situated in robot s up-left square and a package is 
+located in robot s up square then a package is located 
+in robot s up square 
+now problems arise when a lcr robot and a urdl 
+robot try to interoperate see figure robot sends a 
+request of the form 
+ 
+request 
+ sender robot 
+ receiver robot 
+ language packages distribution-language 
+ ontology lcr-ontology 
+ content pick up r robot because c package 
+´ 
+robot does not understand the content of the request but 
+they decide to begin a process of alignment -corresponding 
+with a channel c 
+ once finished robot searches in th c 
+ 
+for constraints similar to the expected one that is those of 
+the form 
+ r robot ul robot c package 
+c λ package 
+where λ ∈ u r d l ur dr dl ul from these only 
+the following constraints are plausible according to c 
+ 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure ontology mismatch 
+ r robot ul robot c package 
+c u package 
+ r robot ul robot c package 
+c l package 
+ r robot ul robot c package 
+c dr package 
+if subsequently both robots adopting the same roles take 
+part in a situation like the one depicted in figure a new 
+process of alignment -corresponding with a channel c 
+- takes 
+place c 
+also considers the previous information and hence 
+refines c 
+ the only constraint from the above ones that 
+remains plausible according to c 
+is 
+ r robot ul robot c package 
+c u package 
+notice that this constraint is an element of the theory of the 
+distributed logic agents communicate in order to cooperate 
+successfully and success is guaranteed using constrains of the 
+distributed logic 
+figure refinement 
+ conclusions and further work 
+in this paper we have exposed a formal model of semantic 
+alignment as a sequence of information-channel refinements 
+that are relative to the particular states of the environment 
+in which two agents communicate and align their respective 
+conceptualisations of these states before us kent and 
+kalfoglou and schorlemmer have applied channel 
+theory to formalise semantic alignment using also barwise 
+and seligman s insight to focus on tokens as the enablers 
+of information flow their approach to semantic alignment 
+however like most ontology matching mechanisms 
+developed to date regardless of whether they follow a functional 
+design-time-based approach or an interaction-based 
+runtime-based approach still defines semantic alignment in 
+terms of a priori design decisions such as the concept 
+taxonomy of the ontologies or the external sources brought into 
+the alignment process instead the model we have presented 
+in this paper makes explicit the particular states of the 
+environment in which agents are situated and are attempting 
+to gradually align their ontological entities 
+in the future our effort will focus on the practical side of 
+the situated semantic alignment problem we plan to 
+further refine the model presented here e g to include 
+pragmatic issues such as termination criteria for the alignment 
+process and to devise concrete ontology negotiation 
+protocols based on this model that agents may be able to enact 
+the formal model exposed in this paper will constitute a 
+solid base of future practical results 
+acknowledgements 
+this work is supported under the upic project sponsored 
+by spain s ministry of education and science under grant 
+number tin - -c - and also under the 
+openknowledge specific targeted research project strep 
+sponsored by the european commission under contract 
+number fp - marco schorlemmer is supported by a 
+ram´on y cajal research fellowship from spain s ministry 
+of education and science partially funded by the european 
+social fund 
+ references 
+ j barwise and j seligman information flow the 
+logic of distributed systems cambridge university 
+press 
+ c ghidini and f giunchiglia local models 
+semantics or contextual reasoning locality 
+compatibility artificial intelligence - 
+ 
+ f giunchiglia and p shvaiko semantic matching 
+the knowledge engineering review - 
+ 
+ y kalfoglou and m schorlemmer if-map an 
+ontology-mapping method based on information-flow 
+theory in journal on data semantics i lncs 
+ 
+ y kalfoglou and m schorlemmer ontology mapping 
+the sate of the art the knowledge engineering 
+review - 
+ r e kent semantic integration in the information 
+flow framework in semantic interoperability and 
+integration dagstuhl seminar proceedings 
+ 
+ d lenat cyc a large-scale investment in knowledge 
+infrastructure communications of the acm 
+ 
+ v l´opez m sabou and e motta powermap 
+mapping the real semantic web on the fly 
+proceedings of the iswc 
+ f mcneill dynamic ontology refinement phd 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+thesis school of informatics the university of 
+edinburgh 
+ m schorlemmer and y kalfoglou progressive 
+ontology alignment for meaning coordination an 
+information-theoretic foundation in th int joint 
+conf on autonomous agents and multiagent systems 
+ 
+ p shvaiko and j euzenat a survey of schema-based 
+matching approaches in journal on data semantics 
+iv lncs 
+ l steels the origins of ontologies and 
+communication conventions in multi-agent systems 
+in journal of autonomous agents and multi-agent 
+systems - 
+ j van diggelen et al anemone an effective 
+minimal ontology negotiation environment in th 
+int joint conf on autonomous agents and 
+multiagent systems 
+appendix 
+a channel theory terms 
+classification is a tuple a tok a typ a a where 
+tok a is a set of tokens typ a is a set of types and 
+ a is a binary relation between tok a and typ a if 
+a a α then a is said to be of type α 
+infomorphism f a → b from classifications a to b is 
+a contravariant pair of functions f ˆf ˇf where ˆf 
+typ a → typ b and ˇf tok b → tok a satisfying 
+the following fundamental property 
+ˇf b a α iff b b 
+ˆf α 
+for each token b ∈ tok b and each type α ∈ typ a 
+channel consists of two infomorphisms c fi ai → 
+c i∈ with a common codomain c called the core 
+of c c tokens are called connections and a connection 
+c is said to connect tokens ˇf c and ˇf c 
+sum given classifications a and b the sum of a and b 
+denoted by a b is the classification with tok a 
+b tok a × tok b a b a ∈ tok a and b ∈ 
+tok b typ a b typ a typ b i γ 
+i and γ ∈ typ a or i and γ ∈ typ b and 
+relation a b defined by 
+a b a b α if a a α 
+a b a b β if b b β 
+given infomorphisms f a → c and g b → c 
+the sum f g a b → c is defined on types by 
+ˆ f g α ˆf α and ˆ f g β ˆg β and 
+on tokens by ˇ f g c ˇf c ˇg c 
+theory given a set σ a sequent of σ is a pair γ δ of 
+subsets of σ a binary relation between subsets of 
+σ is called a consequence relation on σ a theory is a 
+pair t σ where is a consequence relation on 
+σ a sequent γ δ of σ for which γ δ is called a 
+constraint of the theory t t is regular if it satisfies 
+ identity α α 
+ weakening if γ δ then γ γ δ δ 
+ 
+in fact this is the definition of a binary channel a channel 
+can be defined with an arbitrary index set 
+ global cut if γ π δ π for each partition 
+π π of π i e π ∪ π π and π ∩ π ∅ 
+then γ δ 
+for all α ∈ σ and all γ γ δ δ π ⊆ σ 
+theory generated by a classification let a be a 
+classification a token a ∈ tok a satisfies a sequent γ δ 
+of typ a provided that if a is of every type in γ then 
+it is of some type in δ the theory generated by a 
+denoted by th a is the theory typ a a where 
+γ a δ if every token in a satisfies γ δ 
+local logic is a tuple l tok l typ l l l nl 
+where 
+ tok l typ l l is a classification denoted by 
+cla l 
+ typ l l is a regular theory denoted by th l 
+ nl is a subset of tok l called the normal tokens 
+of l which satisfy all constraints of th l 
+a local logic l is sound if every token in cla l is 
+normal that is nl tok l l is complete if every 
+sequent of typ l satisfied by every normal token is a 
+constraint of th l 
+local logic generated by a classification given a 
+classification a the local logic generated by a written 
+log a is the local logic on a i e cla log a 
+a with th log a th a and such that all its 
+tokens are normal i e nlog a tok a 
+inverse image given an infomorphism f a → b and 
+a local logic l on b the inverse image of l under 
+f denoted f− 
+ l is the local logic on a such that 
+γ f− l δ if ˆf γ l 
+ˆf δ and nf− l ˇf nl 
+ a ∈ tok a a ˇf b for some b ∈ nl 
+distributed logic let c fi ai → c i∈ be a 
+channel and l a local logic on its core c the distributed 
+logic of c generated by l written dlogc l is the 
+inverse image of l under the sum f f 
+refinement let c fi ai → c i∈ and c fi 
+ai → c i∈ be two channels with the same 
+component classifications a and a a refinement 
+infomorphism from c to c is an infomorphism r c → c 
+such that for each i ∈ fi r ◦fi i e ˆfi ˆr ◦ ˆfi 
+and ˇfi ˇfi ◦ˇr channel c is a refinement of c if there 
+exists a refinement infomorphism r from c to c 
+b channel theory theorems 
+theorem b the logic generated by a classification is 
+sound and complete furthermore given a classification a 
+and a logic l on a l is sound and complete if and only if 
+l log a 
+theorem b let l be a logic on a classification b and 
+f a → b an infomorphism 
+ if l is complete then f− 
+ l is complete 
+ if l is sound and ˇf is surjective then f− 
+ l is sound 
+ 
+all theories considered in this paper are regular 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

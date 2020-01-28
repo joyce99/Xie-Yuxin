@@ -1,0 +1,980 @@
+query performance prediction in web search 
+environments 
+yun zhou and w bruce croft 
+department of computer science 
+university of massachusetts amherst 
+ yzhou croft  cs umass edu 
+abstract 
+current prediction techniques which are generally designed for 
+content-based queries and are typically evaluated on relatively 
+homogenous test collections of small sizes face serious 
+challenges in web search environments where collections are 
+significantly more heterogeneous and different types of retrieval 
+tasks exist in this paper we present three techniques to address 
+these challenges we focus on performance prediction for two 
+types of queries in web search environments content-based and 
+named-page finding our evaluation is mainly performed on the 
+gov collection in addition to evaluating our models for the two 
+types of queries separately we consider a more challenging and 
+realistic situation that the two types of queries are mixed together 
+without prior information on query types to assist prediction 
+under the mixed-query situation a novel query classifier is 
+adopted results show that our prediction of web query 
+performance is substantially more accurate than the current 
+stateof-the-art prediction techniques consequently our paper 
+provides a practical approach to performance prediction in 
+realworld web settings 
+categories and subject descriptors 
+h information storage and retrieval information search 
+and retrieval -query formulation 
+general terms 
+algorithms experimentation theory 
+ introduction 
+query performance prediction has many applications in a variety 
+of information retrieval ir areas such as improving retrieval 
+consistency query refinement and distributed ir the importance 
+of this problem has been recognized by ir researchers and a 
+number of new methods have been proposed for prediction 
+recently 
+most work on prediction has focused on the traditional ad-hoc 
+retrieval task where query performance is measured according to 
+topical relevance these prediction models are evaluated on 
+trec document collections which typically consist of no more 
+than one million relatively homogenous newswire articles with 
+the popularity and influence of the web prediction techniques 
+that will work well for web-style queries are highly preferable 
+however web search environments pose significant challenges to 
+current prediction models that are mainly designed for traditional 
+trec settings here we outline some of these challenges 
+first web collections which are much larger than conventional 
+trec collections include a variety of documents that are 
+different in many aspects such as quality and style current 
+prediction techniques can be vulnerable to these characteristics of 
+web collections for example the reported prediction accuracy of 
+the ranking robustness technique and the clarity technique on the 
+gov collection a large web collection is significantly worse 
+compared to the other trec collections similar prediction 
+accuracy on the gov collection using another technique is 
+reported in confirming the difficult of predicting query 
+performance on a large web collection 
+furthermore web search goes beyond the scope of the ad-hoc 
+retrieval task based on topical relevance for example the 
+named-page np finding task which is a navigational task is 
+also popular in web retrieval query performance prediction for 
+the np task is still necessary since np retrieval performance is far 
+from perfect in fact according to the report on the np task of the 
+ terabyte track about of the test queries perform 
+poorly no correct answer in the first search results even in the 
+best run from the top group to our knowledge little research has 
+explicitly addressed the problem of np-query performance 
+prediction current prediction models devised for content-based 
+queries will be less effective for np queries considering the 
+fundamental differences between the two 
+third in real-world web search environments user queries are 
+usually a mixture of different types and prior knowledge about the 
+type of each query is generally unavailable the mixed-query 
+situation raises new problems for query performance prediction 
+for instance we may need to incorporate a query classifier into 
+prediction models despite these problems the ability to handle 
+this situation is a crucial step towards turning query performance 
+prediction from an interesting research topic into a practical tool 
+for web retrieval 
+in this paper we present three techniques to address the above 
+challenges that current prediction models face in web search 
+environments our work focuses on query performance prediction 
+for the content-based ad-hoc retrieval task and the name-page 
+finding task in the context of web retrieval our first technique 
+called weighted information gain wig makes use of both single 
+term and term proximity features to estimate the quality of top 
+retrieved documents for prediction we find that wig offers 
+consistent prediction accuracy across various test collections and 
+query types moreover we demonstrate that good prediction 
+accuracy can be achieved for the mixed-query situation by using 
+wig with the help of a query type classifier query feedback and 
+first rank change which are our second and third prediction 
+techniques perform well for content-based queries and np 
+queries respectively 
+our main contributions include considerably improved 
+prediction accuracy for web content-based queries over several 
+state-of-the-art techniques new techniques for successfully 
+predicting np-query performance a practical and fully 
+automatic solution to predicting mixed-query performance in 
+addition one minor contribution is that we find that the 
+robustness score which was originally proposed for 
+performance prediction is helpful for query classification 
+ related work 
+as we mentioned in the introduction a number of prediction 
+techniques have been proposed recently that focus on 
+contentbased queries in the topical relevance ad-hoc task we know of 
+no published work that addresses other types of queries such as 
+np queries let alone a mixture of query types next we review 
+some representative models 
+the major difficulty of performance prediction comes from the 
+fact that many factors have an impact on retrieval performance 
+each factor affects performance to a different degree and the 
+overall effect is hard to predict accurately therefore it is not 
+surprising to notice that simple features such as the frequency of 
+query terms in the collection and the average idf of query 
+terms do not predict well in fact most of the successful 
+techniques are based on measuring some characteristics of the 
+retrieved document set to estimate topic difficulty for example 
+the clarity score measures the coherence of a list of documents 
+by the kl-divergence between the query model and the collection 
+model the robustness score quantifies another property of a 
+ranked list the robustness of the ranking in the presence of 
+uncertainty carmel et al found that the distance measured by 
+the jensen-shannon divergence between the retrieved document 
+set and the collection is significantly correlated to average 
+precision vinay et al proposed four measures to capture the 
+geometry of the top retrieved documents for prediction the most 
+effective measure is the sensitivity to document perturbation an 
+idea somewhat similar to the robustness score unfortunately 
+their way of measuring the sensitivity does not perform equally 
+well for short queries and prediction accuracy drops considerably 
+when a state-of-the-art retrieval technique like okapi or a 
+language modeling approach is adopted for retrieval instead of 
+the tf-idf weighting used in their paper 
+the difficulties of applying these models in web search 
+environments have already been mentioned in this paper we 
+mainly adopt the clarity score and the robustness score as our 
+baselines we experimentally show that the baselines even after 
+being carefully tuned are inadequate for the web environment 
+one of our prediction models wig is related to the markov 
+random field mrf model for information retrieval the 
+mrf model directly models term dependence and is found be to 
+highly effective across a variety of test collections particularly 
+web collections and retrieval tasks this model is used to 
+estimate the joint probability distribution over documents and 
+queries an important part of wig the superiority of wig over 
+other prediction techniques based on unigram features which will 
+be demonstrated later in our paper coincides with that of mrf 
+for retrieval in other word it is interesting to note that term 
+dependence when being modeled appropriately can be helpful 
+for both improving and predicting retrieval performance 
+ prediction models 
+ weighted information gain wig 
+this section introduces a weighted information gain approach that 
+incorporates both single term and proximity features for 
+predicting performance for both content-based and named-page 
+ np finding queries 
+given a set of queries q qs s n which includes all 
+possible user queries and a set of documents d dt t  m 
+we assume that each query-document pair qs dt is manually 
+judged and will be put in a relevance list if qs is found to be 
+relevant to dt the joint probability p qs dt over queries q and 
+documents d denotes the probability that pair qs dt will be in 
+the relevance list such assumptions are similar to those used in 
+ assuming that the user issues query qi ∈q and the retrieval 
+results in response to qi is a ranked list l of documents we 
+calculate the amount of information contained in p qs dt with 
+respect to qi and l by eq which is a variant of entropy called 
+the weighted entropy the weights in eq are solely 
+determined by qi and l 
+ log 
+ 
+ ∑− 
+ts 
+tststslq dqpdqweightdqh i 
+in this paper we choose the weights as follows 
+lindocumentsktopthecontainsltwhere 
+otherwise 
+ltdandisifk 
+dqweight 
+k 
+kt 
+ts 
+ 
+ 
+ 
+ 
+ 
+⎩ 
+⎨ 
+⎧ ∈ 
+ 
+the cutoff rank k is a parameter in our model that will be 
+discussed later accordingly eq can be simplified as follows 
+ log 
+ 
+ 
+ 
+ ∑∈ 
+− 
+ltd 
+titslq 
+kt 
+i 
+dqp 
+k 
+dqh 
+unfortunately weighted entropy tslq dqh i 
+computed by eq 
+which represents the amount of information about how likely the 
+top ranked documents in l would be relevant to query qi on 
+average cannot be compared across different queries making it 
+inappropriate for directly predicting query performance to 
+mitigate this problem we come up with a background distribution 
+p qs c over q and d by imagining that every document in d is 
+replaced by the same special document c which represents 
+average language usage in this paper c is created by 
+concatenating every document in d roughly speaking c is the 
+collection the document set dt without document boundaries 
+similarly weighted entropy cqh slqi 
+calculated by eq 
+represents the amount of information about how likely an average 
+document represented by the whole collection would be relevant 
+to query qi 
+now we introduce our performance predictor wig which is the 
+weighted information gain computed as the difference 
+between tslq dqh i 
+and cqh slqi 
+ specifically given query 
+qi collection c and ranked list l of documents wig is 
+calculated as follows 
+ 
+ 
+ 
+log 
+ 
+ 
+ 
+log 
+ 
+ 
+ 
+∑∑ ∈ 
+ 
+− 
+ltd i 
+ti 
+ts s 
+ts 
+ts 
+tslqslqi 
+kt 
+ii 
+cqp 
+dqp 
+kcqp 
+dqp 
+dqweight 
+dqhcqhlcqwig 
+wig computed by eq measures the change in information about 
+the quality of retrieval in response to query qi from an 
+imaginary state that only an average document is retrieved to a 
+posterior state that the actual search results are observed we 
+hypothesize that wig is positively correlated with retrieval 
+effectiveness because high quality retrieval should be much more 
+effective than just returning the average document 
+the heart of this technique is how to estimate the joint 
+distribution p qs dt in the language modeling approach to ir a 
+variety of models can be applied readily to estimate this 
+distribution although most of these models are based on the 
+bagof-words assumption recent work on modeling term dependence 
+under the language modeling framework have shown consistent 
+and significant improvements in retrieval effectiveness over 
+bagof-words models inspired by the success of incorporating term 
+proximity features into language models we decide to adopt a 
+good dependence model to estimate the probability p qs dt the 
+model we chose for this paper is metzler and croft s markov 
+random field mrf model which has already demonstrated 
+superiority over a number of collections and different retrieval 
+tasks 
+according to the mrf model log p qi dt can be written as 
+ loglog log 
+ 
+ ∑∈ 
+ − 
+iqf 
+tti dpzdqp 
+ξ 
+ξ ξλ 
+where z is a constant that ensures that p qi dt sums up to 
+f qi consists of a set of features expanded from the original 
+query qi for example assuming that query qi is talented 
+student program f qi includes features like program and 
+talented student we consider two kinds of features single 
+term features t and proximity features p proximity features 
+include exact phrase and unordered window uwn features 
+as described in note that f qi is the union of t qi and 
+p qi for more details on f qi such as how to expand the 
+original query qi to f qi we refer the reader to and 
+p ξ dt denotes the probability that feature ξ will occur in dt 
+more details on p ξ dt will be provided later in this section the 
+choice of λξ is somewhat different from that used in since λξ 
+plays a dual role in our model the first role which is the same as 
+in is to weight between single term and proximity features 
+the other role which is specific to our prediction task is to 
+normalize the size of f qi we found that the following weight 
+strategy for λξ satisfies the above two roles and generalizes well 
+on a variety of collections and query types 
+ 
+ 
+ 
+ 
+ 
+ 
+⎪ 
+⎪ 
+⎩ 
+⎪ 
+⎪ 
+⎨ 
+⎧ 
+∈ 
+− 
+∈ 
+ 
+i 
+i 
+t 
+i 
+i 
+t 
+qp 
+qp 
+qt 
+qt 
+ξ 
+λ 
+ξ 
+λ 
+λξ 
+where t qi and p qi denote the number of single term and 
+proximity features in f qi respectively the reason for choosing 
+the square root function in the denominator of λξ is to penalize a 
+feature set of large size appropriately making wig more 
+comparable across queries of various lengths λt is a fixed 
+parameter and set to according to throughout this paper 
+similarly log p qi c can be written as 
+ loglog log 
+ 
+ ∑∈ 
+ − 
+iqf 
+i cpzcqp 
+ξ 
+ξ ξλ 
+when constant z and z are dropped wig computed in eq can 
+be rewritten as follows by plugging in eq and eq 
+ 
+ 
+ 
+log 
+ 
+ 
+ 
+∑ ∑∈ ∈ 
+ 
+ltd qf 
+t 
+i 
+kt i 
+cp 
+dp 
+k 
+lcqwig 
+ξ 
+ξ 
+ξ 
+ξ 
+λ 
+one of the advantages of wig over other techniques is that it can 
+handle well both content-based and np queries based on the type 
+ or the predicted type of qi the calculation of wig in eq 
+differs in two aspects how to estimate p ξ dt and p ξ c and 
+ how to choose k 
+for content-based queries p ξ c is estimated by the relative 
+frequency of feature ξ in collection c as a whole the estimation 
+of p ξ dt is the same as in namely we estimate p ξ dt by 
+the relative frequency of feature ξ in dt linearly smoothed with 
+collection frequency p ξ c k in eq is treated as a free 
+parameter note that k is the only free parameter in the 
+computation of wig for content-based queries because all 
+parameters involved in p ξ dt are assumed to be fixed by taking 
+the suggested values in 
+regarding np queries we make use of document structure to 
+estimate p ξ dt and p ξ c by the so-called mixture of language 
+models proposed in and incorporated into the mrf model for 
+named-page finding retrieval in the basic idea is that a 
+document collection is divided into several fields such as the 
+title field the main-body field and the heading field p ξ dt and 
+p ξ c are estimated by a linear combination of the language 
+models from each field due to space constraints we refer the 
+reader to for details we adopt the exact same set of 
+parameters as used in for estimation with regard to k in eq 
+we set k to because the named-page finding task heavily 
+focuses on the first ranked document consequently there are no 
+free parameters in the computation of wig for np queries 
+ query feedback 
+in this section we introduce another technique called query 
+feedback qf for prediction suppose that a user issues query q 
+to a retrieval system and a ranked list l of documents is returned 
+we view the retrieval system as a noisy channel specifically we 
+assume that the output of the channel is l and the input is q 
+after going through the channel q becomes corrupted and is 
+transformed to ranked list l 
+by thinking about the retrieval process this way the problem of 
+predicting retrieval effectiveness turns to the task of evaluating 
+the quality of the channel in other words prediction becomes 
+finding a way to measure the degree of corruption that arises 
+when q is transformed to l as directly computing the degree of 
+the corruption is difficult we tackle this problem by 
+approximation our main idea is that we measure to what extent 
+information on q can be recovered from l on the assumption that 
+only l is observed specifically we design a decoder that can 
+accurately translate l back into new query q and the similarity s 
+between the original query q and the new query q is adopted as 
+a performance predictor this is a sketch of how the qf technique 
+predicts query performance before filling in more details we 
+briefly discuss why this method would work 
+there is a relation between the similarity s defined above and 
+retrieval performance on the one hand if the retrieval has 
+strayed from the original sense of the query q the new query q 
+extracted from ranked list l in response to q would be very 
+different from the original query q on the other hand a query 
+distilled from a ranked list containing many relevant documents is 
+likely to be similar to the original query further examples in 
+support of the relation will be provided later 
+next we detail how to build the decoder and how to measure the 
+similarity s 
+in essence the goal of the decoder is to compress ranked list l 
+into a few informative terms that should represent the content of 
+the top ranked documents in l our approach to this goal is to 
+represent ranked list l by a language model distribution over 
+terms then terms are ranked by their contribution to the 
+language model s kl kullback-leibler divergence from the 
+background collection model top ranked terms will be chosen to 
+form the new query q this approach is similar to that used in 
+section of 
+specifically we take three steps to compress ranked list l into 
+query q without referring to the original query 
+ we adopt the ranked list language model to estimate a 
+language model based on ranked list l the model can be written 
+as 
+ ∑∈ 
+ 
+ld 
+ldpdwplwp 
+where w is any term d is a document p d l is estimated by a 
+linearly decreasing function of the rank of document d 
+ each term in p w l is ranked by the following kl-divergence 
+contribution 
+ 
+ 
+ 
+log 
+cwp 
+lwp 
+lwp 
+where p w c is the collection model estimated by the relative 
+frequency of term w in collection c as a whole 
+ the top n ranked terms by eq form a weighted query 
+q wi ti i n where wi denotes the i-th ranked term and 
+weight ti is the kl-divergence contribution of wi in eq 
+term cruise ship vessel sea passenger 
+kl 
+contribution 
+ 
+table top terms compressed from the ranked list in 
+response to query cruise ship damage sea life 
+two representative examples one for a poorly performing query 
+cruise ship damage sea life trec topic average 
+precision and the other for a high performing query 
+prostate cancer treatments trec topic average precision 
+ are shown in table and respectively these examples 
+indicate how the similarity between the original and the new 
+query correlates with retrieval performance the parameter n in 
+step is set to empirically and choosing a larger value of n is 
+unnecessary since the weights after the top are usually too 
+small to make any difference 
+term prostate cancer treatment men therapy 
+kl 
+contribution 
+ 
+table top terms compressed from the ranked list in 
+response to query prostate cancer treatments 
+to measure the similarity between original query q and new 
+query q we first use q to do retrieval on the same collection a 
+variant of the query likelihood model is adopted for retrieval 
+namely documents are ranked by 
+ 
+ 
+∑∈ 
+ 
+qtw 
+t 
+i 
+ii 
+i 
+dwpdqp 
+where wi is a term in q and ti is the associated weight d is a 
+document 
+let l denote the new ranked list returned from the above 
+retrieval the similarity is measured by the overlap of documents 
+in l and l specifically the percentage of documents in the top 
+k documents of l that are also present in the top k documents in 
+l the cutoff k is treated as a free parameter 
+we summarize here how the qf technique predicts performance 
+given a query q and the associated ranked list l we first obtain a 
+weighted query q compressed from l by the above three steps 
+then we use q to perform retrieval and the new ranked list is l 
+the overlap of documents in l and l is used for prediction 
+ first rank change frc 
+in this section we propose a method called the first rank change 
+ frc for performance prediction for np queries this method is 
+derived from the ranking robustness technique that is mainly 
+designed for content-based queries when directly applied to np 
+queries the robustness technique will be less effective because it 
+takes the top ranked documents as a whole into account while np 
+queries usually have only one single relevant document instead 
+our technique focuses on the first rank document while the main 
+idea of the robustness method remains specifically the 
+pseudocode for computing frc is shown in figure 
+input ranked list l di where i di denotes the i-th 
+ranked document query q 
+ initialize set the number of trials j counter c 
+ for i to j 
+ perturb every document in l let the outcome be a set f di 
+where di denotes the perturbed version of di 
+ do retrieval with query q on set f 
+ c c if and only if d is ranked first in step 
+ end of for 
+ return the ratio c j 
+figure pseudo-code for computing frc 
+frc approximates the probability that the first ranked document 
+in the original list l will remain ranked first even after the 
+documents are perturbed the higher the probability is the more 
+confidence we have in the first ranked document on the other 
+hand in the extreme case of a random ranking the probability 
+would be as low as we expect that frc has a positive 
+association with np query performance we adopt to 
+implement the document perturbation step step in fig using 
+poisson distributions for more details we refer the reader to 
+ evaluation 
+we now present the results of predicting query performance by 
+our models three state-of-the-art techniques are adopted as our 
+baselines we evaluate our techniques across a variety of web 
+retrieval settings as mentioned before we consider two types of 
+queries that is content-based cb queries and named-page np 
+finding queries 
+first suppose that the query types are known we investigate the 
+correlation between the predicted retrieval performance and the 
+actual performance for both types of queries separately results 
+show that our methods yield considerable improvements over the 
+baselines 
+we then consider a more challenging scenario where no prior 
+information on query types is available two sub-cases are 
+considered in the first one there exists only one type of query but 
+the actual type is unknown we assume a mixture of the two 
+query types in the second case we demonstrate that our models 
+achieve good accuracy under this demanding scenario making 
+prediction practical in a real-world web search environment 
+ experimental setup 
+our evaluation focuses on the gov collection which contains 
+about million documents crawled from web sites in the gov 
+domain during we create two kinds of data set for cb 
+queries and np queries respectively for the cb type we use the 
+ad-hoc topics of the terabyte tracks of and and 
+name them tb -adhoc tb -adhoc and tb -adhoc 
+respectively in addition we also use the ad-hoc topics of the 
+ robust track rt to test the adaptability of our 
+techniques to a non-web environment for np queries we use the 
+named-page finding topics of the terabyte tracks of and 
+ and we name them tb -np and tb -np respectively all 
+queries used in our experiments are titles of trec topics as we 
+center on web retrieval table summarizes the above data sets 
+name collection topic number query type 
+tb -adhoc gov - cb 
+tb -adhoc gov - cb 
+tb -adhoc gov - cb 
+rt disk 
+ minus cr 
+ 
+ - 
+cb 
+tb -np gov np -np np 
+tb -np gov np -np np 
+table summary of test collections and topics 
+retrieval performance of individual content-based and np queries 
+is measured by the average precision and reciprocal rank of the 
+first correct answer respectively we make use of the markov 
+random field model for both ad-hoc and named-page finding 
+retrieval we adopt the same setting of retrieval parameters used 
+in the indri search engine is used for all of our 
+experiments though not reported here we also tried the query 
+likelihood model for ad-hoc retrieval and found that the results 
+change little because of the very high correlation between the 
+query performances obtained by the two retrieval models 
+measured by pearson s coefficient 
+ known query types 
+suppose that query types are known we treat each type of query 
+separately and measure the correlation with average precision or 
+the reciprocal rank in the case of np queries we adopt the 
+pearson s correlation test which reflects the degree of linear 
+relationship between the predicted and the actual retrieval 
+performance 
+ content-based queries 
+methods clarity robust jsd wig qf wig 
+ qf 
+tb 
+ adhoc 
+ 
+tb 
+adhoc 
+ n a 
+table pearson s correlation coefficients for correlation with 
+average precision on the terabyte tracks ad-hoc for clarity 
+score robustness score the jsd-based method we directly 
+cites the score reported in wig query feedback qf and 
+a linear combination of wig and qf bold cases mean the 
+results are statistically significant at the level 
+table shows the correlation with average precision on two data 
+sets one is a combination of tb -adhoc and tb -adhoc 
+topics in total and the other is tb -adhoc topics the 
+reason that we put tb -adhoc and tb -adhoc together is to 
+make our results comparable to our baselines are the clarity 
+score clarity the robustness score robust and the 
+jsdbased method jsd for the clarity and robustness score we 
+have tried different parameter settings and report the highest 
+correlation coefficients we have found we directly cite the result 
+of the jsd-based method reported in the table also shows the 
+results for the weighted information gain wig method and the 
+query feedback qf method for predicting content-based 
+queries as we described in the previous section both wig and 
+qf have one free parameter to set that is the cutoff rank k we 
+train the parameter on one dataset and test on the other when 
+combining wig and qf a simple linear combination is used and 
+the combination weight is learned from the training data set 
+from these results we can see that our methods are considerably 
+more accurate compared to the baselines we also observe that 
+further improvements are obtained from the combination of wig 
+and qf suggesting that they measure different properties of the 
+retrieval process that relate to performance 
+we discover that our methods generalize well on tb -adhoc 
+while the correlation for the clarity score with retrieval 
+performance on this data set is considerably worse further 
+investigation shows that the mean average precision of 
+tb -adhoc is and is about better than that of the first data set 
+while the other three methods typically consider the top or 
+less documents given a ranked list the clarity method usually 
+needs the top or more documents to adequately measure the 
+coherence of a ranked list higher mean average precision makes 
+ranked lists retrieved by different queries more similar in terms of 
+coherence at the level of top documents we believe that this 
+is the main reason for the low accuracy of the clarity score on the 
+second data set 
+though this paper focuses on a web search environment it is 
+desirable that our techniques will work consistently well in other 
+situations to this end we examine the effectiveness of our 
+techniques on the robust track for our methods we 
+evenly divide all of the test queries into five groups and perform 
+five-fold cross validation each time we use one group for 
+training and the remaining four groups for testing we make use 
+of all of the queries for our two baselines that is the clarity score 
+and the robustness score the parameters for our baselines are the 
+same as those used in the results shown in table 
+demonstrate that the prediction accuracy of our methods is on a 
+par with that of the two strong baselines 
+clarity robust wig qf 
+ 
+table comparison of pearson s correlation coefficients on 
+the robust track for clarity score robustness score 
+wig and query feedback qf bold cases mean the results 
+are statistically significant at the level 
+furthermore we examine the prediction sensitivity of our 
+methods to the cutoff rank k with respect to wig it is quite 
+robust to k on the terabyte tracks - while it prefers a 
+small value of k like on the robust track in other words 
+a small value of k is a nearly-optimal choice for both kinds of 
+tracks considering the fact that all other parameters involved in 
+wig are fixed and consequently the same for the two cases this 
+means wig can achieve nearly-optimal prediction accuracy in 
+two considerably different situations with exactly the same 
+parameter setting regarding qf it prefers a larger value of k 
+such as on the terabyte tracks and a smaller value of k such 
+as on the robust track 
+ np queries 
+we adopt wig and first rank change frc for predicting 
+npquery performance we also try a linear combination of the two as 
+in the previous section the combination weight is obtained from 
+the other data set we use the correlation with the reciprocal ranks 
+measured by the pearson s correlation test to evaluate prediction 
+quality the results are presented in table again our baselines 
+are the clarity score and the robustness score 
+to make a fair comparison we tune the clarity score in different 
+ways we found that using the first ranked document to build the 
+query model yields the best prediction accuracy we also 
+attempted to utilize document structure by using the mixture of 
+language models mentioned in section little improvement 
+was obtained the correlation coefficients for the clarity score 
+reported in table are the best we have found as we can see 
+our methods considerably outperform the clarity score technique 
+on both of the runs this confirms our intuition that the use of a 
+coherence-based measure like the clarity score is inappropriate for 
+np queries 
+methods clarity robust wig frc wig frc 
+tb -np - 
+tb -np - 
+table pearson s correlation coefficients for correlation with 
+reciprocal ranks on the terabyte tracks np for clarity 
+score robustness score wig the first rank change frc 
+and a linear combination of wig and frc bold cases mean 
+the results are statistically significant at the level 
+regarding the robustness score we also tune the parameters and 
+report the best we have found we observe an interesting and 
+surprising negative correlation with reciprocal ranks we explain 
+this finding briefly a high robustness score means that a number 
+of top ranked documents in the original ranked list are still highly 
+ranked after perturbing the documents the existence of such 
+documents is a good sign of high performance for content-based 
+queries as these queries usually contain a number of relevant 
+documents however with regard to np queries one 
+fundamental difference is that there is only one relevant document 
+for each query the existence of such documents can confuse the 
+ranking function and lead to low retrieval performance although 
+the negative correlation with retrieval performance exists the 
+strength of the correlation is weaker and less consistent compared 
+to our methods as shown in table 
+based on the above analysis we can see that current prediction 
+techniques like clarity score and robustness score that are mainly 
+designed for content-based queries face significant challenges and 
+are inadequate to deal with np queries our two techniques 
+proposed for np queries consistently demonstrate good prediction 
+accuracy displaying initial success in solving the problem of 
+predicting performance for np queries another point we want to 
+stress is that the wig method works well for both types of 
+queries a desirable property that most prediction techniques lack 
+ unknown query types 
+in this section we run two kinds of experiments without access to 
+query type labels first we assume that only one type of query 
+exists but the type is unknown second we experiment on a 
+mixture of content-based and np queries the following two 
+subsections will report results for the two conditions respectively 
+ only one type exists 
+we assume that all queries are of the same type that is they are 
+either np queries or content-based queries we choose wig to 
+deal with this case because it shows good prediction accuracy for 
+both types of queries in the previous section we consider two 
+cases cb all title queries from the ad-hoc task of the 
+terabyte tracks - np all np queries from the 
+named page finding task of the terabyte tracks and 
+we take a simple strategy by labeling all of the queries in each 
+case as the same type either np or cb regardless of their actual 
+type the computation of wig will be based on the labeled query 
+type instead of the actual type there are four possibilities with 
+respect to the relation between the actual type and the labeled 
+type the correlation with retrieval performance under the four 
+possibilities is presented in table for example the value 
+at the intersection between the second row and the third column 
+shows the pearson s correlation coefficient for correlation with 
+average precision when the content-based queries are incorrectly 
+labeled as the np type 
+based on these results we recommend treating all queries as the 
+np type when only one query type exists and accurate query 
+classification is not feasible considering the risk that a large loss 
+of accuracy will occur if np queries are incorrectly labeled as 
+content-based queries these results also demonstrate the strong 
+adaptability of wig to different query types 
+cb labeled np labeled 
+cb actual 
+np actual 
+table comparison of pearson s correlation coefficients for 
+correlation with retrieval performance under four possibilities 
+on the terabyte tracks np bold cases mean the results are 
+statistically significant at the level 
+ a mixture of contented-based and np queries 
+a mixture of the two types of queries is a more realistic situation 
+that a web search engine will meet we evaluate prediction 
+accuracy by how accurately poorly-performing queries can be 
+identified by the prediction method assuming that actual query 
+types are unknown but we can predict query types this is a 
+challenging task because both the predicted and actual 
+performance for one type of query can be incomparable to that for 
+the other type 
+next we discuss how to implement our evaluation we create a 
+query pool which consists of all of the ad-hoc title queries 
+from terabyte track - and all of the np queries 
+from terabyte track we divide the queries in the 
+pool into classes good better than of the queries of the 
+same type in terms of retrieval performance and bad 
+ otherwise according to these standards a np query with the 
+reciprocal rank above or a content-based query with the 
+average precision above will be considered as good 
+then each time we randomly select one query q from the pool 
+with probability p that q is contented-based the remaining 
+queries are used as training data we first decide the type of query 
+q according to a query classifier namely the query classifier 
+tells us whether query q is np or content-based based on the 
+predicted query type and the score computed for query q by a 
+prediction technique a binary decision is made about whether 
+query q is good or bad by comparing to the score threshold of the 
+predicted query type obtained from the training data prediction 
+accuracy is measured by the accuracy of the binary decision in 
+our implementation we repeatedly take a test query from the 
+query pool and prediction accuracy is computed as the 
+percentage of correct decisions that is a good bad query is 
+predicted to be good bad it is obvious that random guessing will 
+lead to accuracy 
+let us take the wig method for example to illustrate the process 
+two wig thresholds one for np queries and the other for 
+content-based queries are trained by maximizing the prediction 
+accuracy on the training data when a test query is labeled as the 
+np cb type by the query type classifier it will be predicted to 
+be good if and only if the wig score for this query is above the 
+np cb threshold similar procedures will be taken for other 
+prediction techniques 
+now we briefly introduce the automatic query type classifier used 
+in this paper we find that the robustness score though originally 
+proposed for performance prediction is a good indicator of query 
+types we find that on average content-based queries have a 
+much higher robustness score than np queries for example 
+figure shows the distributions of robustness scores for np and 
+content-based queries according to this finding the robustness 
+score classifier will attach a np cb label to the query if the 
+robustness score for the query is below above a threshold 
+trained from the training data 
+ 
+ 
+ 
+ 
+ 
+ 
+- - - - - 
+np content-based 
+figure distribution of robustness scores for np and cb 
+queries the np queries are the np topics from the 
+terabyte track the content-based queries are the ad-hoc 
+title from the terabyte tracks - the probability 
+distributions are estimated by the kernel density estimation 
+method 
+strategies robust wig- wig- wig- optimal 
+p 
+p 
+table comparison of prediction accuracy for five strategies 
+in the mixed-query situation two ways to sample a query 
+from the pool the sampled query is content-based with the 
+probability p that is the query is np with probability 
+ set the probability p 
+we consider five strategies in our experiments in the first 
+strategy denoted by robust we use the robustness score for 
+query performance prediction with the help of a perfect query 
+classifier that always correctly map a query into one of the two 
+categories that is np or cb this strategy represents the level of 
+prediction accuracy that current prediction techniques can achieve 
+in an ideal condition that query types are known in the next 
+following three strategies the wig method is adopted for 
+performance prediction the difference among the three is that 
+three different query classifiers are used for each strategy the 
+classifier always classifies a query into the np type the 
+robustness score 
+probabilitydensity 
+classifier is the robust score classifier mentioned above the 
+classifier is a perfect one these three strategies are denoted by 
+wig- wig- and wig- respectively the reason we are 
+interested in wig- is based on the results from section in 
+the last strategy denoted by optimal which serves as an upper 
+bound on how well we can do so far we fully make use of our 
+prediction techniques for each query type assuming a perfect 
+query classifier is available specifically we linearly combine 
+wig and qf for content-based queries and wig and frc for np 
+queries 
+the results for the five strategies are shown in table for each 
+strategy we try two ways to sample a query from the pool the 
+sampled query is cb with probability p the query is np 
+with probability set the probability p from table 
+we can see that in terms of prediction accuracy wig- the wig 
+method with the automatic query classifier is not only better than 
+the first two cases but also is close to wig- where a perfect 
+classifier is assumed some further improvements over wig- are 
+observed when combined with other prediction techniques the 
+merit of wig- is that it provides a practical solution to 
+automatically identifying poorly performing queries in a web 
+search environment with mixed query types which poses 
+considerable obstacles to traditional prediction techniques 
+ conclusions and future work 
+to our knowledge our paper is the first to thoroughly explore 
+prediction of query performance in web search environments we 
+demonstrated that our models resulted in higher prediction 
+accuracy than previously published techniques not specially 
+devised for web search scenarios in this paper we focus on two 
+types of queries in web search content-based and named-page 
+ np finding queries corresponding to the ad-hoc retrieval task 
+and the named-page finding task respectively for both types of 
+web queries our prediction models were shown to be 
+substantially more accurate than the current state-of-the-art 
+techniques furthermore we considered a more realistic case that 
+no prior information on query types is available we 
+demonstrated that the wig method is particularly suitable for this 
+situation considering the adaptability of wig to a range of 
+collections and query types one of our future plans is to apply 
+this method to predict user preference of search results on realistic 
+data collected from a commercial search engine 
+other than accuracy another major issue that prediction 
+techniques have to deal with in a web environment is efficiency 
+fortunately since the wig score is computed just over the terms 
+and the phrases that appear in the query this calculation can be 
+made very efficient with the support of index on the other hand 
+the computation of qf and frc is relatively less efficient since 
+qf needs to retrieve the whole collection twice and frc needs to 
+repeatedly rank the perturbed documents how to improve the 
+efficiency of qf and frc is our future work 
+in addition the prediction techniques proposed in this paper have 
+the potential of improving retrieval performance by combining 
+with other ir techniques for example our techniques can be 
+incorporated to popular query modification techniques such as 
+query expansion and query relaxation guided by performance 
+prediction we can make a better decision on when to or how to 
+modify queries to enhance retrieval effectiveness we would like 
+to carry out research in this direction in the future 
+ acknowlegments 
+this work was supported in part by the center for intelligent 
+information retrieval in part by the defense advanced research 
+projects agency darpa under contract number 
+hr - -c and in part by an award from google any opinions 
+findings and conclusions or recommendations expressed in this 
+material are those of the author and do not necessarily reflect 
+those of the sponsor in addition we thank donald metzler for his 
+valuable comments on this work 
+ references 
+ y zhou w b croft ranking robustness a novel 
+framework to predict query performance in proceedings of 
+cikm 
+ d carmel e yom-tov a darlow d pelleg what makes a 
+query difficult in proceedings of sigir 
+ c l a clarke f scholer i soboroff the trec 
+terabyte track in the online proceedings of trec 
+ b he and i ounis inferring query performance using 
+preretrieval predictors in proceedings of the spire 
+ s tomlinson robust web and terabyte retrieval with 
+hummingbird searchserver at trec in the online 
+proceedings of trec 
+ s cronen-townsend y zhou w b croft predicting 
+query performance in proceedings of sigir 
+ v vinay i j cox n mill-frayling k wood on ranking the 
+effectiveness of searcher in proceedings of sigir 
+ d metzler w b croft a markov random filed model for 
+term dependencies in proceedings of sigir 
+ d metzler t strohman y zhou w b croft indri at trec 
+ terabyte track in the online proceedings of 
+trec 
+ p ogilvie and j callan combining document 
+representations for known-item search in proceedings of 
+sigir 
+ a berger j lafferty information retrieval as statistical 
+translation in proceedings of sigir 
+ indri search engine http www lemurproject org indri 
+ i j taneja on generalized information measures and their 
+applications advances in electronics and electron physics 
+academic press usa - 
+ s cronen-townsend y zhou and croft w b a 
+framework for selective query expansion in proceedings 
+of cikm 
+ f song w b croft a general language model for 
+information retrieval in proceedings of sigir 
+ personal email contact with vishwa vinay and our own 
+experiments 
+ e yom-tov s fine d carmel a darlow learning to 
+estimate query difficulty including applications to missing 
+content detection and distributed information retrieval in 
+proceedings of sigir 

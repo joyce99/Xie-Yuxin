@@ -1,0 +1,1473 @@
+towards truthful mechanisms for binary demand games 
+a general framework 
+ming-yang kao 
+ 
+dept of computer science 
+northwestern university 
+evanston il usa 
+kao cs northwestern edu 
+xiang-yang li 
+† 
+dept of computer science 
+illinois institute of technology 
+chicago il usa 
+xli cs iit edu 
+weizhao wang 
+dept of computer science 
+illinois institute of technology 
+chicago il usa 
+wangwei  iit edu 
+abstract 
+the family of vickrey-clarke-groves vcg mechanisms is 
+arguably the most celebrated achievement in truthful mechanism 
+design however vcg mechanisms have their limitations they only 
+apply to optimization problems with a utilitarian or affine 
+objective function and their output should optimize the objective 
+function for many optimization problems finding the optimal output 
+is computationally intractable if we apply vcg mechanisms to 
+polynomial-time algorithms that approximate the optimal solution 
+the resulting mechanisms may no longer be truthful 
+in light of these limitations it is useful to study whether we can 
+design a truthful non-vcg payment scheme that is computationally 
+tractable for a given allocation rule o in this paper we focus our 
+attention on binary demand games in which the agents only 
+available actions are to take part in the a game or not to for these 
+problems we prove that a truthful mechanism m o p exists with 
+a proper payment method p iff the allocation rule o satisfies a 
+certain monotonicity property we provide a general framework to 
+design such p we further propose several general composition-based 
+techniques to compute p efficiently for various types of output 
+in particular we show how p can be computed through or and 
+combinations round-based combinations and some more complex 
+combinations of the outputs from subgames 
+categories and subject descriptors 
+f analysis of algorithms and problem complexity 
+general j social and behavioral sciences economics k 
+ computer and society electronic commerce 
+general terms 
+algorithms economics theory 
+ introduction 
+in recent years with the rapid development of the internet many 
+protocols and algorithms have been proposed to make the internet 
+more efficient and reliable the internet is a complex distributed 
+system where a multitude of heterogeneous agents cooperate to 
+achieve some common goals and the existing protocols and 
+algorithms often assume that all agents will follow the prescribed rules 
+without deviation however in some settings where the agents are 
+selfish instead of altruistic it is more reasonable to assume these 
+agents are rational - maximize their own profits - according to the 
+neoclassic economics and new models are needed to cope with the 
+selfish behavior of such agents 
+towards this end nisan and ronen proposed the framework 
+of algorithmic mechanism design and applied vcg mechanisms to 
+some fundamental problems in computer science including 
+shortest paths minimum spanning trees and scheduling on unrelated 
+machines the vcg mechanisms are applicable to 
+mechanism design problems whose outputs optimize the 
+utilitarian objective function which is simply the sum of all agents 
+valuations unfortunately some objective functions are not utilitarian 
+even for those problems with a utilitarian objective function 
+sometimes it is impossible to find the optimal output in polynomial time 
+unless p np some mechanisms other than vcg mechanism are 
+needed to address these issues 
+archer and tardos studied a scheduling problem where it 
+is np-hard to find the optimal output they pointed out that a 
+certain monotonicity property of the output work load is a 
+necessary and sufficient condition for the existence of a truthful 
+mechanism for their scheduling problem auletta et al studied a 
+similar scheduling problem they provided a family of 
+deterministic truthful -approximation mechanisms for any fixed 
+number of machines and several -truthful mechanisms for some 
+np-hard restrictions of their scheduling problem lehmann et al 
+ studied the single-minded combinatorial auction and gave a√ 
+m-approximation truthful mechanism where m is the number of 
+goods they also pointed out that a certain monotonicity in the 
+allocation rule can lead to a truthful mechanism the work of mu alem 
+and nisan is the closest in spirit to our work they 
+characterized all truthful mechanisms based on a certain monotonicity 
+property in a single-minded auction setting they also showed how to 
+used max and if-then-else to combine outputs from 
+subproblems as shown in this paper the max and if-then-else 
+combinations are special cases of the composition-based techniques 
+that we present in this paper for computing the payments in 
+polynomial time under mild assumptions 
+more generally we study how to design truthful mechanisms for 
+binary demand games where the allocation of an agent is either 
+selected or not selected we also assume that the valuations 
+ 
+of agents are uncorrelated i e the valuation of an agent only 
+depends on its own allocation and type recall that a mechanism 
+m o p consists of two parts an allocation rule o and a 
+payment scheme p previously it is often assumed that there is an 
+objective function g and an allocation rule o that either optimizes 
+g exactly or approximately in contrast to the vcg mechanisms 
+we do not require that the allocation should optimize the objective 
+function in fact we do not even require the existence of an 
+objective function given any allocation rule o for a binary demand 
+game we showed that a truthful mechanism m o p exists 
+for the game if and only if o satisfies a certain monotonicity 
+property the monotonicity property only guarantees the existence of a 
+payment scheme p such that o p is truthful we complement 
+this existence theorem with a general framework to design such a 
+payment scheme p furthermore we present general techniques 
+to compute the payment when the output is a composition of the 
+outputs of subgames through the operators or and and through 
+round-based combinations or through intermediate results which 
+may be themselves computed from other subproblems 
+the remainder of the paper is organized as follows in section 
+ we discuss preliminaries and previous works define binary 
+demand games and discuss the basic assumptions about binary 
+demand games in section we show that o satisfying a certain 
+monotonicity property is a necessary and sufficient condition for 
+the existence of a truthful mechanism m o p a framework 
+is then proposed in section to compute the payment p in 
+polynomial time for several types of allocation rules o in section we 
+provide several examples to demonstrate the effectiveness of our 
+general framework we conclude our paper in section with some 
+possible future directions 
+ preliminaries 
+ mechanism design 
+as usually done in the literatures about the designing of 
+algorithms or protocols with inputs from individual agents we adopt 
+the assumption in neoclassic economics that all agents are rational 
+i e they respond to well-defined incentives and will deviate from 
+the protocol only if the deviation improves their gain 
+a standard model for mechanism design is as follows there 
+are n agents n and each agent i has some private 
+information ti called its type only known to itself for example the type 
+ti can be the cost that agent i incurs for forwarding a packet in 
+a network or can be a payment that the agent is willing to pay 
+for a good in an auction the agents types define the type 
+vector t t t tn each agent i has a set of strategies ai 
+from which it can choose for each input vector a a an 
+where agent i plays strategy ai ∈ ai the mechanism m o p 
+computes an output o o a and a payment vector p a 
+ p a pn a here the payment pi · is the money given to 
+agent i and depends on the strategies used by the agents a game 
+is defined as g s m where s is the setting for the game 
+g here s consists the parameters of the game that are set before 
+the game starts and do not depend on the players strategies for 
+example in a unicast routing game the setting consists of the 
+topology of the network the source node and the destination node 
+throughout this paper unless explicitly mentioned otherwise the 
+setting s of the game is fixed and we are only interested in how to 
+design p for a given allocation rule o 
+a valuation function v ti o assigns a monetary amount to agent 
+i for each possible output o everything about a game s m 
+including the setting s the allocation rule o and the payment scheme 
+p is public knowledge except the agent i s actual type ti which 
+is private information to agent i let ui ti o denote the utility of 
+agent i at the outcome of the game o given its preferences ti here 
+following a common assumption in the literature we assume the 
+utility for agent i is quasi-linear i e ui ti o v ti o pi a 
+let a i 
+ai a · · · ai− ai ai · · · an i e each agent 
+j i plays an action aj except that the agent i plays ai let a−i 
+ a · · · ai− ai · · · an denote the actions of all agents 
+except i sometimes we write a−i bi as a i 
+bi an action ai is 
+called dominant for i if it weakly maximizes the utility of i for all 
+possible strategies b−i of other agents i e ui ti o b−i ai ≥ 
+ui ti o b−i ai for all ai ai and b−i 
+a direct-revelation mechanism is a mechanism in which the only 
+actions available to each agent are to report its private type either 
+truthfully or falsely to the mechanism an incentive compatible 
+ ic mechanism is a direct-revelation mechanism in which if an 
+agent reports its type ti truthfully then it will maximize its 
+utility then in a direct-revelation mechanism satisfying ic the 
+payment scheme should satisfy the property that for each agent i 
+v ti o t pi t ≥ v ti o t i 
+ti pi t i 
+ti another 
+common requirement in the literature for mechanism design is so called 
+individual rationality or voluntary participation the agent s utility 
+of participating in the output of the mechanism is not less than the 
+utility of the agent of not participating a direct-revelation 
+mechanism is strategproof if it satisfies both ic and ir properties 
+arguably the most important positive result in mechanism 
+design is the generalized vickrey-clarke-groves vcg mechanism 
+by vickrey clarke and groves the vcg 
+mechanism applies to affine maximization problems where the 
+objective function is utilitarian g o t 
+p 
+i v ti o i e the sum of 
+all agents valuations and the set of possible outputs is assumed 
+to be finite a direct revelation mechanism m o t p t 
+belongs to the vcg family if the allocation o t maximizesp 
+i v ti o and the payment to agent i is pi t 
+p 
+j i vj tj o t 
+hi 
+ t−i where hi 
+ is an arbitrary function of t−i under mild 
+assumptions vcg mechanisms are the only truthful implementations 
+for utilitarian problems 
+the allocation rule of a vcg mechanism is required to 
+maximize the objective function in the range of the allocation function 
+this makes the mechanism computationally intractable in many 
+cases furthermore replacing an optimal algorithm for 
+computing the output with an approximation algorithm usually leads to 
+untruthful mechanisms if a vcg payment scheme is used in this 
+paper we study how to design a truthful mechanism that does not 
+optimize a utilitarian objective function 
+ binary demand games 
+a binary demand game is a game g s m where m 
+ o p and the range of o is n 
+ in other words the 
+output is a n-tuple vector o t o t o t on t where 
+oi t respectively means that agent i is respectively is 
+not selected examples of binary demand games include unicast 
+ and multicast generally subgraph 
+construction by selecting some links nodes to satisfy some property 
+facility location and a certain auction 
+hereafter we make the following further assumptions 
+ the valuation of the agents are not correlated i e v ti o is 
+a function of v ti oi only is denoted as v ti oi 
+ the valuation v ti oi is a publicly known value and is 
+normalized to this assumption is needed to guarantee the ir 
+property 
+thus throughout his paper we only consider these direct-revelation 
+mechanisms in which every agent only needs to reveal its valuation 
+vi v ti 
+ 
+notice that in applications where agents providing service and 
+receiving payment e g unicast and job scheduling the valuation 
+vi of an agent i is usually negative for the convenience of 
+presentation we define the cost of agent as ci −v ti i e it costs 
+agent i ci to provide the service throughout this paper we will 
+use ci instead of vi in our analysis all our results can apply to 
+the case where the agents receive the service rather than provide by 
+setting ci to negative as in auction 
+in a binary demand game if we want to optimize an 
+objective function g o t then we call it a binary optimization demand 
+game the main differences between the binary demand games and 
+those problems that can be solved by vcg mechanisms are 
+ the objective function is utilitarian or affine maximization 
+problem for a problem solvable by vcg while there is no 
+restriction on the objective function for a binary demand game 
+ the allocation rule o studied here does not necessarily 
+optimize an objective function while a vcg mechanism only 
+uses the output that optimizes the objective function we 
+even do not require the existence of an objective function 
+ we assume that the agents valuations are not correlated in 
+a binary demand game while the agents valuations may be 
+correlated in a vcg mechanism 
+in this paper we assume for technical convenience that the 
+objective function g o c if exists is continuous with respect to the 
+cost ci but most of our results are directly applicable to the discrete 
+case without any modification 
+ previous work 
+lehmann et al studied how to design an efficient truthful 
+mechanism for single-minded combinatorial auction in a 
+singleminded combinatorial auction each agent i ≤ i ≤ n only wants 
+to buy a subset si ⊆ s with private price ci a single-minded 
+bidder i declares a bid bi si ai with si ⊆ s and ai ∈ r 
+ 
+in it is assumed that the set of goods allocated to an agent 
+i is either si or ∅ which is known as exactness lehmann et al 
+gave a greedy round-based allocation algorithm based on the rank 
+ai 
+ si that has an approximation ratio 
+√ 
+m where m is the 
+number of goods in s based on the approximation algorithm they 
+gave a truthful payment scheme for an allocation rule satisfying 
+ exactness the set of goods allocated to an agent i is either si or 
+∅ monotonicity proposing more money for fewer goods 
+cannot cause a bidder to lose its bid they proposed a truthful payment 
+scheme as follows charge a winning bidder a certain amount 
+that does not depend on its own bidding charge a losing 
+bidder notice the assumption of exactness reveals that the single 
+minded auction is indeed a binary demand game their payment 
+scheme inspired our payment scheme for binary demand game 
+in archer et al studied the combinatorial auctions where 
+multiple copies of many different items are on sale and each 
+bidder i desires only one subset si they devised a randomized 
+rounding method that is incentive compatible and gave a truthful 
+mechanism for combinatorial auctions with single parameter agents that 
+approximately maximizes the social value of the auction as they 
+pointed out their method is strongly truthful in sense that it is 
+truthful with high probability − where is an error probability on 
+the contrary in this paper we study how to design a deterministic 
+mechanism that is truthful based on some given allocation rules 
+in archer and tardos showed how to design truthful 
+mechanisms for several combinatorial problems where each agent s 
+private information is naturally expressed by a single positive real 
+number which will always be the cost incurred per unit load the 
+mechanism s output could be arbitrary real number but their 
+valuation is a quasi-linear function t · w where t is the private per 
+unit cost and w is the work load archer and tardos characterized 
+that all truthful mechanism should have decreasing work curves 
+w and that the truthful payment should be pi bi pi 
+biwi bi − 
+r bi 
+ 
+wi u du using this model archer and tardos 
+designed truthful mechanisms for several scheduling related 
+problems including minimizing the span maximizing flow and 
+minimizing the weighted sum of completion time problems notice 
+when the load of the problems is w it is indeed a binary 
+demand game if we apply their characterization of the truthful 
+mechanism their decreasing work curves w implies exactly the 
+monotonicity property of the output but notice that their proof 
+is heavily based on the assumption that the output is a continuous 
+function of the cost thus their conclusion can t directly apply to 
+binary demand games 
+the paper of ahuva mu alem and noam nisan is closest 
+in spirit to our work they clearly stated that we only discussed a 
+limited class of bidders single minded bidders that was introduced 
+by they proved that all truthful mechanisms should have 
+a monotonicity output and their payment scheme is based on the 
+cut value with a simple generalization we get our conclusion for 
+general binary demand game they proposed several combination 
+methods including max if-then-else construction to perform 
+partial search all of their methods required the welfare function 
+associated with the output satisfying bitonic property 
+distinction between our contributions and previous results 
+it has been shown in that for the single minded 
+combinatorial auction there exists a payment scheme which 
+results in a truthful mechanism if the allocation rule satisfies a certain 
+monotonicity property theorem also depends on the 
+monotonicity property but it is applicable to a broader setting than the 
+single minded combinatorial auction in addition the binary demand 
+game studied here is different from the traditional packing ip s we 
+only require that the allocation to each agent is binary and the 
+allocation rule satisfies a certain monotonicity property we do not put 
+any restrictions on the objective function furthermore the main 
+focus of this paper is to design some general techniques to find the 
+truthful payment scheme for a given allocation rule o satisfying a 
+certain monotonicity property 
+ general approaches 
+ properties of strategyproof mechanisms 
+we discuss several properties that mechanisms need to satisfy in 
+order to be truthful 
+theorem if a mechanism m o p satisfies ic then 
+∀i if oi t i 
+ti oi t i 
+ti then pi t i 
+ti pi t i 
+ti 
+corollary for any strategy-proof mechanism for a binary 
+demand game g with setting s if we fix the cost c−i of all agents 
+other than i the payment to agent i is a constant p 
+i if oi c 
+and it is another constant p 
+i if oi c 
+theorem fixed the setting s for a binary demand game 
+if mechanism m o p satisfies ic then mechanism m 
+ o p with the same output method o and pi c pi c − 
+δi c−i for any function δi c−i also satisfies ic 
+the proofs of above theorems are straightforward and thus 
+omitted due to space limit this theorem implies that for the binary 
+demand games we can always normalize the payment to an agent 
+i such that the payment to the agent is when it is not selected 
+hereafter we will only consider normalized payment schemes 
+ 
+ existence of strategyproof mechanisms 
+notice given the setting s a mechanism design problem is 
+composed of two parts the allocation rule o and a payment scheme p 
+in this paper given an allocation rule o we focus our attention 
+on how to design a truthful payment scheme based on o given 
+an allocation rule o for a binary demand game we first present 
+a sufficient and necessary condition for the existence of a truthful 
+payment scheme p 
+definition monotone non-increasing property mp 
+an output method o is said to satisfy the monotone non-increasing 
+property if for every agent i and two of its possible costs ci ci 
+oi c i 
+ci ≤ oi c i 
+ci 
+this definition is not restricted only to binary demand games 
+for binary demand games this definition implies that if oi c i 
+ci 
+ then oi c i 
+ci 
+theorem fix the setting s c−i in a binary demand game 
+g with the allocation rule o the following three conditions are 
+equivalent 
+ there exists a value κi o c−i which we will call a cut value 
+such that oi c if ci κi o c−i and oi c if 
+ci κi o c−i when ci κi o c−i oi c can be 
+either or depending on the tie-breaker of the allocation rule 
+o hereafter we will not consider the tie-breaker scenario 
+in our proofs 
+ the allocation rule o satisfies mp 
+ there exists a truthful payment scheme p for this binary 
+demand game 
+proof the proof that condition implies condition is 
+straightforward and is omitted here 
+we then show condition implies condition the proof of 
+this is similar to a proof in to prove this direction we assume 
+there exists an agent i and two valuation vectors c i 
+ci and c i 
+ci 
+where ci ci oi c i 
+ci and oi c i 
+ci from 
+corollary we know that pi c i 
+ci p 
+i and pi c i 
+ci p 
+i 
+now fix c−i the utility for i when ci ci is ui ci p 
+i 
+when agent i lies its valuation to ci its utility is p 
+i − ci since 
+m o p is truthful we have p 
+i p 
+i − ci 
+now consider the scenario when the actual valuation of agent i 
+is ci ci its utility is p 
+i − ci when it reports its true valuation 
+similarly if it lies its valuation to ci its utility is p 
+i since m 
+ o p is truthful we have p 
+i p 
+i − ci 
+consequently we have p 
+i −ci p 
+i p 
+i −ci this inequality 
+implies that ci ci which is a contradiction 
+we then show condition implies condition we prove this 
+by constructing a payment scheme and proving that this payment 
+scheme is truthful the payment scheme is if oi c then 
+agent i gets payment pi c κi o c−i else it gets payment 
+pi c 
+from condition if oi c then ci κi o c−i thus 
+its utility is κi o c−i − ci which implies that the payment 
+scheme satisfies the ir in the following we prove that this payment 
+scheme also satisfies ic property there are two cases here 
+case ci κ o c−i in this case when i declares its true 
+cost ci its utility is κi o c−i − ci now consider the 
+situation when i declares a cost di ci if di κi o c−i then 
+i gets the same payment and utility since it is still selected if 
+di κi o c−i then its utility becomes since it is not selected 
+anymore thus it has no incentive to lie in this case 
+case ci ≥ κ o c−i in this case when i reveals its true 
+valuation its payment is and the utility is now consider the 
+situation when i declares a valuation di ci if di κi o c−i 
+then i gets the same payment and utility since it is still not selected 
+if di ≤ κi o c−i then its utility becomes κi o c−i − ci ≤ 
+since it is selected now thus it has no incentive to lie 
+the equivalence of the monotonicity property of the allocation 
+rule o and the existence of a truthful mechanism using o can be 
+extended to games beyond binary demand games the details are 
+omitted here due to space limit we now summarize the process to 
+design a truthful payment scheme for a binary demand game based 
+on an output method o 
+general framework truthful mechanism design for a binary 
+demand game 
+stage check whether the allocation rule o satisfies mp if it 
+does not then there is no payment scheme p such that mechanism 
+m o p is truthful otherwise define the payment scheme p 
+as follows 
+stage based on the allocation rule o find the cut value 
+κi o c−i for agent i such that oi c i 
+di when di 
+κi o c−i and oi c i 
+di when di κi o c−i 
+stage the payment for agent i is if oi c the payment is 
+κi o c−i if oi c 
+theorem the payment defined by our general framework 
+is minimum among all truthful payment schemes using o as output 
+ computing cut value functions 
+to find the truthful payment scheme by using general 
+framework the most difficult stage seems to be the stage notice 
+that binary search does not work generally since the valuations of 
+agents may be continuous we give some general techniques that 
+can help with finding the cut value function under certain 
+circumstances our basic approach is as follows first we decompose the 
+allocation rule into several allocation rules next find the cut value 
+function for each of these new allocation rules then we compute 
+the original cut value function by combining these cut value 
+functions of the new allocation rules 
+ simple combinations 
+in this subsection we introduce techniques to compute the cut 
+value function by combining multiple allocation rules with 
+conjunctions or disconjunctions for simplicity given an allocation 
+rule o we will use κ o c to denote a n-tuple vector 
+ κ o c− κ o c− κn o c−n 
+here κi o c−i is the cut value for agent i when the allocation 
+rule is o and the costs c−i of all other agents are fixed 
+theorem with a fixed setting s of a binary demand game 
+assume that there are m allocation rules o 
+ o 
+ · · · om 
+ 
+satisfying the monotonicity property and κ oi 
+ c is the cut value vector 
+for oi 
+ then the allocation rule o c 
+wm 
+i oi 
+ c satisfies the 
+monotonicity property moreover the cut value for o is κ o c 
+maxm 
+i κ oi 
+ c here κ o c maxm 
+i κ oi 
+ c means 
+∀j ∈ n κj o c−j maxm 
+i κj oi 
+ c−j and o c wm 
+i oi 
+ c means ∀j ∈ n oj c o 
+j c ∨ o 
+j c ∨ · · · ∨ 
+om 
+j c 
+proof assume that ci ci and oi c without loss 
+of generality we assume that ok 
+i c for some k ≤ k ≤ 
+m from the assumption that ok 
+i c satisfies mp we obtain that 
+ 
+ok 
+i c i 
+ci thus oi c i 
+ci 
+wm 
+j oj 
+ c this proves 
+that o c satisfies mp the correctness of the cut value function 
+follows directly from theorem 
+many algorithms indeed fall into this category to demonstrate 
+the usefulness of theorem we discuss a concrete example here 
+in a network sometimes we want to deliver a packet to a set of 
+nodes instead of one this problem is known as multicast the 
+most commonly used structure in multicast routing is so called 
+shortest path tree spt consider a network g v e c where 
+v is the set of nodes and vector c is the actual cost of the nodes 
+forwarding the data assume that the source node is s and the 
+receivers are q ⊂ v for each receiver qi ∈ q we compute the 
+shortest path least cost path denoted by lcp s qi d from the 
+source s to qi under the reported cost profile d the union of all 
+such shortest paths forms the shortest path tree we then use 
+general framework to design the truthful payment scheme p when 
+the spt structure is used as the output for multicast i e we 
+design a mechanism m spt p notice that vcg mechanisms 
+cannot be applied here since spt is not an affine maximization 
+we define lcp s qi 
+as the allocation corresponds to the path 
+lcp s qi d i e lcp 
+ s qi 
+k d if and only if node vk is in 
+lcp s qi d then the output spt is defined as 
+w 
+qi∈q lcp s qi 
+ 
+in other words sptk d if and only if qk is selected in 
+some lcp s qi d the shortest path allocation rule is a 
+utilitarian and satisfies mp thus from theorem spt also satisfies 
+mp and the cut value function vector for spt can be calculated as 
+κ spt c maxqi∈q κ lcp s qi 
+ c where κ lcp s qi 
+ c 
+is the cut value function vector for the shortest path lcp s qi c 
+consequently the payment scheme above is truthful and the 
+minimum among all truthful payment schemes when the allocation rule 
+is spt 
+theorem fixed the setting s of a binary demand game 
+assume that there are m output methods o 
+ o 
+ · · · om 
+ 
+satisfying mp and κ oi 
+ c are the cut value functions respectively for 
+oi 
+where i · · · m then the allocation rule o c vm 
+i oi 
+ c satisfies mp moreover the cut value function for o 
+is κ o c minm 
+i κ oi 
+ c 
+we show that our simple combination generalizes the 
+if-thenelse function defined in for an agent i assume that there 
+are two allocation rules o 
+and o 
+satisfying mp let κi o 
+ c−i 
+κi o 
+ c−i be the cut value functions for o 
+ o 
+respectively 
+then the if-then-else function oi c is actually oi c ci ≤ 
+κi o 
+ c−i δ c−i ∧ o 
+ c−i ci ∨ ci κi o 
+ c−i − 
+δ c−i where δ c−i and δ c−i are two positive functions by 
+applying theorems and we know that the allocation rule o 
+satisfies mp and consequently κi o c−i max min κi o 
+ c−i 
+δ c−i κi o 
+ c−i κi o 
+ c−i − δ c−i 
+ round-based allocations 
+some approximation algorithms are round-based where each 
+round of an algorithm selects some agents and updates the setting 
+and the cost profile if necessary for example several 
+approximation algorithms for minimum weight vertex cover maximum 
+weight independent set minimum weight set cover and 
+minimum weight steiner tree fall into this category 
+as an example we discuss the minimum weighted vertex cover 
+problem mwvc to show how to compute the cut value 
+for a round-based output given a graph g v e where the 
+nodes v v vn are the agents and each agent vi has a weight 
+ci we want to find a node set v ⊆ v such that for every edge 
+ u v ∈ e at least one of u and v is in v such v is called a 
+vertex cover of g the valuation of a node i is −ci if it is selected 
+otherwise its valuation is for a subset of nodes v ∈ v we 
+define its weight as c v 
+p 
+i∈v ci 
+we want to find a vertex cover with the minimum weight hence 
+the objective function to be implemented is utilitarian to use the 
+vcg mechanism we need to find the vertex cover with the 
+minimum weight which is np-hard since we are interested in 
+mechanisms that can be computed in polynomial time we must 
+use polynomial-time computable allocation rules many algorithms 
+have been proposed in the literature to approximate the optimal 
+solution in this paper we use a -approximation algorithm given 
+in for the sake of completeness we briefly review this 
+algorithm here the algorithm is round-based each round selects 
+some vertices and discards some vertices for each node i w i 
+is initialized to its weight ci and when w i drops to i is 
+included in the vertex cover to make the presentation clear we say 
+an edge i j is lexicographically smaller than edge i j if 
+ min i j min i j or min i j min i j 
+and max i j max i j 
+algorithm approximate minimum weighted vertex cover 
+input a node weighted graph g v e c 
+output a vertex cover v 
+ set v ∅ for each i ∈ v set w i ci 
+ while v is not a vertex cover do 
+ pick an uncovered edge i j with the least lexicographic 
+order among all uncovered edges 
+ let m min w i w j 
+ update w i to w i − m and w j to w j − m 
+ if w i add i to v if w j add j to v 
+notice selecting an edge using the lexicographic order is 
+crutial to guarantee the monotonicity property algorithm outputs 
+a vertex cover v whose weight is within times of the optimum 
+for convenience we use vc c to denote the vertex cover 
+computed by algorithm when the cost vector of vertices is c below 
+we generalize algorithm to a more general scenario typically a 
+round-based output can be characterized as follows algorithm 
+definition an updating rule ur 
+is said to be 
+crossingindependent if for any agent i not selected in round r sr 
+and cr 
+−i do not depend on cr 
+j for fixed cr 
+−i cr 
+i 
+≤ cr 
+i 
+implies 
+that cr 
+i 
+≤ cr 
+i 
+ 
+we have the following theorem about the existence of a truthful 
+payment using a round based allocation rule a 
+theorem a round-based output a with the framework 
+defined in algorithm satisfies mp if the output methods or 
+satisfy 
+mp and all updating rules ur 
+are crossing-independent 
+proof consider an agent i and fixed c−i we prove that when 
+an agent i is selected with cost ci then it is also selected with cost 
+di ci assume that i is selected in round r with cost ci then 
+under cost di if agent i is selected in a round before r our claim 
+holds otherwise consider in round r clearly the setting sr 
+and 
+the costs of all other agents are the same as what if agent i had cost 
+ci since i is not selected in the previous rounds due to the 
+crossindependent property since i is selected in round r with cost ci i 
+is also selected in round r with di ci due to the reason that or 
+satisfies mp this finishes the proof 
+ 
+algorithm a general round-based allocation rule a 
+ set r c 
+ c and g 
+ g initially 
+ repeat 
+ compute an output or 
+using a deterministic algorithm 
+or 
+ sr 
+× cr 
+→ n 
+ 
+here or 
+ cr 
+and sr 
+are allocation rule cost vector and game 
+setting in game gr 
+ respectively 
+remark or 
+is often a simple greedy algorithm such as 
+selecting the agents that minimize some utilitarian function 
+for the example of vertex cover or 
+will always select the 
+light-weighted node on the lexicographically least 
+uncovered edge i j 
+ let r r update the game gr− 
+to obtain a new game 
+gr 
+with setting sr 
+and cost vector cr 
+according to some rule 
+ur 
+ or− 
+× sr− 
+ cr− 
+ → sr 
+ cr 
+ 
+here we updates the cost and setting of the game 
+remark for the example of vertex cover the 
+updating rule will decrease the weight of vertices i and j by 
+min w i w j 
+ until a valid output is found 
+ return the union of the set of selected players of each round as 
+the final output for the example of vertex cover it is the union 
+of nodes selected in all rounds 
+algorithm compute cut value for round-based algorithms 
+input a round-based output a a game g 
+ g and a updating 
+function vector u 
+output the cut value x for agent k 
+ set r and ck ζ recall that ζ is a value that can 
+guarantee ak when an agent reports the cost ζ 
+ repeat 
+ compute an output or 
+using a deterministic algorithm based 
+on setting sr 
+using allocation rule or 
+ sr 
+×cr 
+→ n 
+ 
+ find the cut value for agent k based on the allocation rule 
+or 
+for costs cr 
+−k let r κk or 
+ cr 
+−k be the cut value 
+ set r r and obtain a new game gr from gr− 
+and or 
+according to the updating rule ur 
+ 
+ let cr 
+be the new cost vector for game gr 
+ 
+ until a valid output is found 
+ let gi x be the cost of ci 
+k when the original cost vector is 
+c k 
+x 
+ find the minimum value x such that 
+ 
+ 
+ 
+g x ≥ 
+g x ≥ 
+ 
+gt− x ≥ t− 
+gt x ≥ t 
+here t is the total number of rounds 
+ output the value x as the cut value 
+if the round-based output satisfies monotonicity property the 
+cut-value always exists we then show how to find the cut value 
+for a selected agent k in algorithm 
+the correctness of algorithm is straightforward to compute 
+the cut value we assume that the cut value r for each round r 
+can be computed in polynomial time we can solve the equation 
+gr x r to find x in polynomial time when the cost vector c−i 
+and b are given 
+now we consider the vertex cover problem for each round r 
+we select a vertex with the least weight and that is incident on the 
+lexicographically least uncovered edge the output satisfies mp 
+for agent i we update its cost to cr 
+i − cr 
+j iff edge i j is selected 
+it is easy to verify this updating rule is crossing-independent thus 
+we can apply algorithm to compute the cut value for the set cover 
+game as shown in algorithm 
+algorithm compute cut value for mvc 
+input a node weighted graph g v e c and a node k 
+selected by algorithm 
+output the cut value κk v c c−k 
+ for each i ∈ v set w i ci 
+ set w k ∞ pk and v ∅ 
+ while v is not a vertex cover do 
+ pick an uncovered edge i j with the least lexicographic 
+order among all uncovered edges 
+ set m min w i w j 
+ update w i w i − m and w j w j − m 
+ if w i add i to v else add j to v 
+ if i k or j k then set pk pk m 
+ output pk as the cut value κk v c c−k 
+ complex combinations 
+in subsection we discussed how to find the cut value function 
+when the output of the binary demand game is a simple 
+combination of some outputs whose cut values can be computed through 
+other means typically vcg however some algorithms cannot 
+be decomposed in the way described in subsection 
+next we present a more complex way to combine allocation 
+rules and as we may expected the way to find the cut value is 
+also more complicated assume that there are n agents ≤ i ≤ n 
+with cost vector c and there are m binary demand games gi with 
+objective functions fi o c setting si and allocation rule ψi 
+where 
+i · · · m there is another binary demand game with 
+setting s and allocation rule o whose input is a cost vector d 
+ d d · · · dm let f be the function vector f f · · · fm 
+ψ be the allocation rule vector ψ 
+ ψ 
+ · · · ψm 
+ and ∫ be the 
+setting vector s s · · · sm for notation simplicity we 
+define fi c fi ψi 
+ c c for each ≤ i ≤ m and f c 
+ f c f c · · · fm c 
+let us see a concrete example of these combinations consider 
+a link weighted graph g v e c and a subset of q nodes q ⊆ 
+v the steiner tree problem is to find a set of links with minimum 
+total cost to connect q one way to find an approximation of the 
+steiner tree is as follows we build a virtual complete graph h 
+using q as its vertices and the cost of each edge i j is the cost 
+of lcp i j c in graph g build the minimum spanning tree 
+of h denoted as mst h an edge of g is selected iff it is 
+selected in some lcp i j c and edge i j of h is selected to 
+mst h 
+in this game we define q q − games gi j where i j ∈ 
+q with objective functions fi j o c being the minimum cost of 
+ 
+connecting i and j in graph g setting si being the original graph 
+g and allocation rule is lcp i j c the game g corresponds to 
+the mst game on graph h the cost of the pair-wise q q − 
+shortest paths defines the input vector d d d · · · dm for 
+game mst more details will be given in section 
+definition given an allocation rule o and setting s an 
+objective function vector f an allocation rule vector ψ and setting 
+vector ∫ we define a compound binary demand game with setting 
+s and output o ◦ f as o ◦ f i c 
+wm 
+j oj f c ∧ ψj 
+i c 
+the allocation rule of the above definition can be interpreted as 
+follows an agent i is selected if and only if there is a j such that 
+ i is selected in ψj 
+ c and the allocation rule o will select 
+index j under cost profile f c for simplicity we will use o ◦ f 
+to denote the output of this compound binary demand game 
+notice that a truthful payment scheme using o ◦ f as output 
+exists if and only if it satisfies the monotonicity property to study 
+when o ◦f satisfies mp several necessary definitions are in order 
+definition function monotonicity property fmp given 
+an objective function g and an allocation rule o a function h c 
+g o c c is said to satisfy the function monotonicity property if 
+given fixed c−i it satisfies 
+ when oi c h c does not increase over ci 
+ when oi c h c does not decrease over ci 
+definition strong monotonicity property smp an 
+allocation rule o is said to satisfy the strong monotonicity property 
+if o satisfies mp and for any agent i with oi c and agent 
+j i oi c j 
+cj if cj ≥ cj or oj c j 
+cj 
+lemma for a given allocation rule o satisfying smp and 
+cost vectors c c with ci ci if oi c and oi c then 
+there must exist j i such that cj cj and oj c 
+from the definition of the strong monotonicity property we have 
+lemma directly we now can give a sufficient condition when 
+o ◦ f satisfies the monotonicity property 
+theorem if ∀i ∈ m fi satisfies fmp ψi 
+satisfies mp 
+and the output o satisfies smp then o ◦ f satisfies mp 
+proof assuming for cost vector c we have o ◦ f i c 
+ we should prove for any cost vector c c i 
+ci with ci ci 
+ o ◦ f i c noticing that o ◦ f i c without loss 
+of generality we assume that ok f c and ψk 
+i c for 
+some index ≤ k ≤ m 
+now consider the output o with the cost vector f c k 
+fk c 
+there are two scenarios which will be studied one by one as 
+follows 
+one scenario is that index k is not chosen by the output function 
+o from lemma there must exist j k such that 
+fj c fj c 
+oj f c k 
+fk c 
+we then prove that agent i will be selected in the output ψj 
+ c 
+i e ψj 
+i c if it is not since ψj 
+ c satisfies mp we have 
+ψj 
+i c ψj 
+i c from ci ci since fj satisfies fmp we 
+know fj c ≥ fj c which is a contradiction to the inequality 
+ consequently we have ψj 
+i c from equation the 
+fact that index k is not selected by allocation rule o and the 
+definition of smp we have oj f c thus agent i is selected by 
+o ◦ f because of oj f c and ψj 
+i c 
+the other scenario is that index k is chosen by the output 
+function o first agent i is chosen in ψk 
+ c since the output ψk 
+ c 
+satisfies the monotonicity property and ci ci and ψk 
+i c 
+secondly since the function fk satisfies fmp we know that fk c ≤ 
+fk c remember that output o satisfies the smp thus we can 
+obtain ok f c from the fact that ok f c k 
+fk c 
+and fk c ≤ fk c consequently agent i will also be selected 
+in the final output o ◦ f this finishes our proof 
+this theorem implies that there is a cut value for the compound 
+output o ◦ f we then discuss how to find the cut value for this 
+output below we will give an algorithm to calculate κi o ◦ f 
+when o satisfies smp ψj 
+satisfies mp and for fixed c−i 
+fj c is a constant say hj when ψj 
+i c and fj c increases 
+when ψj 
+i c notice that here hj can be easily computed by 
+setting ci ∞ since ψj 
+satisfies the monotonicity property when 
+given i and fixed c−i we define fi 
+j − 
+ y as the smallest x such 
+that fj c i 
+x y for simplicity we denote fi 
+j − 
+as f− 
+j if 
+no confusion is caused when i is a fixed agent in this paper we 
+assume that given any y we can find such x in polynomial time 
+algorithm find cut value for compound method o ◦ f 
+input allocation rule o objective function vector f and inverse 
+function vector f− 
+ f− 
+ · · · f− 
+m allocation rule vector 
+ψ and fixed c−i 
+output cut value for agent i based on o ◦ f 
+ for ≤ j ≤ m do 
+ compute the outputs ψj 
+ ci 
+ compute hj fj c i 
+∞ 
+ use h h h · · · hm as the input for the output 
+function o denote τj κj o h−j as the cut value function of 
+output o based on input h 
+ for ≤ j ≤ m do 
+ set κi j f− 
+j min τj hj 
+ the cut value for i is κi o ◦ f c−i maxm 
+j κi j 
+theorem algorithm computes the correct cut value for 
+agent i based on the allocation rule o ◦ f 
+proof in order to prove the correctness of the cut value 
+function calculated by algorithm we prove the following two cases 
+for our convenience we will use κi to represent κi o ◦ f c−i if 
+no confusion caused 
+first if di κi then o ◦ f i c i 
+di without loss of 
+generality we assume that κi κi j for some j since function fj 
+satisfies fmp and ψj 
+i c i 
+di we have fj c i 
+di fj κi 
+notice di κi j from the definition of κi j f− 
+j min τj hj 
+we have ψj 
+i c i 
+di fj c i 
+di τj due to the fact that 
+fj x is a non-decreasing function when j is selected thus from 
+the monotonicity property of o and τj is the cut value for output 
+o we have 
+oj h j 
+fj c i 
+di 
+if oj f c i 
+di then o◦f i c i 
+di otherwise since 
+o satisfies smp lemma and equation imply that there exists 
+at least one index k such that ok f c i 
+di and fk c i 
+di 
+hk note fk c i 
+di hk implies that i is selected in ψk 
+ c i 
+di 
+since hk fk ci i 
+∞ in other words agent i is selected in o◦f 
+ 
+second if di ≥ κi o ◦ f c−i then o ◦ f i c i 
+di 
+assume for the sake of contradiction that o ◦ f i c i 
+di then 
+there exists an index ≤ j ≤ m such that oj f c i 
+di and 
+ψj 
+i c i 
+di remember that hk ≥ fk c i 
+di for any k thus 
+from the fact that o satisfies smp when changing the cost vector 
+from f c i 
+di to h j 
+fj c i 
+di we still have oj h j 
+fj c i 
+di 
+ this implies that 
+fj c i 
+di τj 
+combining the above inequality and the fact that fj c i 
+c i 
+di 
+hj we have fj c i 
+di min hj τj this implies 
+di f− 
+j min hj τj κi j κi o ◦ f c−i 
+which is a contradiction this finishes our proof 
+in most applications the allocation rule ψj 
+implements the 
+objective function fj and fj is utilitarian thus we can compute 
+the inverse of f− 
+j efficiently another issue is that it seems the 
+conditions when we can apply algorithm are restrictive 
+however lots of games in practice satisfy these properties and here we 
+show how to deduct the max combination in assume a 
+and a are two allocation rules for single minded combinatorial 
+auction then the combination max a a returns the 
+allocation with the larger welfare if algorithm a and a satisfy mp and 
+fmp the operation max x y which returns the larger element of 
+x and y satisfies smp from theorem we obtain that 
+combination max a a also satisfies mp further the cut value of the 
+max combination can be found by algorithm as we will show 
+in section the complex combination can apply to some more 
+complicated problems 
+ concrete examples 
+ set cover 
+in the set cover problem there is a set u of m elements needed 
+to be covered and each agent ≤ i ≤ n can cover a subset of 
+elements si with a cost ci let s s s · · · sn and c 
+ c c · · · cn we want to find a subset of agents d such that 
+u ⊆ 
+s 
+i∈d si the selected subsets is called the set cover for 
+u the social efficiency of the output d is defined as 
+p 
+i∈d ci 
+which is the objective function to be minimized clearly this is 
+a utilitarian and thus vcg mechanism can be applied if we can 
+find the subset of s that covers u with the minimum cost it is 
+well-known that finding the optimal solution is np-hard in an 
+algorithm of approximation ratio of hm has been proposed and it 
+has been proved that this is the best ratio possible for the set cover 
+problem for the completeness of presentation we review their 
+method here 
+algorithm greedy set cover gsc 
+input agent i s subset si covered and cost ci ≤ i ≤ n 
+output a set of agents that can cover all elements 
+ initialize r t ∅ and r ∅ 
+ while r u do 
+ find the set sj with the minimum density 
+cj 
+ sj −tr 
+ 
+ set tr tr 
+s 
+sj and r r 
+s 
+j 
+ r r 
+ output r 
+let gsc s be the sets selected by the algorithm notice that 
+the output set is a function of s and c some works assume that 
+the type of an agent could be ci i e si is assumed to be a 
+public knowledge here we consider a more general case in which 
+the type of an agent is si ci in other words we assume that 
+every agent i can not only lie about its cost ci but also can lie about 
+the set si this problem now looks similar to the combinatorial 
+auction with single minded bidder studied in but with the 
+following differences in the set cover problem we want to cover all 
+the elements and the sets chosen can have some overlap while in 
+combinatorial auction the chosen sets are disjoint 
+we can show that the mechanism m gsc pv cg 
+ using 
+algorithm to find a set cover and apply vcg mechanism to 
+compute the payment to the selected agents is not truthful obviously 
+the set cover problem is a binary demand game for the moment 
+we assume that agent i won t be able to lie about si we will drop 
+this assumption later we show how to design a truthful mechanism 
+by applying our general framework 
+ check the monotonicity property the output of 
+algorithm is a round-based output thus for an agent i we 
+first focus on the output of one round r in round r if i is 
+selected by algorithm then it has the minimum ratio ci 
+ si−tr 
+among all remaining agents now consider the case when i 
+lies its cost to ci ci obviously 
+ci 
+ si−tr 
+is still minimum 
+among all remaining agents consequently agent i is still 
+selected in round r which means the output of round r satisfies 
+mp now we look into the updating rules for every round 
+we only update the tr tr 
+s 
+sj and r r 
+s 
+j which 
+is obviously cross-independent thus by applying theorem 
+ we know the output by algorithm satisfies mp 
+ find the cut value to calculate the cut value for agent i 
+with fixed cost vector c−i we follow the steps in algorithm 
+ first we set ci ∞ and apply algorithm let ir be the 
+agent selected in round r and t−i 
+r be the corresponding set 
+then the cut value of round r is 
+r 
+cir 
+ sir − t−i 
+r 
+· si − t−i 
+r 
+remember the updating rule only updates the game setting 
+but not the cost of the agent thus we have gr x x ≥ r 
+for ≤ r ≤ t therefore the final cut value for agent i is 
+κi gsc c−i max 
+r 
+ 
+cir 
+ sir − t−i 
+r 
+· si − t−i 
+r 
+the payment to an agent i is κi if i is selected otherwise its 
+payment is 
+we now consider the scenario when agent i can lie about si 
+assume that agent i cannot lie upward i e it can only report a set 
+si ⊆ si we argue that agent i will not lie about its elements si 
+notice that the cut value computed for round r is r 
+ 
+cir 
+ sir −t −i 
+r 
+· 
+ si − t−i 
+r obviously si − t−i 
+r ≤ si − t−i 
+r for any si ⊆ si 
+thus lying its set as si will not increase the cut value for each 
+round thus lying about si will not improve agent i s utility 
+ link weighted steiner trees 
+consider any link weighted network g v e c where e 
+ e e · · · em are the set of links and ci is the weight of the link 
+ei the link weighted steiner tree problem is to find a tree rooted at 
+source node s spanning a given set of nodes q q q · · · qk ⊂ 
+v for simplicity we assume that qi vi for ≤ i ≤ k here 
+the links are agents the total cost of links in a graph h ⊆ g is 
+called the weight of h denoted as ω h it is np-hard to find the 
+minimum cost multicast tree when given an arbitrary link weighted 
+ 
+graph g the currently best polynomial time method has 
+approximation ratio ln 
+ 
+ here we review and discuss the 
+first approximation method by takahashi and matsuyama 
+algorithm find linkweighted steinertree lst 
+input network g v e c where c is the cost vector for link 
+set e source node s and receiver set q 
+output a tree lst rooted at s and spanned all receivers 
+ set r g g q 
+ q and s 
+ s 
+ repeat 
+ in graph gr find the receiver say qi that is closest to the 
+source s i e lcp s qi c has the least cost among the 
+shortest paths from s to all receivers in qr 
+ 
+ select all links on lcp s qi c as relay links and set their 
+cost to the new graph is denoted as gr 
+ set tr as qi and pr lcp s qi c 
+ set qr 
+ qr 
+\qi and r r 
+ until all receivers are spanned 
+hereafter let lst g be the final tree constructed using the 
+above method it is shown in that mechanism m lst pv cg 
+ 
+is not truthful where pv cg 
+is the payment calculated based on 
+vcg mechanism 
+we then show how to design a truthful payment scheme 
+using our general framework observe that the output pr for any 
+round r satisfies mp and the update rule for every round 
+satisfies crossing-independence thus from theorem the 
+roundbased output lst satisfies mp in round r the cut value for a 
+link ei can be obtained by using the vcg mechanism now we 
+set ci ∞ and execute algorithm let w−i 
+r ci be the cost of 
+the path pr ci selected in the rth round and πi 
+r ci be the 
+shortest path selected in round r if the cost of ci is temporarily set to 
+−∞ then the cut value for round r is r wi 
+r c−i − πi 
+r c−i 
+where πi 
+r c−i is the cost of the path πi 
+r c−i excluding node 
+vi using algorithm we obtain the final cut value for agent i 
+κi lst c−i maxr r thus the payment to a link ei is 
+κi lst c−i if its reported cost is di κi lst d−i 
+otherwise its payment is 
+ virtual minimal spanning trees 
+to connect the given set of receivers to the source node besides 
+the steiner tree constructed by the algorithms described before a 
+virtual minimum spanning tree is also often used assume that q is 
+the set of receivers including the sender assume that the nodes in 
+a node-weighted graph are all agents the virtual minimum 
+spanning tree is constructed as follows 
+algorithm construct vmst 
+ for all pairs of receivers qi qj ∈ q do 
+ calculate the least cost path lcp qi qj d 
+ construct a virtual complete link weighted graph k d 
+using q as its node set where the link qiqj corresponds to the 
+least cost path lcp qi qj d and its weight is w qiqj 
+ lcp qi qj d 
+ build the minimum spanning tree on k d denoted as 
+v mst d 
+ for every virtual link qiqj in v mst d do 
+ find the corresponding least cost path lcp qi qj d in the 
+original network 
+ mark the agents on lcp qi qj d selected 
+the mechanism m v mst pv cg 
+ is not truthful 
+where the payment pv cg 
+to a node is based on the vcg 
+mechanism we then show how to design a truthful mechanism based on 
+the framework we described 
+ check the monotonicity property remember that in the 
+complete graph k d the weight of a link qiqj is lcp qi qj d 
+in other words we implicitly defined q q − 
+functions fi j for all i j and qi ∈ q and qj ∈ q with 
+fi j d lcp qi qj d we can show that the function 
+fi j d lcp qi qj d satisfies fmp lcp satisfies mp 
+and the output mst satisfies smp from theorem the 
+allocation rule vmst satisfies the monotonicity property 
+ find the cut value notice vmst is the combination of 
+mst and function fi j so cut value for vmst can be 
+computed based on algorithm as follows 
+ a given a link weighted complete graph k d on q we 
+should find the cut value function for edge ek qi qj 
+based on mst given a spanning tree t and a pair of 
+terminals p and q clearly there is a unique path 
+connecting them on t we denote this path as πt p q 
+and the edge with the maximum length on this path as 
+le p q t thus the cut value can be represented as 
+κk mst d le qi qj mst d k 
+∞ 
+ b we find the value-cost function for lcp assume vk ∈ 
+lcp qi qj d then the value-cost function is xk 
+yk − lcpvk qi qj d k 
+ here lcpvk qi qj d is 
+the least cost path between qi and qj with node vk on 
+this path 
+ c remove vk and calculate the value k d k 
+∞ set h i j 
+ lcp qi qj d ∞ 
+ for every pair of node i j and 
+let h h i j be the vector then it is easy to 
+show that τ i j le qi qj mst h i j 
+∞ is 
+the cut value for output vmst it easy to verify that 
+min h i j τ i j le qi qj mst h thus 
+we know κ 
+ i j 
+k v mst d is le qi qj mst h − 
+ lcpvk qi qj d k 
+ the cut value for agent k is 
+κk v mst d−k max ≤i j≤r κij 
+k v mst d−k 
+ we pay agent k κk v mst d−k if and only if k is selected 
+in v mst d else we pay it 
+ combinatorial auctions 
+lehmann et al studied how to design an efficient truthful 
+mechanism for single-minded combinatorial auction in a 
+singleminded combinatorial auction there is a set of items s to be sold 
+and there is a set of agents ≤ i ≤ n who wants to buy some of 
+the items agent i wants to buy a subset si ⊆ s with maximum 
+price mi a single-minded bidder i declares a bid bi si ai 
+with si ⊆ s and ai ∈ r 
+ two bids si ai and sj aj conflict 
+if si ∩ sj ∅ given the bids b b · · · bn they gave a greedy 
+round-based algorithm as follows first the bids are sorted by some 
+criterion ai 
+ si is used in in an increasing order and let l be 
+the list of sorted bids the first bid is granted then the algorithm 
+exams each bid of l in order and grants the bid if it does not conflict 
+with any of the bids previously granted if it does it is denied they 
+proved that this greedy allocation scheme using criterion ai 
+ si 
+approximates the optimal allocation within a factor of 
+√ 
+m where 
+m is the number of goods in s 
+in the auction settings we have ci −ai it is easy to verify the 
+output of the greedy algorithm is a round-based output 
+remember after bidder j is selected for round r every bidder has conflict 
+ 
+with j will not be selected in the rounds after this equals to 
+update the cost of every bidder having conflict with j to which 
+satisfies crossing-independence in addition in any round if 
+bidder i is selected with ai then it will still be selected when it 
+declares ai ai thus for every round it satisfies mp and the 
+cut value is si 
+· 
+ajr 
+ sjr where jr is the bidder selected in 
+round r if we did not consider the agent i at all notice 
+ajr 
+ sjr 
+does not increase when round r increases so the final cut value 
+is si 
+· 
+aj 
+ sj where bj is the first bid that has been denied 
+but would have been selected were it not only for the presence 
+of bidder i thus the payment by agent i is si 
+· 
+aj 
+ sj if 
+ai ≥ si 
+· 
+aj 
+ sj and otherwise this payment scheme is 
+exactly the same as the payment scheme in 
+ conclusions 
+in this paper we have studied how to design a truthful 
+mechanism m o p for a given allocation rule o for a binary 
+demand game we first showed that the allocation rule o 
+satisfying the mp is a necessary and sufficient condition for a truthful 
+mechanism m to exist we then formulate a general framework 
+for designing payment p such that the mechanism m o p is 
+truthful and computable in polynomial time we further presented 
+several general composition-based techniques to compute p 
+efficiently for various allocation rules o several concrete examples 
+were discussed to demonstrate our general framework for 
+designing p and for composition-based techniques of computing p in 
+polynomial time 
+in this paper we have concentrated on how to compute p in 
+polynomial time our algorithms do not necessarily have the 
+optimal running time for computing p given o it would be of interest 
+to design algorithms to compute p in optimal time we have made 
+some progress in this research direction in by providing an 
+algorithm to compute the payments for unicast in a node weighted 
+graph in optimal o n log n m time 
+another research direction is to design an approximation 
+allocation rule o satisfying mp with a good approximation ratio for a 
+given binary demand game many works in the mechanism 
+design literature are in this direction we point out here that the 
+goal of this paper is not to design a better allocation rule for a 
+problem but to design an algorithm to compute the payments efficiently 
+when o is given it would be of significance to design allocation 
+rules with good approximation ratios such that a given binary 
+demand game has a computationally efficient payment scheme 
+in this paper we have studied mechanism design for binary 
+demand games however some problems cannot be directly 
+formulated as binary demand games the job scheduling problem in 
+is such an example for this problem a truthful payment scheme p 
+exists for an allocation rule o if and only if the workload assigned 
+by o is monotonic in a certain manner it wound be of interest to 
+generalize our framework for designing a truthful payment scheme 
+for a binary demand game to non-binary demand games towards 
+this research direction theorem can be extended to a general 
+allocation rule o whose range is r 
+ the remaining difficulty is 
+then how to compute the payment p under mild assumptions about 
+the valuations if a truthful mechanism m o p does exist 
+acknowledgements 
+we would like to thank rakesh vohra tuomas sandholm and 
+anonymous reviewers for helpful comments and discussions 
+ references 
+ a archer c papadimitriou k t and tardos e an 
+approximate truthful mechanism for combinatorial auctions with 
+single parameter agents in acm-siam soda pp - 
+ archer a and tardos e truthful mechanisms for 
+one-parameter agents in proceedings of the nd ieee focs 
+ ieee computer society p 
+ auletta v prisco r d penna p and persiano p 
+deterministic truthful approximation schemes for scheduling related 
+machines 
+ chvatal v a greedy heuristic for the set covering problem 
+mathematics of operations research - 
+ clarke e h multipart pricing of public goods public choice 
+ - 
+ r muller and r v vohra on dominant strategy mechanisms 
+working paper 
+ devanur n r mihail m and vazirani v v 
+strategyproof cost-sharing mechanisms for set cover and facility 
+location games in acm electronic commerce ec 
+ feigenbaum j krishnamurthy a sami r and 
+shenker s approximation and collusion in multicast cost sharing 
+ abstract in acm economic conference 
+ feigenbaum j papadimitriou c sami r and shenker 
+s a bgp-based mechanism for lowest-cost routing in proceedings 
+of the acm symposium on principles of distributed 
+computing pp - 
+ green j and laffont j j characterization of satisfactory 
+mechanisms for the revelation of preferences for public goods 
+econometrica - 
+ groves t incentives in teams econometrica - 
+ lehmann d ocallaghan l i and shoham y truth 
+revelation in approximately efficient combinatorial auctions journal 
+of acm - 
+ mu alem a and nisan n truthful approximation 
+mechanisms for restricted combinatorial auctions extended abstract 
+in th national conference on artificial intelligence 
+american association for artificial intelligence pp - 
+ nisan n and ronen a algorithmic mechanism design in 
+proc st annual acm stoc pp - 
+ e halperin improved approximation algorithms for the vertex cover 
+problem in graphs and hypergraphs in proceedings of the th 
+annual acm-siam symposium on discrete algorithms pages 
+ - 
+ r bar-yehuda and s even a local ratio theorem for approximating 
+the weighted vertex cover problem annals of discrete mathematics 
+volume analysis and design of algorithms for combinatorial 
+problems pages - editor g ausiello and m lucertini 
+ robins g and zelikovsky a improved steiner tree 
+approximation in graphs in proceedings of the th annual 
+acm-siam soda pp - 
+ a zelikovsky an -approximation algorithm for the network 
+steiner problem algorithmica - 
+ d s hochbaum efficient bounds for the stable set vertex cover and 
+set packing problems discrete applied mathematics - 
+ 
+ takahashi h and matsuyama a an approximate solution 
+for the steiner problem in graphs math japonica 
+ - 
+ vickrey w counterspeculation auctions and competitive sealed 
+tenders journal of finance - 
+ wang w and li x -y truthful low-cost unicast in selfish 
+wireless networks in th ieee transactions on mobile computing 
+ to appear 
+ wang w li x -y and sun z design multicast protocols for 
+non-cooperative networks ieee infocom to appear 
+ wang w li x -y and wang y truthful multicast in selfish 
+wireless networks acm mobicom 
+ 

@@ -1,0 +1,866 @@
+hypotheses refinement under topological 
+communication constraints 
+gauvain bourgne gael hette nicolas maudet and suzanne pinson 
+lamsade univ paris-dauphine france 
+ bourgne hette maudet pinson  lamsade dauphine fr 
+abstract 
+we investigate the properties of a multiagent system where 
+each distributed agent locally perceives its environment 
+upon perception of an unexpected event each agent locally 
+computes its favoured hypothesis and tries to propagate it 
+to other agents by exchanging hypotheses and supporting 
+arguments observations however we further assume that 
+communication opportunities are severely constrained and 
+change dynamically in this paper we mostly investigate 
+the convergence of such systems towards global consistency 
+we first show that for a wide class of protocols that we 
+shall define the communication constraints induced by the 
+topology will not prevent the convergence of the system at 
+the condition that the system dynamics guarantees that no 
+agent will ever be isolated forever and that agents have 
+unlimited time for computation and arguments exchange as 
+this assumption cannot be made in most situations though 
+we then set up an experimental framework aiming at 
+comparing the relative efficiency and effectiveness of different 
+interaction protocols for hypotheses exchange we study a 
+critical situation involving a number of agents aiming at 
+escaping from a burning building the results reported here 
+provide some insights regarding the design of optimal 
+protocol for hypotheses refinement in this context 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-multiagent systems 
+general terms 
+theory experimentation 
+ introduction 
+we consider a multiagent system where each distributed 
+agent locally perceives its environment and we assume that 
+some unexpected event occurs in that system if each agent 
+computes only locally its favoured hypothesis it is only 
+natural to assume that agents will seek to coordinate and 
+refine their hypotheses by confronting their observations with 
+other agents if in addition the communication 
+opportunities are severely constrained for instance agents can 
+only communicate when they are close enough to some other 
+agent and dynamically changing for instance agents may 
+change their locations it becomes crucial to carefully 
+design protocols that will allow agents to converge to some 
+desired state of global consistency in this paper we 
+exhibit some sufficient conditions on the system dynamics and 
+on the protocol strategy structures that allow to guarantee 
+that property and we experimentally study some contexts 
+where some of these assumptions are relaxed 
+while problems of diagnosis are among the venerable 
+classics in the ai tradition their multiagent counterparts have 
+much more recently attracted some attention roos and 
+colleagues in particular study a situation where a number 
+of distributed entities try to come up with a satisfying global 
+diagnosis of the whole system they show in particular that 
+the number of messages required to establish this global 
+diagnosis is bound to be prohibitive unless the communication 
+is enhanced with some suitable protocol however they do 
+not put any restrictions on agents communication options 
+and do not assume either that the system is dynamic 
+the benefits of enhancing communication with supporting 
+information to make convergence to a desired global state 
+of a system more efficient has often been put forward in the 
+literature this is for instance one of the main idea 
+underlying the argumentation-based negotiation approach where 
+the desired state is a compromise between agents with 
+conflicting preferences many of these works however make the 
+assumption that this approach is beneficial to start with 
+and study the technical facets of the problem or instead 
+emphasize other advantages of using argumentation 
+notable exceptions are the works of which studied in 
+contexts different from ours the efficiency of argumentation 
+the rest of the paper is as follows section specifies 
+the basic elements of our model and section goes on to 
+presenting the different protocols and strategies used by the 
+agents to exchange hypotheses and observations we put 
+special attention at clearly emphasizing the conditions on 
+the system dynamics and protocols strategies that will be 
+exploited in the rest of the paper section details one of 
+ 
+ - - - - rps c ifaamas 
+the main results of the paper namely the fact that under the 
+aforementioned conditions the constraints that we put on 
+the topology will not prevent the convergence of the system 
+towards global consistency at the condition that no agent 
+ever gets completely lost forever in the system and that 
+unlimited time is allowed for computation and argument 
+exchange while the conditions on protocols and strategies are 
+fairly mild it is also clear that these system requirements 
+look much more problematic even frankly unrealistic in 
+critical situations where distributed approaches are precisely 
+advocated to get a clearer picture of the situation induced 
+when time is a critical factor we have set up an 
+experimental framework that we introduce and discuss in section 
+the critical situation involves a number of agents aiming 
+at escaping from a burning building the results reported 
+here show that the effectiveness of argument exchange 
+crucially depends upon the nature of the building and provide 
+some insights regarding the design of optimal protocol for 
+hypotheses refinement in this context 
+ basic notions 
+we start by defining the basic elements of our system 
+environment 
+let o be the potentially infinite set of possible 
+observations we assume the sensors of our agents to be perfect 
+hence the observations to be certain let h be the set of 
+hypotheses uncertain and revisable let cons h o be the 
+consistency relation a binary relation between a hypothesis 
+h ∈ h and a set of observations o ⊆ o in most cases cons 
+will refer to classical consistency relation however we may 
+overload its meaning and add some additional properties to 
+that relation in which case we will mention it 
+the environment may include some dynamics and change 
+over the course of time we define below sequences of time 
+points to deal with it 
+definition sequence of time points a 
+sequence of time points t t tn from t is an ordered 
+set of time points t t tn such that t ≥ t and 
+∀i ∈ n − ti ≥ ti 
+agent 
+we take a system populated by n agents a an each 
+agent is defined as a tuple f oi hi where 
+ f the set of facts common knowledge to all agents 
+ oi ∈ o 
+ the set of observations made by the agent 
+so far we assume a perfect memory hence this set 
+grows monotonically 
+ hi ∈ h the favourite hypothesis of the agent 
+a key notion governing the formation of hypotheses is that 
+of consistency defined below 
+definition consistency we say that 
+ an agent is consistent cons ai iff cons hi oi 
+ that is its hypothesis is consistent with its 
+observation set 
+ an agent ai consistent with a partner agent aj iff 
+cons ai and cons hi oj that is this agent is 
+consistent and its hypothesis can explain the observation 
+set of the other agent 
+ two agents ai and aj are mutually consistent 
+ mcons ai aj iff cons ai aj and cons aj ai 
+ a system is consistent iff ∀ i j ∈ n 
+it is the case 
+that mcons ai aj 
+to ensure its consistency each agent is equipped with an 
+abstract reasoning machinery that we shall call the 
+explanation function eh this deterministic function takes a 
+set of observation and returns a single prefered hypothesis 
+ o 
+→ h we assume h eh o to be consistent with 
+o by definition of eh so using this function on its 
+observation set to determine its favourite hypothesis is a sure way 
+for the agent to achieve consistency note however that an 
+hypothesis does not need to be generated by eh to be 
+consistent with an observation set as a concrete example of such 
+a function and one of the main inspiration of this work 
+one can cite the theorist reasoning system -as long as 
+it is coupled with a filter selecting a single prefered theory 
+among the ones initially selected by theorist 
+note also that hi may only be modified as a consequence 
+of the application eh we refer to this as the autonomy of the 
+agent no other agent can directly impose a given 
+hypothesis to an agent as a consequence only a new observation 
+ being it a new perception or an observation communicated 
+by a fellow agent can result in a modification of its prefered 
+hypothesis hi but not necessarily of course 
+we finally define a property of the system that we shall 
+use in the rest of the paper 
+definition bounded perceptions a system 
+involves a bounded perception for agents iff ∃n s t 
+∀t ∪n 
+i oi ≤ n that is the number of observations to 
+be made by the agents in the system is not infinite 
+agent cycle 
+now we need to see how these agents will evolve and interact 
+in their environment in our context agents evolve in a 
+dynamic environment and we classicaly assume the following 
+system cycle 
+ environment dynamics the environment evolves 
+according to the defined rules of the system dynamics 
+ perception step agents get perceptions from the 
+environment these perceptions are typically partial e g 
+the agent can only see a portion of a map 
+ reasoning step agents compare perception with 
+predictions seek explanations for potential 
+difference s refine their hypothesis draw new conclusions 
+ communication step agents can communicate 
+hypotheses and observations with other agents through 
+a defined protocol any agent can only be involved in 
+one communication with another agent by step 
+ action step agents do some practical reasoning using 
+the models obtained from the previous steps and select 
+an action they can then modify the environment by 
+executing it 
+the communication of the agents will be further 
+constrained by topological consideration at a given time an 
+agent will only be able to communicate with a number of 
+neighbours its connexions with these others agents may 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+evolve with its situation in the environment typically an 
+agent can only communicate with agents that it can sense 
+but one could imagine evolving topological constraints on 
+communication based on a network of communications 
+between agents where the links are not always active 
+communication 
+in our system agents will be able to communicate with each 
+other however due to the aforementionned topological 
+constraints they will not be able to communicate with any 
+agents at anytime who an agent can communicate with 
+will be defined dynamically for instance this can be a 
+consequence of the agents being close enough to get in touch 
+we will abstractly denote by c ai aj t the communication 
+property in other words the fact that agents ai and aj can 
+communicate at time t note that this relation is assumed 
+to be symetric but of course not transitive we are now in 
+a position to define two essential properties of our system 
+definition temporal path there exists a 
+temporal communication path at horizon tf noted ltf ai aj 
+between ai and aj iff there exists a sequence of time points 
+t t tn from tf and a sequence of agents k k kn 
+s t i c ai ak t ii c akn aj tn iii ∀i ∈ n 
+c aki aki ti 
+intuitively what this property says is that it is possible to 
+find a temporal path in the future that would allow to link 
+agent ai and aj via a sequence of intermediary agents note 
+that the time points are not necessarily successive and that 
+the sequence of agents may involve the same agents several 
+times 
+definition temporal connexity a system is 
+temporaly connex iff ∀t ∀ i j ∈ n 
+lt ai aj 
+in short a temporaly connex system guarantees that any 
+agent will be able to communicate with any other agents 
+no matter how long it might take to do so at any time to 
+put it another way it is never the case that an agent will be 
+isolated for ever from another agent of the system 
+we will next discuss the detail of how communication 
+concretely takes place in our system remember that in this 
+paper we only consider the case of bilateral exchanges an 
+agent can only speak to a single other agent and that we 
+also assume that any agent can only engage in a single 
+exchange in a given round 
+ protocols and strategies 
+in this section we discuss the requirements of the 
+interaction protocols that govern the exchange of messages between 
+agents and provide some example instantiation of such 
+protocols to clarify the presentation we distinguish two 
+levels the local level which is concerned with the regulation 
+of bilateral exchanges and the global level which essentially 
+regulates the way agents can actually engage into a 
+conversation at each level we separate what is specified by the 
+protocol and what is left to agents strategies 
+local protocol and strategies 
+we start by inspecting local protocols and strategies that 
+will regulate the communication between the agents of the 
+system as we limit ourselves to bilateral communication 
+these protocols will simply involve two agents such protocol 
+will have to meet one basic requirement to be satisfying 
+ consistency cons - a local protocol has to 
+guarantee the mutual consistency of agents upon termination 
+ which implies termination of course 
+figure a hypotheses exchange protocol 
+one example such protocol is the protocol described in 
+that is pictured in fig to further illustrate how such 
+protocol can be used by agents we give some details on a 
+possible strategy upon receiving a hypothesis h propose h or 
+counterpropose h from a agent a is in state and has 
+the following possible replies counterexample if the agent 
+knows an example contradicting the hypothesis or not 
+explained by this hypothesis challenge if the agents lacks 
+evidence to accept this hypothesis counterpropose if the 
+agent agrees with the hypothesis but prefers another one 
+or accept if it is indeed as good as its favourite 
+hypothesis this strategy guarantees among other properties the 
+eventual mutual logical consistency of the involved agents 
+ 
+global protocol 
+the global protocol regulates the way bilateral exchanges 
+will be initiated between agents at each turn agents will 
+concurrently send one weighted request to communicate to 
+other agents this weight is a value measuring the agent s 
+willingness to converse with the targeted agent in practice 
+this can be based on different heuristics but we shall make 
+some assumptions on agents strategies see below sending 
+such a request is a kind of conditional commitment for the 
+agent an agent sending a weighted request commits to 
+engage in conversation with the target if he does not receive 
+and accept himself another request once all request have 
+been received each agent replies with either an acccept or 
+a reject by answering with an accept an agent makes a 
+full commitment to engage in conversation with the sender 
+therefore it can only send one accept in a given round as an 
+agent can only participate in one conversation per time step 
+when all response have been received each agent receiving 
+an accept can either initiate a conversation using the local 
+protocol or send a cancel if it has accepted another request 
+at the end of all the bilateral exchanges the agents 
+engaged in conversation are discarded from the protocol then 
+each of the remaining agents resends a request and the 
+process iterates until no more requests are sent 
+global strategy 
+we now define four requirements for the strategies used by 
+agents depending on their role in the protocol two are 
+concerned with the requestee role how to decide who the 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+agent wishes to communicate with the other two with the 
+responder role how to decide which communication request 
+to accept or not 
+ willingness to solve inconsistancies solve -agents 
+want to communicate with any other agents unless 
+they know they are mutually consistent 
+ focus on solving inconsistencies focus -agents do 
+not request communication with an agent with whom 
+they know they are mutually consistent 
+ willingness to communicate comm -agents cannot 
+refuse a weighted communication request unless they 
+have just received or send a request with a greater 
+weight 
+ commitment to communication request 
+ requ agents cannot accept a weighted communication 
+request if they have themselves sent a communication 
+request with a greater weight therefore they will 
+not cancel their request unless they have received a 
+communicational request with greater weight 
+now the protocol structure together with the properties 
+comm requ ensure that a request can only be rejected 
+if its target agent engages in communication with another 
+agent suppose indeed that agent ai wants to communicate 
+with aj by sending a request with weight w comm 
+guarantees that an agent receiving a weighted request will either 
+accept this communication accept a communication with a 
+greater weight or wait for the answer to a request with a 
+greater weight this ensures that the request with 
+maximal weight will be accepted and not cancelled as requ 
+ensures that an agent sending a request can only cancel it if 
+he accepts another request with greater weight therefore 
+at least two agents will engage in conversation per round 
+of the global protocol as the protocol ensures that ai can 
+resend its request while aj is not engaged in a conversation 
+there will be a turn in which aj must engage in a 
+conversation either with ai or another agent 
+these requirements concern request sending and 
+acceptation but agents also need some strategy of weight 
+attribution we describe below an altruist strategy used in our 
+experiments being cooperative an agent may want to know 
+more of the communication wishes of other agents in order to 
+improve the overall allocation of exchanges to agents a 
+context request step is then added to the global protocol before 
+sending their chosen weighted request agents attribute a 
+weight to all agents they are prepared to communicate with 
+according to some internal factors in the simplest case this 
+weight will be for all agent with whom the agent is not 
+sure of being mutually consistent ensuring solve other 
+agent being not considered for communication ensuring 
+focus the agent then sends a context request to all agents 
+with whom communication is considered this request also 
+provides information about the sender list of considered 
+communications along with their weight after reception 
+of all the context requests agents will either reply with a 
+deny iff they are already engaged in a conversation in which 
+case the requesting agent will not consider communication 
+with them anymore in this turn or an inform giving the 
+requester information about the requests it has sent and 
+received when all replies have been received each agent can 
+calculate the weight of all requests concerning it it does so 
+by substracting from the weight of its request the weight of 
+all requests concerning either it or its target that is the 
+final weight of the request from ai to aj is wi j wi j wj i − 
+ 
+p 
+k∈r i − j wi k 
+p 
+k∈s i − j wk i 
+p 
+k∈r j − i wj k 
+p 
+k∈s j − i wk j where wi j is the weight of the request of 
+ai to aj r i is the set of indice of agents having received a 
+request from ai and s i is the set of indice of agents 
+having send a request to ai it then finally sends a weighted 
+request to the agents who maximise this weight or wait for 
+a request as described in the global protocol 
+ conditional convergence to 
+global consistency 
+in this section we will show that the requirements 
+regarding protocols and strategies just discussed will be sufficient 
+to ensure that the system will eventually converge towards 
+global consistency under some conditions we first show 
+that if two agents are not mutually consistent at some time 
+then there will be necessarily a time in the future such that 
+an agent will learn a new observation being it because it is 
+new for the system or by learning it from another agent 
+lemma let s be a system populated by n agents 
+a a an temporaly connex and involving bounded 
+perceptions for these agents let n be the sum of 
+cardinalities of the intersection of pairwise observation sets 
+ n 
+p 
+ i j ∈ n oi ∩ oj let n be the cardinality of 
+the union of all agents observations sets n ∪n 
+i oi 
+if ¬mcons ai aj at time t there is necessarily a time 
+t t s t either n or n will increase 
+proof suppose that there exist a time t 
+and indices i j s t ¬mcons ai aj we will 
+use mt 
+p 
+ k l ∈ n εcomm ak al t where 
+εcomm ak al t if ak and al have 
+communicated at least once since t and otherwise 
+temporal connexity guarantees that there exist t tm 
+and k km s t c ai ak t c akm aj tm and 
+∀p ∈ m c akp akp tp clearly if mcons ai ak 
+mcons akm aj and ∀p mcons akp akp we have 
+mcons ai aj which contradicts our hypothesis mcons 
+being transitive mcons ai ak ∧mcons ak ak implies 
+that mcons ai ak and so on till mcons ai akm ∧ 
+mcons akm aj which implies mcons ai aj 
+at least two agents are then necessarily 
+inconsistent ¬mcons ai ak or ¬mcons akm aj or ∃p t q 
+¬mcons akp 
+ akp let ak and al be these two 
+neighbours at a time t t 
+ 
+ the solve property ensures 
+that either ak or al will send a communication request to 
+the other agent at time t as shown before this in turn 
+ensures that at least one of these agents will be involved in 
+a communication then there are two possibilities 
+ case i ak and al communicate at time t in this case 
+we know that ¬mcons ak al this and the cons 
+property ensures that at least one of the agents must change its 
+ 
+strictly speaking the transitivity of mcons only ensure 
+that ak and al are inconsistent at a time t ≥ t that can 
+be different from the time t at which they can 
+communicate but if they become consistent between t and t or 
+inconsistent between t and t it means that at least one 
+of them have changed its hypothesis between t and t that 
+is after t we can then apply the reasoning of case iib 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+hypothesis which in turn since agents are autonomous 
+implies at least one exchange of observation but then ok ∩ol 
+is bound to increase n t n t 
+ case ii ak communicates with ap at time t we then have 
+again two possibilities 
+ case iia ak and ap did not communicate since t but then 
+εcomm ak ap t had value and takes value hence mt 
+increases 
+ case iib ak and ap did communicate at some time t 
+t the cons property of the protocol ensures that 
+mcons ak ap at that time now the fact that they 
+communicate and focus implies that at least one of them did 
+change its hypothesis in the meantime the fact that agents 
+are autonomous implies in turn that a new observation 
+ perceived or received from another agent necessarily provoked 
+this change the latter case would ensure the existence of a 
+time t t and an agent aq s t either op ∩oq or ok ∩oq 
+increases of at that time implying n t n t the 
+former case means that the agent gets a new perception o 
+at time t if that observation was unknown in the system 
+before then n t n t if some agent aq already knew 
+this observation before then either op ∩ oq or ok ∩ oq 
+increases of at time t which implies that n t n t 
+hence ¬mcons ai aj at time t guarantees that either 
+−∃t t t q n t n t or 
+−∃t t t q n t n t or 
+−∃t t t q mt increases of at time t 
+by iterating the reasoning with t but keeping t as the 
+time reference for mt we can eliminate the third case 
+ mt is integer and bounded by n 
+ which means that 
+after a maximum of n 
+iterations we necessarily will be in 
+one of two other cases as a result we have proven that if 
+¬mcons ai aj at time t there is necessarily a time t s t 
+either n or n will increase 
+theorem global consistency let s be a 
+system populated by n agents a a an temporaly connex 
+and involving bounded perceptions for these agents let 
+cons ai aj be a transitive consistency property then any 
+protocol and strategies satisfying properties cons solve 
+focus comm and requ guarantees that the system will 
+converge towards global consistency 
+proof for the sake of contradiction let us assume 
+∃i j ∈ n s t ∀t ∃t t t q ¬cons ai aj t 
+using the lemma this implies that ∃t t s t either 
+n t n t or n t n t but we can apply 
+the same reasoning taking t t which would give us 
+t t t s t ¬cons ai aj t which gives us t t 
+s t either n t n t or n t n t by 
+successive iterations we can then construct a sequence t t tn 
+which can be divided in two sub-sequences t t tn and 
+t t tn s t n t n t n tn and 
+n t n t n tn one of these sub-sequences 
+has to be infinite however n ti and n ti are strictly 
+growing integer and bounded which implies that both are 
+finite contradiction 
+what the previous result essentially shows is that in a 
+system where no agent will be isolated from the rest of the 
+agents for ever only very mild assumptions on the protocols 
+and strategies used by agents suffice to guarantee 
+convergence towards system consistency in a finite amount of time 
+ although it might take very long unfortunately in many 
+critical situations it will not be possible to assume this 
+temporal connexity as distributed approaches as the one 
+advocated in this paper are precisely often presented as a 
+good way to tackle problems of reliability or problems of 
+dependence to a center that are of utmost importance in these 
+critical applications it is certainly interesting to further 
+explore how such a system would behave when we relax this 
+assumption 
+ experimental study 
+this experiment involves agents trying to escape from a 
+burning building the environment is described as a spatial 
+grid with a set of walls and thankfully some exits time 
+and space are considered discrete time is divided in rounds 
+agents are localised by their position on the spatial grid 
+these agents can move and communicate with other agents 
+in a round an agent can move of one cell in any of the four 
+cardinal directions provided it is not blocked by a wall in 
+this application agents communicate with any other agent 
+ but recall a single one given that this agent is in view 
+and that they have not yet exchanged their current favoured 
+hypothesis suddenly a fire erupts in these premises from 
+this moment the fire propagates each round for each cases 
+where there is fire the fire propagates in the four directions 
+however the fire cannot propagate through a wall if the 
+fire propagates in a case where an agent is positioned that 
+agent burns and is considered dead it can of course no 
+longer move nor communicate if an agent gets to an exit 
+it is considered saved and can no longer be burned agents 
+know the environment and the rules governing the 
+dynamics of this environment that is they know the map as well 
+as the rules of fire propagation previously described they 
+also locally perceive this environment but cannot see 
+further than cases away in any direction walls also block 
+the line of view preventing agents from seeing behind them 
+within their sight they can see other agents and whether 
+or not the cases they see are on fire all these perceptions 
+are memorised 
+we now show how this instantiates the abstract 
+framework presented the paper 
+ o fire x y t nofire x y t agent ai x y t 
+observations can then be positive o ∈ p o iff ∃h ∈ 
+h s t h o or negative o ∈ n o iff ∃h ∈ h s t 
+h ¬o 
+ h fireorigin x y t ∧ ∧fireorigin xl yl tl 
+hypotheses are conjunctions of fireorigins 
+ cons h o consistency relation satisfies 
+- coherence ∀o ∈ n o h ¬o 
+- completeness ∀o ∈ p o h o 
+- minimality for all h ∈ h if h is coherent and 
+complete for o then h is prefered to h according 
+to the preference relation h ≤p h 
+ 
+selects first the minimal number of origins then the most 
+recent least preemptive strategy then uses some 
+arbitrary fixed ranking to discriminate ex-aequo the resulting 
+relation is a total order hence minimality implies that there 
+will be a single h s t cons o h for a given o this in 
+turn means that mcons ai aj iff cons ai cons aj and 
+hi hj this relation is then transitive and symmetric 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ eh takes o as argument and returns min≤p of the 
+coherent and complete hypothesis for o 
+ experimental evaluation 
+we will classically see e g assess the effectiveness 
+and efficiency of different interaction protocols 
+effectiveness of a protocol 
+the proportion of agents surviving the fire over the initial 
+number of agents involved in the experiment will determine 
+the effectiveness of a given protocol if this value is high 
+the protocol has been effective to propagate the information 
+and or for the agents to refine their hypotheses and 
+determine the best way to the exit 
+efficiency of a protocol 
+typically the use of supporting information will involve a 
+communication overhead we will assume here that the 
+efficiency of a given protocol is characterised by the data flow 
+induced by this protocol in this paper we will only discuss 
+this aspect wrt local protocols the main measure that we 
+shall then use here is the mean total size of messages that 
+are exchanged by agents per exchange hence taking into 
+account both the number of messages and the actual size of the 
+messages because it could be that messages happen to be 
+very big containing e g a large number of observations 
+which could counter-balance a low number of messages 
+ experimental settings 
+the chosen experimental settings are the following 
+ environmental topology- performances of 
+information propagation are highly constrained by the 
+environment topology the perception skills of the agents 
+depend on the openness of the environment with 
+a large number of walls the perceptions of agents are 
+limited and also the number of possible inter-agent 
+communications whereas an open environment will 
+provide optimal possibilities of perception and 
+information propagation thus we propose a topological 
+index see below as a common basis to charaterize the 
+environments maps used during experimentations 
+the topological index ti is the ratio of the number of 
+cells that can be perceived by agents summed up from 
+all possible positions divided by the number of cells 
+that would be perceived from the same positions but 
+without any walls the closer to the more open the 
+environment we shall also use two additional more 
+classical measures the characteristic path length 
+ cpl and the clustering coefficient 
+ cc 
+ number of agents- the propagation of information 
+also depends on the initial number of agents involved 
+during an experimentation for instance the more 
+agents the more potential communications there is 
+this means that there will be more potential for 
+propagation but also that the bilateral exchange restriction 
+will be more crucial 
+ 
+the cpl is the median of the means of the shortest path 
+lengths connecting each node to all other nodes 
+ 
+characterising the isolation degree of a region of an 
+environment in terms of acessibility number of roads still usable 
+to reach this region 
+map t i c p l c c 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+table topological characteristics of the maps 
+ initial positions of the agents- initial positions of the 
+agents have a significant influence on the overall 
+behavior of an instance of our system being close from 
+an exit will in general ease the escape 
+ experimental environments 
+we choose to realize experiments on three very 
+different topological indexes for open environments 
+for mixed environments and for labyrinth-like 
+environments 
+figure two maps left ti right ti 
+we designed three different maps for each index fig 
+shows two of them containing the same maximum number 
+of agents agents max with a maximum density of one 
+agent per cell the same number of exits and a similar fire 
+origin e g starting time and position the three differents 
+maps of a given index are designed as follows the first map 
+is a model of an existing building floor the second map has 
+the same enclosure exits and fire origin as the first one 
+but the number and location of walls are different wall 
+locations are designed by an heuristic which randomly creates 
+walls on the spatial grid such that no fully closed rooms are 
+created and that no exit is closed the third map is 
+characterised by geometrical enclosure in wich walls location 
+is also designed with the aforementioned heuristic table 
+summarizes the different topological measures 
+characterizing these different maps it is worth pointing out that the 
+values confirm the relevance of ti maps with a high ti 
+have a low cpl and a high cc however the cpl and cc 
+allows to further refine the difference between the maps e g 
+between - and - 
+ experimental results 
+for each triple of maps defined as above we conduct the 
+same experiments in each experiment the society differs in 
+terms of its initial proportion of involved agents from 
+to this initial proportion represents the percentage 
+of involved agents with regards to the possible maximum 
+number of agents for each map and each initial proportion 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+we select randomly different initial agents locations 
+for each of those different locations we execute the system 
+one time for each different interaction protocol 
+effectiveness of communication and argumentation 
+the first experiment that we set up aims at testing how 
+effective is hypotheses exchange he and in particular how 
+the topological aspects will affect this effectiveness in order 
+to do so we have computed the ratio of improvement offered 
+by that protocol over a situation where agents could simply 
+not communicate no comm to get further insights as 
+to what extent the hypotheses exchange was really crucial 
+we also tested a much less elaborated protocol consisting 
+of mere observation exchanges oe more precisely this 
+protocol requires that each agent stores any unexpected 
+observation that it perceives and agents simply exchange 
+their respective lists of observations when they discuss in 
+this case the local protocol is different note in 
+particular that it does not guarantee mutual consistency but the 
+global protocol remains the same at the only exception that 
+agents motivation to communicate is to synchronise their 
+list of observations not their hypothesis if this protocol is 
+at best as effective as he it has the advantage of being more 
+efficient this is obvious wrt the number of messages which 
+will be limited to less straightforward as far as the size of 
+messages is concerned but the rough observation that the 
+exchange of observations can be viewed as a flat version 
+of the challenge is helpful to see this the results of these 
+experiments are reported in fig 
+figure comparative effectiveness ratio gain of 
+protocols when the proportion of agents augments 
+the first observation that needs to be made is that 
+communication improves the effectiveness of the process and 
+this ratio increases as the number of agents grows in the 
+system the second lesson that we learn here is that 
+closeness relatively makes communication more effective over non 
+communication maps exhibiting a t i of are 
+constantly above the two others and are still slightly but 
+significantly better than however these curves also 
+suggest perhaps surprisingly that he outperforms oe in 
+precisely those situations where the ratio gain is less 
+important the only noticeable difference occurs for rather open 
+maps where t i is this may be explained as follows 
+when a map is open agents have many potential explanation 
+candidates and argumentation becomes useful to 
+discriminate between those when a map is labyrinth-like there are 
+fewer possible explanations to an unexpected event 
+importance of the global protocol 
+the second set of experiments seeks to evaluate the 
+importance of the design of the global protocol we tested our 
+protocol against a local broadcast lb protocol local 
+broadcast means that all the neighbours agents perceived 
+by an agent will be involved in a communication with that 
+agent in a given round -we alleviate the constraint of a 
+single communication by agent this gives us a rough upper 
+bound upon the possible ratio gain in the system for a given 
+local protocol again we evaluated the ratio gain induced 
+by that lb over our classical he for the three different 
+classes of maps the results are reported in fig 
+figure ratio gain of local broadcast over 
+hypotheses exchange 
+note to begin with that the ratio gain is when the 
+proportion of agents is which is easily explained by the fact 
+that it corresponds to situations involving only two agents 
+we first observe that all classes of maps witness a ratio 
+gain increasing when the proportion of agents augments the 
+gain reaches to depending on the class of maps 
+considered if one compares this with the improvement reported 
+in the previous experiment it appears to be of the same 
+magnitude this illustrates that the design of the global 
+protocol cannot be ignored especially when the proportion 
+of agents is high however we also note that the 
+effectiveness ratio gain curves have very different shapes in both 
+cases the gain induced by the accuracy of the local protocol 
+increases very quickly with the proportion of agents while 
+the curve is really smooth for the global one 
+now let us observe more carefully the results reported 
+here the curve corresponding to a ti of is above that 
+corresponding to this is so because the more open 
+a map the more opportunities to communicate with more 
+than one agent and hence benefits from broadcast 
+however we also observe that curve for is below that for 
+ this is explained as follows in the case of the 
+potential gain to be made in terms of surviving agents is 
+much lower because our protocols already give rather 
+efficient outcomes anyway quickly reaching see fig 
+a simple rule of thumb could be that when the number of 
+agents is small special attention should be put on the local 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+protocol whereas when that number is large one should 
+carefully design the global one unless the map is so open 
+that the protocol is already almost optimally efficient 
+efficiency of the protocols 
+the final experiment reported here is concerned with the 
+analysis of the efficiency of the protocols we analysis here 
+the mean size of the totality of the messages that are 
+exchanged by agents mean size of exchanges for short using 
+the following protocols he oe and two variant 
+protocols the first one is an intermediary restricted hypotheses 
+exchange protocol rhe rhe is as follows it does not 
+involve any challenge nor counter-propose which means that 
+agents cannot switch their role during the protocol this 
+differs from re in that respect in short rhe allows an agent 
+to exhaust its partner s criticism and eventually this 
+partner will come to adopt the agent s hypothesis note that this 
+means that the autonomy of the agent is not preserved here 
+ as an agent will essentially accept any hypothesis it cannot 
+undermine with the hope that the gain in efficiency will be 
+significant enough to compensate a loss in effectiveness the 
+second variant protocol is a complete observation exchange 
+protocol coe coe uses the same principles as oe but 
+includes in addition all critical negative examples nofire in 
+the exchange thus giving all examples used as arguments 
+by the hypotheses exchanges protocol hence improving 
+effectiveness results for map - are shown on fig 
+figure mean size of exchanges 
+first we can observe the fact that the ordering of the 
+protocols from the least efficient to the most efficient is coe 
+he rhe and then oe he being more efficient than coe 
+proves that the argumentation process gains efficiency by 
+selecting when it is needed to provide negative example which 
+have less impact that positive ones in our specific testbed 
+however by communicating hypotheses before eventually 
+giving observation to support it he instead of directly 
+giving the most crucial observations oe the argumentation 
+process doubles the size of data exchanges it is the cost for 
+ensuring consistency at the end of the exchange a property 
+that oe does not support also significant is the fact the 
+the mean size of exchanges is slightly higher when the 
+number of agents is small this is explained by the fact that in 
+these cases only a very few agents have relevant informations 
+in their possession and that they will need to communicate 
+a lot in order to come up with a common view of the 
+situation when the number of agents increases this knowledge 
+is distributed over more agents which need shorter 
+discussions to get to mutual consistency as a consequence the 
+relative gain in efficiency of using rhe appears to be better 
+when the number of agents is small when it is high they 
+will hardly argue anyway finally it is worth noticing that 
+the standard deviation for these experiments is rather high 
+which means that the conversation do not converge to any 
+stereotypic pattern 
+ conclusion 
+this paper has investigated the properties of a 
+multiagent system where each distributed agent locally perceives 
+its environment and tries to reach consistency with other 
+agents despite severe communication restrictions in 
+particular we have exhibited conditions allowing convergence and 
+experimentally investigated a typical situation where those 
+conditions cannot hold there are many possible extensions 
+to this work the first being to further investigate the 
+properties of different global protocols belonging to the class we 
+identified and their influence on the outcome there are in 
+particular many heuristics highly dependent on the context 
+of the study that could intuitively yield interesting results 
+ in our study selecting the recipient on the basis of what can 
+be inferred from his observed actions could be such a 
+heuristic one obvious candidate for longer term issues concern 
+the relaxation of the assumption of perfect sensing 
+ references 
+ g bourgne n maudet and s pinson when agents 
+communicate hypotheses in critical situations in 
+proceedings of dalt- may 
+ p harvey c f chang and a ghose support-based 
+distributed search a new approach for multiagent 
+constraint processing in proceedings of aamas 
+ 
+ h jung and m tambe argumentation as distributed 
+constraint satisfaction applications and results in 
+proceedings of agents 
+ n c karunatillake and n r jennings is it worth 
+arguing in proceedings of argmas 
+ s onta˜n´on and e plaza arguments and 
+counterexamples in case-based joint deliberation in 
+proceedings of argmas- may 
+ d poole explanation and prediction an architecture 
+for default and abductive reasoning computational 
+intelligence - 
+ i rahwan s d ramchurn n r jennings 
+p mcburney s parsons and l sonenberg 
+argumention-based negotiation the knowledge 
+engineering review - 
+ n roos a ten tije and c witteveen a protocol 
+for multi-agent diagnosis with spatially distributed 
+knowledge in proceedings of aamas 
+ n roos a ten tije and c witteveen reaching 
+diagnostic agreement in multiagent diagnosis in 
+proceedings of aamas 
+ t takahashi y kaneda and n ito preliminary 
+study - using robocuprescue simulations for disasters 
+prevention in proceedings of srmed 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

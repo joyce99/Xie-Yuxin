@@ -1,0 +1,961 @@
+the impact of caching on search engines 
+ricardo baeza-yates 
+rbaeza acm org 
+aristides gionis 
+gionis yahoo-inc com 
+flavio junqueira 
+fpj yahoo-inc com 
+vanessa murdock 
+vmurdock yahoo-inc com 
+vassilis plachouras 
+vassilis yahoo-inc com 
+fabrizio silvestri 
+f silvestri isti cnr it 
+ 
+yahoo research barcelona 
+isti - cnr 
+barcelona spain pisa italy 
+abstract 
+in this paper we study the trade-offs in designing efficient 
+caching systems for web search engines we explore the 
+impact of different approaches such as static vs dynamic 
+caching and caching query results vs caching posting lists 
+using a query log spanning a whole year we explore the 
+limitations of caching and we demonstrate that caching posting 
+lists can achieve higher hit rates than caching query 
+answers we propose a new algorithm for static caching of 
+posting lists which outperforms previous methods we also 
+study the problem of finding the optimal way to split the 
+static cache between answers and posting lists finally we 
+measure how the changes in the query log affect the 
+effectiveness of static caching given our observation that the 
+distribution of the queries changes slowly over time our 
+results and observations are applicable to different levels of 
+the data-access hierarchy for instance for a memory disk 
+layer or a broker remote server layer 
+categories and subject descriptors 
+h information storage and retrieval information 
+search and retrieval - search process h information 
+storage and retrieval systems and software - 
+distributed systems performance evaluation efficiency and 
+effectiveness 
+general terms 
+algorithms experimentation 
+ introduction 
+millions of queries are submitted daily to web search 
+engines and users have high expectations of the quality and 
+speed of the answers as the searchable web becomes larger 
+and larger with more than billion pages to index 
+evaluating a single query requires processing large amounts of 
+data in such a setting to achieve a fast response time and 
+to increase the query throughput using a cache is crucial 
+the primary use of a cache memory is to speedup 
+computation by exploiting frequently or recently used data 
+although reducing the workload to back-end servers is also a 
+major goal caching can be applied at different levels with 
+increasing response latencies or processing requirements for 
+example the different levels may correspond to the main 
+memory the disk or resources in a local or a wide area 
+network 
+the decision of what to cache is either off-line static 
+or online dynamic a static cache is based on historical 
+information and is periodically updated a dynamic cache 
+replaces entries according to the sequence of requests when 
+a new request arrives the cache system decides whether to 
+evict some entry from the cache in the case of a cache miss 
+such online decisions are based on a cache policy and several 
+different policies have been studied in the past 
+for a search engine there are two possible ways to use a 
+cache memory 
+caching answers as the engine returns answers to a 
+particular query it may decide to store these answers to 
+resolve future queries 
+caching terms as the engine evaluates a particular query 
+it may decide to store in memory the posting lists of 
+the involved query terms often the whole set of 
+posting lists does not fit in memory and consequently the 
+engine has to select a small set to keep in memory and 
+speed up query processing 
+returning an answer to a query that already exists in 
+the cache is more efficient than computing the answer using 
+cached posting lists on the other hand previously unseen 
+queries occur more often than previously unseen terms 
+implying a higher miss rate for cached answers 
+caching of posting lists has additional challenges as 
+posting lists have variable size caching them dynamically 
+is not very efficient due to the complexity in terms of 
+efficiency and space and the skewed distribution of the query 
+stream as shown later static caching of posting lists poses 
+even more challenges when deciding which terms to cache 
+one faces the trade-off between frequently queried terms and 
+terms with small posting lists that are space efficient 
+finally before deciding to adopt a static caching policy the 
+query stream should be analyzed to verify that its 
+characteristics do not change rapidly over time 
+broker 
+static caching 
+posting lists 
+dynamic static 
+cached answers 
+local query processor 
+disk 
+next caching level 
+local network access 
+remote network access 
+figure one caching level in a distributed search 
+architecture 
+in this paper we explore the trade-offs in the design of each 
+cache level showing that the problem is the same and only 
+a few parameters change in general we assume that each 
+level of caching in a distributed search architecture is similar 
+to that shown in figure we use a query log spanning a 
+whole year to explore the limitations of dynamically caching 
+query answers or posting lists for query terms 
+more concretely our main conclusions are that 
+ caching query answers results in lower hit ratios 
+compared to caching of posting lists for query terms but 
+it is faster because there is no need for query 
+evaluation we provide a framework for the analysis of the 
+trade-off between static caching of query answers and 
+posting lists 
+ static caching of terms can be more effective than 
+dynamic caching with for example lru we provide 
+algorithms based on the knapsack problem for 
+selecting the posting lists to put in a static cache and 
+we show improvements over previous work achieving 
+a hit ratio over 
+ changes of the query distribution over time have little 
+impact on static caching 
+the remainder of this paper is organized as follows 
+sections and summarize related work and characterize the 
+data sets we use section discusses the limitations of 
+dynamic caching sections and introduce algorithms for 
+caching posting lists and a theoretical framework for the 
+analysis of static caching respectively section discusses 
+the impact of changes in the query distribution on static 
+caching and section provides concluding remarks 
+ related work 
+there is a large body of work devoted to query 
+optimization buckley and lewit in one of the earliest works 
+take a term-at-a-time approach to deciding when inverted 
+lists need not be further examined more recent examples 
+demonstrate that the top k documents for a query can be 
+returned without the need for evaluating the complete set 
+of posting lists although these approaches seek to 
+improve query processing efficiency they differ from our 
+current work in that they do not consider caching they may 
+be considered separate and complementary to a cache-based 
+approach 
+raghavan and sever in one of the first papers on 
+exploiting user query history propose using a query base built 
+upon a set of persistent optimal queries submitted in the 
+past to improve the retrieval effectiveness for similar future 
+queries markatos shows the existence of temporal 
+locality in queries and compares the performance of different 
+caching policies based on the observations of markatos 
+lempel and moran propose a new caching policy called 
+probabilistic driven caching by attempting to estimate the 
+probability distribution of all possible queries submitted to 
+a search engine fagni et al follow markatos work by 
+showing that combining static and dynamic caching policies 
+together with an adaptive prefetching policy achieves a high 
+hit ratio different from our work they consider caching 
+and prefetching of pages of results 
+as systems are often hierarchical there has also been some 
+effort on multi-level architectures saraiva et al propose a 
+new architecture for web search engines using a two-level 
+dynamic caching system their goal for such systems 
+has been to improve response time for hierarchical engines 
+in their architecture both levels use an lru eviction 
+policy they find that the second-level cache can effectively 
+reduce disk traffic thus increasing the overall throughput 
+baeza-yates and saint-jean propose a three-level index 
+organization long and suel propose a caching system 
+structured according to three different levels the 
+intermediate level contains frequently occurring pairs of terms 
+and stores the intersections of the corresponding inverted 
+lists these last two papers are related to ours in that they 
+exploit different caching strategies at different levels of the 
+memory hierarchy 
+finally our static caching algorithm for posting lists in 
+section uses the ratio frequency size in order to evaluate 
+the goodness of an item to cache similar ideas have been 
+used in the context of file caching web caching and 
+even caching of posting lists but in all cases in a dynamic 
+setting to the best of our knowledge we are the first to use 
+this approach for static caching of posting lists 
+ data characterization 
+our data consists of a crawl of documents from the uk 
+domain and query logs of one year of queries submitted to 
+http www yahoo co uk from november to november 
+ in our logs of the total volume of queries are 
+unique the average query length is terms with the 
+longest query having terms 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+ 
+ 
+ 
+ e- e- e- e- e- 
+frequency normalized 
+frequency rank normalized 
+figure the distribution of queries bottom curve 
+and query terms middle curve in the query log 
+the distribution of document frequencies of terms 
+in the uk- dataset upper curve 
+figure shows the distributions of queries lower curve 
+and query terms middle curve the x-axis represents the 
+normalized frequency rank of the query or term the most 
+frequent query appears closest to the y-axis the y-axis is 
+table statistics of the uk- sample 
+uk- sample statistics 
+ of documents 
+ of terms 
+ of tokens 
+the normalized frequency for a given query or term as 
+expected the distribution of query frequencies and query term 
+frequencies follow power law distributions with slope of 
+and respectively in this figure the query frequencies 
+were computed as they appear in the logs with no 
+normalization for case or white space the query terms middle 
+curve have been normalized for case as have the terms in 
+the document collection 
+the document collection that we use for our experiments 
+is a summary of the uk domain crawled in may 
+this 
+summary corresponds to a maximum of crawled 
+documents per host using a breadth first crawling strategy 
+comprising gb the distribution of document frequencies of 
+terms in the collection follows a power law distribution with 
+slope upper curve in figure the statistics of the 
+collection are shown in table we measured the correlation 
+between the document frequency of terms in the collection 
+and the number of queries that contain a particular term in 
+the query log to be a scatter plot for a random 
+sample of terms is shown in figure in this experiment terms 
+have been converted to lower case in both the queries and 
+the documents so that the frequencies will be comparable 
+ e- 
+ e- 
+ e- 
+ e- 
+ 
+ 
+ 
+ 
+ e- e- e- 
+queryfrequency 
+document frequency 
+figure normalized scatter plot of document-term 
+frequencies vs query-term frequencies 
+ caching of queries and terms 
+caching relies upon the assumption that there is locality 
+in the stream of requests that is there must be sufficient 
+repetition in the stream of requests and within intervals of 
+time that enable a cache memory of reasonable size to be 
+effective in the query log we used of the unique queries 
+are singleton queries and are singleton queries out of 
+the whole volume thus out of all queries in the stream 
+composing the query log the upper threshold on hit ratio is 
+ this is because only of all the queries comprise 
+queries that have multiple occurrences it is important to 
+observe however that not all queries in this can be 
+cache hits because of compulsory misses a compulsory miss 
+ 
+the collection is available from the university of milan 
+http law dsi unimi it url retrieved 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+numberofelements 
+bin number 
+total terms 
+terms diff 
+total queries 
+unique queries 
+unique terms 
+query diff 
+figure arrival rate for both terms and queries 
+happens when the cache receives a query for the first time 
+this is different from capacity misses which happen due to 
+space constraints on the amount of memory the cache uses 
+if we consider a cache with infinite memory then the hit 
+ratio is note that for an infinite cache there are no 
+capacity misses 
+as we mentioned before another possibility is to cache the 
+posting lists of terms intuitively this gives more freedom 
+in the utilization of the cache content to respond to queries 
+because cached terms might form a new query on the other 
+hand they need more space 
+as opposed to queries the fraction of singleton terms in 
+the total volume of terms is smaller in our query log only 
+ of the terms appear once but this accounts for of 
+the vocabulary of query terms we show in section that 
+caching a small fraction of terms while accounting for terms 
+appearing in many documents is potentially very effective 
+figure shows several graphs corresponding to the 
+normalized arrival rate for different cases using days as bins 
+that is we plot the normalized number of elements that 
+appear in a day this graph shows only a period of 
+days and we normalize the values by the maximum value 
+observed throughout the whole period of the query log 
+total queries and total terms correspond to the total 
+volume of queries and terms respectively unique queries 
+and unique terms correspond to the arrival rate of unique 
+queries and terms finally query diff and terms diff 
+correspond to the difference between the curves for total and 
+unique 
+in figure as expected the volume of terms is much 
+higher than the volume of queries the difference between 
+the total number of terms and the number of unique terms is 
+much larger than the difference between the total number of 
+queries and the number of unique queries this observation 
+implies that terms repeat significantly more than queries if 
+we use smaller bins say of one hour then the ratio of unique 
+to volume is higher for both terms and queries because it 
+leaves less room for repetition 
+we also estimated the workload using the document 
+frequency of terms as a measure of how much work a query 
+imposes on a search engine we found that it follows closely 
+the arrival rate for terms shown in figure 
+to demonstrate the effect of a dynamic cache on the query 
+frequency distribution of figure we plot the same 
+frequency graph but now considering the frequency of queries 
+figure frequency graph after lru cache 
+after going through an lru cache on a cache miss an 
+lru cache decides upon an entry to evict using the 
+information on the recency of queries in this graph the most 
+frequent queries are not the same queries that were most 
+frequent before the cache it is possible that queries that 
+are most frequent after the cache have different 
+characteristics and tuning the search engine to queries frequent before 
+the cache may degrade performance for non-cached queries 
+the maximum frequency after caching is less than of 
+the maximum frequency before the cache thus showing that 
+the cache is very effective in reducing the load of frequent 
+queries if we re-rank the queries according to after-cache 
+frequency the distribution is still a power law but with a 
+much smaller value for the highest frequency 
+when discussing the effectiveness of dynamically caching 
+an important metric is cache miss rate to analyze the cache 
+miss rate for different memory constraints we use the 
+working set model a working set informally is the set 
+of references that an application or an operating system is 
+currently working with the model uses such sets in a 
+strategy that tries to capture the temporal locality of references 
+the working set strategy then consists in keeping in memory 
+only the elements that are referenced in the previous θ steps 
+of the input sequence where θ is a configurable parameter 
+corresponding to the window size 
+originally working sets have been used for page 
+replacement algorithms of operating systems and considering such 
+a strategy in the context of search engines is interesting for 
+three reasons first it captures the amount of locality of 
+queries and terms in a sequence of queries locality in this 
+case refers to the frequency of queries and terms in a window 
+of time if many queries appear multiple times in a window 
+then locality is high second it enables an oﬄine analysis of 
+the expected miss rate given different memory constraints 
+third working sets capture aspects of efficient caching 
+algorithms such as lru lru assumes that references farther 
+in the past are less likely to be referenced in the present 
+which is implicit in the concept of working sets 
+figure plots the miss rate for different working set sizes 
+and we consider working sets of both queries and terms the 
+working set sizes are normalized against the total number 
+of queries in the query log in the graph for queries there 
+is a sharp decay until approximately and the rate at 
+which the miss rate drops decreases as we increase the size 
+of the working set over finally the minimum value it 
+reaches is miss rate not shown in the figure as we have 
+cut the tail of the curve for presentation purposes 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+missrate 
+normalized working set size 
+queries 
+terms 
+figure miss rate as a function of the working set 
+size 
+ e 
+frequency 
+distance 
+figure distribution of distances expressed in 
+terms of distinct queries 
+compared to the query curve we observe that the 
+minimum miss rate for terms is substantially smaller the miss 
+rate also drops sharply on values up to and it decreases 
+minimally for higher values the minimum value however 
+is slightly over which is much smaller than the 
+minimum value for the sequence of queries this implies that 
+with such a policy it is possible to achieve over hit rate 
+if we consider caching dynamically posting lists for terms as 
+opposed to caching answers for queries this result does 
+not consider the space required for each unit stored in the 
+cache memory or the amount of time it takes to put 
+together a response to a user query we analyze these issues 
+more carefully later in this paper 
+it is interesting also to observe the histogram of figure 
+which is an intermediate step in the computation of the miss 
+rate graph it reports the distribution of distances between 
+repetitions of the same frequent query the distance in the 
+plot is measured in the number of distinct queries 
+separating a query and its repetition and it considers only queries 
+appearing at least times from figures and we 
+conclude that even if we set the size of the query answers cache 
+to a relatively large number of entries the miss rate is high 
+thus caching the posting lists of terms has the potential to 
+improve the hit ratio this is what we explore next 
+ caching posting lists 
+the previous section shows that caching posting lists can 
+obtain a higher hit rate compared to caching query answers 
+in this section we study the problem of how to select 
+posting lists to place on a certain amount of available memory 
+assuming that the whole index is larger than the amount of 
+memory available the posting lists have variable size in 
+fact their size distribution follows a power law so it is 
+beneficial for a caching policy to consider the sizes of the posting 
+lists we consider both dynamic and static caching for 
+dynamic caching we use two well-known policies lru and 
+lfu as well as a modified algorithm that takes posting-list 
+size into account 
+before discussing the static caching strategies we 
+introduce some notation we use fq t to denote the query-term 
+frequency of a term t that is the number of queries 
+containing t in the query log and fd t to denote the document 
+frequency of t that is the number of documents in the 
+collection in which the term t appears 
+the first strategy we consider is the algorithm proposed by 
+baeza-yates and saint-jean which consists in selecting 
+the posting lists of the terms with the highest query-term 
+frequencies fq t we call this algorithm qtf 
+we observe that there is a trade-off between fq t and 
+fd t terms with high fq t are useful to keep in the cache 
+because they are queried often on the other hand terms 
+with high fd t are not good candidates because they 
+correspond to long posting lists and consume a substantial 
+amount of space in fact the problem of selecting the best 
+posting lists for the static cache corresponds to the 
+standard knapsack problem given a knapsack of fixed 
+capacity and a set of n items such as the i-th item has value ci 
+and size si select the set of items that fit in the knapsack 
+and maximize the overall value in our case value 
+corresponds to fq t and size corresponds to fd t thus we 
+employ a simple algorithm for the knapsack problem which 
+is selecting the posting lists of the terms with the highest 
+values of the ratio 
+fq t 
+fd t 
+ we call this algorithm qtfdf we 
+tried other variations considering query frequencies instead 
+of term frequencies but the gain was minimal compared to 
+the complexity added 
+in addition to the above two static algorithms we consider 
+the following algorithms for dynamic caching 
+ lru a standard lru algorithm but many posting 
+lists might need to be evicted in order of least-recent 
+usage until there is enough space in the memory to 
+place the currently accessed posting list 
+ lfu a standard lfu algorithm eviction of the 
+leastfrequently used with the same modification as the 
+lru 
+ dyn-qtfdf a dynamic version of the qtfdf 
+algorithm evict from the cache the term s with the lowest 
+fq t 
+fd t 
+ratio 
+the performance of all the above algorithms for weeks 
+of the query log and the uk dataset are shown in figure 
+performance is measured with hit rate the cache size is 
+measured as a fraction of the total space required to store 
+the posting lists of all terms 
+for the dynamic algorithms we load the cache with terms 
+in order of fq t and we let the cache warm up for 
+million queries for the static algorithms we assume complete 
+knowledge of the frequencies fq t that is we estimate fq t 
+from the whole query stream as we show in section the 
+results do not change much if we compute the query-term 
+frequencies using the first or weeks of the query log and 
+measure the hit rate on the rest 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+hitrate 
+cache size 
+caching posting lists 
+static qtf df 
+lru 
+lfu 
+dyn-qtf df 
+qtf 
+figure hit rate of different strategies for caching 
+posting lists 
+the most important observation from our experiments is 
+that the static qtfdf algorithm has a better hit rate than 
+all the dynamic algorithms an important benefit a static 
+cache is that it requires no eviction and it is hence more 
+efficient when evaluating queries however if the 
+characteristics of the query traffic change frequently over time then 
+it requires re-populating the cache often or there will be a 
+significant impact on hit rate 
+ analysis of static caching 
+in this section we provide a detailed analysis for the 
+problem of deciding whether it is preferable to cache query 
+answers or cache posting lists our analysis takes into account 
+the impact of caching between two levels of the data-access 
+hierarchy it can either be applied at the memory disk layer 
+or at a server remote server layer as in the architecture we 
+discussed in the introduction 
+using a particular system model we obtain estimates for 
+the parameters required by our analysis which we 
+subsequently use to decide the optimal trade-off between caching 
+query answers and caching posting lists 
+ analytical model 
+let m be the size of the cache measured in answer units 
+ the cache can store m query answers assume that all 
+posting lists are of the same length l measured in answer 
+units we consider the following two cases a a cache 
+that stores only precomputed answers and b a cache that 
+stores only posting lists in the first case nc m answers 
+fit in the cache while in the second case np m l posting 
+lists fit in the cache thus np nc l note that although 
+posting lists require more space we can combine terms to 
+evaluate more queries or partial queries 
+for case a suppose that a query answer in the cache 
+can be evaluated in time unit for case b assume that 
+if the posting lists of the terms of a query are in the cache 
+then the results can be computed in tr time units while 
+if the posting lists are not in the cache then the results can 
+be computed in tr time units of course tr tr 
+now we want to compare the time to answer a stream of 
+q queries in both cases let vc nc be the volume of the 
+most frequent nc queries then for case a we have an 
+overall time 
+tca vc nc tr q − vc nc 
+similarly for case b let vp np be the number of 
+computable queries then we have overall time 
+tp l tr vp np tr q − vp np 
+we want to check under which conditions we have tp l 
+tca we have 
+tp l − tca tr − vc nc − tr − tr vp np 
+figure shows the values of vp and vc for our data we can 
+see that caching answers saturates faster and for this 
+particular data there is no additional benefit from using more 
+than of the index space for caching answers 
+as the query distribution is a power law with parameter 
+α the i-th most frequent query appears with probability 
+proportional to 
+iα therefore the volume vc n which is 
+the total number of the n most frequent queries is 
+vc n v 
+n 
+i 
+q 
+iα 
+ γnq γn 
+we know that vp n grows faster than vc n and assume 
+based on experimental results that the relation is of the 
+form vp n k vc n β 
+ 
+in the worst case for a large cache β → that is both 
+techniques will cache a constant fraction of the overall query 
+volume then caching posting lists makes sense only if 
+l tr − 
+k tr − tr 
+ 
+if we use compression we have l l and tr tr 
+according to the experiments that we show later compression 
+is always better 
+for a small cache we are interested in the transient 
+behavior and then β as computed from our data in this 
+case there will always be a point where tp l tca for a 
+large number of queries 
+in reality instead of filling the cache only with answers or 
+only with posting lists a better strategy will be to divide 
+the total cache space into cache for answers and cache for 
+posting lists in such a case there will be some queries that 
+could be answered by both parts of the cache as the answer 
+cache is faster it will be the first choice for answering those 
+queries let qnc and qnp be the set of queries that can 
+be answered by the cached answers and the cached posting 
+lists respectively then the overall time is 
+t vc nc tr v qnp −qnc tr q−v qnp ∪qnc 
+where np m − nc l finding the optimal division of 
+the cache in order to minimize the overall retrieval time is a 
+difficult problem to solve analytically in section we use 
+simulations to derive optimal cache trade-offs for particular 
+implementation examples 
+ parameter estimation 
+we now use a particular implementation of a centralized 
+system and the model of a distributed system as examples 
+from which we estimate the parameters of the analysis from 
+the previous section we perform the experiments using 
+an optimized version of terrier for both indexing 
+documents and processing queries on a single machine with a 
+pentium at ghz and gb of ram 
+we indexed the documents from the uk- dataset 
+without removing stop words or applying stemming the 
+posting lists in the inverted file consist of pairs of 
+document identifier and term frequency we compress the 
+document identifier gaps using elias gamma encoding and the 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+queryvolume 
+space 
+precomputed answers 
+posting lists 
+figure cache saturation as a function of size 
+table ratios between the average time to 
+evaluate a query and the average time to return cached 
+answers centralized and distributed case 
+centralized system tr tr tr tr 
+full evaluation 
+partial evaluation 
+lan system trl 
+ trl 
+ tr l 
+ tr l 
+ 
+full evaluation 
+partial evaluation 
+wan system trw 
+ trw 
+ tr w 
+ tr w 
+ 
+full evaluation 
+partial evaluation 
+term frequencies in documents using unary encoding 
+the size of the inverted file is mb a stored answer 
+requires bytes and an uncompressed posting takes 
+bytes from table we obtain l · of postings 
+ · of terms 
+ 
+and l inverted file size 
+ · of terms 
+ 
+we estimate the ratio tr t tc between the average 
+time t it takes to evaluate a query and the average time 
+tc it takes to return a stored answer for the same query in 
+the following way tc is measured by loading the answers 
+for queries in memory and answering the queries 
+from memory the average time is tc ms t is 
+measured by processing the same queries the first 
+ queries are used to warm-up the system for each 
+query we remove stop words if there are at least three 
+remaining terms the stop words correspond to the terms 
+with a frequency higher than the number of documents in 
+the index we use a document-at-a-time approach to 
+retrieve documents containing all query terms the only disk 
+access required during query processing is for reading 
+compressed posting lists from the inverted file we perform both 
+full and partial evaluation of answers because some queries 
+are likely to retrieve a large number of documents and only 
+a fraction of the retrieved documents will be seen by users 
+in the partial evaluation of queries we terminate the 
+processing after matching documents the estimated 
+ratios tr are presented in table 
+figure shows for a sample of queries the workload of 
+the system with partial query evaluation and compressed 
+posting lists the x-axis corresponds to the total time the 
+system spends processing a particular query and the 
+vertical axis corresponds to the sum t∈q fq · fd t notice 
+that the total number of postings of the query-terms does 
+not necessarily provide an accurate estimate of the workload 
+imposed on the system by a query which is the case for full 
+evaluation and uncompressed lists 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+totalpostingstoprocessquery normalized 
+total time to process query normalized 
+partial processing of compressed postings 
+query len 
+query len in 
+query len in 
+query len 
+figure workload for partial query evaluation 
+with compressed posting lists 
+the analysis of the previous section also applies to a 
+distributed retrieval system in one or multiple sites suppose 
+that a document partitioned distributed system is running 
+on a cluster of machines interconnected with a local area 
+network lan in one site the broker receives queries and 
+broadcasts them to the query processors which answer the 
+queries and return the results to the broker finally the 
+broker merges the received answers and generates the final 
+set of answers we assume that the time spent on 
+merging results is negligible the difference between the 
+centralized architecture and the document partition 
+architecture is the extra communication between the broker and 
+the query processors using icmp pings on a mbps 
+lan we have measured that sending the query from the 
+broker to the query processors which send an answer of 
+bytes back to the broker takes on average ms hence 
+trl 
+ tr ms ms tr 
+in the case when the broker and the query processors 
+are in different sites connected with a wide area network 
+ wan we estimated that broadcasting the query from the 
+broker to the query processors and getting back an answer 
+of bytes takes on average ms hence trw 
+ 
+tr ms ms tr 
+ simulation results 
+we now address the problem of finding the optimal 
+tradeoff between caching query answers and caching posting lists 
+to make the problem concrete we assume a fixed budget m 
+on the available memory out of which x units are used for 
+caching query answers and m − x for caching posting lists 
+we perform simulations and compute the average response 
+time as a function of x using a part of the query log as 
+training data we first allocate in the cache the answers to 
+the most frequent queries that fit in space x and then we 
+use the rest of the memory to cache posting lists for 
+selecting posting lists we use the qtfdf algorithm applied to 
+the training query log but excluding the queries that have 
+already been cached 
+in figure we plot the simulated response time for a 
+centralized system as a function of x for the uncompressed 
+index we use m gb and for the compressed index we 
+use m gb in the case of the configuration that uses 
+partial query evaluation with compressed posting lists the 
+lowest response time is achieved when gb out of the 
+ gb is allocated for storing answers for queries we 
+obtained similar trends in the results for the lan setting 
+figure shows the simulated workload for a distributed 
+system across a wan in this case the total amount of 
+memory is split between the broker which holds the cached 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averageresponsetime 
+space gb 
+simulated workload -- single machine 
+full uncompr g 
+partial uncompr g 
+full compr g 
+partial compr g 
+figure optimal division of the cache in a server 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+averageresponsetime 
+space gb 
+simulated workload -- wan 
+full uncompr g 
+partial uncompr g 
+full compr g 
+partial compr g 
+figure optimal division of the cache when the 
+next level requires wan access 
+answers of queries and the query processors which hold 
+the cache of posting lists according to the figure the 
+difference between the configurations of the query processors 
+is less important because the network communication 
+overhead increases the response time substantially when using 
+uncompressed posting lists the optimal allocation of 
+memory corresponds to using approximately of the memory 
+for caching query answers this is explained by the fact that 
+there is no need for network communication when the query 
+can be answered by the cache at the broker 
+ effect of the query dynamics 
+for our query log the query distribution and query-term 
+distribution change slowly over time to support this claim 
+we first assess how topics change comparing the distribution 
+of queries from the first week in june to the 
+distribution of queries for the remainder of that did not appear 
+in the first week in june we found that a very small 
+percentage of queries are new queries the majority of queries 
+that appear in a given week repeat in the following weeks 
+for the next six months 
+we then compute the hit rate of a static cache of 
+answers trained over a period of two weeks figure we 
+report hit rate hourly for days starting from pm we 
+observe that the hit rate reaches its highest value during the 
+night around midnight whereas around - pm it reaches 
+its minimum after a small decay in hit rate values the hit 
+rate stabilizes between and for the entire week 
+suggesting that the static cache is effective for a whole week 
+after the training period 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+hit-rate 
+time 
+hits on the frequent queries of distances 
+figure hourly hit rate for a static cache holding 
+ answers during the period of a week 
+the static cache of posting lists can be periodically 
+recomputed to estimate the time interval in which we need 
+to recompute the posting lists on the static cache we need 
+to consider an efficiency quality trade-off using too short 
+a time interval might be prohibitively expensive while 
+recomputing the cache too infrequently might lead to having 
+an obsolete cache not corresponding to the statistical 
+characteristics of the current query stream 
+we measured the effect on the qtfdf algorithm of the 
+changes in a -week query stream figure we compute 
+the query term frequencies over the whole stream select 
+which terms to cache and then compute the hit rate on the 
+whole query stream this hit rate is as an upper bound and 
+it assumes perfect knowledge of the query term frequencies 
+to simulate a realistic scenario we use the first weeks 
+of the query stream for computing query term frequencies 
+and the following weeks to estimate the hit rate as 
+figure shows the hit rate decreases by less than the 
+high correlation among the query term frequencies during 
+different time periods explains the graceful adaptation of 
+the static caching algorithms to the future query stream 
+indeed the pairwise correlation among all possible -week 
+periods of the -week query stream is over 
+ conclusions 
+caching is an effective technique in search engines for 
+improving response time reducing the load on query 
+processors and improving network bandwidth utilization we 
+present results on both dynamic and static caching 
+dynamic caching of queries has limited effectiveness due to the 
+high number of compulsory misses caused by the number 
+of unique or infrequent queries our results show that in 
+our uk log the minimum miss rate is using a working 
+set strategy caching terms is more effective with respect to 
+miss rate achieving values as low as we also propose a 
+new algorithm for static caching of posting lists that 
+outperforms previous static caching algorithms as well as dynamic 
+algorithms such as lru and lfu obtaining hit rate values 
+that are over higher compared these strategies 
+we present a framework for the analysis of the trade-off 
+between caching query results and caching posting lists and 
+we simulate different types of architectures our results 
+show that for centralized and lan environments there is 
+an optimal allocation of caching query results and caching 
+of posting lists while for wan scenarios in which network 
+time prevails it is more important to cache query results 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+hitrate 
+cache size 
+dynamics of static qtf df caching policy 
+perfect knowledge 
+ -week training 
+ -week training 
+figure impact of distribution changes on the 
+static caching of posting lists 
+ references 
+ v n anh and a moffat pruned query evaluation using 
+pre-computed impacts in acm cikm 
+ r a baeza-yates and f saint-jean a three level search 
+engine index based in query log distribution in spire 
+ 
+ c buckley and a f lewit optimization of inverted 
+vector searches in acm sigir 
+ s b¨uttcher and c l a clarke a document-centric 
+approach to static index pruning in text retrieval systems 
+in acm cikm 
+ p cao and s irani cost-aware www proxy caching 
+algorithms in usits 
+ p denning working sets past and present ieee trans 
+on software engineering se- - 
+ t fagni r perego f silvestri and s orlando boosting 
+the performance of web search engines caching and 
+prefetching query results by exploiting historical usage 
+data acm trans inf syst - 
+ r lempel and s moran predictive caching and 
+prefetching of query results in search engines in www 
+ 
+ x long and t suel three-level caching for efficient query 
+processing in large web search engines in www 
+ e p markatos on caching search engine query results 
+computer communications - 
+ i ounis g amati v plachouras b he c macdonald 
+and c lioma terrier a high performance and scalable 
+information retrieval platform in sigir workshop on 
+open source information retrieval 
+ v v raghavan and h sever on the reuse of past optimal 
+queries in acm sigir 
+ p c saraiva e s de moura n ziviani w meira 
+r fonseca and b riberio-neto rank-preserving two-level 
+caching for scalable search engines in acm sigir 
+ d r slutz and i l traiger a note on the calculation of 
+average working set size communications of the acm 
+ - 
+ t strohman h turtle and w b croft optimization 
+strategies for complex queries in acm sigir 
+ i h witten t c bell and a moffat managing 
+gigabytes compressing and indexing documents and 
+images john wiley sons inc ny 
+ n e young on-line file caching algorithmica 
+ - 

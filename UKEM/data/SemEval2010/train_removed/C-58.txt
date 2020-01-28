@@ -1,0 +1,1519 @@
+a scalable distributed information management system 
+praveen yalagandula 
+ypraveen cs utexas edu 
+mike dahlin 
+dahlin cs utexas edu 
+department of computer sciences 
+the university of texas at austin 
+austin tx 
+abstract 
+we present a scalable distributed information management 
+system sdims that aggregates information about large-scale 
+networked systems and that can serve as a basic building block for a 
+broad range of large-scale distributed applications by providing 
+detailed views of nearby information and summary views of global 
+information to serve as a basic building block a sdims should have 
+four properties scalability to many nodes and attributes flexibility 
+to accommodate a broad range of applications administrative 
+isolation for security and availability and robustness to node and 
+network failures we design implement and evaluate a sdims that 
+leverages distributed hash tables dht to create scalable 
+aggregation trees provides flexibility through a simple api that lets 
+applications control propagation of reads and writes provides 
+administrative isolation through simple extensions to current dht 
+algorithms and achieves robustness to node and network 
+reconfigurations through lazy reaggregation on-demand reaggregation 
+and tunable spatial replication through extensive simulations and 
+micro-benchmark experiments we observe that our system is an 
+order of magnitude more scalable than existing approaches achieves 
+isolation properties at the cost of modestly increased read latency 
+in comparison to flat dhts and gracefully handles failures 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems-network operating systems distributed databases 
+general terms 
+management design experimentation 
+ introduction 
+the goal of this research is to design and build a scalable 
+distributed information management system sdims that aggregates 
+information about large-scale networked systems and that can serve 
+as a basic building block for a broad range of large-scale distributed 
+applications monitoring querying and reacting to changes in 
+the state of a distributed system are core components of 
+applications such as system management service 
+placement data sharing and caching sensor 
+monitoring and control multicast tree formation 
+ and naming and request routing we therefore 
+speculate that a sdims in a networked system would provide a 
+distributed operating systems backbone and facilitate the 
+development and deployment of new distributed services 
+for a large scale information system hierarchical aggregation 
+is a fundamental abstraction for scalability rather than expose all 
+information to all nodes hierarchical aggregation allows a node to 
+access detailed views of nearby information and summary views of 
+global information in a sdims based on hierarchical aggregation 
+different nodes can therefore receive different answers to the query 
+find a nearby node with at least gb of free memory or find 
+a nearby copy of file foo a hierarchical system that aggregates 
+information through reduction trees allows nodes to access 
+information they care about while maintaining system scalability 
+to be used as a basic building block a sdims should have 
+four properties first the system should be scalable it should 
+accommodate large numbers of participating nodes and it should 
+allow applications to install and monitor large numbers of data 
+attributes enterprise and global scale systems today might have tens 
+of thousands to millions of nodes and these numbers will increase 
+over time similarly we hope to support many applications and 
+each application may track several attributes e g the load and 
+free memory of a system s machines or millions of attributes e g 
+which files are stored on which machines 
+second the system should have flexibility to accommodate a 
+broad range of applications and attributes for example 
+readdominated attributes like numcpus rarely change in value while 
+write-dominated attributes like numprocesses change quite often 
+an approach tuned for read-dominated attributes will consume high 
+bandwidth when applied to write-dominated attributes conversely 
+an approach tuned for write-dominated attributes will suffer from 
+unnecessary query latency or imprecision for read-dominated 
+attributes therefore a sdims should provide mechanisms to handle 
+different types of attributes and leave the policy decision of tuning 
+replication to the applications 
+third a sdims should provide administrative isolation in a 
+large system it is natural to arrange nodes in an organizational or 
+an administrative hierarchy a sdims should support 
+administrasession distributed information systems 
+ 
+tive isolation in which queries about an administrative domain s 
+information can be satisfied within the domain so that the system can 
+operate during disconnections from other domains so that an 
+external observer cannot monitor or affect intra-domain queries and 
+to support domain-scoped queries efficiently 
+fourth the system must be robust to node failures and 
+disconnections a sdims should adapt to reconfigurations in a timely 
+fashion and should also provide mechanisms so that applications 
+can tradeoff the cost of adaptation with the consistency level in the 
+aggregated results when reconfigurations occur 
+we draw inspiration from two previous works astrolabe 
+and distributed hash tables dhts 
+astrolabe is a robust information management system 
+astrolabe provides the abstraction of a single logical aggregation tree 
+that mirrors a system s administrative hierarchy it provides a 
+general interface for installing new aggregation functions and provides 
+eventual consistency on its data astrolabe is robust due to its use 
+of an unstructured gossip protocol for disseminating information 
+and its strategy of replicating all aggregated attribute values for a 
+subtree to all nodes in the subtree this combination allows any 
+communication pattern to yield eventual consistency and allows 
+any node to answer any query using local information this high 
+degree of replication however may limit the system s ability to 
+accommodate large numbers of attributes also although the 
+approach works well for read-dominated attributes an update at one 
+node can eventually affect the state at all nodes which may limit 
+the system s flexibility to support write-dominated attributes 
+recent research in peer-to-peer structured networks resulted in 
+distributed hash tables dhts -a data 
+structure that scales with the number of nodes and that distributes 
+the read-write load for different queries among the participating 
+nodes it is interesting to note that although these systems export 
+a global hash table abstraction many of them internally make use 
+of what can be viewed as a scalable system of aggregation trees 
+to for example route a request for a given key to the right dht 
+node indeed rather than export a general dht interface plaxton 
+et al s original application makes use of hierarchical 
+aggregation to allow nodes to locate nearby copies of objects it seems 
+appealing to develop a sdims abstraction that exposes this internal 
+functionality in a general way so that scalable trees for aggregation 
+can be a basic system building block alongside the dhts 
+at a first glance it might appear to be obvious that simply 
+fusing dhts with astrolabe s aggregation abstraction will result in a 
+sdims however meeting the sdims requirements forces a 
+design to address four questions how to scalably map different 
+attributes to different aggregation trees in a dht mesh how to 
+provide flexibility in the aggregation to accommodate different 
+application requirements how to adapt a global flat dht mesh 
+to attain administrative isolation property and how to provide 
+robustness without unstructured gossip and total replication 
+the key contributions of this paper that form the foundation of 
+our sdims design are as follows 
+ we define a new aggregation abstraction that specifies both 
+attribute type and attribute name and that associates an 
+aggregation function with a particular attribute type this 
+abstraction paves the way for utilizing the dht system s internal 
+trees for aggregation and for achieving scalability with both 
+nodes and attributes 
+ we provide a flexible api that lets applications control the 
+propagation of reads and writes and thus trade off update 
+cost read latency replication and staleness 
+ we augment an existing dht algorithm to ensure path 
+convergence and path locality properties in order to achieve 
+administrative isolation 
+ we provide robustness to node and network reconfigurations 
+by a providing temporal replication through lazy 
+reaggregation that guarantees eventual consistency and b 
+ensuring that our flexible api allows demanding applications gain 
+additional robustness by using tunable spatial replication of 
+data aggregates or by performing fast on-demand 
+reaggregation to augment the underlying lazy reaggregation or by 
+doing both 
+we have built a prototype of sdims through simulations and 
+micro-benchmark experiments on a number of department machines 
+and planetlab nodes we observe that the prototype achieves 
+scalability with respect to both nodes and attributes through use 
+of its flexible api inflicts an order of magnitude lower maximum 
+node stress than unstructured gossiping schemes achieves isolation 
+properties at a cost of modestly increased read latency compared to 
+flat dhts and gracefully handles node failures 
+this initial study discusses key aspects of an ongoing system 
+building effort but it does not address all issues in building a sdims 
+for example we believe that our strategies for providing robustness 
+will mesh well with techniques such as supernodes and other 
+ongoing efforts to improve dhts for further improving 
+robustness also although splitting aggregation among many trees 
+improves scalability for simple queries this approach may make 
+complex and multi-attribute queries more expensive compared to 
+a single tree additional work is needed to understand the 
+significance of this limitation for real workloads and if necessary to 
+adapt query planning techniques from dht abstractions 
+to scalable aggregation tree abstractions 
+in section we explain the hierarchical aggregation 
+abstraction that sdims provides to applications in sections and we 
+describe the design of our system for achieving the flexibility 
+scalability and administrative isolation requirements of a sdims in 
+section we detail the implementation of our prototype system 
+section addresses the issue of adaptation to the topological 
+reconfigurations in section we present the evaluation of our 
+system through large-scale simulations and microbenchmarks on real 
+networks section details the related work and section 
+summarizes our contribution 
+ aggregation abstraction 
+aggregation is a natural abstraction for a large-scale distributed 
+information system because aggregation provides scalability by 
+allowing a node to view detailed information about the state near it 
+and progressively coarser-grained summaries about progressively 
+larger subsets of a system s data 
+our aggregation abstraction is defined across a tree spanning all 
+nodes in the system each physical node in the system is a leaf and 
+each subtree represents a logical group of nodes note that logical 
+groups can correspond to administrative domains e g department 
+or university or groups of nodes within a domain e g 
+workstations on a lan in cs department an internal non-leaf node 
+which we call virtual node is simulated by one or more physical 
+nodes at the leaves of the subtree for which the virtual node is the 
+root we describe how to form such trees in a later section 
+each physical node has local data stored as a set of attributetype 
+attributename value tuples such as configuration numcpus 
+ mcast membership session foo yes or file stored foo 
+myipaddress the system associates an aggregation function ftype 
+with each attribute type and for each level-i subtree ti in the 
+system the system defines an aggregate value vi type name for each 
+ at 
+tributetype attributename pair as follows for a physical leaf 
+node t at level v type name is the locally stored value for the 
+attribute type and name or null if no matching tuple exists then 
+the aggregate value for a level-i subtree ti is the aggregation 
+function for the type ftype computed across the aggregate values of 
+each of ti s k children 
+vi type name ftype v 
+i− type name v 
+i− type name vk− 
+i− type name 
+although sdims allows arbitrary aggregation functions it is 
+often desirable that these functions satisfy the hierarchical 
+computation property f v vn f f v vs f vs vs 
+ f vsk vn where vi is the value of an attribute at node 
+i for example the average operation defined as avg v vn 
+ n ∑n 
+i vi does not satisfy the property instead if an attribute 
+stores values as tuples sum count the attribute satisfies the 
+hierarchical computation property while still allowing the applications 
+to compute the average from the aggregate sum and count values 
+finally note that for a large-scale system it is difficult or 
+impossible to insist that the aggregation value returned by a probe 
+corresponds to the function computed over the current values at the 
+leaves at the instant of the probe therefore our system provides 
+only weak consistency guarantees - specifically eventual 
+consistency as defined in 
+ flexibility 
+a major innovation of our work is enabling flexible aggregate 
+computation and propagation the definition of the aggregation 
+abstraction allows considerable flexibility in how when and where 
+aggregate values are computed and propagated while previous 
+systems implement a single static strategy 
+we argue that a sdims should provide flexible computation and 
+propagation to efficiently support wide variety of applications with 
+diverse requirements in order to provide this flexibility we 
+develop a simple interface that decomposes the aggregation 
+abstraction into three pieces of functionality install update and probe 
+this definition of the aggregation abstraction allows our system 
+to provide a continuous spectrum of strategies ranging from lazy 
+aggregate computation and propagation on reads to aggressive 
+immediate computation and propagation on writes in figure we 
+illustrate both extreme strategies and an intermediate strategy 
+under the lazy update-local computation and propagation strategy 
+an update or write only affects local state then a probe or read 
+that reads a level-i aggregate value is sent up the tree to the issuing 
+node s level-i ancestor and then down the tree to the leaves the 
+system then computes the desired aggregate value at each layer up 
+the tree until the level-i ancestor that holds the desired value 
+finally the level-i ancestor sends the result down the tree to the 
+issuing node in the other extreme case of the aggressive update-all 
+immediate computation and propagation on writes when an 
+update occurs changes are aggregated up the tree and each new 
+aggregate value is flooded to all of a node s descendants in this 
+case each level-i node not only maintains the aggregate values for 
+the level-i subtree but also receives and locally stores copies of all 
+of its ancestors level- j j i aggregation values also a leaf 
+satisfies a probe for a level-i aggregate using purely local data in an 
+intermediate update-up strategy the root of each subtree maintains 
+the subtree s current aggregate value and when an update occurs 
+the leaf node updates its local state and passes the update to its 
+parent and then each successive enclosing subtree updates its 
+aggregate value and passes the new value to its parent this strategy 
+satisfies a leaf s probe for a level-i aggregate value by sending the 
+probe up to the level-i ancestor of the leaf and then sending the 
+aggregate value down to the leaf finally notice that other strategies 
+exist in general an update-upk-downj strategy aggregates up to 
+parameter description optional 
+attrtype attribute type 
+aggrfunc aggregation function 
+up how far upward each update is 
+sent default all 
+x 
+down how far downward each 
+aggregate is sent default none 
+x 
+domain domain restriction default none x 
+exptime expiry time 
+table arguments for the install operation 
+the kth level and propagates the aggregate values of a node at level 
+l s t l ≤ k downward for j levels 
+a sdims must provide a wide range of flexible computation and 
+propagation strategies to applications for it to be a general 
+abstraction an application should be able to choose a particular 
+mechanism based on its read-to-write ratio that reduces the bandwidth 
+consumption while attaining the required responsiveness and 
+precision note that the read-to-write ratio of the attributes that 
+applications install vary extensively for example a read-dominated 
+attribute like numcpus rarely changes in value while a 
+writedominated attribute like numprocesses changes quite often an 
+aggregation strategy like update-all works well for read-dominated 
+attributes but suffers high bandwidth consumption when applied for 
+write-dominated attributes conversely an approach like 
+updatelocal works well for write-dominated attributes but suffers from 
+unnecessary query latency or imprecision for read-dominated 
+attributes 
+sdims also allows non-uniform computation and propagation 
+across the aggregation tree with different up and down parameters 
+in different subtrees so that applications can adapt with the 
+spatial and temporal heterogeneity of read and write operations with 
+respect to spatial heterogeneity access patterns may differ for 
+different parts of the tree requiring different propagation strategies 
+for different parts of the tree similarly with respect to temporal 
+heterogeneity access patterns may change over time requiring 
+different strategies over time 
+ aggregation api 
+we provide the flexibility described above by splitting the 
+aggregation api into three functions install installs an aggregation 
+function that defines an operation on an attribute type and 
+specifies the update strategy that the function will use update inserts 
+or modifies a node s local value for an attribute and probe 
+obtains an aggregate value for a specified subtree the install 
+interface allows applications to specify the k and j parameters of the 
+update-upk-downj strategy along with the aggregation function 
+the update interface invokes the aggregation of an attribute on the 
+tree according to corresponding aggregation function s aggregation 
+strategy the probe interface not only allows applications to obtain 
+the aggregated value for a specified tree but also allows a probing 
+node to continuously fetch the values for a specified time thus 
+enabling an application to adapt to spatial and temporal heterogeneity 
+the rest of the section describes these three interfaces in detail 
+ install 
+the install operation installs an aggregation function in the 
+system the arguments for this operation are listed in table the 
+attrtype argument denotes the type of attributes on which this 
+aggregation function is invoked installed functions are soft state that 
+must be periodically renewed or they will be garbage collected at 
+exptime 
+the arguments up and down specify the aggregate computation 
+ 
+update strategy on update on probe for global aggregate value on probe for level- aggregate value 
+update-local 
+update-up 
+update-all 
+figure flexible api 
+parameter description optional 
+attrtype attribute type 
+attrname attribute name 
+mode continuous or one-shot default 
+one-shot 
+x 
+level level at which aggregate is sought 
+ default at all levels 
+x 
+up how far up to go and re-fetch the 
+value default none 
+x 
+down how far down to go and 
+reaggregate default none 
+x 
+exptime expiry time 
+table arguments for the probe operation 
+and propagation strategy update-upk-downj the domain 
+argument if present indicates that the aggregation function should be 
+installed on all nodes in the specified domain otherwise the 
+function is installed on all nodes in the system 
+ update 
+the update operation takes three arguments attrtype attrname 
+and value and creates a new attrtype attrname value tuple or 
+updates the value of an old tuple with matching attrtype and 
+attrname at a leaf node 
+the update interface meshes with installed aggregate 
+computation and propagation strategy to provide flexibility in particular 
+as outlined above and described in detail in section after a leaf 
+applies an update locally the update may trigger re-computation 
+of aggregate values up the tree and may also trigger propagation 
+of changed aggregate values down the tree notice that our 
+abstraction associates an aggregation function with only an attrtype 
+but lets updates specify an attrname along with the attrtype this 
+technique helps achieve scalability with respect to nodes and 
+attributes as described in section 
+ probe 
+the probe operation returns the value of an attribute to an 
+application the complete argument set for the probe operation is shown 
+in table along with the attrname and the attrtype arguments a 
+level argument specifies the level at which the answers are required 
+for an attribute in our implementation we choose to return results 
+at all levels k l for a level-l probe because i it is inexpensive as 
+the nodes traversed for level-l probe also contain level k aggregates 
+for k l and as we expect the network cost of transmitting the 
+additional information to be small for the small aggregates which we 
+focus and ii it is useful as applications can efficiently get several 
+aggregates with a single probe e g for domain-scoped queries as 
+explained in section 
+probes with mode set to continuous and with finite exptime 
+enable applications to handle spatial and temporal heterogeneity when 
+node a issues a continuous probe at level l for an attribute then 
+regardless of the up and down parameters updates for the attribute 
+at any node in a s level-l ancestor s subtree are aggregated up to 
+level l and the aggregated value is propagated down along the path 
+from the ancestor to a note that continuous mode enables sdims 
+to support a distributed sensor-actuator mechanism where a 
+sensor monitors a level-i aggregate with a continuous mode probe and 
+triggers an actuator upon receiving new values for the probe 
+the up and down arguments enable applications to perform 
+ondemand fast re-aggregation during reconfigurations where a forced 
+re-aggregation is done for the corresponding levels even if the 
+aggregated value is available as we discuss in section when 
+present the up and down arguments are interpreted as described 
+in the install operation 
+ dynamic adaptation 
+at the api level the up and down arguments in install api can be 
+regarded as hints since they suggest a computation strategy but do 
+not affect the semantics of an aggregation function a sdims 
+implementation can dynamically adjust its up down strategies for an 
+attribute based on its measured read write frequency but a virtual 
+intermediate node needs to know the current up and down 
+propagation values to decide if the local aggregate is fresh in order to 
+answer a probe this is the key reason why up and down need to be 
+statically defined at the install time and can not be specified in the 
+update operation in dynamic adaptation we implement a 
+leasebased mechanism where a node issues a lease to a parent or a child 
+denoting that it will keep propagating the updates to that parent or 
+child we are currently evaluating different policies to decide when 
+to issue a lease and when to revoke a lease 
+ scalability 
+our design achieves scalability with respect to both nodes and 
+attributes through two key ideas first it carefully defines the 
+aggregation abstraction to mesh well with its underlying scalable dht 
+system second it refines the basic dht abstraction to form an 
+autonomous dht adht to achieve the administrative isolation 
+properties that are crucial to scaling for large real-world systems 
+in this section we describe these two ideas in detail 
+ leveraging dhts 
+in contrast to previous systems sdims s 
+aggregation abstraction specifies both an attribute type and attribute 
+name and associates an aggregation function with a type rather than 
+just specifying and associating a function with a name installing a 
+single function that can operate on many different named attributes 
+matching a type improves scalability for sparse attribute types 
+with large sparsely-filled name spaces for example to construct 
+a file location service our interface allows us to install a single 
+function that computes an aggregate value for any named file a 
+subtree s aggregate value for fileloc name would be the id of 
+a node in the subtree that stores the named file conversely 
+astrolabe copes with sparse attributes by having aggregation functions 
+compute sets or lists and suggests that scalability can be improved 
+by representing such sets with bloom filters supporting sparse 
+names within a type provides at least two advantages first when 
+the value associated with a name is updated only the state 
+associ 
+ 
+ 
+ 
+ 
+ 
+ 
+l 
+l 
+l 
+l 
+figure the dht tree corresponding to key dhttree 
+and the corresponding aggregation tree 
+ated with that name needs to be updated and propagated to other 
+nodes second splitting values associated with different names 
+into different aggregation values allows our system to leverage 
+distributed hash tables dhts to map different names to different 
+trees and thereby spread the function s logical root node s load and 
+state across multiple physical nodes 
+given this abstraction scalably mapping attributes to dhts is 
+straightforward dht systems assign a long random id to each 
+node and define an algorithm to route a request for key k to a 
+node rootk such that the union of paths from all nodes forms a tree 
+dhttreek rooted at the node rootk now as illustrated in figure 
+by aggregating an attribute along the aggregation tree 
+corresponding to dhttreek for k hash attribute type attribute name 
+different attributes will be aggregated along different trees 
+in comparison to a scheme where all attributes are aggregated 
+along a single tree aggregating along multiple trees incurs lower 
+maximum node stress whereas in a single aggregation tree 
+approach the root and the intermediate nodes pass around more 
+messages than leaf nodes in a dht-based multi-tree each node acts as 
+an intermediate aggregation point for some attributes and as a leaf 
+node for other attributes hence this approach distributes the onus 
+of aggregation across all nodes 
+ administrative isolation 
+aggregation trees should provide administrative isolation by 
+ensuring that for each domain the virtual node at the root of the 
+smallest aggregation subtree containing all nodes of that domain is 
+hosted by a node in that domain administrative isolation is 
+important for three reasons i for security - so that updates and probes 
+flowing in a domain are not accessible outside the domain ii for 
+availability - so that queries for values in a domain are not affected 
+by failures of nodes in other domains and iii for efficiency - so 
+that domain-scoped queries can be simple and efficient 
+to provide administrative isolation to aggregation trees a dht 
+should satisfy two properties 
+ path locality search paths should always be contained in 
+the smallest possible domain 
+ path convergence search paths for a key from different 
+nodes in a domain should converge at a node in that domain 
+existing dhts support path locality or can easily support it 
+by using the domain nearness as the distance metric but they 
+do not guarantee path convergence as those systems try to optimize 
+the search path to the root to reduce response latency for example 
+pastry uses prefix routing in which each node s routing table 
+contains one row per hexadecimal digit in the nodeid space where 
+the ith row contains a list of nodes whose nodeids differ from the 
+current node s nodeid in the ith digit with one entry for each 
+possible digit value given a routing topology to route a packet to 
+an arbitrary destination key a node in pastry forwards a packet to 
+the node with a nodeid prefix matching the key in at least one more 
+digit than the current node if such a node is not known the 
+current node uses an additional data structure the leaf set containing 
+ xx 
+ xx 
+ xx 
+ xx 
+ xx 
+univ 
+dep dep 
+key xx 
+ xx xx xx xx xx 
+l 
+l 
+l 
+figure example shows how isolation property is violated 
+with original pastry we also show the corresponding 
+aggregation tree 
+ xx 
+ xx 
+ xx 
+ xx 
+ xx 
+univ 
+dep dep 
+key xx 
+x 
+ xx xx xx xx xx 
+l 
+l 
+l 
+figure autonomous dht satisfying the isolation property 
+also the corresponding aggregation tree is shown 
+l immediate higher and lower neighbors in the nodeid space and 
+forwards the packet to a node with an identical prefix but that is 
+numerically closer to the destination key in the nodeid space this 
+process continues until the destination node appears in the leaf set 
+after which the message is routed directly pastry s expected 
+number of routing steps is logn where n is the number of nodes but 
+as figure illustrates this algorithm does not guarantee path 
+convergence if two nodes in a domain have nodeids that match a key 
+in the same number of bits both of them can route to a third node 
+outside the domain when routing for that key 
+simple modifications to pastry s route table construction and 
+key-routing protocols yield an autonomous dht adht that 
+satisfies the path locality and path convergence properties as figure 
+illustrates whenever two nodes in a domain share the same prefix 
+with respect to a key and no other node in the domain has a longer 
+prefix our algorithm introduces a virtual node at the boundary of 
+the domain corresponding to that prefix plus the next digit of the 
+key such a virtual node is simulated by the existing node whose id 
+is numerically closest to the virtual node s id our adht s routing 
+table differs from pastry s in two ways first each node maintains 
+a separate leaf set for each domain of which it is a part second 
+nodes use two proximity metrics when populating the routing tables 
+- hierarchical domain proximity is the primary metric and network 
+distance is secondary then to route a packet to a global root for a 
+key adht routing algorithm uses the routing table and the leaf set 
+entries to route to each successive enclosing domain s root the 
+virtual or real node in the domain matching the key in the maximum 
+number of digits additional details about the adht algorithm 
+are available in an extended technical report 
+properties maintaining a different leaf set for each 
+administrative hierarchy level increases the number of neighbors that each 
+node tracks to b lgb n c l from b lgb n c in unmodified 
+pastry where b is the number of bits in a digit n is the number of 
+nodes c is the leaf set size and l is the number of domain levels 
+routing requires o lgbn l steps compared to o lgbn steps in 
+pastry also each routing hop may be longer than in pastry because 
+the modified algorithm s routing table prefers same-domain nodes 
+over nearby nodes we experimentally quantify the additional 
+routing costs in section 
+in a large system the adht topology allows domains to 
+im 
+a a b 
+ b b 
+ b 
+ b b 
+ b 
+l 
+l 
+l 
+ b b 
+ b 
+ a a 
+ a 
+ a a 
+ a 
+ a a 
+ a 
+figure example for domain-scoped queries 
+prove security for sensitive attribute types by installing them only 
+within a specified domain then aggregation occurs entirely within 
+the domain and a node external to the domain can neither observe 
+nor affect the updates and aggregation computations of the attribute 
+type furthermore though we have not implemented this feature 
+in the prototype the adht topology would also support 
+domainrestricted probes that could ensure that no one outside of a domain 
+can observe a probe for data stored within the domain 
+the adht topology also enhances availability by allowing the 
+common case of probes for data within a domain to depend only on 
+a domain s nodes this for example allows a domain that becomes 
+disconnected from the rest of the internet to continue to answer 
+queries for local data 
+aggregation trees that provide administrative isolation also 
+enable the definition of simple and efficient domain-scoped 
+aggregation functions to support queries like what is the average load 
+on machines in domain x for example consider an 
+aggregation function to count the number of machines in an example 
+system with three machines illustrated in figure each leaf node 
+l updates attribute nummachines with a value vl containing a set 
+of tuples of form domain count for each domain of which the 
+node is a part in the example the node a with name a a 
+performs an update with the value a a a an 
+aggregation function at an internal virtual node hosted on node n with 
+child set c computes the aggregate as a set of tuples for each 
+domain d that n is part of form a tuple d ∑c∈c count d count ∈ 
+vc this computation is illustrated in the figure now a query 
+for nummachines with level set to max will return the 
+aggregate values at each intermediate virtual node on the path to the 
+root as a set of tuples tree level aggregated value from which 
+it is easy to extract the count of machines at each enclosing 
+domain for example a would receive b b b 
+ a a a a a a note that 
+supporting domain-scoped queries would be less convenient and 
+less efficient if aggregation trees did not conform to the system s 
+administrative structure it would be less efficient because each 
+intermediate virtual node will have to maintain a list of all values at 
+the leaves in its subtree along with their names and it would be less 
+convenient as applications that need an aggregate for a domain will 
+have to pick values of nodes in that domain from the list returned 
+by a probe and perform computation 
+ prototype implementation 
+the internal design of our sdims prototype comprises of two 
+layers the autonomous dht adht layer manages the overlay 
+topology of the system and the aggregation management layer 
+ aml maintains attribute tuples performs aggregations stores 
+and propagates aggregate values given the adht construction 
+described in section each node implements an aggregation 
+management layer aml to support the flexible api described in 
+section in this section we describe the internal state and 
+operation of the aml layer of a node in the system 
+local 
+mib 
+mibs 
+ancestor 
+reduction mib 
+ level mibs 
+ancestor 
+mib from 
+child x 
+mib from 
+child x 
+level 
+level 
+level 
+level 
+ xxx 
+ xx 
+ x 
+from parents x 
+to parent x 
+−− aggregation functions 
+from parents 
+to parent xx 
+ x 
+ x 
+ x 
+to parent xx 
+node id xxx 
+ x 
+ x 
+ x 
+ x 
+virtual node 
+figure example illustrating the data structures and the 
+organization of them at a node 
+we refer to a store of attribute type attribute name value tuples 
+as a management information base or mib following the 
+terminology from astrolabe and snmp we refer an attribute 
+type attribute name tuple as an attribute key 
+as figure illustrates each physical node in the system acts as 
+several virtual nodes in the aml a node acts as leaf for all attribute 
+keys as a level- subtree root for keys whose hash matches the 
+node s id in b prefix bits where b is the number of bits corrected 
+in each step of the adht s routing scheme as a level-i subtree 
+root for attribute keys whose hash matches the node s id in the 
+initial i b bits and as the system s global root for attribute keys 
+whose hash matches the node s id in more prefix bits than any 
+other node in case of a tie the first non-matching bit is ignored 
+and the comparison is continued 
+to support hierarchical aggregation each virtual node at the root 
+of a level-i subtree maintains several mibs that store child mibs 
+containing raw aggregate values gathered from children a 
+reduction mib containing locally aggregated values across this raw 
+information and an ancestor mib containing aggregate values 
+scattered down from ancestors this basic strategy of maintaining 
+child reduction and ancestor mibs is based on astrolabe 
+but our structured propagation strategy channels information that 
+flows up according to its attribute key and our flexible propagation 
+strategy only sends child updates up and ancestor aggregate results 
+down as far as specified by the attribute key s aggregation 
+function note that in the discussion below for ease of explanation we 
+assume that the routing protocol is correcting single bit at a time 
+ b our system built upon pastry handles multi-bit correction 
+ b and is a simple extension to the scheme described here 
+for a given virtual node ni at level i each child mib contains the 
+subset of a child s reduction mib that contains tuples that match 
+ni s node id in i bits and whose up aggregation function attribute is 
+at least i these local copies make it easy for a node to recompute 
+a level-i aggregate value when one child s input changes nodes 
+maintain their child mibs in stable storage and use a simplified 
+version of the bayou log exchange protocol sans conflict detection 
+and resolution for synchronization after disconnections 
+virtual node ni at level i maintains a reduction mib of tuples 
+with a tuple for each key present in any child mib containing the 
+attribute type attribute name and output of the attribute type s 
+aggregate functions applied to the children s tuples 
+a virtual node ni at level i also maintains an ancestor mib to 
+store the tuples containing attribute key and a list of aggregate 
+values at different levels scattered down from ancestors note that the 
+ 
+list for a key might contain multiple aggregate values for a same 
+level but aggregated at different nodes see figure so the 
+aggregate values are tagged not only with level information but are 
+also tagged with id of the node that performed the aggregation 
+level- differs slightly from other levels each level- leaf node 
+maintains a local mib rather than maintaining child mibs and a 
+reduction mib this local mib stores information about the local 
+node s state inserted by local applications via update calls we 
+envision various sensor programs and applications insert data into 
+local mib for example one program might monitor local 
+configuration and perform updates with information such as total memory 
+free memory etc a distributed file system might perform update 
+for each file stored on the local node 
+along with these mibs a virtual node maintains two other 
+tables an aggregation function table and an outstanding probes 
+table an aggregation function table contains the aggregation 
+function and installation arguments see table associated with an 
+attribute type or an attribute type and name each aggregate 
+function is installed on all nodes in a domain s subtree so the aggregate 
+function table can be thought of as a special case of the ancestor 
+mib with domain functions always installed up to a root within a 
+specified domain and down to all nodes within the domain the 
+outstanding probes table maintains temporary information 
+regarding in-progress probes 
+given these data structures it is simple to support the three api 
+functions described in section 
+install the install operation see table installs on a domain an 
+aggregation function that acts on a specified attribute type 
+execution of an install operation for function aggrfunc on attribute type 
+attrtype proceeds in two phases first the install request is passed 
+up the adht tree with the attribute key attrtype null until it 
+reaches the root for that key within the specified domain then the 
+request is flooded down the tree and installed on all intermediate 
+and leaf nodes 
+update when a level i virtual node receives an update for an 
+attribute from a child below it first recomputes the level-i 
+aggregate value for the specified key stores that value in its reduction 
+mib and then subject to the function s up and domain parameters 
+passes the updated value to the appropriate parent based on the 
+attribute key also the level-i i ≥ virtual node sends the updated 
+level-i aggregate to all its children if the function s down parameter 
+exceeds zero upon receipt of a level-i aggregate from a parent 
+a level k virtual node stores the value in its ancestor mib and if 
+k ≥ i−down forwards this aggregate to its children 
+probe a probe collects and returns the aggregate value for a 
+specified attribute key for a specified level of the tree as figure 
+illustrates the system satisfies a probe for a level-i aggregate value 
+using a four-phase protocol that may be short-circuited when 
+updates have previously propagated either results or partial results up 
+or down the tree in phase the route probe phase the system 
+routes the probe up the attribute key s tree to either the root of the 
+level-i subtree or to a node that stores the requested value in its 
+ancestor mib in the former case the system proceeds to phase and 
+in the latter it skips to phase in phase the probe scatter phase 
+each node that receives a probe request sends it to all of its children 
+unless the node s reduction mib already has a value that matches 
+the probe s attribute key in which case the node initiates phase 
+on behalf of its subtree in phase the probe aggregation phase 
+when a node receives values for the specified key from each of its 
+children it executes the aggregate function on these values and 
+either a forwards the result to its parent if its level is less than i 
+or b initiates phase if it is at level i finally in phase the 
+aggregate routing phase the aggregate value is routed down to the 
+node that requested it note that in the extreme case of a function 
+installed with up down a level-i probe can touch all nodes 
+in a level-i subtree while in the opposite extreme case of a 
+function installed with up down all probe is a completely local 
+operation at a leaf 
+for probes that include phases probe scatter and probe 
+aggregation an issue is how to decide when a node should stop 
+waiting for its children to respond and send up its current 
+aggregate value a node stops waiting for its children when one of three 
+conditions occurs all children have responded the adht 
+layer signals one or more reconfiguration events that mark all 
+children that have not yet responded as unreachable or a watchdog 
+timer for the request fires the last case accounts for nodes that 
+participate in the adht protocol but that fail at the aml level 
+at a virtual node continuous probes are handled similarly as 
+one-shot probes except that such probes are stored in the 
+outstanding probe table for a time period of exptime specified in the probe 
+thus each update for an attribute triggers re-evaluation of 
+continuous probes for that attribute 
+we implement a lease-based mechanism for dynamic adaptation 
+a level-l virtual node for an attribute can issue the lease for 
+levell aggregate to a parent or a child only if up is greater than l or it 
+has leases from all its children a virtual node at level l can issue 
+the lease for level-k aggregate for k l to a child only if down≥ 
+k −l or if it has the lease for that aggregate from its parent now a 
+probe for level-k aggregate can be answered by level-l virtual node 
+if it has a valid lease irrespective of the up and down values we 
+are currently designing different policies to decide when to issue a 
+lease and when to revoke a lease and are also evaluating them with 
+the above mechanism 
+our current prototype does not implement access control on 
+install update and probe operations but we plan to implement 
+astrolabe s certificate-based restrictions also our current 
+prototype does not restrict the resource consumption in executing the 
+aggregation functions but  techniques from research on resource 
+management in server systems and operating systems can be 
+applied here 
+ robustness 
+in large scale systems reconfigurations are common our two 
+main principles for robustness are to guarantee i read availability 
+- probes complete in finite time and ii eventual consistency - 
+updates by a live node will be visible to probes by connected nodes 
+in finite time during reconfigurations a probe might return a stale 
+value for two reasons first reconfigurations lead to incorrectness 
+in the previous aggregate values second the nodes needed for 
+aggregation to answer the probe become unreachable our 
+system also provides two hooks that applications can use for improved 
+end-to-end robustness in the presence of reconfigurations 
+ondemand re-aggregation and application controlled replication 
+our system handles reconfigurations at two levels - adaptation at 
+the adht layer to ensure connectivity and adaptation at the aml 
+layer to ensure access to the data in sdims 
+ adht adaptation 
+our adht layer adaptation algorithm is same as pastry s 
+adaptation algorithm - the leaf sets are repaired as soon as a 
+reconfiguration is detected and the routing table is repaired lazily note 
+that maintaining extra leaf sets does not degrade the fault-tolerance 
+property of the original pastry indeed it enhances the resilience 
+of adhts to failures by providing additional routing links due 
+to redundancy in the leaf sets and the routing table updates can be 
+routed towards their root nodes successfully even during failures 
+ 
+reconfig 
+reconfig 
+notices 
+dht 
+partial 
+dht 
+complete 
+dht 
+ends 
+lazy 
+time 
+data 
+ starts 
+lazy 
+data 
+starts 
+lazy 
+data 
+starts 
+lazy 
+data 
+repairrepair 
+reaggr reaggr reaggr reaggr 
+happens 
+figure default lazy data re-aggregation time line 
+also note that the administrative isolation property satisfied by our 
+adht algorithm ensures that the reconfigurations in a level i 
+domain do not affect the probes for level i in a sibling domain 
+ aml adaptation 
+broadly we use two types of strategies for aml adaptation in 
+the face of reconfigurations replication in time as a 
+fundamental baseline strategy and replication in space as an 
+additional performance optimization that falls back on replication in 
+time when the system runs out of replicas we provide two 
+mechanisms for replication in time first lazy re-aggregation propagates 
+already received updates to new children or new parents in a lazy 
+fashion over time second applications can reduce the probability 
+of probe response staleness during such repairs through our flexible 
+api with appropriate setting of the down parameter 
+lazy re-aggregation the dht layer informs the aml layer 
+about reconfigurations in the network using the following three 
+function calls - newparent failedchild and newchild on 
+newparent parent prefix all probes in the outstanding-probes table 
+corresponding to prefix are re-evaluated if parent is not null then 
+aggregation functions and already existing data are lazily transferred 
+in the background any new updates installs and probes for this 
+prefix are sent to the parent immediately on failedchild child 
+prefix the aml layer marks the child as inactive and any outstanding 
+probes that are waiting for data from this child are re-evaluated 
+on newchild child prefix the aml layer creates space in its data 
+structures for this child 
+figure shows the time line for the default lazy re-aggregation 
+upon reconfiguration probes initiated between points and and 
+that are affected by reconfigurations are reevaluated by aml upon 
+detecting the reconfiguration probes that complete or start between 
+points and may return stale answers 
+on-demand re-aggregation the default lazy aggregation 
+scheme lazily propagates the old updates in the system 
+additionally using up and down knobs in the probe api applications can 
+force on-demand fast re-aggregation of updates to avoid staleness 
+in the face of reconfigurations in particular if an application 
+detects or suspects an answer as stale then it can re-issue the probe 
+increasing the up and down parameters to force the refreshing of 
+the cached data note that this strategy will be useful only after the 
+dht adaptation is completed point on the time line in figure 
+replication in space replication in space is more 
+challenging in our system than in a dht file location application because 
+replication in space can be achieved easily in the latter by just 
+replicating the root node s contents in our system however all internal 
+nodes have to be replicated along with the root 
+in our system applications control replication in space using up 
+and down knobs in the install api with large up and down values 
+aggregates at the intermediate virtual nodes are propagated to more 
+nodes in the system by reducing the number of nodes that have to 
+be accessed to answer a probe applications can reduce the 
+probability of incorrect results occurring due to the failure of nodes that 
+do not contribute to the aggregate for example in a file location 
+application using a non-zero positive down parameter ensures that 
+a file s global aggregate is replicated on nodes other than the root 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+avg numberofmessagesperoperation 
+read to write ratio 
+update-all 
+up all down 
+up all down 
+update-up 
+update-local 
+up down 
+up down 
+figure flexibility of our approach with different up and 
+down values in a network of nodes for different 
+readwrite ratios 
+probes for the file location can then be answered without accessing 
+the root hence they are not affected by the failure of the root 
+however note that this technique is not appropriate in some cases an 
+aggregated value in file location system is valid as long as the node 
+hosting the file is active irrespective of the status of other nodes 
+in the system whereas an application that counts the number of 
+machines in a system may receive incorrect results irrespective of 
+the replication if reconfigurations are only transient like a node 
+temporarily not responding due to a burst of load the replicated 
+aggregate closely or correctly resembles the current state 
+ evaluation 
+we have implemented a prototype of sdims in java using the 
+freepastry framework and performed large-scale simulation 
+experiments and micro-benchmark experiments on two real 
+networks machines in the department and machines on the 
+planetlab testbed in all experiments we use static up and 
+down values and turn off dynamic adaptation our evaluation 
+supports four main conclusions first flexible api provides different 
+propagation strategies that minimize communication resources at 
+different read-to-write ratios for example in our simulation we 
+observe update-local to be efficient for read-to-write ratios 
+below update-up around and update-all above 
+second our system is scalable with respect to both nodes and 
+attributes in particular we find that the maximum node stress in 
+our system is an order lower than observed with an update-all 
+gossiping approach third in contrast to unmodified pastry which 
+violates path convergence property in upto cases our system 
+conforms to the property fourth the system is robust to 
+reconfigurations and adapts to failures with in a few seconds 
+ simulation experiments 
+flexibility and scalability a major innovation of our system 
+is its ability to provide flexible computation and propagation of 
+aggregates in figure we demonstrate the flexibility exposed by the 
+aggregation api explained in section we simulate a system with 
+ nodes arranged in a domain hierarchy with branching factor 
+ bf of and install several attributes with different up and down 
+parameters we plot the average number of messages per operation 
+incurred for a wide range of read-to-write ratios of the operations 
+for different attributes simulations with other sizes of networks 
+with different branching factors reveal similar results this graph 
+clearly demonstrates the benefit of supporting a wide range of 
+computation and propagation strategies although having a small up 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ e 
+ e 
+ 
+maximumnodestress 
+number of attributes installed 
+gossip 
+gossip 
+gossip 
+dht 
+dht 
+dht 
+figure max node stress for a gossiping approach vs adht 
+based approach for different number of nodes with increasing 
+number of sparse attributes 
+value is efficient for attributes with low read-to-write ratios write 
+dominated applications the probe latency when reads do occur 
+may be high since the probe needs to aggregate the data from all 
+the nodes that did not send their aggregate up conversely 
+applications that wish to improve probe overheads or latencies can increase 
+their up and down propagation at a potential cost of increase in 
+write overheads 
+compared to an existing update-all single aggregation tree 
+approach scalability in sdims comes from leveraging dhts 
+to form multiple aggregation trees that split the load across nodes 
+and flexible propagation that avoids propagation of all updates 
+to all nodes figure demonstrates the sdims s scalability with 
+nodes and attributes for this experiment we build a simulator to 
+simulate both astrolabe a gossiping update-all approach 
+and our system for an increasing number of sparse attributes each 
+attribute corresponds to the membership in a multicast session with 
+a small number of participants for this experiment the session 
+size is set to the branching factor is set to the propagation 
+mode for sdims is update-up and the participant nodes perform 
+continuous probes for the global aggregate value we plot the 
+maximum node stress in terms of messages observed in both schemes 
+for different sized networks with increasing number of sessions 
+when the participant of each session performs an update operation 
+clearly the dht based scheme is more scalable with respect to 
+attributes than an update-all gossiping scheme observe that at some 
+constant number of attributes as the number of nodes increase in 
+the system the maximum node stress increases in the gossiping 
+approach while it decreases in our approach as the load of 
+aggregation is spread across more nodes simulations with other session 
+sizes and yield similar results 
+administrative hierarchy and robustness although the 
+routing protocol of adht might lead to an increased number of 
+hops to reach the root for a key as compared to original pastry the 
+algorithm conforms to the path convergence and locality properties 
+and thus provides administrative isolation property in figure 
+we quantify the increased path length by comparisons with 
+unmodified pastry for different sized networks with different branching 
+factors of the domain hierarchy tree to quantify the path 
+convergence property we perform simulations with a large number of 
+probe pairs - each pair probing for a random key starting from two 
+randomly chosen nodes in figure we plot the percentage of 
+probe pairs for unmodified pastry that do not conform to the path 
+convergence property when the branching factor is low the 
+domain hierarchy tree is deeper resulting in a large difference between 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+pathlength 
+number of nodes 
+adht bf 
+adht bf 
+adht bf 
+pastry bf 
+figure average path length to root in pastry versus adht 
+for different branching factors note that all lines 
+corresponding to pastry overlap 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+percentageofviolations 
+number of nodes 
+bf 
+bf 
+bf 
+figure percentage of probe pairs whose paths to the root 
+did not conform to the path convergence property with pastry 
+u 
+pdate-all 
+u 
+pdate-u 
+p 
+u 
+pdate-local 
+ 
+ 
+ 
+ 
+ 
+latency inms 
+average latency 
+u 
+pdate-all 
+u 
+pdate-u 
+p 
+u 
+pdate-local 
+ 
+ 
+ 
+ 
+latency inms average latency 
+ a b 
+figure latency of probes for aggregate at global root level 
+with three different modes of aggregate propagation on a 
+department machines and b planetlab machines 
+pastry and adht in the average path length but it is at these small 
+domain sizes that the path convergence fails more often with the 
+original pastry 
+ testbed experiments 
+we run our prototype on department machines some 
+machines ran multiple node instances so this configuration has a 
+total of sdims nodes and also on machines of the 
+planetlab testbed we measure the performance of our system with 
+two micro-benchmarks in the first micro-benchmark we install 
+three aggregation functions of types update-local update-up and 
+update-all perform update operation on all nodes for all three 
+aggregation functions and measure the latencies incurred by probes 
+for the global aggregate from all nodes in the system figure 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency inms 
+valuesobserved 
+time in sec 
+values 
+latency 
+node killed 
+figure micro-benchmark on department network showing 
+the behavior of the probes from a single node when failures are 
+happening at some other nodes all nodes assign a value of 
+ to the attribute 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+latency inms 
+valuesobserved 
+time in sec 
+values 
+latency 
+node killed 
+figure probe performance during failures on machines 
+of planetlab testbed 
+shows the observed latencies for both testbeds notice that the 
+latency in update-local is high compared to the update-up policy 
+this is because latency in update-local is affected by the presence 
+of even a single slow machine or a single machine with a high 
+latency network connection 
+in the second benchmark we examine robustness we install one 
+aggregation function of type update-up that performs sum 
+operation on an integer valued attribute each node updates the attribute 
+with the value then we monitor the latencies and results 
+returned on the probe operation for global aggregate on one chosen 
+node while we kill some nodes after every few probes figure 
+shows the results on the departmental testbed due to the nature 
+of the testbed machines in a department there is little change in 
+the latencies even in the face of reconfigurations in figure we 
+present the results of the experiment on planetlab testbed the 
+root node of the aggregation tree is terminated after about 
+seconds there is a x increase in the latencies after the death of the 
+initial root node as a more distant node becomes the root node after 
+repairs in both experiments the values returned on probes start 
+reflecting the correct situation within a short time after the failures 
+from both the testbed benchmark experiments and the 
+simulation experiments on flexibility and scalability we conclude that 
+the flexibility provided by sdims allows applications to tradeoff 
+read-write overheads figure read latency and sensitivity to 
+slow machines figure a good default aggregation 
+strategy is update-up which has moderate overheads on both reads and 
+writes figure has moderate read latencies figure and is 
+scalable with respect to both nodes and attributes figure and 
+ small domain sizes are the cases where dht algorithms fail to 
+provide path convergence more often and sdims ensures path 
+convergence with only a moderate increase in path lengths figure 
+ applications 
+sdims is designed as a general distributed monitoring and 
+control infrastructure for a broad range of applications above we 
+discuss some simple microbenchmarks including a multicast 
+membership service and a calculate-sum function van renesse et al 
+provide detailed examples of how such a service can be used for a 
+peer-to-peer caching directory a data-diffusion service a 
+publishsubscribe system barrier synchronization and voting 
+additionally we have initial experience using sdims to construct two 
+significant applications the control plane for a large-scale distributed 
+file system and a network monitor for identifying heavy 
+hitters that consume excess resources 
+distributed file system control the practi partial 
+replication arbitrary consistency topology independence replication 
+system provides a set of mechanisms for data replication over which 
+arbitrary control policies can be layered we use sdims to provide 
+several key functions in order to create a file system over the 
+lowlevel practi mechanisms 
+first nodes use sdims as a directory to handle read misses 
+when a node n receives an object o it updates the readdir o 
+attribute with the value n when n discards o from its local store 
+it resets readdir o to null at each virtual node the readdir 
+aggregation function simply selects a random non-null child value 
+ if any and we use the update-up policy for propagating updates 
+finally to locate a nearby copy of an object o a node n issues a 
+series of probe requests for the readdir o attribute starting with 
+level and increasing the level value with each repeated probe 
+request until a non-null node id n is returned n then sends a 
+demand read request to n and n sends the data if it has it 
+conversely if n does not have a copy of o it sends a nack to n 
+and n issues a retry probe with the down parameter set to a value 
+larger than used in the previous probe in order to force on-demand 
+re-aggregation which will yield a fresher value for the retry 
+second nodes subscribe to invalidations and updates to interest 
+sets of files and nodes use sdims to set up and maintain 
+perinterest-set network-topology-sensitive spanning trees for 
+propagating this information to subscribe to invalidations for interest 
+set i a node n first updates the inval i attribute with its 
+identity n and the aggregation function at each virtual node selects 
+one non-null child value finally n probes increasing levels of the 
+the inval i attribute until it finds the first node n n n then 
+uses n as its parent in the spanning tree n also issues a 
+continuous probe for this attribute at this level so that it is notified of any 
+change to its spanning tree parent spanning trees for streams of 
+pushed updates are maintained in a similar manner 
+in the future we plan to use sdims for at least two additional 
+services within this replication system first we plan to use sdims 
+to track the read and write rates to different objects prefetch 
+algorithms will use this information to prioritize replication 
+second we plan to track the ranges of invalidation sequence 
+numbers seen by each node for each interest set in order to augment 
+the spanning trees described above with additional hole filling to 
+allow nodes to locate specific invalidations they have missed 
+overall our initial experience with using sdims for the 
+practii replication system suggests that the general aggregation 
+interface provided by sdims simplifies the construction of 
+distributed applications-given the low-level practi mechanisms 
+ 
+we were able to construct a basic file system that uses sdims for 
+several distinct control tasks in under two weeks and the weak 
+consistency guarantees provided by sdims meet the requirements 
+of this application-each node s controller effectively treats 
+information from sdims as hints and if a contacted node does not have 
+the needed data the controller retries using sdims on-demand 
+reaggregation to obtain a fresher hint 
+distributed heavy hitter problem the goal of the heavy hitter 
+problem is to identify network sources destinations or protocols 
+that account for significant or unusual amounts of traffic as noted 
+by estan et al this information is useful for a variety of 
+applications such as intrusion detection e g port scanning denial of 
+service detection worm detection and tracking fair network 
+allocation and network maintenance significant work has been done 
+on developing high-performance stream-processing algorithms for 
+identifying heavy hitters at one router but this is just a first step 
+ideally these applications would like not just one router s views of 
+the heavy hitters but an aggregate view 
+we use sdims to allow local information about heavy hitters 
+to be pooled into a view of global heavy hitters for each 
+destination ip address ipx a node updates the attribute destbw ipx 
+with the number of bytes sent to ipx in the last time window the 
+aggregation function for attribute type destbw is installed with the 
+update-up strategy and simply adds the values from child nodes 
+nodes perform continuous probe for global aggregate of the 
+attribute and raise an alarm when the global aggregate value goes 
+above a specified limit note that only nodes sending data to a 
+particular ip address perform probes for the corresponding attribute 
+also note that techniques from can be extended to hierarchical 
+case to tradeoff precision for communication bandwidth 
+ related work 
+the aggregation abstraction we use in our work is heavily 
+influenced by the astrolabe project astrolabe adopts a 
+propagateall and unstructured gossiping techniques to attain robustness 
+however any gossiping scheme requires aggressive replication of 
+the aggregates while such aggressive replication is efficient for 
+read-dominated attributes it incurs high message cost for attributes 
+with a small read-to-write ratio our approach provides a 
+flexible api for applications to set propagation rules according to their 
+read-to-write ratios other closely related projects include 
+willow cone dasis and somo willow dasis 
+and somo build a single tree for aggregation cone builds a tree 
+per attribute and requires a total order on the attribute values 
+several academic and commercial distributed 
+monitoring systems have been designed to monitor the status of 
+large networked systems some of them are centralized where all 
+the monitoring data is collected and analyzed at a central host 
+ganglia uses a hierarchical system where the attributes are 
+replicated within clusters using multicast and then cluster 
+aggregates are further aggregated along a single tree sophia is 
+a distributed monitoring system designed with a declarative logic 
+programming model where the location of query execution is both 
+explicit in the language and can be calculated during evaluation 
+this research is complementary to our work tag collects 
+information from a large number of sensors along a single tree 
+the observation that dhts internally provide a scalable forest 
+of reduction trees is not new plaxton et al s original paper 
+describes not a dht but a system for hierarchically aggregating and 
+querying object location data in order to route requests to nearby 
+copies of objects many systems-building upon both plaxton s 
+bit-correcting strategy and upon other strategies 
+ -have chosen to hide this power and export a simple and 
+general distributed hash table abstraction as a useful building block for 
+a broad range of distributed applications some of these systems 
+internally make use of the reduction forest not only for routing but 
+also for caching but for simplicity these systems do not 
+generally export this powerful functionality in their external interface 
+our goal is to develop and expose the internal reduction forest of 
+dhts as a similarly general and useful abstraction 
+although object location is a predominant target application for 
+dhts several other applications like multicast and 
+dns are also built using dhts all these systems implicitly 
+perform aggregation on some attribute and each one of them must 
+be designed to handle any reconfigurations in the underlying dht 
+with the aggregation abstraction provided by our system designing 
+and building of such applications becomes easier 
+internal dht trees typically do not satisfy domain locality 
+properties required in our system castro et al and gummadi et 
+al point out the importance of path convergence from the 
+perspective of achieving efficiency and investigate the performance of 
+pastry and other dht algorithms respectively skipnet 
+provides domain restricted routing where a key search is limited to the 
+specified domain this interface can be used to ensure path 
+convergence by searching in the lowest domain and moving up to the next 
+domain when the search reaches the root in the current domain 
+although this strategy guarantees path convergence it loses the 
+aggregation tree abstraction property of dhts as the domain constrained 
+routing might touch a node more than once as it searches forward 
+and then backward to stay within a domain 
+ conclusions 
+this paper presents a scalable distributed information 
+management system sdims that aggregates information in large-scale 
+networked systems and that can serve as a basic building block 
+for a broad range of applications for large scale systems 
+hierarchical aggregation is a fundamental abstraction for scalability 
+we build our system by extending ideas from astrolabe and dhts 
+to achieve i scalability with respect to both nodes and attributes 
+through a new aggregation abstraction that helps leverage dht s 
+internal trees for aggregation ii flexibility through a simple api 
+that lets applications control propagation of reads and writes iii 
+administrative isolation through simple augmentations of current 
+dht algorithms and iv robustness to node and network 
+reconfigurations through lazy reaggregation on-demand reaggregation 
+and tunable spatial replication 
+acknowlegements 
+we are grateful to j c browne robert van renessee amin 
+vahdat jay lepreau and the anonymous reviewers for their helpful 
+comments on this work 
+ references 
+ k albrecht r arnold m gahwiler and r wattenhofer 
+join and leave in peer-to-peer systems the dasis 
+approach technical report cs eth zurich 
+ g back w h hsieh and j lepreau processes in kaffeos 
+isolation resource management and sharing in java in 
+proc osdi oct 
+ g banga p druschel and j mogul resource containers 
+a new facility for resource management in server 
+systems in osdi feb 
+ r bhagwan p mahadevan g varghese and g m voelker 
+cone a distributed heap-based approach to resource 
+selection technical report cs - ucsd 
+ 
+ k p birman the surprising power of epidemic 
+communication in proceedings of fudico 
+ b bloom space time tradeoffs in hash coding with 
+allowable errors comm of the acm - 
+ m castro p druschel y c hu and a rowstron 
+exploiting network proximity in peer-to-peer overlay 
+networks technical report msr-tr- - msr 
+ m castro p druschel a -m kermarrec a nandi 
+a rowstron and a singh splitstream high-bandwidth 
+multicast in a cooperative environment in sosp 
+ m castro p druschel a -m kermarrec and a rowstron 
+scribe a large-scale and decentralised application-level 
+multicast infrastructure ieee jsac special issue on 
+network support for multicast communications 
+ j challenger p dantzig and a iyengar a scalable and 
+highly available system for serving dynamic data at 
+frequently accessed web sites in in proceedings of 
+acm ieee supercomputing sc nov 
+ r cox a muthitacharoen and r t morris serving dns 
+using a peer-to-peer lookup service in iptps 
+ m dahlin l gao a nayate a venkataramani 
+p yalagandula and j zheng practi replication for 
+large-scale systems technical report tr- - the 
+university of texas at austin 
+ c estan g varghese and m fisk bitmap algorithms for 
+counting active flows on high speed links in internet 
+measurement conference 
+ y fu j chase b chun s schwab and a vahdat 
+sharp an architecture for secure resource peering in 
+proc sosp oct 
+ ganglia distributed monitoring and execution system 
+http ganglia sourceforge net 
+ s gribble a halevy z ives m rodrig and d suciu 
+what can peer-to-peer do for databases and vice versa in 
+proceedings of the webdb 
+ k gummadi r gummadi s d gribble s ratnasamy 
+s shenker and i stoica the impact of dht routing 
+geometry on resilience and proximity in sigcomm 
+ n j a harvey m b jones s saroiu m theimer and 
+a wolman skipnet a scalable overlay network with 
+practical locality properties in usits march 
+ r huebsch j m hellerstein n lanham b t loo 
+s shenker and i stoica querying the internet with pier 
+in proceedings of the vldb conference may 
+ c intanagonwiwat r govindan and d estrin directed 
+diffusion a scalable and robust communication paradigm for 
+sensor networks in mobicom 
+ s r madden m j franklin j m hellerstein and 
+w hong tag a tiny aggregation service for ad-hoc 
+sensor networks in osdi 
+ d malkhi dynamic lookup networks in fudico 
+ m l massie b n chun and d e culler the ganglia 
+distributed monitoring system design implementation and 
+experience in submission 
+ p maymounkov and d mazieres kademlia a peer-to-peer 
+information system based on the xor metric in 
+proceesings of the iptps march 
+ c olston and j widom offering a precision-performance 
+tradeoff for aggregation queries over replicated data in 
+vldb pages - sept 
+ k petersen m spreitzer d terry m theimer and 
+a demers flexible update propagation for weakly 
+consistent replication in proc sosp oct 
+ planetlab http www planet-lab org 
+ c g plaxton r rajaraman and a w richa accessing 
+nearby copies of replicated objects in a distributed 
+environment in acm spaa 
+ s ratnasamy p francis m handley r karp and 
+s shenker a scalable content addressable network in 
+proceedings of acm sigcomm 
+ s ratnasamy s shenker and i stoica routing algorithms 
+for dhts some open questions in iptps march 
+ t roscoe r mortier p jardetzky and s hand infospect 
+using a logic language for system health monitoring in 
+distributed systems in proceedings of the sigops 
+european workshop 
+ a rowstron and p druschel pastry scalable distributed 
+object location and routing for large-scale peer-to-peer 
+systems in middleware 
+ s ratnasamy m handley r karp and s shenker 
+application-level multicast using content-addressable 
+networks in proceedings of the ngc november 
+ w stallings snmp snmpv and cmip addison-wesley 
+ 
+ i stoica r morris d karger f kaashoek and 
+h balakrishnan chord a scalable peer-to-peer lookup 
+service for internet applications in acm sigcomm 
+ s zhuang b zhao a joseph r katz and j kubiatowicz 
+bayeux an architecture for scalable and fault-tolerant 
+wide-area data dissemination in nossdav 
+ ibm tivoli monitoring 
+www ibm com software tivoli products monitor 
+ r vanrenesse k p birman and w vogels astrolabe a 
+robust and scalable technology for distributed system 
+monitoring management and data mining tocs 
+ r vanrenesse and a bozdog willow dht aggregation 
+and publish subscribe in one protocol in iptps 
+ a venkataramani p weidmann and m dahlin bandwidth 
+constrained placement in a wan in podc aug 
+ a venkataramani p yalagandula r kokku s sharif and 
+m dahlin potential costs and benefits of long-term 
+prefetching for content-distribution elsevier computer 
+communications - mar 
+ m wawrzoniak l peterson and t roscoe sophia an 
+information plane for networked systems in hotnets-ii 
+ 
+ r wolski n spring and j hayes the network weather 
+service a distributed resource performance forecasting 
+service for metacomputing journal of future generation 
+computing systems - - oct 
+ p yalagandula and m dahlin sdims a scalable 
+distributed information management system technical 
+report tr- - dept of computer sciences ut austin 
+sep 
+ z zhang s -m shi and j zhu somo self-organized 
+metadata overlay for resource management in p p dht in 
+iptps 
+ b y zhao j d kubiatowicz and a d joseph tapestry 
+an infrastructure for fault-tolerant wide-area location and 
+routing technical report ucb csd- - uc 
+berkeley apr 
+ 

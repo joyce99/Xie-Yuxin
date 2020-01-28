@@ -1,0 +1,939 @@
+agents beliefs and plausible behavior in a temporal 
+setting 
+nils bulling and wojciech jamroga 
+department of informatics clausthal university 
+of technology germany 
+ bulling wjamroga  in tu-clausthal de 
+abstract 
+logics of knowledge and belief are often too static and 
+inflexible to be used on real-world problems in particular they 
+usually offer no concept for expressing that some course of 
+events is more likely to happen than another we address 
+this problem and extend ctlk computation tree logic 
+with knowledge with a notion of plausibility which allows 
+for practical and counterfactual reasoning the new logic 
+ctlkp ctlk with plausibility includes also a 
+particular notion of belief a plausibility update operator is added 
+to this logic in order to change plausibility assumptions 
+dynamically furthermore we examine some important 
+properties of these concepts in particular we show that for a 
+natural class of models belief is a kd modality we also 
+show that model checking ctlkp is ptime-complete 
+and can be done in time linear with respect to the size of 
+models and formulae 
+categories and subject descriptors 
+i artificial intelligence distributed artificial 
+intelligence-multiagent systems i artificial intelligence 
+knowledge representation formalisms and methods-modal 
+logic 
+general terms 
+theory 
+ introduction 
+notions like time knowledge and beliefs are very 
+important for analyzing the behavior of agents and multi-agent 
+systems in this paper we extend modal logics of time and 
+knowledge with a concept of plausible behavior this notion 
+is added to the language of ctlk which is a 
+straightforward combination of the branching-time temporal logic 
+ctl and standard epistemic logic 
+in our approach plausibility can be seen as a temporal 
+property of behaviors that is some behaviors of the 
+system can be assumed plausible and others implausible with 
+the underlying idea that the latter should perhaps be 
+ignored in practical reasoning about possible future courses 
+of action moreover behaviors can be formally understood 
+as temporal paths in the kripke structure modeling a 
+multiagent system as a consequence we obtain a language to 
+reason about what can or must plausibly happen we 
+propose a particular notion of beliefs inspired by 
+defined in terms of epistemic relations and plausibility the 
+main intuition is that beliefs are facts that an agent would 
+know if he assumed that only plausible things could happen 
+we believe that humans use such a concept of plausibility 
+and practical beliefs quite often in their everyday 
+reasoning restricting one s reasoning to plausible possibilities is 
+essential to make the reasoning feasible as the space of all 
+possibilities is exceedingly large in real life we investigate 
+some important properties of plausibility knowledge and 
+belief in this new framework in particular we show that 
+knowledge is an s modality and that beliefs satisfy 
+axioms k in general and kd for the class of plausibly 
+serial models finally we show that the relationship 
+between knowledge and belief for plausibly serial models is 
+natural and reflects the initial intuition well we also show 
+how plausibility assumptions can be specified in the object 
+language via a plausibility update operator and we study 
+properties of such updates finally we show that model 
+checking of the new logic is no more complex than model 
+checking ctl and ctlk 
+our ultimate goal is to come up with a logic that 
+allows the study of strategies time knowledge and 
+plausible rational behavior under both perfect and imperfect 
+information as combining all these dimensions is highly 
+nontrivial cf it seems reasonable to split this task 
+while this paper deals with knowledge plausibility and 
+belief the companion paper proposes a general framework 
+for multi-agent systems that regard game-theoretical 
+rationality criteria like nash equilibrium pareto optimality etc 
+the latter approach is based on the more powerful logic 
+atl 
+the paper is structured as follows firstly we briefly 
+present branching-time logic with knowledge ctlk in 
+section we present our approach to plausibility and 
+formally define ctlk with plausibility we also show how 
+ 
+ - - - - rps c ifaamas 
+temporal formulae can be used to describe plausible paths 
+and we compare our logic with existing related work in 
+section properties of knowledge belief and plausibility are 
+explored finally we present verification complexity results 
+for ctlkp in section 
+ branching time and knowledge 
+in this paper we develop a framework for agents beliefs 
+about how the world can or must evolve thus we need a 
+notion of time and change plus a notion of what the agents 
+are supposed to know in particular situations ctlk 
+is a straightforward combination of the computation tree 
+logic ctl and standard epistemic logic 
+ctl includes operators for temporal properties of 
+systems i e path quantifier e there is a path together 
+with temporal operators f in the next state 
+ always from now on and u until 
+every occurrence of 
+a temporal operator is preceded by exactly one path 
+quantifier in ctl this variant of the language is sometimes called 
+vanilla ctl epistemic logic uses operators for 
+representing agents knowledge kaϕ is read as agent a knows 
+that ϕ 
+let π be a set of atomic propositions with a typical 
+element p and agt k be a set of agents with a typical 
+element a the language of ctlk consists of formulae ϕ 
+given as follows 
+ϕ p ¬ϕ ϕ ∧ ϕ eγ kaϕ 
+γ fϕ ϕ ϕu ϕ 
+we will sometimes refer to formulae ϕ as vanilla state 
+formulae and to formulae γ as vanilla path formulae 
+the semantics of ctlk is based on kripke models m 
+q r ∼ ∼k π which include a nonempty set of states 
+q a state transition relation r ⊆ q × q epistemic 
+indistinguishability relations ∼a⊆ q × q one per agent and a 
+valuation of propositions π π → p q we assume that 
+relation r is serial and that all ∼a are equivalence relations 
+a path λ in m refers to a possible behavior or 
+computation of system m and can be represented as an infinite 
+sequence of states that follow relation r that is a sequence 
+q q q such that qirqi for every i we 
+denote the ith state in λ by λ i the set of all paths in m 
+is denoted by λm if the model is clear from context m 
+will be omitted a q-path is a path that starts from q 
+i e λ q a q-subpath is a sequence of states starting 
+from q which is a subpath of some path in the model i e 
+a sequence q q such that q q and there are q 
+ qi 
+such that q 
+ qi 
+q q ∈ λm 
+the semantics of ctlk is 
+defined as follows 
+m q p iff q ∈ π p 
+m q ¬ϕ iff m q ϕ 
+m q ϕ ∧ ψ iff m q ϕ and m q ψ 
+m q e fϕ iff there is a q-path λ such that m λ ϕ 
+m q e ϕ iff there is a q-path λ such that m λ i ϕ 
+for every i ≥ 
+ 
+additional operators a for every path and ♦ 
+ sometime in the future are defined in the usual way 
+ 
+for ctlk models λ is a q-subpath iff it is a q-path it 
+will not always be so when plausible paths are introduced 
+m q eϕu ψ iff there is a q-path λ and i ≥ such that 
+m λ i ψ and m λ j ϕ for every ≤ j i 
+m q kaϕ iff m q ϕ for every q such that q ∼a q 
+ extending time and knowledge 
+with plausibility and beliefs 
+in this section we discuss the central concept of this 
+paper i e the concept of plausibility first we outline the 
+idea informally then we extend ctlk with the notion 
+of plausibility by adding plausible path operators pl a and 
+physical path operator ph to the logic formula pl aϕ has 
+the intended meaning according to agent a it is plausible 
+that ϕ holds formula ph ϕ reads as ϕ holds in all 
+physically possible scenarios i e even in implausible ones the 
+plausible path operator restricts statements only to those 
+paths which are defined to be sensible whereas the 
+physical path operator generates statements about all paths that 
+may theoretically occur furthermore we define beliefs on 
+top of plausibility and knowledge as the facts that an agent 
+would know if he assumed that only plausible things could 
+happen finally we discuss related work 
+and compare it with our approach 
+ the concept of plausibility 
+it is well known how knowledge or beliefs can be 
+modeled with kripke structures however it is not so obvious 
+how we can capture knowledge and beliefs in a sensible way 
+in one framework clearly there should be a connection 
+between these two notions our approach is to use the 
+notion of plausibility for this purpose plausibility can serve 
+as a primitive concept that helps to define the semantics 
+of beliefs in a similar way as indistinguishability of states 
+ represented by relation ∼a is the semantic concept that 
+underlies knowledge in this sense our work follows 
+essentially beliefs are what an agent would know if he took 
+only plausible options into account in our approach 
+however plausibility is explicitly seen as a temporal property 
+that is we do not consider states or possible worlds to be 
+more plausible than others but rather define some behaviors 
+to be plausible and others implausible moreover 
+behaviors can be formally understood as temporal paths in the 
+kripke structure modeling a multi-agent system 
+an actual notion of plausibility that is a particular set of 
+plausible paths can emerge in many different ways it may 
+result from observations and learning an agent can learn 
+from its observations and see specific patterns of events as 
+plausible a lot of people wear black shoes if they wear a 
+suit knowledge exchange is another possibility e g an 
+agent a can tell agent b that player c always bluffs when he 
+is smiling game theory with its rationality criteria 
+ undominated strategies maxmin nash equilibrium etc is 
+another viable source of plausibility assumptions last but not 
+least folk knowledge can be used to establish 
+plausibilityrelated classifications of behavior players normally want 
+to win a game people want to live 
+in any case restricting the reasoning to plausible 
+possibilities can be essential if we want to make the reasoning 
+feasible as the space of all possibilities we call them physical 
+possibilities in the rest of the paper is exceedingly large in 
+real life of course this does not exclude a more extensive 
+analysis in special cases e g when our plausibility 
+assumptions do not seem accurate any more or when the cost of 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+inaccurate assumptions can be too high as in the case of 
+high-budget business decisions but even in these cases we 
+usually do not get rid of plausibility assumptions completely 
+- we only revise them to make them more cautious 
+to formalize this idea we extend models of ctlk with 
+sets of plausible paths and add plausibility operators pl a 
+physical paths operator ph and belief operators ba to the 
+language of ctlk now it is possible to make statements 
+that refer to plausible paths only as well as statements that 
+regard all paths that may occur in the system 
+ ctlk with plausibility 
+in this section we extend the logic of ctlk with 
+plausibility we call the resulting logic ctlkp formally the 
+language of ctlkp is defined as 
+ϕ p ¬ϕ ϕ ∧ ϕ eγ pl aϕ ph ϕ kaϕ baϕ 
+γ fϕ ϕ ϕu ϕ 
+for instance we may claim it is plausible to assume that 
+a shop is closed after the opening hours though the manager 
+may be physically able to open it at any time pl aa late → 
+¬open ∧ ph e♦ late ∧ open 
+the semantics of ctlkp extends that of ctlk as 
+follows firstly we augment the models with sets of plausible 
+paths a model with plausibility is given as 
+m q r ∼ ∼k υ υk π 
+where q r ∼ ∼k π is a ctlk model and υa ⊆ λm 
+is the set of paths in m that are plausible according to agent 
+a if we want to make it clear that υa is taken from model 
+m we will write υm 
+a it seems worth emphasizing that this 
+notion of plausibility is subjective and holistic it is 
+subjective because υa represents agent a s subjective view on what 
+is plausible - and indeed different agents may have 
+different ideas on plausibility i e υa may differ from υb it is 
+holistic because υa represents agent a s idea of the 
+plausible behavior of the whole system including the behavior of 
+other agents 
+remark in our models plausibility is also global i e 
+plausibility sets do not depend on the state of the system 
+investigating systems in which plausibility is relativized with 
+respect to states like in might be an interesting avenue 
+of future work however such an approach - while obviously 
+more flexible - allows for potentially counterintuitive system 
+descriptions for example it might be the case that path λ 
+is plausible in q λ but the set of plausible paths in 
+q λ is empty that is by following plausible path λ we 
+are bound to get to an implausible situation but then does 
+it make sense to consider λ as plausible 
+secondly we use a non-standard satisfaction relation p 
+which we call plausible satisfaction let m be a ctlkp 
+ 
+that is when planning to open an industrial plant in the 
+uk we will probably consider the possibility of our main 
+contractor taking her life but we will still not take into 
+account the possibilities of an invasion of ufo england being 
+destroyed by a meteorite fidel castro becoming the british 
+prime minister etc note that this is fundamentally different 
+from using a probabilistic model in which all these unlikely 
+scenarios are assigned very low probabilities in that case 
+they also have a very small influence on our final decision 
+but we must process the whole space of physical possibilities 
+to evaluate the options 
+model and p ⊆ λm be an arbitrary subset of paths in m 
+ not necessarily any υm 
+a p restricts the evaluation of 
+temporal formulae to the paths given in p only the 
+absolute satisfaction relation is defined as λm 
+let on p be the set of all states that lie on at least one 
+path in p i e on p q ∈ q ∃λ ∈ p∃i λ i q now 
+the semantics of ctlkp can be given through the 
+following clauses 
+m q p p iff q ∈ π p 
+m q p ¬ϕ iff m q p ϕ 
+m q p ϕ ∧ ψ iff m q p ϕ and m q p ψ 
+m q p e fϕ iff there is a q-subpath λ ∈ p such that 
+m λ p ϕ 
+m q p e ϕ iff there is a q-subpath λ ∈ p such that 
+m λ i p ϕ for every i ≥ 
+m q p eϕu ψ iff there is a q-subpath λ ∈ p and i ≥ 
+such that m λ i p ψ and m λ j p ϕ for every 
+ ≤ j i 
+m q p pl aϕ iff m q υa 
+ϕ 
+m q p ph ϕ iff m q ϕ 
+m q p kaϕ iff m q ϕ for every q such that q ∼a q 
+m q p baϕ iff for all q ∈ on υa with q ∼a q we have 
+that m q υa 
+ϕ 
+one of the main reasons for using the concept of 
+plausibility is that we want to define agents beliefs out of more 
+primitive concepts - in our case these are plausibility and 
+indistinguishability - in a way analogous to if an 
+agent knows that ϕ he must be sure about it however 
+beliefs of an agent are not necessarily about reliable facts 
+still they should make sense to the agent if he believes that 
+ϕ then the formula should at least hold in all futures that 
+he envisages as plausible thus beliefs of an agent may be 
+seen as things known to him if he disregards all non-plausible 
+possibilities 
+we say that ϕ is m-true m ϕ if m q ϕ for all 
+q ∈ qm ϕ is valid ϕ if m ϕ for all models m ϕ 
+is m-strongly true m ≡ ϕ if m q p ϕ for all q ∈ qm 
+and all p ⊆ λm ϕ is strongly valid ≡ ϕ if m ≡ ϕ for all 
+models m 
+proposition strong truth and strong validity imply 
+truth and validity respectively the reverse does not hold 
+ultimately we are going to be interested in normal not 
+strong validity as parameterizing the satisfaction relation 
+with a set p is just a technical device for propagating sets 
+of plausible paths υa into the semantics of nested formulae 
+the importance of strong validity however lies in the fact 
+that ≡ ϕ ↔ ψ makes ϕ and ψ completely interchangeable 
+while the same is not true for normal validity 
+proposition let φ ϕ ψ denote formula φ in which 
+every occurrence of ψ was replaced by ϕ also let ≡ ϕ ↔ ψ 
+then for all m q p m q p φ iff m q p φ ϕ ψ in 
+particular m q φ iff m q φ ϕ ψ 
+note that ϕ ↔ ψ does not even imply that m q φ iff 
+m q φ ϕ ψ 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+figure guessing robots game 
+example guessing robots consider a simple 
+game with two agents a and b shown in figure first 
+a chooses a real number r ∈ without revealing the 
+number to b then b chooses a real number r ∈ 
+the agents win the game and collect eur if 
+both chose otherwise they lose formally we model the 
+game with a ctlkp model m in which the set of states 
+q includes qs for the initial situation states qr r ∈ 
+for the situations after a has chosen number r and final 
+states qw ql for the winning and the losing situation 
+respectively the transition relation is as follows qsrqr and 
+qrrql for all r ∈ q rqw qwrqw and qlrql moreover 
+π one q and π win qw player a has perfect 
+information in the game i e q ∼a q iff q q but player 
+b does not distinguish between states qr i e qr ∼b qr for 
+all r r ∈ obviously the only sensible thing to do 
+for both agents is to choose using game-theoretical 
+vocabulary these strategies are strongly dominant for the 
+respective players thus there is only one plausible course of 
+events if we assume that our players are rational and hence 
+υa υb qsq qwqw 
+note that in principle the outcome of the game is 
+uncertain m qs ¬a♦ win∧¬a ¬win however assuming 
+rationality of the players makes it only plausible that the game 
+must end up with a win m qs pla a♦ win ∧ plb a♦ win 
+and the agents believe that this will be the case m qs 
+baa♦ win ∧ bba♦ win note also that in any of the states 
+qr agent b believes that a being rational has played 
+m qr bbone for all r ∈ 
+ defining plausible paths with formulae 
+so far we have assumed that sets of plausible paths are 
+somehow given in models in this section we present a 
+dynamic approach where an actual notion of plausibility can 
+be specified in the object language note that we want to 
+specify usually infinite sets of infinite paths and we need a 
+finite representation of these structures one logical solution 
+is given by using path formulae γ these formulae describe 
+properties of paths therefore a specific formula can be used 
+to characterize a set of paths for instance think about a 
+country in africa where it has never snowed then 
+plausible paths might be defined as ones in which it never snows 
+i e all paths that satisfy ¬snows formally let γ be a 
+ctlk path formula we define γ m to be the set of paths 
+that satisfy γ in model m 
+ fϕ m λ m λ ϕ 
+ ϕ m λ ∀i m λ i ϕ 
+ ϕ u ϕ m λ ∃i 
+ 
+m λ i ϕ ∧ 
+∀j ≤ j i ⇒ m λ j ϕ 
+´ 
+ 
+moreover we define the plausible paths model update as 
+follows let m q r ∼ ∼k υ υk π be a 
+ctlkp model and let p ⊆ λm be a set of paths then 
+ma p 
+ q r ∼ ∼k υ υa− p υa υk π 
+denotes model m with a s set of plausible paths reset to p 
+now we can extend the language of ctlkp with 
+formulae set-pla γ ϕ with the intuitive reading suppose that 
+γ exactly characterizes the set of plausible paths then ϕ 
+holds and formal semantics given below 
+m q p set-pla γ ϕ iff ma γ m q p ϕ 
+we observe that this update scheme is similar to the one 
+proposed in 
+ comparison to related work 
+several modal notions of plausibility were already 
+discussed in the existing literature in these 
+papers like in ours plausibility is used as a primitive 
+semantic concept that helps to define beliefs on top of agents 
+knowledge a similar idea was introduced by moses and 
+shoham in their work preceded both and 
+ and although moses and shoham do not explicitly mention 
+the term plausibility it seems appropriate to summarize 
+their idea first 
+moses and shoham beliefs as conditional knowledge 
+in beliefs are relativized with respect to a formula α 
+ which can be seen as a plausibility assumption expressed 
+in the object language more precisely worlds that satisfy α 
+can be considered as plausible this concept is expressed via 
+symbols bα 
+i ϕ the index i ∈ is used to distinguish 
+between three different implementations of beliefs the first 
+version is given by bα 
+ ϕ ≡ k α → ϕ 
+a drawback of 
+this version is that if α is false then everything will be 
+believed with respect to α the second version overcomes 
+this problem bα 
+ ϕ ≡ k α → ϕ ∧ k¬α → kϕ now ϕ is 
+only believed if it is known that ϕ follows from assumption 
+α and ϕ must be known if assumption α is known to be false 
+finally bα 
+ ϕ ≡ k α → ϕ ∧ ¬k¬α if the assumption α is 
+known to be false nothing should be believed with respect to 
+α the strength of these different notions is given as follows 
+bα 
+ ϕ implies bα 
+ ϕ and bα 
+ ϕ implies bα 
+ ϕ in this approach 
+belief is strongly connected to knowledge in the sense that 
+belief is knowledge with respect to a given assumption 
+friedman and halpern plausibility spaces 
+the work of friedman and halpern extends the concepts 
+of knowledge and belief with an explicit notion of 
+plausibility i e some worlds are more plausible for an agent 
+than others to implement this idea kripke models are 
+extended with function p which assigns a plausibility space 
+p q a ω q a q a to every state or more generally 
+every possible world q and agent a the plausibility space 
+ 
+unlike in most approaches k is interpreted over all worlds 
+and not only over the indistinguishable worlds 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+is just a partially ordered subset of states worlds that is 
+ω q a ⊆ q and q a ⊆ q ×q is a reflexive and transitive 
+relation let s t ⊆ ω q a be finite subsets of states now 
+t is defined to be plausible given s with respect to p q a 
+denoted by s →p q a t iff all minimal points states in 
+s with respect to q a are also in t 
+friedman and 
+halpern s view to modal plausibility is closely related to 
+probability and more generally plausibility measures 
+logics of plausibility can be seen as a qualitative description of 
+agents preferences knowledge logics of probability 
+on the other hand offer a quantitative description 
+the logic from is defined by the following grammar 
+ϕ p ϕ∧ϕ ¬ϕ kaϕ ϕ →a ϕ where the semantics of 
+all operators except →a is given as usual and formulae ϕ →a 
+ψ have the meaning that ψ is true in the most plausible 
+worlds in which ϕ holds formally the semantics for →a 
+is given as m q ϕ →a ψ iff sϕ 
+p q a →p q a 
+sψ 
+p q a 
+where sϕ 
+ q a q ∈ ω q a m q ϕ are the states in 
+ω q a that satisfy ϕ the idea of defining beliefs is given 
+by the assumption that an agent believes in something if he 
+knows that it is true in the most plausible worlds of ω q a 
+formally this can be stated as baϕ ≡ ka →a ϕ 
+friedman and halpern have shown that the kd 
+axioms are valid for operator ba if plausibility spaces satisfy 
+consistency for all states q ∈ q it holds that ω q a ⊆ q ∈ 
+q q ∼a q and normality for all states q ∈ q it holds 
+that ω q a ∅ 
+a temporal extension of the language 
+ mentioned briefly in and discussed in more detail in 
+uses the interpreted systems approach a system r 
+is given by runs where a run r n → q is a function from 
+time moments modeled by n to global states and a time 
+point r i is given by a time point i ∈ n and a run r a 
+global state is a combination of local states one per agent 
+an interpreted system m r π is given by a system r 
+and a valuation of propositions π epistemic relations are 
+defined over time points i e r m ∼a r m iff agent 
+a s local states ra m and ra m of r m and r m are 
+equal formulae are interpreted in a straightforward way 
+with respect to interpreted systems e g m r m kaϕ iff 
+m r m ϕ for all r m ∼a r m now these are time 
+points that play the role of possible worlds consequently 
+plausibility spaces p r m a are assigned to each point r m 
+and agent a 
+su et al kbc logic 
+su et al have developed a multi-modal 
+computationally grounded logic with modalities k b and c knowledge 
+belief and certainty the computational model consists of 
+ global states q qvis 
+ qinv 
+ qper 
+ qpls 
+ where the 
+environment is divided into a visible qvis 
+ and an invisible part 
+ qinv 
+ and qper 
+captures the agent s perception of the visible 
+part of the environment external sources may provide the 
+agent with information about the invisible part of a state 
+which results in a set of states qpls 
+that are plausible for 
+the agent 
+given a global state q we additionally define v is q 
+qvis 
+ inv q qinv 
+ per q qper 
+ and pls q qpls 
+ the 
+ 
+when there are infinite chains q q a q the 
+definition is much more sophisticated an interested reader 
+is referred to for more details 
+ 
+note that this normality is essentially seriality of states 
+wrt plausibility spaces 
+semantics is given by an extension of interpreted systems 
+ here it is called interpreted kbc systems kbc 
+formulae are defined as ϕ p ¬ϕ ϕ ∧ ϕ kϕ bϕ cϕ 
+the epistemic relation ∼vis is captured in the following way 
+ r i ∼vis r i iff v is r i v is r i the semantic 
+clauses for belief and certainty are given below 
+m r i bϕ iff m r i ϕ for all r i with v is r i 
+per r i and inv r i ∈ pls r i 
+m r i cϕ iff m r i ϕ for all r i with v is r i 
+per r i 
+thus an agent believes ϕ if and only if ϕ is true in all 
+states which look like what he sees now and seem plausible 
+in the current state certainty is stronger if an agent is 
+certain about ϕ the formula must hold in all states with 
+a visible part equal to the current perception regardless of 
+whether the invisible part is plausible or not 
+the logic does not include temporal formulae although 
+it might be extended with temporal operators as time is 
+already present in kbc models 
+what are the differences to our logic 
+in our approach plausibility is explicitly seen as a temporal 
+property i e it is a property of temporal paths rather than 
+states in the object language this is reflected by the fact 
+that plausibility assumptions are specified through path 
+formulae in contrast the approach of and is static 
+not only the logics do not include operators for talking about 
+time and or change but these are states that are assumed 
+plausible or not in their semantics 
+the differences to are more subtle firstly the 
+framework of friedman and halpern is static in the sense 
+that plausibility is taken as a property of abstract 
+possible worlds this formulation is flexible enough to allow for 
+incorporating time still in our approach time is inherent 
+to plausibility rather than incidental 
+secondly our framework is more computationally oriented 
+the implementation of temporal plausibility in is based 
+on the interpreted systems approach with time points r m 
+being subject to plausibility as runs are included in time 
+points they can also be defined plausible or implausible 
+however it also means that time points serve the role of 
+possible worlds in the basic formulation which yields kripke 
+structures with uncountable possible world spaces in all but 
+the most trivial cases 
+thirdly build on linear time a run more precisely 
+a time moment r m is fixed when a formula is interpreted 
+in contrast we use branching time with explicit 
+quantification over temporal paths 
+we believe that branching time 
+is more suitable for non-deterministic domains cf e g 
+of which multi-agent systems are a prime example note 
+that branching time makes our notion of belief different from 
+friedman and halpern s most notably property kϕ → bϕ 
+is valid in their approach but not in ours an agent may 
+ 
+friedman and halpern even briefly mention how 
+plausibility of runs can be embedded in their framework 
+ 
+to be more precise time in does implicitly branch at 
+epistemic states this is because r m ∼a r m iff a s 
+local state corresponding to both time points is the same 
+ ra m ra m in consequence the semantics of kaϕ 
+can be read as for every run and every moment on this 
+run that yields the same local state as now ϕ holds 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+know that some course of events is in principle possible 
+without believing that it can really become the case see 
+section as proposition suggests such a subtle 
+distinction between knowledge and beliefs is possible in our 
+approach because branching time logics allow for existential 
+quantification over runs 
+fourthly while friedman and halpern s models are very 
+flexible they also enable system descriptions that may seem 
+counterintuitive suppose that r m is plausible in itself 
+ formally r m is minimal wrt r m a but r m is 
+not plausible in r m this means that following the 
+plausible path makes it implausible cf remark which 
+is even stranger in the case of linear time combining the 
+argument with computational aspects we suggest that our 
+approach can be more natural and straightforward for many 
+applications 
+last but not least our logic provides a mechanism for 
+specifying and updating sets of plausible paths in the 
+object language thus plausibility sets can be specified in a 
+succinct way which is another feature that makes our 
+framework computation-friendly the model checking results from 
+section are especially encouraging in this light 
+ plausibility knowledge and 
+beliefs in ctlkp 
+in this section we study some relevant properties of 
+plausibility knowledge and beliefs in particular axioms kdt 
+are examined but first we identify two important 
+subclasses of models with plausibility 
+a ctlkp model is plausibly serial or p-serial for agent 
+a if every state of the system is part of a plausible path 
+according to a i e on υa q as we will see further a 
+weaker requirement is sometimes sufficient we call a model 
+weakly p-serial if every state has at least one 
+indistinguishable counterpart which lies on a plausible path i e for each 
+q ∈ q there is a q ∈ q such that q ∼a q and q ∈ on υa 
+obviously p-seriality implies weak p-seriality we get the 
+following characterization of both model classes 
+proposition m is plausibly serial for agent a iff 
+formula pl ae f is valid in m m is weakly p-serial for agent 
+a iff ¬kapl aa f⊥ is valid in m 
+ axiomatic properties 
+theorem axioms k d and for knowledge are 
+strongly valid and axiom t is valid that is modalities ka 
+form system s in the sense of normal validity and kd 
+in the sense of strong validity 
+we do not include proofs here due to lack of space the 
+interested reader is referred to where detailed proofs are 
+given 
+proposition axioms k and for beliefs are 
+strongly valid that is we have 
+ ≡ baϕ ∧ ba ϕ → ψ → baψ ≡ baϕ → babaϕ and 
+ ≡ ¬baϕ → ba¬baϕ 
+the next proposition concerns the consistency axiom 
+d baϕ → ¬ba¬ϕ it is easy to see that the axiom is not 
+valid in general as we have no restrictions on plausibility 
+sets υa it may be as well that υa ∅ in that case we have 
+baϕ ∧ ba¬ϕ for all formulae ϕ because the set of states to 
+be considered becomes empty however it turns out that d 
+is valid for a very natural class of models 
+proposition axiom d for beliefs is not valid in the 
+class of all ctlkp models however it is strongly valid in 
+the class of weak p-serial models and therefore also in the 
+class of p-serial models 
+moreover as one may expect beliefs do not have to be 
+always true 
+proposition axiom t for beliefs is not valid i e 
+ baϕ → ϕ the axiom is not even valid in the class of 
+p-serial models 
+theorem belief modalities ba form system k in 
+the class of all models and kd in the class of weakly 
+plausibly serial models in the sense of both normal and 
+strong validity axiom t is not even valid for p-serial 
+models 
+ plausibility knowledge and beliefs 
+first we investigate the relationship between knowledge 
+and plausibility physicality operators then we look at the 
+interaction between knowledge and beliefs 
+proposition let ϕ be a ctlkp formula and m 
+be a ctlkp model we have the following strong validities 
+ i ≡ pl akaϕ ↔ kaϕ 
+ ii ≡ ph kaϕ ↔ kaph ϕ and ≡ kaph ϕ ↔ kaϕ 
+we now want to examine the relationship between 
+knowledge and belief for instance if agent a believes in 
+something he knows that he believes it or if he knows a fact 
+he also believes that he knows it on the other hand for 
+instance an agent does not necessarily believe in all the 
+things he knows for example we may know that an 
+invasion from another galaxy is in principle possible kae♦ 
+invasion but if we do not take this possibility as plausible 
+ ¬pl ae♦ invasion then we reject the corresponding belief 
+in consequence ¬bae♦ invasion note that this property 
+reflects the strong connection between belief and plausibility 
+in our framework 
+proposition the following formulae are strongly 
+valid 
+ i baϕ → kabaϕ ii kabaϕ → baϕ 
+ iii kaϕ → bakaϕ 
+the following formulae are not valid 
+ iv baϕ → bakaϕ v kaϕ → baϕ 
+the last invalidity is especially important it is not the 
+case that knowing something implies believing in it this 
+emphasizes that we study a specific concept of beliefs here 
+note that its specific is not due to the plausibility-based 
+definition of beliefs the reason lies rather in the fact that we 
+investigate knowledge beliefs and plausibility in a temporal 
+framework as proposition shows 
+proposition let ϕ be a ctlkp formula that does 
+not include any temporal operators then kaϕ → baϕ is 
+strongly valid and in the class of p-serial models we have 
+even that ≡ kaϕ ↔ baϕ 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+moreover it is important that we use branching time with 
+explicit quantification over paths this observation is 
+formalized in proposition 
+definition we define the universal sublanguage of 
+ctlk in a way similar to 
+ϕu p ¬p ϕu ∧ ϕu ϕu ∨ ϕu aγu kaϕu 
+γu fϕu ϕu ϕuu ϕu 
+we call such ϕu universal formulae and γu universal path 
+formulae 
+proposition let ϕu be a universal ctlk formula 
+then ≡ kaϕu → baϕu 
+the following two theorems characterize the relationship 
+between knowledge and beliefs first for the class of p-serial 
+models and then finally for all models 
+theorem the following formulae are strongly valid 
+in the class of plausibly serial ctlkp models 
+ i baϕ ↔ kapl aϕ ii kaϕ ↔ baph ϕ 
+theorem formula baϕ ↔ kapl a e f → ϕ is 
+strongly valid 
+note that this characterization has a strong commonsense 
+reading believing in ϕ is knowing that ϕ plausibly holds in 
+all plausibly imaginable situations 
+ properties of the update 
+the first notable property of plausibility update is that it 
+influences only formulae in which plausibility plays a role 
+i e ones in which belief or plausibility modalities occur 
+proposition let ϕ be a ctlkp formula that does 
+not include operators pl a and ba and γ be a ctlkp path 
+formula then we have ≡ ϕ ↔ set-pla γ ϕ 
+what can be said about the result of an update at first 
+sight formula set-pla γ pl aaγ seems a natural 
+characterization however it is not valid this is because by leaving 
+the other implausible paths out of scope we may leave out 
+of γ some paths that were needed to satisfy γ see the 
+example in section we propose two alternative ways out 
+the first one restricts the language of the update similarly 
+to the other refers to physical possibilities in a way 
+analogous to 
+proposition the ctlkp formula set-pla γ pl aaγ 
+is not valid however we have the following validities 
+ i ≡ set-pla γu pl aaγu where γu is a universal ctlk 
+path formula from definition 
+ ii if ϕ ϕ ϕ are arbitrary ctlk formulae then 
+ ≡ set-pla 
+fϕ pl aa f ph ϕ 
+ ≡ set-pla ϕ pl aa ph ϕ and 
+ ≡ set-pla ϕ u ϕ pl aa ph ϕ u ph ϕ 
+ verification of plausibility 
+time and beliefs 
+in this section we report preliminary results on model 
+checking ctlkp formulae clearly verifying ctlkp 
+properties directly against models with plausibility does not 
+make much sense since these models are inherently infinite 
+what we need is a finite representation of plausibility sets 
+one such representation has been discussed in section 
+plausibility sets can be defined by path formulae and the 
+update operator set-pla γ 
+we follow this idea here studying the complexity of model 
+checking ctlkp formulae against ctlk models which 
+can be seen as a compact representation of ctlkp 
+models in which all the paths are assumed plausible with the 
+underlying idea that plausibility sets when needed must be 
+defined explicitly in the object language below we sketch 
+an algorithm that model-checks ctlkp formulae in time 
+linear wrt the size of the model and the length of the 
+formula this means that we have extended ctlk to a more 
+expressive language with no computational price to pay 
+first of all we get rid of the belief operators due to 
+theorem replacing every occurrence of baϕ with kapl a e f 
+→ ϕ now let −→γ γ γk be a vector of vanilla 
+path formulae one per agent with the initial vector −→γ 
+ and −→γ γ a denoting vector −→γ in which −→γ a 
+is replaced with γ additionally we define −→γ we 
+translate the resulting ctlkp formulae to ones without 
+plausibility via function tr ϕ tr−→γ ϕ defined as 
+follows 
+tr−→γ i p p 
+tr−→γ i ϕ ∧ ϕ tr−→γ i ϕ ∧ tr−→γ i ϕ 
+tr−→γ i ¬ϕ ¬tr−→γ i ϕ 
+tr−→γ i kaϕ ka tr−→γ ϕ 
+tr−→γ i pla ϕ tr−→γ a ϕ 
+tr−→γ i set-pla γ ϕ tr−→γ γ a i ϕ 
+tr−→γ i ph ϕ tr−→γ ϕ 
+tr−→γ i fϕ ftr−→γ i ϕ 
+tr−→γ i ϕ tr−→γ i ϕ 
+tr−→γ i ϕ u ϕ tr−→γ i ϕ u tr−→γ i ϕ 
+tr−→γ i eγ e −→γ i ∧ tr−→γ i γ 
+note that the resulting sentences belong to the logic of 
+ctlk that is ctl where each path quantifier can be 
+followed by a boolean combination of vanilla path 
+formulae 
+with epistemic modalities the following proposition 
+justifies the translation 
+proposition for any ctlkp formula ϕ without 
+ba we have that m q ctlkp ϕ iff m q ctlk tr ϕ 
+in general model checking ctl and also ctlk 
+is δp 
+ -complete however in our case the boolean 
+combinations of path subformulae are always conjunctions of at 
+most two non-negated elements which allows us to propose 
+the following model checking algorithm first subformulae 
+are evaluated recursively for every subformula ψ of ϕ the 
+set of states in m that satisfy ψ is computed and labeled 
+with a new proposition pψ now it is enough to define 
+checking m q ϕ for ϕ in which all state subformulae 
+are propositions with the following cases 
+case m q e p ∧ γ if m q p then return no 
+otherwise remove from m all the states that do not satisfy 
+p yielding a sparser model m and check the ctl 
+formula eγ in m q with any ctl model-checker 
+case m q e fp ∧ γ create m by adding a copy q of 
+state q in which only the transitions to states 
+satisfying p are kept i e m q r iff m q r and q rq 
+iff qrq and m q p then check eγ in m q 
+ 
+for the semantics of ctl and discussion of model 
+checking complexity cf 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+case m q e p u p ∧ p u p note that this is 
+equivalent to checking e p ∧ p u p ∧ ep u p ∨ e p ∧ 
+p u p ∧ ep u p which is a ctl formula 
+other cases the above cases cover all possible formulas 
+that begin with a path quantifier for other cases 
+standard ctlk model checking can be used 
+theorem model checking ctlkp against ctlk 
+models is ptime-complete and can be done in time o ml 
+where m is the number of transitions in the model and l is 
+the length of the formula to be checked that is the 
+complexity is no worse than for ctlk itself 
+ conclusions 
+in this paper a notion of plausible behavior is considered 
+with the underlying idea that implausible options should be 
+usually ignored in practical reasoning about possible future 
+courses of action we add the new notion of plausibility to 
+the logic of ctlk and obtain a language which 
+enables reasoning about what can or must plausibly happen 
+as a technical device to define the semantics of the resulting 
+logic we use a non-standard satisfaction relation p that 
+allows to propagate the current set of plausible paths into 
+subformulae furthermore we propose a non-standard 
+notion of beliefs defined in terms of indistinguishability and 
+plausibility we also propose how plausibility assumptions 
+can be specified in the object language via a plausibility 
+update operator in a way similar to 
+we use this new framework to investigate some important 
+properties of plausibility knowledge beliefs and updates 
+in particular we show that knowledge is an s modality 
+and that beliefs satisfy axioms k in general and kd 
+for the class of plausibly serial models we also prove that 
+believing in ϕ is knowing that ϕ plausibly holds in all 
+plausibly possible situations that is the relationship between 
+knowledge and beliefs is very natural and reflects the 
+initial intuition precisely moreover the model checking 
+results from section show that verification for ctlkp is 
+no more complex than for ctl and ctlk 
+we would like to stress that we do not see this contribution 
+as a mere technical exercise in formal logic human agents 
+use a similar concept of plausibility and practical beliefs 
+in their everyday reasoning in order to reduce the search 
+space and make the reasoning feasible as a consequence we 
+suggest that the framework we propose may prove suitable 
+for modeling design and analysis resource-bounded agents 
+in general 
+we would like to thank juergen dix for fruitful 
+discussions useful comments and improvements 
+ references 
+ r alur t a henzinger and o kupferman 
+alternating-time temporal logic journal of the 
+acm - 
+ n bulling and w jamroga agents beliefs and 
+plausible behavior in a temporal setting technical 
+report ifi- - clausthal univ of technology 
+ e a emerson temporal and modal logic in j van 
+leeuwen editor handbook of theoretical computer 
+science volume b pages - elsevier 
+ e a emerson and j y halpern sometimes and 
+not never revisited on branching versus linear time 
+temporal logic journal of the acm - 
+ 
+ r fagin j y halpern y moses and m y vardi 
+reasoning about knowledge mit press cambridge 
+ma 
+ r fagin and j y halpern reasoning about 
+knowledge and probability journal of acm 
+ - 
+ n friedman and j y halpern a knowledge-based 
+framework for belief change part i foundations in 
+proceedings of tark pages - 
+ n friedman and j y halpern a knowledge-based 
+framework for belief change part ii revision and 
+update in proceedings of kr 
+ j y halpern reasoning about knowledge a survey 
+in handbook of logic in artificial intelligence and 
+logic programming vol epistemic and temporal 
+reasoning pages - oxford university press 
+oxford 
+ j y halpern and r fagin modelling knowledge and 
+action in distributed systems distributed computing 
+ - 
+ w jamroga and n bulling a general framework for 
+reasoning about rational agents in proceedings of 
+aamas short paper 
+ w jamroga and w van der hoek agents that know 
+how to play fundamenta informaticae 
+ - - 
+ w jamroga w van der hoek and m wooldridge 
+intentions and strategies in game-like scenarios in 
+progress in artificial intelligence proceedings of 
+epia volume of lnai pages - 
+springer verlag 
+ w jamroga and thomas ˚agotnes constructive 
+knowledge what agents can achieve under incomplete 
+information technical report ifi- - clausthal 
+university of technology 
+ b p kooi probabilistic dynamic epistemic logic 
+journal of logic language and information 
+ - 
+ p lamarre and y shoham knowledge certainty 
+belief and conditionalisation abbreviated version in 
+proceedings of kr pages - 
+ f laroussinie n markey and ph schnoebelen 
+model checking ctl and fctl is hard in 
+proceedings of fossacs volume of lncs 
+pages - springer 
+ y moses and y shoham belief as defeasible 
+knowledge artificial intelligence - 
+ w penczek and a lomuscio verifying epistemic 
+properties of multi-agent systems via bounded model 
+checking in proceedings of aamas pages 
+ - new york ny usa acm press 
+ k su a sattar g governatori and q chen a 
+computationally grounded logic of knowledge belief 
+and certainty in proceedings of aamas pages 
+ - acm press 
+ w van der hoek m roberts and m wooldridge 
+social laws in alternating time effectiveness 
+feasibility and synthesis synthese 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

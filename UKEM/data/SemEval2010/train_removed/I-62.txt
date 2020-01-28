@@ -1,0 +1,974 @@
+a q-decomposition and bounded rtdp approach to 
+resource allocation 
+pierrick plamondon and brahim 
+chaib-draa 
+computer science software engineering dept 
+laval university 
+québec canada 
+ plamon chaib  damas ift ulaval ca 
+abder rezak benaskeur 
+decision support systems section 
+defence r d canada - valcartier 
+québec canada 
+abderrezak benaskeur drdc-rddc gc ca 
+abstract 
+this paper contributes to solve effectively stochastic 
+resource allocation problems known to be np-complete to 
+address this complex resource management problem a 
+qdecomposition approach is proposed when the resources 
+which are already shared among the agents but the actions 
+made by an agent may influence the reward obtained by 
+at least another agent the q-decomposition allows to 
+coordinate these reward separated agents and thus permits to 
+reduce the set of states and actions to consider on the other 
+hand when the resources are available to all agents no 
+qdecomposition is possible and we use heuristic search in 
+particular the bounded real-time dynamic programming 
+ bounded rtdp is used bounded rtdp concentrates the 
+planning on significant states only and prunes the action 
+space the pruning is accomplished by proposing tight 
+upper and lower bounds on the value function 
+categories and subject descriptors 
+i artificial intelligence problem solving control 
+methods and search i artificial intelligence 
+distributed artificial intelligence 
+general terms 
+algorithms performance experimentation 
+ introduction 
+this paper aims to contribute to solve complex stochastic 
+resource allocation problems in general resource 
+allocation problems are known to be np-complete in such 
+problems a scheduling process suggests the action i e 
+resources to allocate to undertake to accomplish certain tasks 
+according to the perfectly observable state of the 
+environment when executing an action to realize a set of tasks 
+the stochastic nature of the problem induces probabilities 
+on the next visited state in general the number of states 
+is the combination of all possible specific states of each task 
+and available resources in this case the number of 
+possible actions in a state is the combination of each individual 
+possible resource assignment to the tasks the very high 
+number of states and actions in this type of problem makes 
+it very complex 
+there can be many types of resource allocation problems 
+firstly if the resources are already shared among the agents 
+and the actions made by an agent does not influence the 
+state of another agent the globally optimal policy can be 
+computed by planning separately for each agent a second 
+type of resource allocation problem is where the resources 
+are already shared among the agents but the actions made 
+by an agent may influence the reward obtained by at least 
+another agent to solve this problem efficiently we adapt 
+qdecomposition proposed by russell and zimdars in our 
+q-decomposition approach a planning agent manages each 
+task and all agents have to share the limited resources the 
+planning process starts with the initial state s in s each 
+agent computes their respective q-value then the 
+planning agents are coordinated through an arbitrator to find 
+the highest global q-value by adding the respective possible 
+q-values of each agents when implemented with heuristic 
+search since the number of states and actions to consider 
+when computing the optimal policy is exponentially reduced 
+compared to other known approaches q-decomposition 
+allows to formulate the first optimal decomposed heuristic 
+search algorithm in a stochastic environments 
+on the other hand when the resources are available to 
+all agents no q-decomposition is possible a common 
+way of addressing this large stochastic problem is by 
+using markov decision processes mdps and in particular 
+real-time search where many algorithms have been 
+developed recently for instance real-time dynamic 
+programming rtdp lrtdp hdp and lao are all 
+state-of-the-art heuristic search approaches in a stochastic 
+environment because of its anytime quality an interesting 
+approach is rtdp introduced by barto et al which 
+updates states in trajectories from an initial state s to a goal 
+state sg rtdp is used in this paper to solve efficiently a 
+constrained resource allocation problem 
+rtdp is much more effective if the action space can be 
+pruned of sub-optimal actions to do this mcmahan et 
+ 
+ - - - - rps c ifaamas 
+al smith and simmons and singh and cohn 
+proposed solving a stochastic problem using a rtdp type 
+heuristic search with upper and lower bounds on the value 
+of states mcmahan et al and smith and simmons 
+suggested in particular an efficient trajectory of state 
+updates to further speed up the convergence when given upper 
+and lower bounds this efficient trajectory of state updates 
+can be combined to the approach proposed here since this 
+paper focusses on the definition of tight bounds and efficient 
+state update for a constrained resource allocation problem 
+on the other hand the approach by singh and cohn is 
+suitable to our case and extended in this paper using in 
+particular the concept of marginal revenue to elaborate 
+tight bounds this paper proposes new algorithms to define 
+upper and lower bounds in the context of a rtdp heuristic 
+search approach our marginal revenue bounds are 
+compared theoretically and empirically to the bounds proposed 
+by singh and cohn also even if the algorithm used to 
+obtain the optimal policy is rtdp our bounds can be used 
+with any other algorithm to solve an mdp the only 
+condition on the use of our bounds is to be in the context of 
+stochastic constrained resource allocation the problem is 
+now modelled 
+ problem formulation 
+a simple resource allocation problem is one where there 
+are the following two tasks to realize ta wash the 
+dishes and ta clean the floor these two tasks are 
+either in the realized state or not realized state to realize the 
+tasks two type of resources are assumed res brush 
+and res detergent a computer has to compute the 
+optimal allocation of these resources to cleaner robots to realize 
+their tasks in this problem a state represents a 
+conjunction of the particular state of each task and the available 
+resources the resources may be constrained by the amount 
+that may be used simultaneously local constraint and in 
+total global constraint furthermore the higher is the 
+number of resources allocated to realize a task the higher is 
+the expectation of realizing the task for this reason when 
+the specific states of the tasks change or when the number 
+of available resources changes the value of this state may 
+change 
+when executing an action a in state s the specific states 
+of the tasks change stochastically and the remaining 
+resource are determined with the resource available in s 
+subtracted from the resources used by action a if the resource 
+is consumable indeed our model may consider 
+consumable and non-consumable resource types a consumable 
+resource type is one where the amount of available resource 
+is decreased when it is used on the other hand a 
+nonconsumable resource type is one where the amount of 
+available resource is unchanged when it is used for example a 
+brush is a non-consumable resource while the detergent is 
+a consumable resource 
+ resource allocation as a mdps 
+in our problem the transition function and the reward 
+function are both known a markov decision process mdp 
+framework is used to model our stochastic resource 
+allocation problem mdps have been widely adopted by researchers 
+today to model a stochastic process this is due to the fact 
+that mdps provide a well-studied and simple yet very 
+expressive model of the world an mdp in the context of a 
+resource allocation problem with limited resources is defined 
+as a tuple res t a s a p w r where 
+ res res res res is a finite set of resource 
+types available for a planning process each resource 
+type may have a local resource constraint lres on 
+the number that may be used in a single step and 
+a global resource constraint gres on the number that 
+may be used in total the global constraint only 
+applies for consumable resource types resc and the 
+local constraints always apply to consumable and 
+nonconsumable resource types 
+ t a is a finite set of tasks with ta ∈ t a to be 
+accomplished 
+ s is a finite set of states with s ∈ s a state s is 
+a tuple t a res res resc which is the 
+characteristic of each unaccomplished task ta ∈ t a in the 
+environment and the available consumable resources 
+sta is the specific state of task ta also s contains a 
+non empty set sg ⊆ s of goal states a goal state is a 
+sink state where an agent stays forever 
+ a is a finite set of actions or assignments the 
+actions a ∈ a s applicable in a state are the 
+combination of all resource assignments that may be executed 
+according to the state s in particular a is simply an 
+allocation of resources to the current tasks and ata is 
+the resource allocation to task ta the possible actions 
+are limited by lres and gres 
+ transition probabilities pa s s for s ∈ s and a ∈ 
+a s 
+ w wta is the relative weight criticality of each 
+task 
+ state rewards r rs 
+ta∈t a 
+rsta ← sta × wta the 
+relative reward of the state of a task rsta is the product 
+of a real number sta by the weight factor wta for 
+our problem a reward of × wta is given when the 
+state of a task sta is in an achieved state and in 
+all other cases 
+ a discount preference factor γ which is a real 
+number between and 
+a solution of an mdp is a policy π mapping states s into 
+actions a ∈ a s in particular πta s is the action i e 
+resources to allocate that should be executed on task ta 
+considering the global state s in this case an optimal 
+policy is one that maximizes the expected total reward for 
+accomplishing all tasks the optimal value of a state v s is 
+given by 
+v s r s max 
+a∈a s 
+γ 
+s ∈s 
+pa s s v s 
+where the remaining consumable resources in state s are 
+resc \ res a where res a are the consumable resources 
+used by action a indeed since an action a is a resource 
+assignment resc \ res a is the new set of available resources 
+after the execution of action a furthermore one may 
+compute the q-values q a s of each state action pair using the 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+following equation 
+q a s r s γ 
+s ∈s 
+pa s s max 
+a ∈a s 
+q a s 
+where the optimal value of a state is v s max 
+a∈a s 
+q a s 
+the policy is subjected to the local resource constraints 
+res π s ≤ lres∀ s ∈ s and ∀ res ∈ res the global 
+constraint is defined according to all system trajectories 
+tra ∈ t ra a system trajectory tra is a possible sequence 
+of state-action pairs until a goal state is reached under the 
+optimal policy π for example state s is entered which may 
+transit to s or to s according to action a the two 
+possible system trajectories are s a s and s a s 
+the global resource constraint is res tra ≤ gres∀ tra ∈ 
+t ra and ∀ res ∈ resc where res tra is a function which 
+returns the resources used by trajectory tra since the 
+available consumable resources are represented in the state space 
+this condition is verified by itself in other words the model 
+is markovian as the history has not to be considered in the 
+state space furthermore the time is not considered in the 
+model description but it may also include a time horizon 
+by using a finite horizon mdp since resource allocation in 
+a stochastic environment is np-complete heuristics should 
+be employed q-decomposition which decomposes a 
+planning problem to many agents to reduce the computational 
+complexity associated to the state and or action spaces is 
+now introduced 
+ q-decomposition for resource allocation 
+there can be many types of resource allocation problems 
+firstly if the resources are already shared among the agents 
+and the actions made by an agent does not influence the 
+state of another agent the globally optimal policy can be 
+computed by planning separately for each agent 
+a second type of resource allocation problem is where 
+the resources are already shared among the agents but the 
+actions made by an agent may influence the reward obtained 
+by at least another agent for instance a group of agents 
+which manages the oil consummated by a country falls in 
+this group these agents desire to maximize their specific 
+reward by consuming the right amount of oil however all 
+the agents are penalized when an agent consumes oil because 
+of the pollution it generates another example of this type 
+comes from our problem of interest explained in section 
+ which is a naval platform which must counter incoming 
+missiles i e tasks by using its resources i e weapons 
+movements in some scenarios it may happens that the 
+missiles can be classified in two types those requiring a 
+set of resources res and those requiring a set of resources 
+res this can happen depending on the type of missiles 
+their range and so on in this case two agents can plan for 
+both set of tasks to determine the policy however there 
+are interaction between the resource of res and res so 
+that certain combination of resource cannot be assigned in 
+particular if an agent i allocate resources resi to the first 
+set of tasks t ai and agent i allocate resources resi to 
+second set of tasks t ai the resulting policy may include 
+actions which cannot be executed together 
+to result these conflicts we use q-decomposition 
+proposed by russell and zimdars in the context of 
+reinforcement learning the primary assumption underlying 
+qdecomposition is that the overall reward function r can be 
+additively decomposed into separate rewards ri for each 
+distinct agent i ∈ ag where ag is the number of agents that 
+is r i∈ag ri it requires each agent to compute a value 
+from its perspective for every action to coordinate with 
+each other each agent i reports its action values qi ai si 
+for each state si ∈ si to an arbitrator at each learning 
+iteration the arbitrator then chooses an action maximizing 
+the sum of the agent q-values for each global state s ∈ s 
+the next time state s is updated an agent i considers the 
+value as its respective contribution or q-value to the global 
+maximal q-value that is qi ai si is the value of a state 
+such that it maximizes maxa∈a s i∈ag qi ai si the fact 
+that the agents use a determined q-value as the value of a 
+state is an extension of the sarsa on-policy algorithm to 
+q-decomposition russell and zimdars called this approach 
+local sarsa in this way an ideal compromise can be found 
+for the agents to reach a global optimum indeed rather 
+than allowing each agent to choose the successor action each 
+agent i uses the action ai executed by the arbitrator in the 
+successor state si 
+qi ai si ri si γ 
+si∈si 
+pai si si qi ai si 
+ 
+where the remaining consumable resources in state si are 
+resci \ resi ai for a resource allocation problem russell 
+and zimdars demonstrated that local sarsa converges 
+to the optimum also in some cases this form of agent 
+decomposition allows the local q-functions to be expressed 
+by a much reduced state and action space 
+for our resource allocation problem described briefly in 
+this section q-decomposition can be applied to generate an 
+optimal solution indeed an optimal bellman backup can 
+be applied in a state as in algorithm in line of the 
+qdec-backup function each agent managing a task 
+computes its respective q-value here qi ai s determines the 
+optimal q-value of agent i in state s an agent i uses as 
+the value of a possible state transition s the q-value for 
+this agent which determines the maximal global q-value for 
+state s as in the original q-decomposition approach in 
+brief for each visited states s ∈ s each agent computes its 
+respective q-values with respect to the global state s so 
+the state space is the joint state space of all agents some 
+of the gain in complexity to use q-decomposition resides in 
+the 
+si∈si 
+pai si s part of the equation an agent considers 
+as a possible state transition only the possible states of the 
+set of tasks it manages since the number of states is 
+exponential with the number of tasks using q-decomposition 
+should reduce the planning time significantly furthermore 
+the action space of the agents takes into account only their 
+available resources which is much less complex than a 
+standard action space which is the combination of all possible 
+resource allocation in a state for all agents 
+then the arbitrator functionalities are in lines to 
+the global q-value is the sum of the q-values produced by 
+each agent managing each task as shown in line 
+considering the global action a in this case when an action of an 
+agent i cannot be executed simultaneously with an action 
+of another agent i the global action is simply discarded 
+from the action space a s line simply allocate the 
+current value with respect to the highest global q-value as in 
+a standard bellman backup then the optimal policy and 
+q-value of each agent is updated in lines and to the 
+sub-actions ai and specific q-values qi ai s of each agent 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+for action a 
+algorithm the q-decomposition bellman backup 
+ function qdec-backup s 
+ v s ← 
+ for all i ∈ ag do 
+ for all ai ∈ ai s do 
+ qi ai s ← ri s γ 
+si 
+∈si 
+pai si s qi ai s 
+ where qi ai s hi s when s is not yet visited 
+and s has resci \ resi ai remaining consumable 
+resources for each agent i 
+ end for 
+ end for 
+ for all a ∈ a s do 
+ q a s ← 
+ for all i ∈ ag do 
+ q a s ← q a s qi ai s 
+ end for 
+ if q a s v s then 
+ v s ← q a s 
+ for all i ∈ ag do 
+ πi s ← ai 
+ qi ai s ← qi ai s 
+ end for 
+ end if 
+ end for 
+a standard bellman backup has a complexity of o a × 
+ sag where sag is the number of joint states for all agents 
+excluding the resources and a is the number of joint 
+actions on the other hand the q-decomposition bellman 
+backup has a complexity of o ag × ai × si a × 
+ ag where si is the number of states for an agent i 
+excluding the resources and ai is the number of actions 
+for an agent i since sag is combinatorial with the 
+number of tasks so si s also a is combinatorial with 
+the number of resource types if the resources are already 
+shared among the agents the number of resource type for 
+each agent will usually be lower than the set of all 
+available resource types for all agents in these circumstances 
+ ai a in a standard bellman backup a is multiplied 
+by sag which is much more complex than multiplying a 
+by ag with the q-decomposition bellman backup thus 
+the q-decomposition bellman backup is much less complex 
+than a standard bellman backup furthermore the 
+communication cost between the agents and the arbitrator is 
+null since this approach does not consider a geographically 
+separated problem 
+however when the resources are available to all agents 
+no q-decomposition is possible in this case bounded 
+realtime dynamic programming bounded-rtdp permits to 
+focuss the search on relevant states and to prune the action 
+space a by using lower and higher bound on the value of 
+states bounded-rtdp is now introduced 
+ bounded-rtdp 
+bonet and geffner proposed lrtdp as an improvement 
+to rtdp lrtdp is a simple dynamic programming 
+algorithm that involves a sequence of trial runs each starting in 
+the initial state s and ending in a goal or a solved state 
+each lrtdp trial is the result of simulating the policy π while 
+updating the values v s using a bellman backup equation 
+ over the states s that are visited h s is a heuristic which 
+define an initial value for state s this heuristic has to be 
+admissible - the value given by the heuristic has to 
+overestimate or underestimate the optimal value v s when 
+the objective function is maximized or minimized for 
+example an admissible heuristic for a stochastic shortest 
+path problem is the solution of a deterministic shortest path 
+problem indeed since the problem is stochastic the 
+optimal value is lower than for the deterministic version it has 
+been proven that lrtdp given an admissible initial 
+heuristic on the value of states cannot be trapped in loops and 
+eventually yields optimal values the convergence is 
+accomplished by means of a labeling procedure called 
+checksolved s this procedure tries to label as solved each 
+traversed state in the current trajectory when the initial 
+state is labelled as solved the algorithm has converged 
+in this section a bounded version of rtdp 
+ boundedrtdp is presented in algorithm to prune the action space 
+of sub-optimal actions this pruning enables to speed up the 
+convergence of lrtdp bounded-rtdp is similar to rtdp 
+except there are two distinct initial heuristics for unvisited 
+states s ∈ s hl s and hu s also the checksolved s 
+ procedure can be omitted because the bounds can provide 
+the labeling of a state as solved on the one hand hl s 
+defines a lower bound on the value of s such that the optimal 
+value of s is higher than hl s for its part hu s defines an 
+upper bound on the value of s such that the optimal value 
+of s is lower than hu s 
+the values of the bounds are computed in lines and 
+ of the bounded-backup function computing these two 
+q-values is made simultaneously as the state transitions are 
+the same for both q-values only the values of the state 
+transitions change thus having to compute two q-values 
+instead of one does not augment the complexity of the 
+approach in fact smith and simmons state that the 
+additional time to compute a bellman backup for two bounds 
+instead of one is no more than which is also what we 
+obtained in particular l s is the lower bound of state s 
+while u s is the upper bound of state s similarly ql a s 
+is the q-value of the lower bound of action a in state s while 
+qu a s is the q-value of the upper bound of action a in 
+state s using these two bounds allow significantly 
+reducing the action space a indeed in lines and of the 
+bounded-backup function if qu a s ≤ l s then action 
+a may be pruned from the action space of s in line 
+of this function a state can be labeled as solved if the 
+difference between the lower and upper bounds is lower than 
+ when the execution goes back to the bounded-rtdp 
+function the next state in line has a fixed number of 
+consumable resources available resc determined in line 
+in brief picknextstate res selects a none-solved state 
+s reachable under the current policy which has the highest 
+bellman error u s − l s finally in lines to a 
+backup is made in a backward fashion on all visited state 
+of a trajectory when this trajectory has been made this 
+strategy has been proven as efficient 
+as discussed by singh and cohn this type of 
+algorithm has a number of desirable anytime characteristics if 
+an action has to be picked in state s before the algorithm 
+has converged while multiple competitive actions remains 
+the action with the highest lower bound is picked since 
+the upper bound for state s is known it may be estimated 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+algorithm the bounded-rtdp algorithm adapted 
+from and 
+ function bounded-rtdp s 
+ returns a value function v 
+ repeat 
+ s ← s 
+ visited ← null 
+ repeat 
+ visited push s 
+ bounded-backup s 
+ resc ← resc \ π s 
+ s ← s picknextstate resc 
+ until s is a goal 
+ while visited null do 
+ s ← visited pop 
+ bounded-backup s 
+ end while 
+ until s is solved or a s ∀ s ∈ s reachable from 
+s 
+ return v 
+algorithm the bounded bellman backup 
+ function bounded-backup s 
+ for all a ∈ a s do 
+ qu a s ← r s γ 
+s ∈s 
+pa s s u s 
+ ql a s ← r s γ 
+s ∈s 
+pa s s l s 
+ where l s ← hl s and u s ← hu s when s 
+is not yet visited and s has resc \ res a remaining 
+consumable resources 
+ if qu a s ≤ l s then 
+ a s ← a s \ res a 
+ end if 
+ end for 
+ l s ← max 
+a∈a s 
+ql a s 
+ u s ← max 
+a∈a s 
+qu a s 
+ π s ← arg max 
+a∈a s 
+ql a s 
+ if u s − l s then 
+ s ← solved 
+ end if 
+how far the lower bound is from the optimal if the 
+difference between the lower and upper bound is too high one 
+can choose to use another greedy algorithm of one s choice 
+which outputs a fast and near optimal solution 
+furthermore if a new task dynamically arrives in the environment 
+it can be accommodated by redefining the lower and 
+upper bounds which exist at the time of its arrival singh 
+and cohn proved that an algorithm that uses 
+admissible lower and upper bounds to prune the action space is 
+assured of converging to an optimal solution 
+the next sections describe two separate methods to define 
+hl s and hu s first of all the method of singh and cohn 
+ is briefly described then our own method proposes 
+tighter bounds thus allowing a more effective pruning of 
+the action space 
+ singh and cohn s bounds 
+singh and cohn defined lower and upper bounds to 
+prune the action space their approach is pretty 
+straightforward first of all a value function is computed for all 
+tasks to realize using a standard rtdp approach then 
+using these task-value functions a lower bound hl and 
+upper bound hu can be defined in particular hl s 
+max 
+ta∈t a 
+vta sta and hu s 
+ta∈t a 
+vta sta for readability 
+the upper bound by singh and cohn is named singhu and 
+the lower bound is named singhl the admissibility of these 
+bounds has been proven by singh and cohn such that the 
+upper bound always overestimates the optimal value of each 
+state while the lower bound always underestimates the 
+optimal value of each state to determine the optimal policy 
+π singh and cohn implemented an algorithm very similar 
+to bounded-rtdp which uses the bounds to initialize l s 
+and u s the only difference between bounded-rtdp and 
+the rtdp version of singh and cohn is in the stopping 
+criteria singh and cohn proposed that the algorithm terminates 
+when only one competitive action remains for each state or 
+when the range of all competitive actions for any state are 
+bounded by an indifference parameter bounded-rtdp 
+labels states for which u s − l s as solved and the 
+convergence is reached when s is solved or when only one 
+competitive action remains for each state this stopping 
+criteria is more effective since it is similar to the one used 
+by smith and simmons and mcmahan et al brtdp 
+in this paper the bounds defined by singh and cohn and 
+implemented using bounded-rtdp define the singh-rtdp 
+approach the next sections propose to tighten the bounds 
+of singh-rtdp to permit a more effective pruning of the 
+action space 
+ reducing the upper bound 
+singhu includes actions which may not be possible to 
+execute because of resource constraints which overestimates 
+the upper bound to consider only possible actions our 
+upper bound named maxu is introduced 
+hu s max 
+a∈a s 
+ta∈t a 
+qta ata sta 
+where qta ata sta is the q-value of task ta for state sta 
+and action ata computed using a standard lrtdp approach 
+theorem the upper bound defined by equation is 
+admissible 
+proof the local resource constraints are satisfied because 
+the upper bound is computed using all global possible 
+actions a however hu s still overestimates v s because 
+the global resource constraint is not enforced indeed each 
+task may use all consumable resources for its own purpose 
+doing this produces a higher value for each task than the 
+one obtained when planning for all tasks globally with the 
+shared limited resources 
+computing the maxu bound in a state has a 
+complexity of o a × t a and o t a for singhu a standard 
+bellman backup has a complexity of o a × s since 
+ a × t a a × s the computation time to determine the 
+upper bound of a state which is done one time for each 
+visited state is much less than the computation time required 
+to compute a standard bellman backup for a state which is 
+usually done many times for each visited state thus the 
+computation time of the upper bound is negligible 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ increasing the lower bound 
+the idea to increase singhl is to allocate the resources 
+a priori among the tasks when each task has its own set 
+of resources each task may be solved independently the 
+lower bound of state s is hl s 
+ta∈t a 
+lowta sta where 
+lowta sta is a value function for each task ta ∈ t a such 
+that the resources have been allocated a priori the 
+allocation a priori of the resources is made using marginal revenue 
+which is a highly used concept in microeconomics and 
+has recently been used for coordination of a decentralized 
+mdp in brief marginal revenue is the extra revenue that 
+an additional unit of product will bring to a firm thus 
+for a stochastic resource allocation problem the marginal 
+revenue of a resource is the additional expected value it 
+involves the marginal revenue of a resource res for a task ta 
+in a state sta is defined as following 
+mrta sta max 
+ata∈a sta 
+qta ata sta − 
+max 
+ata∈a sta 
+qta ata res ∈ ata sta 
+the concept of marginal revenue of a resource is used in 
+algorithm to allocate the resources a priori among the 
+tasks which enables to define the lower bound value of a 
+state in line of the algorithm a value function is 
+computed for all tasks in the environment using a standard 
+lrtdp approach these value functions which are also 
+used for the upper bound are computed considering that 
+each task may use all available resources the line 
+initializes the valueta variable this variable is the estimated 
+value of each task ta ∈ t a in the beginning of the 
+algorithm no resources are allocated to a specific task thus the 
+valueta variable is initialized to for all ta ∈ t a then in 
+line a resource type res consumable or non-consumable 
+is selected to be allocated here a domain expert may 
+separate all available resources in many types or parts to be 
+allocated the resources are allocated in the order of its 
+specialization in other words the more a resource is 
+efficient on a small group of tasks the more it is allocated early 
+allocating the resources in this order improves the quality 
+of the resulting lower bound the line computes the 
+marginal revenue of a consumable resource res for each task 
+ta ∈ t a for a non-consumable resource since the resource 
+is not considered in the state space all other reachable states 
+from sta consider that the resource res is still usable the 
+approach here is to sum the difference between the real value 
+of a state to the maximal q-value of this state if resource res 
+cannot be used for all states in a trajectory given by the 
+policy of task ta this heuristic proved to obtain good results 
+but other ones may be tried for example monte-carlo 
+simulation in line the marginal revenue is updated in 
+function of the resources already allocated to each task r sgta 
+is the reward to realize task ta thus vta sta −valueta 
+r sgta 
+is 
+the residual expected value that remains to be achieved 
+knowing current allocation to task ta and normalized by 
+the reward of realizing the tasks the marginal revenue is 
+multiplied by this term to indicate that the more a task 
+has a high residual value the more its marginal revenue is 
+going to be high then a task ta is selected in line with 
+the highest marginal revenue adjusted with residual value 
+in line the resource type res is allocated to the group 
+of resources resta of task ta afterwards line 
+recomalgorithm the marginal revenue lower bound algorithm 
+ function revenue-bound s 
+ returns a lower bound lowt a 
+ for all ta ∈ t a do 
+ vta ←lrtdp sta 
+ valueta ← 
+ end for 
+ s ← s 
+ repeat 
+ res ← select a resource type res ∈ res 
+ for all ta ∈ t a do 
+ if res is consumable then 
+ mrta sta ← vta sta − vta sta res \ res 
+ else 
+ mrta sta ← 
+ repeat 
+ mrta sta ← mrta sta 
+vta sta max 
+ ata∈a sta res ∈ata 
+qta ata sta 
+ sta ← sta picknextstate resc 
+ until sta is a goal 
+ s ← s 
+ end if 
+ mrrvta sta ← mrta sta × vta sta −valueta 
+r sgta 
+ end for 
+ ta ← task ta ∈ t a which maximize mrrvta sta 
+ resta ← resta res 
+ temp ← ∅ 
+ if res is consumable then 
+ temp ← res 
+ end if 
+ valueta ← valueta vta sta − valueta × 
+max 
+ata∈a sta res 
+qta ata sta temp 
+vta sta 
+ 
+ until all resource types res ∈ res are assigned 
+ for all ta ∈ t a do 
+ lowta ←lrtdp sta resta 
+ end for 
+ return lowt a 
+putes valueta the first part of the equation to compute 
+valueta represents the expected residual value for task ta 
+this term is multiplied by 
+max 
+ata∈a sta 
+qta ata sta res 
+vta sta 
+ which 
+is the ratio of the efficiency of resource type res in other 
+words valueta is assigned to valueta the residual value 
+× the value ratio of resource type res for a consumable 
+resource the q-value consider only resource res in the state 
+space while for a non-consumable resource no resources are 
+available 
+all resource types are allocated in this manner until res is 
+empty all consumable and non-consumable resource types 
+are allocated to each task when all resources are allocated 
+the lower bound components lowta of each task are 
+computed in line when the global solution is computed 
+the lower bound is as follow 
+hl s max singhl max 
+a∈a s 
+ta∈t a 
+lowta sta 
+we use the maximum of the singhl bound and the sum 
+of the lower bound components lowta thus 
+marginalrevenue ≥ singhl in particular the singhl bound may 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+be higher when a little number of tasks remain as the 
+components lowta are computed considering s for example if 
+in a subsequent state only one task remains the bound of 
+singhl will be higher than any of the lowta components 
+the main difference of complexity between singhl and 
+revenue-bound is in line where a value for each task 
+has to be computed with the shared resource however 
+since the resource are shared the state space and action 
+space is greatly reduced for each task reducing greatly the 
+calculus compared to the value functions computed in line 
+ which is done for both singhl and revenue-bound 
+theorem the lower bound of equation is 
+admissible 
+proof lowta sta is computed with the resource being 
+shared summing the lowta sta value functions for each 
+ta ∈ t a does not violates the local and global resource 
+constraints indeed as the resources are shared the tasks 
+cannot overuse them thus hl s is a realizable policy and an 
+admissible lower bound 
+ discussion and experiments 
+the domain of the experiments is a naval platform which 
+must counter incoming missiles i e tasks by using its 
+resources i e weapons movements for the experiments 
+ randomly resource allocation problems were generated 
+for each approach and possible number of tasks in our 
+problem sta thus each task can be in four distinct 
+states there are two types of states firstly states where 
+actions modify the transition probabilities and then there 
+are goal states the state transitions are all stochastic 
+because when a missile is in a given state it may always transit 
+in many possible states in particular each resource type 
+has a probability to counter a missile between and 
+depending on the state of the task when a missile is not 
+countered it transits to another state which may be 
+preferred or not to the current state where the most preferred 
+state for a task is when it is countered the effectiveness 
+of each resource is modified randomly by ± at the start 
+of a scenario there are also local and global resource 
+constraints on the amount that may be used for the local 
+constraints at most resource of each type can be 
+allocated to execute tasks in a specific state this constraint is 
+also present on a real naval platform because of sensor and 
+launcher constraints and engagement policies furthermore 
+for consumable resources the total amount of available 
+consumable resource is between and for each type the 
+global constraint is generated randomly at the start of a 
+scenario for each consumable resource type the number of 
+resource type has been fixed to where there are 
+consumable resource types and non-consumable resources types 
+for this problem a standard lrtdp approach has been 
+implemented a simple heuristic has been used where the 
+value of an unvisited state is assigned as the value of a goal 
+state such that all tasks are achieved this way the value 
+of each unvisited state is assured to overestimate its real 
+value since the value of achieving a task ta is the highest 
+the planner may get for ta since this heuristic is pretty 
+straightforward the advantages of using better heuristics are 
+more evident nevertheless even if the lrtdp approach uses 
+a simple heuristic still a huge part of the state space is not 
+visited when computing the optimal policy the approaches 
+described in this paper are compared in figures and 
+lets summarize these approaches here 
+ qdec-lrtdp the backups are computed using the 
+qdec-backup function algorithm but in a lrtdp 
+context in particular the updates made in the 
+checksolved function are also made using the the 
+qdecbackup function 
+ lrtdp-up the upper bound of maxu is used for 
+lrtdp 
+ singh-rtdp the singhl and singhu bounds are 
+used for bounded-rtdp 
+ mr-rtdp the revenue-bound and maxu bounds 
+are used for bounded-rtdp 
+to implement qdec-lrtdp we divided the set of tasks 
+in two equal parts the set of task t ai managed by agent 
+i can be accomplished with the set of resources resi while 
+the second set of task t ai managed by agent agi can be 
+accomplished with the set of resources resi resi had one 
+consumable resource type and one non-consumable resource 
+type while resi had two consumable resource types and 
+one non-consumable resource type when the number of 
+tasks is odd one more task was assigned to t ai there are 
+constraint between the group of resource resi and resi 
+such that some assignments are not possible these 
+constraints are managed by the arbitrator as described in 
+section q-decomposition permits to diminish the planning 
+time significantly in our problem settings and seems a very 
+efficient approach when a group of agents have to allocate 
+resources which are only available to themselves but the 
+actions made by an agent may influence the reward obtained 
+by at least another agent 
+to compute the lower bound of revenue-bound all 
+available resources have to be separated in many types or 
+parts to be allocated for our problem we allocated each 
+resource of each type in the order of of its specialization like 
+we said when describing the revenue-bound function 
+in terms of experiments notice that the lrtdp lrtdp-up 
+and approaches for resource allocation which doe not prune 
+the action space are much more complex for instance it 
+took an average of seconds to plan for the lrtdp-up 
+approach with six tasks see figure the singh-rtdp 
+approach diminished the planning time by using a lower 
+and upper bound to prune the action space mr-rtdp 
+further reduce the planning time by providing very tight 
+initial bounds in particular singh-rtdp needed seconds 
+in average to solve problem with six tasks and mr-rtdp 
+required seconds indeed the time reduction is quite 
+significant compared to lrtdp-up which demonstrates the 
+efficiency of using bounds to prune the action space 
+furthermore we implemented mr-rtdp with the singhu 
+bound and this was slightly less efficient than with the 
+maxu bound we also implemented mr-rtdp with the 
+singhl bound and this was slightly more efficient than 
+singh-rtdp from these results we conclude that the 
+difference of efficiency between mr-rtdp and singh-rtdp is 
+more attributable to the marginal-revenue lower bound 
+that to the maxu upper bound indeed when the number 
+of task to execute is high the lower bounds by singh-rtdp 
+takes the values of a single task on the other hand the 
+lower bound of mr-rtdp takes into account the value of all 
+ the sixth intl joint conf on autonomous agents and multi-agent systems aamas 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+timeinseconds 
+number of tasks 
+lrtdp 
+qdec-lrtdp 
+figure efficiency of q-decomposition lrtdp 
+and lrtdp 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+timeinseconds 
+number of tasks 
+lrtdp 
+lrtdp-up 
+singh-rtdp 
+mr-rtdp 
+figure efficiency of mr-rtdp compared to 
+singh-rtdp 
+task by using a heuristic to distribute the resources 
+indeed an optimal allocation is one where the resources are 
+distributed in the best way to all tasks and our lower bound 
+heuristically does that 
+ conclusion 
+the experiments have shown that q-decomposition seems 
+a very efficient approach when a group of agents have to 
+allocate resources which are only available to themselves 
+but the actions made by an agent may influence the reward 
+obtained by at least another agent 
+on the other hand when the available resource are 
+shared no q-decomposition is possible and we proposed 
+tight bounds for heuristic search in this case the 
+planning time of bounded-rtdp which prunes the action space 
+is significantly lower than for lrtdp furthermore the 
+marginal revenue bound proposed in this paper compares 
+favorably to the singh and cohn approach 
+boundedrtdp with our proposed bounds may apply to a wide range 
+of stochastic environments the only condition for the use 
+our bounds is that each task possesses consumable and or 
+non-consumable limited resources 
+an interesting research avenue would be to experiment 
+our bounds with other heuristic search algorithms for 
+instance frtdp and brtdp are both efficient 
+heuristic search algorithms in particular both these approaches 
+proposed an efficient state trajectory updates when given 
+upper and lower bounds our tight bounds would enable 
+for both frtdp and brtdp to reduce the number of backup 
+to perform before convergence finally the bounded-rtdp 
+function prunes the action space when qu a s ≤ l s as 
+singh and cohn suggested frtdp and brtdp could 
+also prune the action space in these circumstances to 
+further reduce their planning time 
+ references 
+ a barto s bradtke and s singh learning to act 
+using real-time dynamic programming artificial 
+intelligence - 
+ a beynier and a i mouaddib an iterative algorithm 
+for solving constrained decentralized markov decision 
+processes in proceeding of the twenty-first national 
+conference on artificial intelligence aaai- 
+ b bonet and h geffner faster heuristic search 
+algorithms for planning with uncertainty and full 
+feedback in proceedings of the eighteenth 
+international joint conference on artificial 
+intelligence ijcai- august 
+ b bonet and h geffner labeled lrtdp approach 
+improving the convergence of real-time dynamic 
+programming in proceeding of the thirteenth 
+international conference on automated planning 
+scheduling icaps- pages - trento italy 
+ 
+ e a hansen and s zilberstein lao a heuristic 
+search algorithm that finds solutions with loops 
+artificial intelligence - - 
+ h b mcmahan m likhachev and g j gordon 
+bounded real-time dynamic programming rtdp with 
+monotone upper bounds and performance guarantees 
+in icml proceedings of the twenty-second 
+international conference on machine learning pages 
+ - new york ny usa acm press 
+ r s pindyck and d l rubinfeld microeconomics 
+prentice hall 
+ g a rummery and m niranjan on-line q-learning 
+using connectionist systems technical report 
+cued finfeng tr cambridge university 
+engineering department 
+ s j russell and a zimdars q-decomposition for 
+reinforcement learning agents in icml pages 
+ - 
+ s singh and d cohn how to dynamically merge 
+markov decision processes in advances in neural 
+information processing systems volume pages 
+ - cambridge ma usa mit press 
+ t smith and r simmons focused real-time dynamic 
+programming for mdps squeezing more out of a 
+heuristic in proceedings of the twenty-first national 
+conference on artificial intelligence aaai boston 
+usa 
+ w zhang modeling and solving a resource allocation 
+problem with soft constraint techniques technical 
+report wucs- - washington university 
+saint-louis missouri 
+the sixth intl joint conf on autonomous agents and multi-agent systems aamas 

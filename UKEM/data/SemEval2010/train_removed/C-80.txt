@@ -1,0 +1,1320 @@
+consistency-preserving caching of dynamic 
+database content 
+niraj tolia and m satyanarayanan 
+carnegie mellon university 
+ ntolia satya  cs cmu edu 
+abstract 
+with the growing use of dynamic web content generated from 
+relational databases traditional caching solutions for throughput and 
+latency improvements are ineffective we describe a middleware 
+layer called ganesh that reduces the volume of data transmitted 
+without semantic interpretation of queries or results it achieves 
+this reduction through the use of cryptographic hashing to detect 
+similarities with previous results these benefits do not require 
+any compromise of the strict consistency semantics provided by the 
+back-end database further ganesh does not require modifications 
+to applications web servers or database servers and works with 
+closed-source applications and databases using two benchmarks 
+representative of dynamic web sites measurements of our 
+prototype show that it can increase end-to-end throughput by as much 
+as twofold for non-data intensive applications and by as much as 
+tenfold for data intensive ones 
+categories and subject descriptors 
+c computer-communication networks distributed 
+systems h database management systems 
+general terms 
+design performance 
+ introduction 
+an increasing fraction of web content is dynamically generated 
+from back-end relational databases even when database content 
+remains unchanged temporal locality of access cannot be exploited 
+because dynamic content is not cacheable by web browsers or by 
+intermediate caching servers such as akamai mirrors in a 
+multitiered architecture each web request can stress the wan link 
+between the web server and the database this causes user 
+experience to be highly variable because there is no caching to 
+insulate the client from bursty loads previous attempts in caching 
+dynamic database content have generally weakened transactional 
+semantics or required application modifications 
+we report on a new solution that takes the form of a 
+databaseagnostic middleware layer called ganesh ganesh makes no effort 
+to semantically interpret the contents of queries or their results 
+instead it relies exclusively on cryptographic hashing to detect 
+similarities with previous results hash-based similarity detection has 
+seen increasing use in distributed file systems for 
+improving performance on low-bandwidth networks however these 
+techniques have not been used for relational databases unlike 
+previous approaches that use generic methods to detect similarity 
+ganesh exploits the structure of relational database results to yield 
+superior performance improvement 
+one faces at least three challenges in applying hash-based 
+similarity detection to back-end databases first previous work in this 
+space has traditionally viewed storage content as uninterpreted bags 
+of bits with no internal structure this allows hash-based 
+techniques to operate on long contiguous runs of data for maximum 
+effectiveness in contrast relational databases have rich internal 
+structure that may not be as amenable to hash-based similarity 
+detection second relational databases have very tight integrity and 
+consistency constraints that must not be compromised by the use 
+of hash-based techniques third the source code of commercial 
+databases is typically not available this is in contrast to previous 
+work which presumed availability of source code 
+our experiments show that ganesh while conceptually simple 
+can improve performance significantly at bandwidths 
+representative of today s commercial internet on benchmarks modeling 
+multitiered web applications the throughput improvement was as high 
+as tenfold for data-intensive workloads for workloads that were 
+not data-intensive throughput improvements of up to twofold were 
+observed even when bandwidth was not a constraint ganesh had 
+low overhead and did not hurt performance our experiments also 
+confirm that exploiting the structure present in database results is 
+crucial to this performance improvement 
+ background 
+ dynamic content generation 
+as the world wide web has grown many web sites have 
+decentralized their data and functionality by pushing them to the edges 
+of the internet today ebusiness systems often use a three-tiered 
+architecture consisting of a front-end web server an application 
+server and a back-end database server figure illustrates this 
+architecture the first two tiers can be replicated close to a 
+concentration of clients at the edge of the internet this improves user 
+experience by lowering end-to-end latency and reducing exposure 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+back-end database 
+server 
+front-end web and 
+application servers 
+figure multi-tier architecture 
+to backbone traffic congestion it can also increase the availability 
+and scalability of web services 
+content that is generated dynamically from the back-end database 
+cannot be cached in the first two tiers while databases can be 
+easily replicated in a lan this is infeasible in a wan because of 
+the difficult task of simultaneously providing strong consistency 
+availability and tolerance to network partitions as a result 
+databases tend to be centralized to meet the strong consistency 
+requirements of many ebusiness applications such as banking 
+finance and online retailing thus the back-end database is 
+usually located far from many sets of first and second-tier nodes 
+in the absence of both caching and replication wan bandwidth 
+can easily become a limiting factor in the performance and 
+scalability of data-intensive applications 
+ hash-based systems 
+ganesh s focus is on efficient transmission of results by 
+discovering similarities with the results of previous queries as sql queries 
+can generate large results hash-based techniques lend themselves 
+well to the problem of efficiently transferring these large results 
+across bandwidth constrained links 
+the use of hash-based techniques to reduce the volume of data 
+transmitted has emerged as a common theme of many recent 
+storage systems as discussed in section these techniques rely 
+on some basic assumptions cryptographic hash functions are 
+assumed to be collision-resistant in other words it is 
+computationally intractable to find two inputs that hash to the same output the 
+functions are also assumed to be one-way that is finding an 
+input that results in a specific output is computationally infeasible 
+menezes et al provide more details about these assumptions 
+the above assumptions allow hash-based systems to assume that 
+collisions do not occur hence they are able to treat the hash of a 
+data item as its unique identifier a collection of data items 
+effectively becomes content-addressable allowing a small hash to serve 
+as a codeword for a much larger data item in permanent storage or 
+network transmission 
+the assumption that collisions are so rare as to be effectively 
+non-existent has recently come under fire however as 
+explained by black we believe that these issues do not form a 
+concern for ganesh all communication is between trusted parts 
+of the system and an adversary has no way to force ganesh to 
+accept invalid data further ganesh does not depend critically on any 
+specific hash function while we currently use sha- replacing it 
+with a different hash function would be simple there would be 
+no impact on performance as stronger hash functions e g 
+sha only add a few extra bytes and the generated hashes are still 
+orders of magnitude smaller than the data items they represent no 
+re-hashing of permanent storage is required since ganesh only uses 
+hashing on volatile data 
+ design and implementation 
+ganesh exploits redundancy in the result stream to avoid 
+transmitting result fragments that are already present at the query site 
+redundancy can arise naturally in many different ways for 
+example a query repeated after a certain interval may return a different 
+result because of updates to the database however there may be 
+significant commonality between the two results as another 
+example a user who is refining a search may generate a sequence 
+of queries with overlapping results when ganesh detects 
+redundancy it suppresses transmission of the corresponding result 
+fragments instead it transmits a much smaller digest of those 
+fragments and lets the query site reconstruct the result through hash 
+lookup in a cache of previous results in effect ganesh uses 
+computation at the edges to reduce internet communication 
+our description of ganesh focuses on four aspects we first 
+explain our approach to detecting similarity in query results next 
+we discuss how the ganesh architecture is completely invisible to 
+all components of a multi-tier system we then describe ganesh s 
+proxy-based approach and the dataflow for detecting similarity 
+ detecting similarity 
+one of the key design decisions in ganesh is how similarity is 
+detected there are many potential ways to decompose a result into 
+fragments the optimal way is of course the one that results in the 
+smallest possible object for transmission for a given query s results 
+finding this optimal decomposition is a difficult problem because 
+of the large space of possibilities and because the optimal choice 
+depends on many factors such as the contents of the query s result 
+the history of recent results and the cache management algorithm 
+when an object is opaque the use of rabin fingerprints 
+to detect common data between two objects has been successfully 
+shown in the past by systems such as lbfs and casper 
+rabin fingerprinting uses a sliding window over the data to 
+compute a rolling hash assuming that the hash function is uniformly 
+distributed a chunk boundary is defined whenever the lower order 
+bits of the hash value equal some predetermined value the 
+number of lower order bits used defines the average chunk size these 
+sub-divided chunks of the object become the unit of comparison for 
+detecting similarity between different objects 
+as the locations of boundaries found by using rabin fingerprints 
+is stochastically determined they usually fail to align with any 
+structural properties of the underlying data the algorithm 
+therefore deals well with in-place updates insertions and deletions 
+however it performs poorly in the presence of any reordering of data 
+figure shows an example where two results a and b 
+consisting of three rows have the same data but have different sort 
+attributes in the extreme case rabin fingerprinting might be unable 
+to find any similar data due to the way it detects chunk boundaries 
+fortunately ganesh can use domain specific knowledge for more 
+precise boundary detection the information we exploit is that a 
+query s result reflects the structure of a relational database where 
+all data is organized as tables and rows it is therefore simple to 
+check for similarity with previous results at two granularities first 
+the entire result and then individual rows the end of a row in a 
+result serves as a natural chunk boundary it is important to note that 
+using the tabular structure in results only involves shallow 
+interpretation of the data ganesh does not perform any deeper semantic 
+interpretation such as understanding data types result schema or 
+integrity constraints 
+tuning rabin fingerprinting for a workload can also be difficult 
+if the average chunk size is too large chunks can span multiple 
+result rows however selecting a smaller average chunk size 
+increases the amount of metadata required to the describe the results 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+figure rabin fingerprinting vs ganesh s chunking 
+this in turn would decrease the savings obtained via its use 
+rabin fingerprinting also needs two computationally-expensive passes 
+over the data once to determine chunk boundaries and one again to 
+generate cryptographic hashes for the chunks ganesh only needs 
+a single pass for hash generation as the chunk boundaries are 
+provided by the data s natural structure 
+the performance comparison in section shows that ganesh s 
+row-based algorithm outperforms rabin fingerprinting given that 
+previous work has already shown that rabin fingerprinting 
+performs better than gzip we do not compare ganesh to 
+compression algorithms in this paper 
+ transparency 
+the key factor influencing our design was the need for ganesh 
+to be completely transparent to all components of a typical 
+ebusiness system web servers application servers and database servers 
+without this ganesh stands little chance of having a significant 
+real-world impact requiring modifications to any of the above 
+components would raise the barrier for entry of ganesh into an 
+existing system and thus reduce its chances of adoption preserving 
+transparency is simplified by the fact that ganesh is purely a 
+performance enhancement not a functionality or usability enhancement 
+we chose agent interposition as the architectural approach to 
+realizing our goal this approach relies on the existence of a compact 
+programming interface that is already widely used by target 
+software it also relies on a mechanism to easily add new code without 
+disrupting existing module structure 
+these conditions are easily met in our context because of the 
+popularity of java as the programming language for ebusiness 
+systems the java database connectivity jdbc api allows 
+java applications to access a wide variety of databases and even 
+other tabular data repositories such as flat files access to these 
+data sources is provided by jdbc drivers that translate between 
+the jdbc api and the database communication mechanism 
+figure a shows how jdbc is typically used in an application 
+as the jdbc interface is standardized one can substitute one 
+jdbc driver for another without application modifications the 
+jdbc driver thus becomes the natural module to exploit for code 
+interposition as shown in figure b the native jdbc driver is 
+replaced with a ganesh jdbc driver that presents the same 
+standardized interface the ganesh driver maintains an in-memory 
+cache of result fragments from previous queries and performs 
+reassembly of results at the database we add a new process called 
+the ganesh proxy this proxy which can be shared by multiple 
+front-end nodes consists of two parts code to detect similarity 
+in result fragments and the original native jdbc driver that 
+communicates with the database the use of a proxy at the database 
+makes ganesh database-agnostic and simplifies prototyping and 
+experimentation ganesh is thus able to work with a wide range 
+of databases and applications requiring no modifications to either 
+ proxy-based caching 
+the native jdbc driver shown in figure a is a lightweight 
+code component supplied by the database vendor its main 
+funcclient 
+database 
+web and 
+application server 
+native jdbc driver 
+wan 
+ a native architecture 
+client 
+database 
+ganesh proxy 
+native jdbc driver 
+wan 
+web and 
+application server 
+ganesh jdbc driver 
+ b ganesh s interposition-based architecture 
+figure native vs ganesh architecture 
+tion is to mediate communication between the application and the 
+remote database it forwards queries buffers entire results and 
+responds to application requests to view parts of results 
+the ganesh jdbc driver shown in figure b presents the 
+application with an interface identical to that provided by the native 
+driver it provides the ability to reconstruct results from compact 
+hash-based descriptions sent by the proxy to perform this 
+reconstruction the driver maintains an in-memory cache of 
+recentlyreceived results this cache is only used as a source of result 
+fragments in reconstructing results no attempt is made by the ganesh 
+driver or proxy to track database updates the lack of cache 
+consistency does not hurt correctness as a description of the results is 
+always fetched from the proxy - at worst there will be no 
+performance benefit from using ganesh stale data will simply be paged 
+out of the cache over time 
+the ganesh proxy accesses the database via the native jdbc 
+driver which remains unchanged between figures a and b 
+the database is thus completely unaware of the existence of the 
+proxy the proxy does not examine any queries received from 
+the ganesh driver but passes them to the native driver instead 
+the proxy is responsible for inspecting database output received 
+from the native driver detecting similar results and generating 
+hash-based encodings of these results whenever enough similarity 
+is found while this architecture does not decrease the load on a 
+database as mentioned earlier in section it is much easier to 
+replicate databases for scalability in a lan than in a wan 
+to generate a hash-based encoding the proxy must be aware of 
+what result fragments are available in the ganesh driver s cache 
+one approach is to be optimistic and to assume that all result 
+fragments are available this will result in the smallest possible initial 
+transmission of a result however in cases where there is little 
+overlap with previous results the ganesh driver will have to make 
+many calls to the proxy during reconstruction to fetch missing 
+result fragments to avoid this situation the proxy loosely tracks the 
+state of the ganesh driver s cache since both components are 
+under our control it is relatively simple to do this without resorting 
+to gray-box techniques or explicit communication for maintaining 
+cache coherence instead the proxy simulates the ganesh driver s 
+cache management algorithm and uses this to maintain a list of 
+hashes for which the ganesh driver is likely to possess the result 
+fragments in case of mistracking there will be no loss of 
+correctness but there will be extra round-trip delays to fetch the missing 
+fragments if the client detects loss of synchronization with the 
+proxy it can ask the proxy to reset the state shared between them 
+also note that the proxy does not need to keep the result fragments 
+themselves only their hashes this allows the proxy to remain 
+scalable even when it is shared by many front-end nodes 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+object output stream 
+convert resultset 
+object input stream 
+convert resultset 
+all data 
+recipe 
+resultset 
+all data 
+resultset 
+network 
+ganesh proxy ganesh jdbc driver 
+result 
+set 
+recipe 
+result 
+set 
+yes 
+yes 
+no 
+no 
+ganeshinputstream 
+ganeshoutputstream 
+figure dataflow for result handling 
+ encoding and decoding results 
+the ganesh proxy receives database output as java objects from 
+the native jdbc driver it examines this output to see if a java 
+object of type resultset is present the jdbc interface uses 
+this data type to store results of database queries if a resultset 
+object is found it is shrunk as discussed below all other java 
+objects are passed through unmodified 
+as discussed in section the proxy uses the row boundaries 
+defined in the resultset to partition it into fragments 
+consisting of single result rows all resultset objects are converted 
+into objects of a new type called reciperesultset we use 
+the term recipe for this compact description of a database 
+result because of its similarity to a file recipe in the casper file 
+system the conversion replaces each result fragment that is 
+likely to be present in the ganesh driver s cache by a sha- hash 
+of that fragment previously unseen result fragments are retained 
+verbatim the proxy also retains hashes for the new result 
+fragments as they will be present in the driver s cache in the future 
+note that the proxy only caches hashes for result fragments and 
+does not cache recipes 
+the proxy constructs a reciperesultset by checking for 
+similarity at the entire result and then the row level if the entire 
+result is predicted to be present in the ganesh driver s cache the 
+reciperesultset is simply a single hash of the entire result 
+otherwise it contains hashes for those rows predicted to be present 
+in that cache all other rows are retained verbatim if the proxy 
+estimates an overall space savings it will transmit the 
+reciperesultset otherwise the original resultset is transmitted 
+the reciperesultset objects are transformed back into 
+resultset objects by the ganesh driver figure illustrates 
+resultset handling at both ends each sha- hash found in a 
+reciperesultset is looked up in the local cache of result 
+fragments on a hit the hash is replaced by the corresponding 
+fragment on a miss the driver contacts the ganesh proxy to fetch the 
+fragment all previously unseen result fragments that were retained 
+verbatim by the proxy are hashed and added to the result cache 
+there should be very few misses if the proxy has accurately 
+tracked the ganesh driver s cache state a future optimization would 
+be to batch the fetch of missing fragments this would be valuable 
+when there are many small missing fragments in a high-latency 
+wan once the transformation is complete the fully reconstructed 
+resultset object is passed up to the application 
+ experimental validation 
+three questions follow from the goals and design of ganesh 
+ first can performance can be improved significantly by 
+exploiting similarity across database results 
+benchmark dataset details 
+ users stories 
+bboard gb comments 
+auction gb users items 
+table benchmark dataset details 
+ second how important is ganesh s structural similarity 
+detection relative to rabin fingerprinting s similarity detection 
+ third is the overhead of the proxy-based design acceptable 
+our evaluation answers these question through controlled 
+experiments with the ganesh prototype this section describes the 
+benchmarks used our evaluation procedure and the experimental setup 
+results of the experiments are presented in sections and 
+ benchmarks 
+our evaluation is based on two benchmarks that have been 
+widely used by other researchers to evaluate various aspects of 
+multi-tier and ebusiness architectures the first 
+benchmark bboard is modeled after slashdot a technology-oriented 
+news site the second benchmark auction is modeled after 
+ebay an online auction site in both benchmarks most content is 
+dynamically generated from information stored in a database 
+details of the datasets used can be found in table 
+ the bboard benchmark 
+the bboard benchmark also known as rubbos 
+models slashdot a popular technology-oriented web site slashdot 
+aggregates links to news stories and other topics of interest found 
+elsewhere on the web the site also serves as a bulletin board by 
+allowing users to comment on the posted stories in a threaded 
+conversation form it is not uncommon for a story to gather hundreds 
+of comments in a matter of hours the bboard benchmark is 
+similar to the site and models the activities of a user including 
+readonly operations such as browsing the stories of the day browsing 
+story categories and viewing comments as well as write operations 
+such as new user registration adding and moderating comments 
+and story submission 
+the benchmark consists of three different phases a short 
+warmup phase a runtime phase representing the main body of the 
+workload and a short cool-down phase in this paper we only report 
+results from the runtime phase the warm-up phase is important 
+in establishing dynamic system state but measurements from that 
+phase are not significant for our evaluation the cool-down phase 
+is solely for allowing the benchmark to shut down 
+the warm-up runtime and cool-down phases are and 
+minutes respectively the number of simulated clients were 
+ and the benchmark is available in a java servlets 
+and php version and has different datasets we evaluated ganesh 
+using the java servlets version and the expanded dataset 
+the bboard benchmark defines two different workloads the 
+first the authoring mix consists of read-only operations and 
+ read-write operations the second the browsing mix 
+contains only read-only operations and does not update the database 
+ the auction benchmark 
+the auction benchmark also known as rubis models 
+ebay the online auction site the ebay web site is used to buy 
+and sell items via an auction format the main activities of a user 
+include browsing selling or bidding for items modeling the 
+activities on this site this benchmark includes read-only activities such 
+as browsing items by category and by region as well as read-write 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+netem 
+router ganesh 
+proxy 
+clients web and 
+application server 
+database 
+server 
+figure experimental setup 
+activities such as bidding for items buying and selling items and 
+leaving feedback 
+as with bboard the benchmark consists of three different phases 
+the warm-up runtime and cool-down phases for this experiment 
+are and minutes respectively we tested ganesh with 
+four client configurations where the number of test clients was set 
+to and the benchmark is available in a 
+enterprise java bean ejb java servlets and php version and has 
+different datasets we evaluated ganesh with the java servlets 
+version and the expanded dataset 
+the auction benchmark defines two different workloads the 
+first the bidding mix consists of read-only operations and 
+ read-write operations the second the browsing mix 
+contains only read-only operations and does not update the database 
+ experimental procedure 
+both benchmarks involve a synthetic workload of clients 
+accessing a web server the number of clients emulated is an 
+experimental parameter each emulated client runs an instance of the 
+benchmark in its own thread using a matrix to transition between 
+different benchmark states the matrix defines a stochastic model 
+with probabilities of transitioning between the different states that 
+represent typical user actions an example transition is a user 
+logging into the auction system and then deciding on whether to 
+post an item for sale or bid on active auctions each client also 
+models user think time between requests the think time is 
+modeled as an exponential distribution with a mean of seconds 
+we evaluate ganesh along two axes number of clients and wan 
+bandwidth higher loads are especially useful in understanding 
+ganesh s performance when the cpu or disk of the database server 
+or proxy is the limiting factor a previous study has shown that 
+approximately of the wide-area internet bottlenecks observed 
+had an available bandwidth under mb s based on this work 
+we focus our evaluation on the wan bandwidth of mb s with 
+ ms of round-trip latency representative of severely constrained 
+network paths and mb s with ms of round-trip latency 
+representative of a moderately constrained network path we also report 
+ganesh s performance at mb s with no added round-trip 
+latency this bandwidth representative of an unconstrained network 
+is especially useful in revealing any potential overhead of ganesh 
+in situations where wan bandwidth is not the limiting factor for 
+each combination of number of clients and wan bandwidth we 
+measured results from the two configurations listed below 
+ native this configuration corresponds to figure a 
+native avoids ganesh s overhead in using a proxy and 
+performing java object serialization 
+ ganesh this configuration corresponds to figure b for 
+a given number of clients and wan bandwidth comparing 
+these results to the corresponding native results gives the 
+performance benefit due to the ganesh middleware system 
+the metric used to quantify the improvement in throughput is 
+the number of client requests that can be serviced per second the 
+metric used to quantify ganesh s overhead is the average response 
+time for a client request for all of the experiments the ganesh 
+driver used by the application server used a cache size of 
+items 
+ the proxy was effective in tracking the ganesh driver s 
+cache state for all of our experiments the miss rate on the driver 
+never exceeded 
+ experimental setup 
+the experimental setup used for the benchmarks can be seen in 
+figure all machines were ghz pentium s with 
+hyperthreading enabled with the exception of the database server all 
+machines had gb of sdram and ran the fedora core linux 
+distribution the database server had gb of sdram 
+we used apache s tomcat as both the application server that 
+hosted the java servlets and the web server both benchmarks 
+used java servlets to generate the dynamic content the database 
+server used the open source mysql database for the native jdbc 
+drivers we used the connector j drivers provided by mysql the 
+application server used sun s java virtual machine as the runtime 
+environment for the java servlets the sysstat tool was used to 
+monitor the cpu network disk and memory utilization on all 
+machines 
+the machines were connected by a switched gigabit ethernet 
+network as shown in figure the front-end web and 
+application server was separated from the proxy and database server by a 
+netem router this router allowed us to control the bandwidth 
+and latency settings on the network the netem router is a 
+standard pc with two network cards running the linux traffic control 
+and network emulation software the bandwidth and latency 
+constraints were only applied to the link between the application server 
+and the database for the native case and between the application 
+server and the proxy for the ganesh case there is no 
+communication between the application server and the database with ganesh 
+as all data flows through the proxy as our focus was on the wan 
+link between the application server and the database there were no 
+constraints on the link between the simulated test clients and the 
+web server 
+ throughput and response time 
+in this section we address the first question raised in section 
+can performance can be improved significantly by exploiting 
+similarity across database results to answer this question we use 
+results from the bboard and auction benchmarks we use 
+two metrics to quantify the performance improvement obtainable 
+through the use of ganesh throughput from the perspective of the 
+web server and average response time from the perspective of the 
+client throughput is measured in terms of the number of client 
+requests that can be serviced per second 
+ bboard results and analysis 
+ authoring mix 
+figures a and b present the average number of requests 
+serviced per second and the average response time for these requests 
+as perceived by the clients for bboard s authoring mix 
+as figure a shows native easily saturates the mb s link 
+at clients the native solution delivers requests sec with an 
+average response time of seconds native s throughput drops 
+with an increase in test clients as clients timeout due to 
+congestion at the application server usability studies have shown that 
+response times above seconds cause the user to move on to 
+ 
+as java lacks a sizeof operator java caches therefore limit 
+their size based on the number of objects the size of cache dumps 
+taken at the end of the experiments never exceeded mb 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+requests sec 
+native ganesh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+avg resp time sec 
+native ganesh 
+note logscale 
+ a throughput authoring mix b response time authoring mix 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+requests sec 
+native ganesh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+avg resp time sec 
+native ganesh 
+note logscale 
+ c throughput browsing mix d response time browsing mix 
+mean of three trials the maximum standard deviation for throughput and response time was and of the corresponding mean 
+figure bboard benchmark - throughput and average response time 
+other tasks based on these numbers increasing the 
+number of test clients makes the native system unusable ganesh at 
+ mb s however delivers a twofold improvement with test 
+clients and a fivefold improvement at clients ganesh s 
+performance drops slightly at and clients as the network is 
+saturated compared to native figure b shows that ganesh s 
+response times are substantially lower with sub-second response 
+times at clients 
+figure a also shows that for and test clients ganesh 
+at mb s has the same throughput and average response time as 
+native at mb s only at and clients does native at 
+mb s deliver higher throughput than ganesh at mb s 
+comparing both ganesh and native at mb s we see that 
+ganesh is no longer bandwidth constrained and delivers up to a 
+twofold improvement over native at test clients as ganesh 
+does not saturate the network with higher test client configurations 
+at test clients its average response time is seconds rather 
+than native s seconds 
+as expected there are no visible gains from ganesh at the higher 
+bandwidth of mb s where the network is no longer the 
+bottleneck ganesh however still tracks native in terms of throughput 
+ browsing mix 
+figures c and d present the average number of requests 
+serviced per second and the average response time for these requests 
+as perceived by the clients for bboard s browsing mix 
+regardless of the test client configuration figure c shows 
+that native s throughput at mb s is limited to reqs sec ganesh 
+at mb s with test clients delivers more than a sixfold 
+increase in throughput the improvement increases to over a 
+elevenfold increase at test clients before ganesh saturates the 
+network further figure d shows that native s average response 
+time of seconds at test clients make the system unusable 
+these high response times further increase with the addition of test 
+clients even with the test client configuration ganesh 
+delivers an acceptable average response time of seconds 
+due to the data-intensive nature of the browsing mix ganesh at 
+ mb s surprisingly performs much better than native at mb s 
+further as shown in figure d while the average response time 
+for native at mb s is acceptable at test clients it is unusable 
+with test clients with an average response time of seconds 
+like the mb s case this response time increases with the addition 
+of extra test clients 
+ganesh at mb s and both native and ganesh at mb s are 
+not bandwidth limited however performance plateaus out after 
+ test clients due to the database cpu being saturated 
+ filter variant 
+we were surprised by the native performance from the bboard 
+benchmark at the bandwidth of mb s native performance was 
+lower than what we had expected it turned out the benchmark 
+code that displays stories read all the comments associated with 
+the particular story from the database and only then did some 
+postprocessing to select the comments to be displayed while this is 
+exactly the behavior of slashcode the code base behind the 
+slashdot web site we decided to modify the benchmark to perform some 
+pre-filtering at the database this modified benchmark named the 
+filter variant models a developer who applies optimizations at the 
+sql level to transfer less data in the interests of brevity we only 
+briefly summarize the results from the authoring mix 
+for the authoring mix at test clients at mb s figure a 
+shows that native s throughput increase by when compared 
+to the original benchmark while ganesh s improvement is smaller 
+at native s performance drops above clients as the test 
+clients time out due to high response times the most significant 
+gain for native is seen at mb s at test clients when 
+compared to the original benchmark native sees a improvement 
+in throughput and a reduction in average response time while 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+requests sec 
+native ganesh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+avg resp time sec 
+native ganesh 
+note logscale 
+ a throughput authoring mix b response time authoring mix 
+mean of three trials the maximum standard deviation for throughput and response time was and of the corresponding mean 
+figure bboard benchmark - filter variant - throughput and average response time 
+ganesh sees no improvement when compared to the original it still 
+processes more requests sec than native thus while the 
+optimizations were more helpful to native ganesh still delivers an 
+improvement in performance 
+ auction results and analysis 
+ bidding mix 
+figures a and b present the average number of requests 
+serviced per second and the average response time for these requests 
+as perceived by the clients for auction s bidding mix as 
+mentioned earlier the bidding mix consists of a mixture of read and 
+write operations 
+the auction benchmark is not as data intensive as bboard 
+therefore most of the gains are observed at the lower bandwidth 
+of mb s figure a shows that the increase in throughput due 
+to ganesh ranges from at test clients to with 
+test clients as seen in figure b the average response times for 
+ganesh are significantly lower than native ranging from a decrease 
+of at test clients to at test clients 
+figure a also shows that with a fourfold increase of 
+bandwidth from mb s to mb s native is no longer bandwidth 
+constrained and there is no performance difference between ganesh 
+and native with the higher test client configurations we did 
+observe that the bandwidth used by ganesh was lower than native 
+ganesh might still be useful in these non-constrained scenarios if 
+bandwidth is purchased on a metered basis similar results are seen 
+for the mb s scenario 
+ browsing mix 
+for auction s browsing mix figures c and d present the 
+average number of requests serviced per second and the average 
+response time for these requests as perceived by the clients 
+again most of the gains are observed at lower bandwidths at 
+mb s native and ganesh deliver similar throughput and response 
+times with test clients while the throughput for both remains 
+the same at test clients figure d shows that ganesh s 
+average response time is lower than native native saturates the 
+link at clients and adding extra test clients only increases the 
+average response time ganesh regardless of the test client 
+configuration is not bandwidth constrained and maintains the same 
+response time at test clients figure c shows that ganesh s 
+throughput is almost twice that of native 
+at the higher bandwidths of and mb s neither ganesh 
+nor native is bandwidth limited and deliver equivalent throughput 
+and response times 
+benchmark orig size ganesh size rabin size 
+selectsort mb mb mb 
+selectsort mb mb mb 
+table similarity microbenchmarks 
+ structural vs rabin similarity 
+in this section we address the second question raised in 
+section how important is ganesh s structural similarity detection 
+relative to rabin fingerprinting-based similarity detecting to 
+answer this question we used microbenchmarks and the bboard and 
+auction benchmarks as ganesh always performed better than 
+rabin fingerprinting we only present a subset of the results here in 
+the interests of brevity 
+ microbenchmarks 
+two microbenchmarks show an example of the effects of data 
+reordering on rabin fingerprinting algorithm in the first 
+microbenchmark selectsort a query with a specified sort order selects 
+ mb of data spread over approximately k rows the 
+query is then repeated with a different sort attribute while the 
+same number of rows and the same data is returned the order of 
+rows is different in such a scenario one would expect a large 
+amount of similarity to be detected between both results as 
+table shows ganesh s row-based algorithm achieves a 
+reduction while the rabin fingerprinting algorithm with the average 
+chunk size parameter set to kb only achieves a reduction 
+the reason as shown earlier in figure is that with rabin 
+fingerprinting the spans of data between two consecutive boundaries 
+usually cross row boundaries with the order of the rows changing 
+in the second result and the rabin fingerprints now spanning 
+different rows the algorithm is unable to detect significant similarity 
+the small gain seen is mostly for those single rows that are large 
+enough to be broken into multiple chunks 
+selectsort another micro-benchmark executed the same queries 
+but increased the minimum chunk size of the rabin fingerprinting 
+algorithm as can be seen in table even the small gain from the 
+previous microbenchmark disappears as the minimum chunk size 
+was greater than the average row size while one can partially 
+address these problems by dynamically varying the parameters of the 
+rabin fingerprinting algorithm this can be computationally 
+expensive especially in the presence of changing workloads 
+ application benchmarks 
+we ran the bboard benchmark described in section on 
+two versions of ganesh the first with rabin fingerprinting used as 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+requests sec 
+native ganesh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+avg resp time sec 
+native ganesh 
+note logscale 
+ a throughput bidding mix b response time bidding mix 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+requests sec 
+native ganesh 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+avg resp time sec 
+native ganesh 
+note logscale 
+ c throughput browsing mix d response time browsing mix 
+mean of three trials the maximum standard deviation for throughput and response time was and of the corresponding mean 
+figure auction benchmark - throughput and average response time 
+the chunking algorithm and the second with ganesh s row-based 
+algorithm rabin s results for the browsing mix are normalized to 
+ganesh s results and presented in figure 
+as figure a shows at mb s independent of the test client 
+configuration rabin significantly underperforms ganesh this 
+happens because of a combination of two reasons first as outlined 
+in section rabin finds less similarity as it does not exploit 
+the result s structural information second this benchmark 
+contained some queries that generated large results in this case 
+rabin with a small average chunk size generated a large number of 
+objects that evicted other useful data from the cache in contrast 
+ganesh was able to detect these large rows and correspondingly 
+increase the size of the chunks this was confirmed as cache 
+statistics showed that ganesh s hit ratio was roughly three time that of 
+rabin throughput measurements at mb s were similar with 
+the exception of rabin s performance with test clients in this 
+case ganesh was not network limited and in fact the throughput 
+was the same as clients at mb s rabin however took 
+advantage of the bandwidth increase from to mb s to deliver a 
+slightly better performance at mb s rabin s throughput was 
+almost similar to ganesh as bandwidth was no longer a bottleneck 
+the normalized response time presented in figure b shows 
+similar trends at and mb s the addition of test clients 
+decreases the normalized response time as ganesh s average response 
+time increases faster than rabin s however at no point does rabin 
+outperform ganesh note that at and clients at mb s 
+rabin does have a higher overhead even when it is not bandwidth 
+constrained as mentioned in section this is due to the fact that 
+rabin has to hash each resultset twice the overhead 
+disappears with and clients as the database cpu is saturated 
+and limits the performance of both ganesh and rabin 
+ proxy overhead 
+in this section we address the third question raised in section 
+is the overhead of ganesh s proxy-based design acceptable to 
+answer this question we concentrate on its performance at the higher 
+bandwidths our evaluation in section showed that ganesh when 
+compared to native can deliver a substantial throughput 
+improvement at lower bandwidths it is only at higher bandwidths that 
+latency measured by the average response time for a client request 
+and throughput measured by the number of client requests that can 
+be serviced per second overheads would be visible 
+looking at the authoring mix of the original bboard 
+benchmark there are no visible gains from ganesh at mb s ganesh 
+however still tracks native in terms of throughput while the 
+average response time is higher for ganesh the absolute difference is 
+in between and seconds and would be imperceptible to 
+the end-user the browsing mix shows an even smaller difference 
+in average response times the results from the filter variant of the 
+bboard benchmarks are similar even for the auction 
+benchmark the difference between native and ganesh s response time at 
+ mb s was never greater than seconds the only exception 
+to the above results was seen in the filter variant of the bboard 
+benchmark where ganesh at test clients added seconds 
+to the average response time thus even for much faster networks 
+where the wan link is not the bottleneck ganesh always delivers 
+throughput equivalent to native while some extra latency is added 
+by the proxy-based design it is usually imperceptible 
+ related work 
+to the best of our knowledge ganesh is the first system that 
+combines the use of hash-based techniques with caching of database 
+results to improve throughput and response times for applications 
+with dynamic content we also believe that it is also the first 
+system to demonstrate the benefits of using structural information for 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+norm throughput 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ mb s mb s mb s 
+test clients 
+norm responsetime 
+ a normalized throughput higher is better b normalized response time higher is worse 
+for throughput a normalized result greater than implies that rabin is better for response time a normalized result greater than implies 
+that ganesh is better mean of three trials the maximum standard deviation for throughput and response time was and of 
+the corresponding mean 
+figure normalized comparison of ganesh vs rabin - bboard browsing mix 
+detecting similarity in this section we first discuss alternative 
+approaches to caching dynamic content and then examine other uses 
+of hash-based primitives in distributed systems 
+ caching dynamic content 
+at the database layer a number of systems have advocated 
+middletier caching where parts of the database are replicated at the edge or 
+server these systems either cache entire tables in what 
+is essentially a replicated database or use materialized views from 
+previous query replies they require tight integration with the 
+back-end database to ensure a time bound on the propagation of 
+updates these systems are also usually targeted towards 
+workloads that do not require strict consistency and can tolerate stale 
+data further unlike ganesh some of these mid-tier caching 
+solutions suffer from the complexity of having to participate in 
+query planing and distributed query processing 
+gao et al propose using a distributed object replication 
+architecture where the data store s consistency requirements are 
+adapted on a per-application basis these solutions require 
+substantial developer resources and detailed understanding of the 
+application being modified while systems that attempt to automate 
+the partitioning and replication of an application s database 
+exist they do not provide full transaction semantics in 
+comparison ganesh does not weaken any of the semantics provided by 
+the underlying database 
+recent work in the evaluation of edge caching options for 
+dynamic web sites has suggested that without careful planning 
+employing complex offloading strategies can hurt performance 
+instead the work advocates for an architecture in which all tiers 
+except the database should be offloaded to the edge our evaluation of 
+ganesh has shown that it would benefit these scenarios to improve 
+database scalability c-jdbc sss and ganymed 
+also advocate the use of an interposition-based architecture to 
+transparently cluster and replicate databases at the middleware level 
+the approaches of these architectures and ganesh are 
+complementary and they would benefit each other 
+moving up to the presentation layer there has been widespread 
+adoption of fragment-based caching which improves cache 
+utilization by separately caching different parts of generated web 
+pages while fragment-based caching works at the edge a recent 
+proposal has proposed moving web page assembly to the clients to 
+optimize content delivery while ganesh is not used at the 
+presentation layer the same principles have been applied in duplicate 
+transfer detection to increase web cache efficiency as well as 
+for web access across bandwidth limited links 
+ hash-based systems 
+the past few years have seen the emergence of many systems 
+that exploit hash-based techniques at the heart of all these 
+systems is the idea of detecting similarity in data without requiring 
+interpretation of that data this simple yet elegant idea relies on 
+cryptographic hashing as discussed earlier in section successful 
+applications of this idea span a wide range of storage systems 
+examples include peer-to-peer backup of personal computing files 
+storage-efficient archiving of data and finding similar files 
+spring and wetherall apply similar principles at the network 
+level using synchronized caches at both ends of a network link 
+duplicated data is replaced by smaller tokens for transmission and 
+then restored at the remote end this and other hash-based systems 
+such as the casper and lbfs filesystems and layer- 
+bandwidth optimizers such as riverbed and peribit use rabin 
+fingerprinting to discover spans of commonality in data this 
+approach is especially useful when data items are modified in-place 
+through insertions deletions and updates however as section 
+shows the performance of this technique can show a dramatic drop 
+in the presence of data reordering ganesh instead uses row 
+boundaries as dividers for detecting similarity 
+the most aggressive use of hash-based techniques is by systems 
+that use hashes as the primary identifiers for objects in persistent 
+storage storage systems such as cfs and past that 
+have been built using distributed hash tables fall into this category 
+single instance storage and venti are other examples of 
+such systems as discussed in section the use of cryptographic 
+hashes for addressing persistent data represents a deeper level of 
+faith in their collision-resistance than that assumed by ganesh if 
+time reveals shortcomings in the hash algorithm the effort involved 
+in correcting the flaw is much greater in ganesh it is merely a 
+matter of replacing the hash algorithm 
+ conclusion 
+the growing use of dynamic web content generated from 
+relational databases places increased demands on wan bandwidth 
+traditional caching solutions for bandwidth and latency reduction 
+are often ineffective for such content this paper shows that the 
+impact of wan accesses to databases can be substantially reduced 
+through the ganesh architecture without any compromise of the 
+database s strict consistency semantics the essence of the ganesh 
+architecture is the use of computation at the edges to reduce 
+communication through the internet ganesh is able to use 
+cryptographic hashes to detect similarity with previous results and send 
+www track performance and scalability session scalable systems for dynamic content 
+ 
+compact recipes of results rather than full results our design uses 
+interposition to achieve complete transparency clients application 
+servers and database servers are all unaware of ganesh s presence 
+and require no modification 
+our experimental evaluation confirms that ganesh while 
+conceptually simple can be highly effective in improving throughput 
+and response time our results also confirm that exploiting the 
+structure present in database results to detect similarity is crucial 
+to this performance improvement 
+ references 
+ akella a seshan s and shaikh a an empirical 
+evaluation of wide-area internet bottlenecks in proc rd 
+acm sigcomm conference on internet measurement 
+ miami beach fl usa oct pp - 
+ altinel m bornh ¨ovd c krishnamurthy s 
+mohan c pirahesh h and reinwald b cache 
+tables paving the way for an adaptive database cache in 
+proc of th vldb berlin germany pp - 
+ altinel m luo q krishnamurthy s mohan 
+c pirahesh h lindsay b g woo h and 
+brown l dbcache database caching for web application 
+servers in proc acm sigmod pp - 
+ amiri k park s tewari r and padmanabhan 
+s dbproxy a dynamic data cache for web applications in 
+proc ieee international conference on data engineering 
+ icde mar 
+ black j compare-by-hash a reasoned analysis in proc 
+ usenix annual technical conference boston ma 
+may pp - 
+ bolosky w j corbin s goebel d and 
+douceur j r single instance storage in windows 
+in proc th usenix windows systems symposium seattle 
+wa aug pp - 
+ brewer e a lessons from giant-scale services ieee 
+internet computing - 
+ broder a glassman s manasse m and 
+zweig g syntactic clustering of the web in proc th 
+international www conference 
+ cecchet e chanda a elnikety s 
+marguerite j and zwaenepoel w performance 
+comparison of middleware architectures for generating 
+dynamic web content in proc fourth acm ifip usenix 
+international middleware conference rio de janeiro 
+brazil june 
+ cecchet e marguerite j and zwaenepoel w 
+c-jdbc flexible database clustering middleware in proc 
+ usenix annual technical conference boston ma 
+june 
+ cox l p murray c d and noble b d pastiche 
+making backup cheap and easy in osdi symposium on 
+operating systems design and implementation 
+ dabek f kaashoek m f karger d morris 
+r and stoica i wide-area cooperative storage with 
+cfs in th acm symposium on operating systems 
+principles banff canada oct 
+ druschel p and rowstron a past a large-scale 
+persistent peer-to-peer storage utility in hotos viii schloss 
+elmau germany may pp - 
+ edge side includes http www esi org 
+ gao l dahlin m nayate a zheng j and 
+iyengar a application specific data replication for edge 
+services in www proc twelfth international 
+conference on world wide web pp - 
+ hemminger s netem - emulating real networks in the lab 
+in proc linux conference australia canberra 
+australia apr 
+ henson v an analysis of compare-by-hash in proc th 
+workshop on hot topics in operating systems hotos ix 
+ may pp - 
+ jmob benchmarks http jmob objectweb org 
+ labrinidis a and roussopoulos n balancing 
+performance and data freshness in web database servers in 
+proc th vldb conference sept 
+ larson p -a goldstein j and zhou j 
+transparent mid-tier database caching in sql server in proc 
+ acm sigmod pp - 
+ manber u finding similar files in a large file system in 
+proc usenix winter technical conference san 
+fransisco ca - pp - 
+ manjhi a ailamaki a maggs b m mowry 
+t c olston c and tomasic a simultaneous 
+scalability and security for data-intensive web applications 
+in proc acm sigmod june pp - 
+ menezes a j vanstone s a and oorschot p 
+c v handbook of applied cryptography crc press 
+ miller r b response time in man-computer 
+conversational transactions in proc afips fall joint 
+computer conference pp - 
+ mogul j c chan y m and kelly t design 
+implementation and evaluation of duplicate transfer 
+detection in http in proc first symposium on networked 
+systems design and implementation san francisco ca 
+mar 
+ muthitacharoen a chen b and mazieres d a 
+low-bandwidth network file system in proc th acm 
+symposium on operating systems principles banff canada 
+oct 
+ pfeifer d and jakschitsch h method-based 
+caching in multi-tiered server applications in proc fifth 
+international symposium on distributed objects and 
+applications catania sicily italy nov 
+ plattner c and alonso g ganymed scalable 
+replication for transactional web applications in proc th 
+acm ifip usenix international conference on 
+middleware pp - 
+ quinlan s and dorward s venti a new approach 
+to archival storage in proc fast conference on file 
+and storage technologies 
+ rabin m fingerprinting by random polynomials in 
+harvard university center for research in computing 
+technology technical report tr- - 
+ rabinovich m xiao z douglis f and 
+kalmanek c moving edge side includes to the real edge 
+- the clients in proc th usenix symposium on internet 
+technologies and systems seattle wa mar 
+ reese g database programming with jdbc and java 
+ st ed o reilly june 
+ rhea s liang k and brewer e value-based web 
+caching in proc twelfth international world wide web 
+conference may 
+ sivasubramanian s alonso g pierre g and 
+van steen m globedb autonomic data replication for 
+web applications in www proc th international 
+world-wide web conference may 
+ spring n t and wetherall d a 
+protocol-independent technique for eliminating redundant 
+network traffic in proc of acm sigcomm aug 
+ tolia n harkes j kozuch m and 
+satyanarayanan m integrating portable and distributed 
+storage in proc rd usenix conference on file and 
+storage technologies san francisco ca mar 
+ tolia n kozuch m satyanarayanan m karp 
+b perrig a and bressoud t opportunistic use of 
+content addressable storage for distributed file systems in 
+proc usenix annual technical conference san 
+antonio tx june pp - 
+ yuan c chen y and zhang z evaluation of edge 
+caching offloading for dynamic content delivery in www 
+ proc twelfth international conference on world wide 
+web pp - 
+www track performance and scalability session scalable systems for dynamic content 
+ 
