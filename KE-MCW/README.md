@@ -1,4 +1,4 @@
-# Keyphrase Extraction
+# KE-MCW
 Source codes of A Keyphrase Extraction method based on Multi-size Convolution Windows
 
 ## Preparation
