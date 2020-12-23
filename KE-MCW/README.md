@@ -4,7 +4,7 @@ Source codes of A Keyphrase Extraction method based on Multi-size Convolution Wi
 ## Preparation
 You need to prepare  the pre-trained word vectors.
 * Pre-trained word vectors. Download [GoogleNews-vectors-negative300.bin.gz](https://code.google.com/archive/p/word2vec/)
-* A subset of data (20k docs) is provided [here](https://drive.google.com/open?id=1Jh8Suuk6sTKuK-mbpvU5KfiQKi9zAGar) for you to test the code. Unzip and place it to data/.
+* Our data is provided [here](https://drive.google.com/file/d/1z1JGWMnQkkWw_4tjptgO-dxXD0OeTfuP/view) for you. Unzip and put these data into data/.
 
 
 ## Details
